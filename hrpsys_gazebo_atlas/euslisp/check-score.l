@@ -1,4 +1,4 @@
-(ros::load-ros-manifest "hrpsys_gazebo")
+(ros::load-ros-manifest "hrpsys_gazebo_atlas")
 (ros::roseus "check_score")
 (defun vrc-score-callback (msg)
   (unless (equal (send msg :message) "")

@@ -1,6 +1,6 @@
 ;; roseus loop-qual-task-1.l
 
-(load "package://hrpsys_gazebo/euslisp/atlas-interface.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
 (defun atlas-sim-interface-state-cb
   (msg)
@@ -44,13 +44,13 @@
 	(unix:usleep (* 15 1000 1000))
 
 	(warn "[my-msg] launch atlas_hrpsys.launch~%")
-	(unix:system "roslaunch hrpsys_gazebo atlas_hrpsys.launch &")
+	(unix:system "roslaunch hrpsys_gazebo_atlas atlas_hrpsys.launch &")
 	(unix:usleep (* 10 1000 1000))
 
 	(unless field-footstep
 	  (warn "[my-msg] launch footstep_planner.launch~%")
 	  (setq call-field-footstep-flag t)
-	  (unix:system "roslaunch hrpsys_gazebo footstep_planner.launch MAP_FILE\:=$(rospack find hrpsys_gazebo)/maps/field_map.yaml &")
+	  (unix:system "roslaunch hrpsys_gazebo_atlas footstep_planner.launch MAP_FILE\:=$(rospack find hrpsys_gazebo_atlas)/maps/field_map.yaml &")
 	  (unix:usleep (* 10 1000 1000)))
 
 	(warn "[my-msg] call (atlas-init)~%")
@@ -77,7 +77,7 @@
 	  (unix:usleep (* 15 1000 1000)))
 
 	(warn "[my-msg] launch footpstep_planner.launch again~%")
-	(unix:system "roslaunch hrpsys_gazebo footstep_planner.launch MAP_FILE\:=$(rospack find hrpsys_gazebo)/maps/stepping_map.yaml &")
+	(unix:system "roslaunch hrpsys_gazebo_atlas footstep_planner.launch MAP_FILE\:=$(rospack find hrpsys_gazebo_atlas)/maps/stepping_map.yaml &")
 	(unix:usleep (* 15 1000 1000))
 
 	(warn "[my-msg] walk stepping block~%")

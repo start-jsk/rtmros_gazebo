@@ -7,7 +7,7 @@
   <!-- start tilting -->
   <group if="$(arg USE_TILT_LASER)">
   <node name="start_tilt_laser_node"
-        type="start-laser.py" pkg="hrpsys_gazebo"
+        type="start-laser.py" pkg="hrpsys_gazebo_atlas"
         output="screen" args="1.1424"/> <!-- 2pi / 5.5 sec -->
 
   <node pkg="laser_filters" type="scan_to_cloud_filter_chain"

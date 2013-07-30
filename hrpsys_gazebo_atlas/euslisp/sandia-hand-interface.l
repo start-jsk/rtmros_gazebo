@@ -1,6 +1,6 @@
 (require :robot-interface "package://pr2eus/robot-interface.l")
-(require :sandia_hand_left  "package://hrpsys_gazebo/models/sandia_hand_left.l")
-(require :sandia_hand_right "package://hrpsys_gazebo/models/sandia_hand_right.l")
+(require :sandia_hand_left  "package://hrpsys_gazebo_atlas/models/sandia_hand_left.l")
+(require :sandia_hand_right "package://hrpsys_gazebo_atlas/models/sandia_hand_right.l")
 
 (setq ros::*compile-message* t)
 (ros::roseus-add-msgs "osrf_msgs")

@@ -8,7 +8,7 @@
 (setq *limit-angle* 4.5) ;; angle change per (* *cycle* *cycle-times*)
 
 (defun robot-initial-setting ()
-  (load "package://hrpsys_gazebo/euslisp/atlas-interface.l")
+  (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
   ;; robot depending part
   (atlas-init)
   (send *atlas* :reset-pose)
@@ -49,7 +49,7 @@
        (setq markers
              (list (mesh->marker-msg
                     (make-coords)
-                    "package://hrpsys_gazebo/models/sandia_right.dae"
+                    "package://hrpsys_gazebo_atlas/models/sandia_right.dae"
                     (instance std_msgs::Header :init :frame_id "/right_palm")
                     :color (float-vector 0 0 1)
                     :alpha 0.6
@@ -59,7 +59,7 @@
        (setq markers
              (list (mesh->marker-msg
                     (make-coords)
-                    "package://hrpsys_gazebo/models/sandia_left.dae"
+                    "package://hrpsys_gazebo_atlas/models/sandia_left.dae"
                     (instance std_msgs::Header :init :frame_id "/left_palm")
                     :color (float-vector 0 0 1)
                     :alpha 0.6

@@ -5,7 +5,7 @@
 #  gazebo
 #  hrpsys
 #  hrpsys_ros_bridge
-#  hrpsys_gazebo
+#  hrpsys_gazebo_atlas
 #   - also add sensors to dae file
 #
 
@@ -35,7 +35,7 @@ make
 cd `rospack find hrpsys_ros_bridge`
 make
 
-cd `rospack find hrpsys_gazebo`
+cd `rospack find hrpsys_gazebo_atlas`
 rosmake
 
 if [ `grep gyro ./models/atlas.dae | wc -l` -eq 0 ]; then

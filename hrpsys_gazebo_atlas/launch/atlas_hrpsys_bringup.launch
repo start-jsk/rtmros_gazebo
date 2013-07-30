@@ -5,7 +5,7 @@
   <arg name="SIMULATOR_NAME" default="RobotHardware0" />
   <arg name="CONF_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).conf" />
 
-  <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
+  <include file="$(find hrpsys)/launch/hrpsys.launch" >
     <arg name="USE_RTCD" value="true" />
     <arg name="hrpsys_load_path" default="$(find hrpsys_gazebo_atlas)/lib,$(find hrpsys)/lib"/>
     <arg name="RobotHardware_conf" default='$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).RobotHardware.conf'/>

@@ -1,12 +1,12 @@
-;;(setq *fork-stream* (piped-fork "ssh" "leus@133.11.216.144" "roseus \"~/ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo/euslisp/atlas-pipe-interface.l\""))
-;;(load "package://hrpsys_gazebo/euslisp/atlas-interface.l")
+;;(setq *fork-stream* (piped-fork "ssh" "leus@133.11.216.144" "roseus \"~/ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo_atlas/euslisp/atlas-pipe-interface.l\""))
+;;(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
-(load "package://hrpsys_gazebo/euslisp/atlas-model.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-model.l")
 (atlas-with-hand)
 (make-irtviewer) ;; irtviewer blocked after connection ....
 
 (defun connect-atlas (&optional (host "fc1")
-                                (com "roseus \"~/ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo/euslisp/atlas-pipe-interface.l\""))
+                                (com "roseus \"~/ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo_atlas/euslisp/atlas-pipe-interface.l\""))
   (setq *fork-stream* (piped-fork "ssh" host com)))
 
 (defun rd-p (&optional (strm *fork-stream*) (timeout 0.1)) ;; readablep

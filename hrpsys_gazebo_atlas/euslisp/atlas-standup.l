@@ -12,7 +12,7 @@
   *かえるとび?
     -< (frog)  do-until-keyなので、enterおすまでジャンプしつづける
 |#
-;;(require "package://hrpsys_gazebo/euslisp/atlas-interface.l")
+;;(require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
 ;;
 (defun init

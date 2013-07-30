@@ -1,8 +1,8 @@
 
-(require "package://hrpsys_gazebo/euslisp/atlas-interface.l")
-(require "package://hrpsys_gazebo/euslisp/atlas-tolot.l")
-(require "package://hrpsys_gazebo/euslisp/atlas-standup.l")
-(require "package://hrpsys_gazebo/euslisp/atlas-wall-detector.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-tolot.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-standup.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-wall-detector.l")
 
 (ros::advertise "atlas_gallop_controller/compus"
                 std_msgs::string)
@@ -21,7 +21,7 @@
   (if (or (not (boundp '*irtviewer*))
           (null *irtviewer*))
       (progn
-        (require "package://hrpsys_gazebo/euslisp/no-display.l")
+        (require "package://hrpsys_gazebo_atlas/euslisp/no-display.l")
         (make-irtviewer)))
   (tolot-init :reverse? t)
   (set-user)

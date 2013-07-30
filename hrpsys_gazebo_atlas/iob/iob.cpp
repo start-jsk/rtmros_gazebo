@@ -669,7 +669,7 @@ int open_iob(void)
     if ( isInitialized ) return TRUE;
 
     std::map<std::string, std::string> arg;
-    ros::init(arg, "hrpsys_gazebo", ros::init_options::NoSigintHandler);
+    ros::init(arg, "hrpsys_gazebo_atlas", ros::init_options::NoSigintHandler);
     rosnode = new ros::NodeHandle();
 
     // http://gazebosim.org/wiki/Tutorials/drcsim/2.2/sending_joint_controller_commands_over_ros

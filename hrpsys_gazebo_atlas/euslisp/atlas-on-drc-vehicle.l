@@ -1,14 +1,14 @@
-(load "package://hrpsys_gazebo/euslisp/atlas-interface.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-applications.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-vehicle-motion.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-vehicle-motion-drive.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-utils.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-applications.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-vehicle-motion.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-vehicle-motion-drive.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-utils.l")
 
 ;; (unless (boundp '*drcv*)
 ;;   (setq *drcv* 
 ;; 	  (with-open-file 
 ;; 	   (f (format nil "~a/~a" (unix:getenv "HOME")
-;;                   "ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo/models/drc-vehicle.l"))
+;;                   "ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo_atlas/models/drc-vehicle.l"))
 ;;        (read f)))
 ;;   )
 

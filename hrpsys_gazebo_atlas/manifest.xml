@@ -1,13 +1,13 @@
 <package>
-  <description brief="hrpsys_gazebo">
+  <description brief="hrpsys_gazebo_atlas">
 
-     hrpsys_gazebo
+     hrpsys_gazebo_atlas
 
   </description>
   <author>Yohei Kakiuchi</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/hrpsys_gazebo</url>
+  <url>http://ros.org/wiki/hrpsys_gazebo_atlas</url>
 
   <!-- JSK(ros-rtm) system -->
   <depend package="roseus"/>

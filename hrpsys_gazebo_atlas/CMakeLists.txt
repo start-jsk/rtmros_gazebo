@@ -43,7 +43,7 @@ add_custom_command(
 add_custom_command(
   OUTPUT ${atlas_dae}
   COMMAND rosrun collada_urdf_jsk_patch urdf_to_collada ${atlas_urdf} ${atlas_dae}.bak
-  COMMAND rosrun hrpsys_gazebo add_sensor_to_collada.py ${atlas_dae}.bak > ${atlas_dae}
+  COMMAND rosrun hrpsys_gazebo_atlas add_sensor_to_collada.py ${atlas_dae}.bak > ${atlas_dae}
   DEPENDS ${atlas_urdf}
 )
 

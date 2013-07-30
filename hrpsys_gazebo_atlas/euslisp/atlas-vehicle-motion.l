@@ -5,12 +5,12 @@
 ;; \brief   vrc_task_1関連関数
 ;;
 
-(load "package://hrpsys_gazebo/euslisp/atlas-interface.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-standup.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-calc-position.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-vehicle-motion-utils.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-interface.l")
-(load "package://hrpsys_gazebo/euslisp/t1l5.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-standup.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-calc-position.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-vehicle-motion-utils.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/t1l5.l")
 
 ;; (progn
 ;;   (my-init :real t)
@@ -39,7 +39,7 @@
   (unless (boundp '*drcv*)
     (setq *drcv* 
 	  (with-open-file 
-	   (f (format nil "~a/~a" (unix:getenv "HOME") "ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo/models/drc-vehicle.l")) (read f))))
+	   (f (format nil "~a/~a" (unix:getenv "HOME") "ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo_atlas/models/drc-vehicle.l")) (read f))))
   ;; upper-front-pipe
   (send *drcv* :add-handle
 	(make-cascoords :pos #f(320 150 1920) :rpy (list 0 0 -pi/2) :name :upper-front-pipe))
@@ -99,7 +99,7 @@
 (defun init-task1
   ()
 
-  (load "package://hrpsys_gazebo/euslisp/no-display.l")
+  (load "package://hrpsys_gazebo_atlas/euslisp/no-display.l")
   (make-irtviewer)
 
   (my-init :real t)
@@ -130,25 +130,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; vehicle motion [init]
-(load "package://hrpsys_gazebo/euslisp/atlas-vehicle-motion-others.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-vehicle-motion-others.l")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; vehicle motion [walk]
-;; (load "package://hrpsys_gazebo/euslisp/atlas-vehicle-motion-others.l") ;; loaded above
+;; (load "package://hrpsys_gazebo_atlas/euslisp/atlas-vehicle-motion-others.l") ;; loaded above
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; vehicle motion [get-in]
-(load "package://hrpsys_gazebo/euslisp/atlas-vehicle-motion-get-in.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-vehicle-motion-get-in.l")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; vehicle motion [drive]
-(load "package://hrpsys_gazebo/euslisp/atlas-vehicle-motion-drive.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-vehicle-motion-drive.l")
 
 
 

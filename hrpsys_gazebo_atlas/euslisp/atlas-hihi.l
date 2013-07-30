@@ -1,4 +1,4 @@
-;;(require "package://hrpsys_gazebo/euslisp/atlas-interface.l")
+;;(require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 ;(require "atlas-interface.l") ; (progn (require "atlas-interface.l") (atlas-init) (setq *robot* *atlas*) (objects *robot*))
 
 ;;------------ initalize

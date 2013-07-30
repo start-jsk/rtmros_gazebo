@@ -10,7 +10,7 @@
     <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/atlas_laser_filter.yaml" />
   </node>
 
-  <node pkg="hrpsys_gazebo" type="atlas_laser_snapshotter"
+  <node pkg="hrpsys_gazebo_atlas" type="atlas_laser_snapshotter"
         name="atlas_laser_snapshotter"
         output="screen" >
     <remap from="joint_states" to="/multisense_sl/joint_states" />
@@ -19,6 +19,6 @@
 
   <!-- start tilting -->
   <node name="start_tilt_laser_node"
-        type="start-laser.py" pkg="hrpsys_gazebo"
+        type="start-laser.py" pkg="hrpsys_gazebo_atlas"
         output="screen" args="1.1424"/> <!-- 2pi / 5.5 sec -->
 </launch>

@@ -589,7 +589,7 @@
   )
 
 (defun init-vrc-task3 ()
-  (null-output (load "package://hrpsys_gazebo/euslisp/atlas-interface.l"))
+  (null-output (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l"))
   (null-output (atlas-init :set-reset-pose nil :set-user-mode nil))
   (real2model)
   (model2real :wait t :time 10)
@@ -766,9 +766,9 @@
 (usage)
 
 (progn
-  (null-output (load "package://hrpsys_gazebo/euslisp/atlas-interface.l"))
+  (null-output (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l"))
   (unless (and x::*display* (> x::*display* 0))
-    (load "package://hrpsys_gazebo/euslisp/no-display"))
+    (load "package://hrpsys_gazebo_atlas/euslisp/no-display"))
   (unless (boundp '*ri*)
     (null-output (atlas-init :set-reset-pose nil :set-user-mode nil))
     (send *ri* :hand :rarm :wait-interpolation)

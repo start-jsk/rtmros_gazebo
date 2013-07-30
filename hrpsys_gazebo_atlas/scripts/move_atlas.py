@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import roslib; roslib.load_manifest('hrpsys_gazebo')
+import roslib; roslib.load_manifest('hrpsys_gazebo_atlas')
 import rospy, math
 import sys
 from math import *

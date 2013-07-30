@@ -1,7 +1,7 @@
 (load "package://eusurdf/euslisp/eusurdf.l")
 
 (defvar *parse-world-script*
-  (ros::resolve-ros-path "package://hrpsys_gazebo/scripts/parse_world.py"))
+  (ros::resolve-ros-path "package://hrpsys_gazebo_atlas/scripts/parse_world.py"))
 
 (defun find-pos (substr str)
   (dotimes (i (- (length str) (length substr)))

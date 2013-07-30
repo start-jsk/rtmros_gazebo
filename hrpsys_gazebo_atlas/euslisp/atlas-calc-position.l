@@ -4,7 +4,7 @@
 ;;
 (setq *floor-z* (+ -842.0 100.0))
 
-(setq *pp0* (with-open-file (f (ros::resolve-ros-path "package://hrpsys_gazebo/euslisp/atlas_vh_pos.l"))
+(setq *pp0* (with-open-file (f (ros::resolve-ros-path "package://hrpsys_gazebo_atlas/euslisp/atlas_vh_pos.l"))
                             (read f)))
 
 (setq *raw-org-points* (cadr *pp0*))
@@ -15,11 +15,11 @@
                                                          (> 1000 (elt p 2) *floor-z*))) :create t))
 (send *org-points* :point-color #f(1 0 0))
 
-(setq *org-points2* (with-open-file (f (ros::resolve-ros-path "package://hrpsys_gazebo/euslisp/car-right-side.l"))
+(setq *org-points2* (with-open-file (f (ros::resolve-ros-path "package://hrpsys_gazebo_atlas/euslisp/car-right-side.l"))
                             (read f)))
 (send *org-points2* :point-color #f(1 1 0))
 
-(setq *org-points3* (with-open-file (f (ros::resolve-ros-path "package://hrpsys_gazebo/euslisp/car-seat.l"))
+(setq *org-points3* (with-open-file (f (ros::resolve-ros-path "package://hrpsys_gazebo_atlas/euslisp/car-seat.l"))
                             (read f)))
 (send *org-points3* :point-color #f(0 1 1))
 

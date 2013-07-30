@@ -1,5 +1,5 @@
 
-(require "package://hrpsys_gazebo/euslisp/atlas-model.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-model.l")
 ;(defvar *robot* (instance atlas-robot :init))
 ;(if (not (boundp '*irtviewer*)) (objects *robot*))
 

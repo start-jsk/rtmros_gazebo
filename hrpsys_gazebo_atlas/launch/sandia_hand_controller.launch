@@ -1,7 +1,7 @@
 <launch>
   <!-- left hand -->
   <node ns="sandia_hand_left"
-        pkg="hrpsys_gazebo" type="hand_controller" name="controller_manager"
+        pkg="hrpsys_gazebo_atlas" type="hand_controller" name="controller_manager"
         output="screen" >
     <param name="robot_description" textfile="$(find hrpsys_gazebo_atlas)/models/sandia_hand_left.urdf" />
     <remap from="commands" to="/sandia_hands/l_hand/joint_commands" />
@@ -16,7 +16,7 @@
 
   <!-- right hand -->
   <node ns="sandia_hand_right"
-        pkg="hrpsys_gazebo" type="hand_controller" name="controller_manager"
+        pkg="hrpsys_gazebo_atlas" type="hand_controller" name="controller_manager"
         output="screen" >
     <param name="robot_description" textfile="$(find hrpsys_gazebo_atlas)/models/sandia_hand_right.urdf" />
     <remap from="commands" to="/sandia_hands/r_hand/joint_commands" />

@@ -12,12 +12,12 @@ rosparam set /use_sim_time false
 
 # [usage] when you call `rosservice call /head_snap/snapshot`, image will show!!
 
-#roslaunch hrpsys_gazebo screenpoint_resize_view.launch COMPRESS_TYPE:=theora &
-roslaunch hrpsys_gazebo screenpoint_resize_view.launch RESIZE_RATE:=${RATE} &
+#roslaunch hrpsys_gazebo_atlas screenpoint_resize_view.launch COMPRESS_TYPE:=theora &
+roslaunch hrpsys_gazebo_atlas screenpoint_resize_view.launch RESIZE_RATE:=${RATE} &
 PID=$!
 
 #rosrun image_view image_view image:=/head_snap/image_rect _image_transport:=compressed &
-roslaunch hrpsys_gazebo screenpoint_resize_view.launch CAMERA:=/head_snap IMAGE_TYPE:=image_rect RESIZE_RATE:=${RATE} &
+roslaunch hrpsys_gazebo_atlas screenpoint_resize_view.launch CAMERA:=/head_snap IMAGE_TYPE:=image_rect RESIZE_RATE:=${RATE} &
 
 PID="$PID $!"
 rosrun image_view image_view image:=/lhand_snap/image_rect _image_transport:=compressed &

@@ -1,5 +1,5 @@
 (progn 
-  (load "package://hrpsys_gazebo/euslisp/atlas-interface.l")
+  (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
   (atlas-init :set-reset-pose nil :set-user-mode nil)
   (real2model)
   (model2real :wait t :time 10)

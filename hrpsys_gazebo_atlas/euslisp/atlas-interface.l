@@ -1,11 +1,11 @@
 (require :rtm-ros-robotics-interface "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-model.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-applications.l")
-(load "package://hrpsys_gazebo/euslisp/sandia-hand-interface.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-utils.l")
-(load "package://hrpsys_gazebo/euslisp/atlas-walk.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-model.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-applications.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/sandia-hand-interface.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-utils.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-walk.l")
 
-(ros::load-ros-manifest "hrpsys_gazebo")
+(ros::load-ros-manifest "hrpsys_gazebo_atlas")
 
 ;; load compiled messages
 (setq ros::*compile-message* t)
@@ -431,7 +431,7 @@
   (let (pattern-list
         (fname (if fname fname
 		 (format nil "~A/atlas-walk-pattern"
-			 (ros::resolve-ros-path "package://hrpsys_gazebo/build")))))
+			 (ros::resolve-ros-path "package://hrpsys_gazebo_atlas/build")))))
     (unless no-gen
       (format t ";; generate pattern~%")
       (setq pattern-list

@@ -1,6 +1,6 @@
-(require :atlas "package://hrpsys_gazebo/models/atlas.l")
-(require :sandia_hand_left  "package://hrpsys_gazebo/models/sandia_hand_left.l")
-(require :sandia_hand_right "package://hrpsys_gazebo/models/sandia_hand_right.l")
+(require :atlas "package://hrpsys_gazebo_atlas/models/atlas.l")
+(require :sandia_hand_left  "package://hrpsys_gazebo_atlas/models/sandia_hand_left.l")
+(require :sandia_hand_right "package://hrpsys_gazebo_atlas/models/sandia_hand_right.l")
 
 (defun atlas-with-hand ()
   (atlas)
