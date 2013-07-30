@@ -3,14 +3,14 @@
   <arg name="ONLY_VEHICLE" default="false" />
 
   <include file="$(find atlas_utils)/launch/vrc_task_1.launch">
-    <arg if="$(arg ONLY_VEHICLE)" name="gzworld" value="$(find hrpsys_gazebo)/maps/vrc_task_1_only_vehicle.world" />
+    <arg if="$(arg ONLY_VEHICLE)" name="gzworld" value="$(find hrpsys_gazebo_atlas)/maps/vrc_task_1_only_vehicle.world" />
   </include>
 
   <node pkg="hrpsys_gazebo" type="move_atlas.py"
   	name="move_atlas" args="0 -2 1 0"/>
 
   <group if="$(arg EXE_HRPSYS)">
-    <include file="$(find hrpsys_gazebo)/launch/atlas_hrpsys.launch" />
+    <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys.launch" />
   </group>
 </launch>
 

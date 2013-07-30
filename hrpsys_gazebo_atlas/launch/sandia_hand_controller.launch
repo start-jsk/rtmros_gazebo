@@ -3,7 +3,7 @@
   <node ns="sandia_hand_left"
         pkg="hrpsys_gazebo" type="hand_controller" name="controller_manager"
         output="screen" >
-    <param name="robot_description" textfile="$(find hrpsys_gazebo)/models/sandia_hand_left.urdf" />
+    <param name="robot_description" textfile="$(find hrpsys_gazebo_atlas)/models/sandia_hand_left.urdf" />
     <remap from="commands" to="/sandia_hands/l_hand/joint_commands" />
     <remap from="in_joint_states" to="/sandia_hands/l_hand/joint_states" />
   </node>
@@ -12,13 +12,13 @@
         args="sandia_hand_left_controller" output="screen" >
   </node>
   <rosparam ns="sandia_hand_left"
-            file="$(find hrpsys_gazebo)/config/sandia_hand_left_controller.yaml" command="load" />
+            file="$(find hrpsys_gazebo_atlas)/config/sandia_hand_left_controller.yaml" command="load" />
 
   <!-- right hand -->
   <node ns="sandia_hand_right"
         pkg="hrpsys_gazebo" type="hand_controller" name="controller_manager"
         output="screen" >
-    <param name="robot_description" textfile="$(find hrpsys_gazebo)/models/sandia_hand_right.urdf" />
+    <param name="robot_description" textfile="$(find hrpsys_gazebo_atlas)/models/sandia_hand_right.urdf" />
     <remap from="commands" to="/sandia_hands/r_hand/joint_commands" />
     <remap from="in_joint_states" to="/sandia_hands/r_hand/joint_states" />
   </node>
@@ -27,6 +27,6 @@
         args="sandia_hand_right_controller" output="screen" >
   </node>
   <rosparam ns="sandia_hand_right"
-            file="$(find hrpsys_gazebo)/config/sandia_hand_right_controller.yaml" command="load" />
+            file="$(find hrpsys_gazebo_atlas)/config/sandia_hand_right_controller.yaml" command="load" />
 
 </launch>

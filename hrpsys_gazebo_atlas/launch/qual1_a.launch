@@ -1,6 +1,6 @@
 <launch>
-  <include file="$(find hrpsys_gazebo)/launch/footstep_planner.launch" >
-    <arg name="MAP_FILE" value="$(find hrpsys_gazebo)/maps/field_map.yaml" />
+  <include file="$(find hrpsys_gazebo_atlas)/launch/footstep_planner.launch" >
+    <arg name="MAP_FILE" value="$(find hrpsys_gazebo_atlas)/maps/field_map.yaml" />
     <arg name="LAUNCH_RVIZ" value="true" />
   </include>
 

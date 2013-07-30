@@ -16,7 +16,7 @@
     <remap from="scan" to="/multisense_sl/laser/scan"/>
     <remap from="cloud_filtered" to="~cloud_filtered"/>
     <param name="target_frame" value="$(arg TARGET_FRAME)" />
-    <rosparam command="load" file="$(find hrpsys_gazebo)/config/atlas_scan_to_cloud.yaml" />
+    <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/atlas_scan_to_cloud.yaml" />
   </node>
 
   <node pkg="octomap_server" type="octomap_server_node" name="octomap_filter_server">

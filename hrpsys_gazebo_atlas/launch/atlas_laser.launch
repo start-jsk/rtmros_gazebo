@@ -7,7 +7,7 @@
     <remap from="scan" to="/multisense_sl/laser/scan"/>
     <remap from="cloud_filtered" to="/tilt_scan_shadow2_filtered"/>
     <param name="fixed_frame" type="string" value="$(arg FIXED_FRAME)"/>
-    <rosparam command="load" file="$(find hrpsys_gazebo)/config/atlas_laser_filter.yaml" />
+    <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/atlas_laser_filter.yaml" />
   </node>
 
   <node pkg="hrpsys_gazebo" type="atlas_laser_snapshotter"

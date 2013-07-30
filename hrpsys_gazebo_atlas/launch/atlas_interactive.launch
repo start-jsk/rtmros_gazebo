@@ -16,7 +16,7 @@
   </node>
 
   <node pkg="roseus" type="roseus" name="im_robot_interface"
-        args="$(find hrpsys_gazebo)/euslisp/atlas-interactive-marker.l"
+        args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-interactive-marker.l"
         output="screen" >
     <remap from="pose_a_left"
            to="$(arg server_name)/pose_a_left" />
@@ -40,6 +40,6 @@
 
   <node if="$(arg LAUNCH_RVIZ)"
         pkg="rviz" type="rviz" name="rviz"
-        args="-d $(find hrpsys_gazebo)/config/atlas_interactive.vcg"/>
+        args="-d $(find hrpsys_gazebo_atlas)/config/atlas_interactive.vcg"/>
 
 </launch>
