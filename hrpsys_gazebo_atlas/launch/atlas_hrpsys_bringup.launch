@@ -3,24 +3,24 @@
   <arg name="KILL_SERVERS" default="false" />
   <arg name="ROBOT_NAME" default="atlas" />
   <arg name="SIMULATOR_NAME" default="RobotHardware0" />
-  <arg name="CONF_FILE" value="$(find hrpsys_gazebo)/models/$(arg ROBOT_NAME).conf" />
+  <arg name="CONF_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).conf" />
 
-  <include file="$(find hrpsys)/launch/hrpsys.launch" >
+  <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
     <arg name="USE_RTCD" value="true" />
-    <arg name="hrpsys_load_path" default="$(find hrpsys_gazebo)/lib,$(find hrpsys)/lib"/>
-    <arg name="RobotHardware_conf" default='$(find hrpsys_gazebo)/models/$(arg ROBOT_NAME).RobotHardware.conf'/>
-    <arg name="PROJECT_FILE" value="$(find hrpsys_gazebo)/models/$(arg ROBOT_NAME).xml" />
-    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo)/models/$(arg ROBOT_NAME).dae" />
+    <arg name="hrpsys_load_path" default="$(find hrpsys_gazebo_atlas)/lib,$(find hrpsys)/lib"/>
+    <arg name="RobotHardware_conf" default='$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).RobotHardware.conf'/>
+    <arg name="PROJECT_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).xml" />
+    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
     <arg name="CONF_FILE" value="$(arg CONF_FILE)" />
     <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
-    <arg name="HRPSYS_PY_PKG" default="hrpsys_gazebo"/>
+    <arg name="HRPSYS_PY_PKG" default="hrpsys_gazebo_atlas"/>
   </include>
 
   <!-- hrpsys_ros_bridge -->
   <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" >
     <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
-    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo)/models/$(arg ROBOT_NAME).dae" />
-    <arg name="COLLADA_FILE" value="$(find hrpsys_gazebo)/models/$(arg ROBOT_NAME).dae" />
+    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
+    <arg name="COLLADA_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
     <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" />
 
     <arg name="USE_ROBOTHARDWARE" value="true" />
