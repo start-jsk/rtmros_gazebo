@@ -9,7 +9,7 @@
 
   <param name="hrpsys_gazebo_iob" value="$(arg CONFIG_NAME)"/>
 
-  <include file="$(find hrpsys)/launch/hrpsys.launch" >
+  <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
     <arg name="USE_RTCD" value="true" />
     <arg name="hrpsys_load_path" default="$(find hrpsys_gazebo_general)/lib,$(find hrpsys)/lib"/>
     <arg name="RobotHardware_conf" default='$(arg GAZEBO_MODEL_DIR)/hrpsys/$(arg ROBOT_NAME).RobotHardware.conf'/>
@@ -38,7 +38,7 @@
   <!-- BEGIN:openrtm connection -->
   <env name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
   <env name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
-  <node name="rtmlaunch_hrpsys_gazebo_atlas_hrpsys_launch" pkg="openrtm" type="rtmlaunch.py"
+  <node name="rtmlaunch_hrpsys_gazebo_atlas_hrpsys_launch" pkg="openrtm_tools" type="rtmlaunch.py"
         args="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch"/>
   <rtconnect from="RobotHardwareServiceROSBridge.rtc:RobotHardwareService"
              to="$(arg SIMULATOR_NAME).rtc:RobotHardwareService"  subscription_type="new"/>
