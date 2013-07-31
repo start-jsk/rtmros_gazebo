@@ -5,5 +5,7 @@
 
   <models>
     <uri>file://cupboard</uri>
+    <uri>file://broom</uri>
+    <uri>file://room73b2</uri>
   </models>
 </database>
