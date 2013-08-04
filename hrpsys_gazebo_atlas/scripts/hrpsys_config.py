@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import roslib;
+import roslib; roslib.load_manifest('hrpsys_tools')
 import sys; sys.path.insert (0, roslib.packages.get_pkg_dir('hrpsys')+'/scripts');
 from hrpsys_config import *
 
