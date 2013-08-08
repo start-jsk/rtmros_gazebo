@@ -1,0 +1,144 @@
+// If you have a question, please send e-mail to Team K.
+
+
+* install
+
+# if you already installed old rtm-ros-robotics, rename it as backup by doing a following line.
+roscd rtmros_common/../../; mv rtm-ros-robotics/rtmros_common rtm-ros-robotics/rtmros_common.bak
+rosws merge http://rtm-ros-robotics.googlecode.com/svn/trunk/agentsystem_ros_tutorials/rtm-ros-robotics.rosinstall # you may be asked [Y/n], maybe you should chose [Y].
+rosws update
+rosmake hrpsys_ros_bridge # common package for gazebo and OpenHRP3
+# sometimes fail to compile hrpsys_ros_bridge (I don't know why). In that case, do a following line
+roscd hrpsys_ros_bridge; make; rosmake hrpsys_ros_bridge
+rosmake hrpsys_ros_bridge_tutorials # needed for OpenHRP3
+rosmake hrpsys_gazebo_atlas # needed for gazebo
+
+
+
+* reference
+
+** euslisp
+// pdf manual of euslisp is here
+gnome-open $(rospack find euslisp)/jskeus/manual.pdf
+
+** roseus
+// simple sample source codes are here
+cd $(rospack find roseus)/test/
+- talker.l, listener.l: publish and subscribe topics
+- add-two-ints-server.l, add-two-ints-client.l: server and client of service
+
+** web pages
+// (I think many of them are not so useful.)
+*** jskeus
+http://sourceforge.net/apps/mediawiki/jskeus/index.php?title=Main_Page
+*** jsk-ros-pkg
+http://sourceforge.net/projects/jsk-ros-pkg/
+*** hrpsys-base
+http://code.google.com/p/hrpsys-base/
+*** rtm-ros-robotics
+- http://code.google.com/p/hrpsys-base/
+
+
+
+* demo
+
+** simulate atlas on drcsim
+
+roslaunch atlas_utils atlas_sandia_hands.launch # starting gazebo
+
+# on another terminal
+rosrun openrtm_aist rtm-naming # this line is not needed in many cases, but sometimes needed.
+roslaunch hrpsys_gazebo_atlas atlas_hrpsys.launch
+
+# on another terminal
+roscd hrpsys_gazebo_atlas/euslisp
+roseus atlas-interface.l # interpretor comes up
+
+;; initialize
+(my-init)
+(real2model) ;; read the joint angles from the real robot and apply the joints to the robot model in the euslisp interpretor.
+(model2real :time 10) ;; send the joint angles of the model to the real robot. you can specify interporation time[msec].
+(set-user) ;; set BDI user mode
+
+;; moving one joint
+(send *atlas* :larm :elbow-p :joint-angle 100) ;; move the joint angle of the left elbow of the model to 100[deg].
+(move-centroid) ;; modify the joint angles to move the center of mass to the midpoint of the feet.
+(send *irtviewer* :draw-objects) ;; you can also update viewer by clicking viewer window
+(model2real :time 1000)
+
+;; walk
+(start-walk)
+;;;; set target pos
+(send *ri* :go-pos 1 0 0)
+;;;; set target vel
+(send *ri* :go-velocity 0 1 0)
+(send *ri* :go-velocity -1 0 0)
+(send *ri* :go-stop) ;; finish :go-velocity
+(finish-walk)
+
+;; move limb with IK
+;;;; use :move-end-pos. orientation of end-effector is not changed.
+(send *atlas* :legs :move-end-pos #f(0 0 100) :world)
+(move-centroid)
+(send *irtviewer* :draw-objects)
+(model2real :time 2000)
+;;;; use :inverse-kinematics for arms. we can set position and orientation of end-effecter.
+(send *atlas* :rarm :inverse-kinematics
+      (send (send (send (send *atlas* :rarm :end-coords) :copy-worldcoords)
+                  :translate #f(50 -50 50) :world) :rotate (- (/ pi 3)) :y :world)
+      :translation-axis t :rotation-axis t :thre 10)
+(send *irtviewer* :draw-objects)
+(model2real :time 2000)
+
+;;;; use fullbody-inverse-kinematics
+(fix-leg)
+(let* ((tc (list (send (send *atlas* :rleg :end-coords :copy-worldcoords) :translate #f(150 -60 25) :local)
+		 nil
+		 nil
+		 (send (send (send *atlas* :worldcoords) :copy-worldcoords) :translate #f(0 300 0) :world))))
+  (with-move-target-link-list
+   (mt ll *atlas* '(:rleg :lleg :rarm :larm))
+   (send *atlas* :fullbody-inverse-kinematics
+	 (mapcar #'(lambda (c m) (if c c (send m :copy-worldcoords))) tc mt)
+	 :link-list ll :move-target mt
+	 :collision-avoidance-link-pair nil
+	 :revert-if-fail t
+	 :stop 1000	   
+	 :translation-axis '(:z :z t t)
+	 :rotation-axis '(nil nil t t)
+	 :thre '(5 5 10 10)
+	 :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 2) (deg2rad 2))
+	 :target-centroid-pos (send (send (send *atlas* :foot-midcoords) :translate #f(0 0 -100)) :pos)
+	 :centroid-thre 100)))
+(send *irtviewer* :draw-objects)
+(model2real :time 2000)
+
+;;;; draw end-coords
+(send (send *atlas* :rarm :end-coords) :draw-on :flush t :size 200 :width 5 :color #f(1 0 0))
+(send (send (send (send (send *atlas* :rarm :end-coords) :copy-worldcoords)
+		  :translate #f(50 -50 50) :world) :rotate (- (/ pi 3)) :y :world)
+      :draw-on :flush t :size 200 :width 5 :color #f(0 1 0))
+
+
+** simulate samplerobot with OpenHRP3
+
+roslaunch hrpsys_ros_bridge_tutorials samplerobot.launch
+
+# on another terminal
+roscd hrpsys_ros_bridge_tutorials/euslisp
+roseus samplerobot-interface.l
+(samplerobot-init)
+(objects (list *sr*))
+
+(send *sr* :reset-pose)
+(send *irtviewer* :draw-objects)
+(send *ri* :angle-vector (send *sr* :angle-vector))
+(send *sr* :larm :elbow-p :joint-angle 100)
+(send *irtviewer* :draw-objects)
+(send *ri* :angle-vector (send *sr* :angle-vector))
+
+(send *ri* :angle-vector (send *sr* :angle-vector))
+(send *ri* :go-pos 1 0 0)
+(send *ri* :go-velocity 0 0 5)
+(send *ri* :go-stop)
+
