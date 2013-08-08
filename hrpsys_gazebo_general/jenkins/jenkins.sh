@@ -33,7 +33,7 @@ function compile-pkg {
 }
 
 function compile-hrpsys-atlas {
-    compile-pkg hrpsys_gazebo
+    compile-pkg hrpsys_gazebo_atlas
 }
 
 set -x
