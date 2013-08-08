@@ -6,9 +6,12 @@
   <arg name="USE_IMAGE_TRANSPORT" default="false" />
   <arg name="USE_OCTOMAP" default="true" />
   <arg name="USE_BDI_ACTION" default="true" />
+  <arg name="USE_LIMB_TRAJECTORY" default="false" />
 
   <!-- hrpsys controller launch -->
-  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_bringup.launch" />
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_bringup.launch">
+    <arg name="USE_LIMB_TRAJECTORY" value="$(arg USE_LIMB_TRAJECTORY)" />
+  </include>
 
   <!-- ROS nodes -->
   <!-- laser scanning -->
