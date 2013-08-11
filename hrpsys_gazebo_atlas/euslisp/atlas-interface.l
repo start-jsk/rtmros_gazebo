@@ -96,7 +96,7 @@
      ))
   (:wait-for-start-bdi-walk (&optional (timeout 5.0))
    (send self :wait-for-start-behavior 4 timeout))
-  (:wait-for-bdi-walk ()
+  (:wait-for-bdi-walk (&optional (timeout 5.0))
    (send self :wait-for-finish-behavior 4 timeout))
   (:wait-for-start-behavior (&optional (behav 5) (timeout 5.0))
    (ros::spin-once)

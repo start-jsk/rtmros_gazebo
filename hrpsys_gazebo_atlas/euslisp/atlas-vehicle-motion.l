@@ -39,7 +39,7 @@
   (unless (boundp '*drcv*)
     (setq *drcv* 
 	  (with-open-file 
-	   (f (format nil "~a/~a" (unix:getenv "HOME") "ros/fuerte/rtm-ros-robotics/rtmros_common/hrpsys_gazebo_atlas/models/drc-vehicle.l")) (read f))))
+	   (f (format nil "~a/~a" (unix:getenv "HOME") "ros/fuerte/rtm-ros-robotics/rtmros_gazebo/hrpsys_gazebo_atlas/models/drc-vehicle.l")) (read f))))
   ;; upper-front-pipe
   (send *drcv* :add-handle
 	(make-cascoords :pos #f(320 150 1920) :rpy (list 0 0 -pi/2) :name :upper-front-pipe))

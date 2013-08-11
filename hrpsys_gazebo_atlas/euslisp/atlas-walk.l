@@ -37,7 +37,7 @@
     (move-centroid)
 
     (when real
-      (model2real :wait t :time 5000)
+      (model2real :wait t :time 4000)
       (let ((prev-av (send *atlas* :angle-vector))
             (max-distance 10.0)
             (timeout 10)
@@ -47,7 +47,7 @@
           (atlas-set-servo-gain-by-torque-limit 0.01 :legs)
           (while (and (< 0 timeout) (< max-distance (check-foot-distance)))
             (warn ";; legs end-coords difference = ~A~%" (check-foot-distance))
-            (unix::usleep (* 500 1000))
+            (unix::usleep (* 50 1000))
             (decf timeout))
           (atlas-set-servo-gain-by-torque-limit 1.0 :legs)
           (model2real :wait t :time 5000) ; wait 5s in sim time
