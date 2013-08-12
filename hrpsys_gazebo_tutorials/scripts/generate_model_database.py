@@ -1,6 +1,8 @@
 #! /usr/bin/env python
 
+import os
 import commands
+
 
 def generate_model_database ():
 
@@ -17,7 +19,6 @@ def generate_model_database ():
     f.write("  </models>\n</database>\n")
 
     f.close()
-
 
 
 if __name__ == '__main__':
