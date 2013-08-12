@@ -36,7 +36,7 @@ def eus2urdf_for_gazebo_pyscript (name, collada_path, overwrite=True):
     os.system('rosrun collada_tools collada_to_urdf %s -G -A --mesh_output_dir %s --mesh_prefix "model://%s/meshes" -O %s' % (collada_path, meshes_path, name, urdf_path))
     os.system('sed -i -e "s@continuous@revolute@g" %s' % urdf_path)
     os.system('sed -i -e \"s@<robot name=\\"inst_kinsystem\\"@<robot name=\\"%s\\"@g\" %s' % (name, urdf_path))
-    os.system('sed -i -e \"s@  <link @  <gazebo>\\n    <static>false</static>\\n  </gazebo>\\n  <link @g\" %s' % urdf_path)
+    os.system('sed -i -e \"1,/  <link /s/  <link /  <gazebo>\\n    <static>false<\/static>\\n  <\/gazebo>\\n  <link /\" %s' % urdf_path)
 
     print "[eus2urdf] add inertia property to urdf   # Inertia value is not correct. Inertia should be added at eus2collada."
     os.system('sed -i -e \"s@  </link>@    <inertial>\\n      <mass value=\\\"20\\\"/>\\n      <origin xyz=\\\"0 0 0.2\\\" rpy=\\\"0 0 0\\\"/>\\n      <inertia ixx=\\\"1\\\" ixy=\\\"0\\\" ixz=\\\"0\\\" iyy=\\\"1\\\" iyz=\\\"0\\\" izz=\\\"0\\\"/>\\n    </inertial>\\n  </link>@g\" %s' % urdf_path)

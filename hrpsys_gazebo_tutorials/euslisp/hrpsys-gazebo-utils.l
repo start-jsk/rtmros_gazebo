@@ -18,7 +18,7 @@
 (warn "~%(eus2urdf-for-gazebo (make-askul-gdh-cupboard) \"cupboard\")~%")
 
 
-(defun eus2urdf-room-for-gazebo (room &key make-static make-world-file make-launch-file (robot-name "HRP2JSK"))
+(defun eus2urdf-room-for-gazebo (room &key make-static make-fixed make-world-file make-launch-file (robot-name "HRP2JSK"))
   (let* ((room-name (string-downcase (send room :name)))
 	 (package-dir-path (string-downcase (read (piped-fork "rospack find hrpsys_gazebo_tutorials"))))
 	 (world-src-file-path (format nil "~a/worlds/world_source.world" package-dir-path))
@@ -44,9 +44,12 @@
 	  (incf obj-cnt))
 	;; convert the model
 	(eus2urdf-for-gazebo obj obj-name)
-	;; make static the model
+	;; make the static model
 	(when (or make-static make-world-file)
 	  (unix:system (format nil "rosrun hrpsys_gazebo_tutorials make_static_model.py ~a" obj-name)))
+	;; make the fixed model
+	(when (or make-fixed make-world-file)
+	  (unix:system (format nil "rosrun hrpsys_gazebo_tutorials make_fixed_model.py ~a" obj-name)))
 	(when make-world-file
 	  ;; add the obects to the world file
 	  (let* ((pos (scale 0.001 (send obj :worldpos)))
@@ -81,7 +84,7 @@
       (warn "[ERROR] room (~a) is not room the model.~%" name)
       (return-from generate-room-models))
     ;; convert room models
-    (eus2urdf-room-for-gazebo room :make-static t :make-world-file t :make-launch-file t)
+    (eus2urdf-room-for-gazebo room :make-static t :make-fixed t :make-world-file t :make-launch-file t)
     ))
 (warn "(generate-room-models \"room73b2\")~%")
 

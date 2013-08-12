@@ -27,6 +27,8 @@ def make_static_model (name, overwrite=True):
         os.system('sed -i -e \"s@  <link @  <gazebo>\\n    <static>true</static>\\n  </gazebo>\\n  <link @g\" %s' % static_urdf_path)
         # os.system('sed -i -e \"s@</robot>@  <gazebo>\\n    <static>true</static>\\n  </gazebo>\\n</robot>@g\" %s' % static_urdf_path)
 
+    os.system('sed -i -e "s@<robot name=\\"\(.*\)\\"@<robot name=\\"\\1_static\\"@g\" %s' % static_urdf_path)
+
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
