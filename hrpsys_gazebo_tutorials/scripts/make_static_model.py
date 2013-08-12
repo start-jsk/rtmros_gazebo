@@ -21,8 +21,11 @@ def make_static_model (name, overwrite=True):
     
     os.system("cp -r %s %s" % (urdf_dir_path, static_urdf_dir_path))
 
-    if len(commands.getoutput("grep \"<static>true</static>\" %s" % static_urdf_path)) == 0:
-        os.system('sed -i -e \"s@</robot>@  <gazebo>\\n    <static>true</static>\\n  </gazebo>\\n</robot>@g\" %s' % static_urdf_path)
+    if len(commands.getoutput("grep \"<static>false</static>\" %s" % static_urdf_path)) != 0:
+        os.system('sed -i -e \"s@<static>false</static>@<static>true</static>@g\" %s' % static_urdf_path)
+    elif len(commands.getoutput("grep \"<static>true</static>\" %s" % static_urdf_path)) == 0:
+        os.system('sed -i -e \"s@  <link @  <gazebo>\\n    <static>true</static>\\n  </gazebo>\\n  <link @g\" %s' % static_urdf_path)
+        # os.system('sed -i -e \"s@</robot>@  <gazebo>\\n    <static>true</static>\\n  </gazebo>\\n</robot>@g\" %s' % static_urdf_path)
 
 
 if __name__ == '__main__':
