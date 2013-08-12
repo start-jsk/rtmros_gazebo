@@ -71,13 +71,15 @@
 (defun generate-room-models (name)
   ;; check the function making room exits.
   (unless (functionp (read-from-string name))
-    (warn "[ERROR] room (~a) is not found." name)
-    (return-from generate-room-world))
+    (warn "[ERROR] room (~a) is not found.~%" name)
+    (unless (substringp "room" name)
+      (generate-room-models (format nil "room~a" name)))
+    (return-from generate-room-models))
   ;; check the model is derived from the room class
   (let* ((room (funcall (read-from-string name))))
     (unless (derivedp room scene)
-      (warn "[ERROR] room (~a) is not room the model." name)
-      (return-from generate-room-world))
+      (warn "[ERROR] room (~a) is not room the model.~%" name)
+      (return-from generate-room-models))
     ;; convert room models
     (eus2urdf-room-for-gazebo room :make-static t :make-world-file t :make-launch-file t)
     ))
