@@ -18,11 +18,13 @@
 (warn "~%(eus2urdf-for-gazebo (make-askul-gdh-cupboard) \"cupboard\")~%")
 
 
-(defun eus2urdf-room-for-gazebo (room &key make-static make-world-file (robot-name "HRP2JSK"))
+(defun eus2urdf-room-for-gazebo (room &key make-static make-world-file make-launch-file (robot-name "HRP2JSK"))
   (let* ((room-name (string-downcase (send room :name)))
 	 (package-dir-path (string-downcase (read (piped-fork "rospack find hrpsys_gazebo_tutorials"))))
 	 (world-src-file-path (format nil "~a/worlds/world_source.world" package-dir-path))
-	 (world-new-file-path (format nil "~a/worlds/~a_~a.world" package-dir-path robot-name room-name)))
+	 (world-new-file-path (format nil "~a/worlds/~a_~a.world" package-dir-path robot-name room-name))
+	 (launch-src-file-path (format nil "~a/launch/gazebo_launch_source.launch" package-dir-path))
+	 (launch-new-file-path (format nil "~a/launch/gazebo_~a_no_controllers_in_~a.launch" package-dir-path (string-downcase robot-name) room-name)))
     (when make-world-file
       ;; generate the world file
       (unix:system (format nil "rm -rf ~a" world-new-file-path))
@@ -55,6 +57,13 @@
 	))
     ;; generate the model database file
     (unix:system (format nil "rosrun hrpsys_gazebo_tutorials generate_model_database.py"))
+    (when make-launch-file
+      ;; generate the launch file
+      (unix:system (format nil "rm -rf ~a" launch-new-file-path))
+      (unix:system (format nil "cp ~a ~a" launch-src-file-path launch-new-file-path))
+      (unix:system (format nil "sed -i -e \"s@__world_name__@~a_~a.world@g\" ~a" robot-name room-name launch-new-file-path))
+      (unix:system (format nil "sed -i -e \"s@__robot_name__@~a@g\" ~a" (string-downcase robot-name) launch-new-file-path)))
+    (warning-message 2 "You can start simulation with following command:~%roslaunch hrpsys_gazebo_tutorials gazebo_~a_no_controllers_in_~a.launch~%" (string-downcase robot-name) room-name)
     ))
 (warn "(eus2urdf-room-for-gazebo (room73b2))~%")
 
@@ -70,7 +79,7 @@
       (warn "[ERROR] room (~a) is not room the model." name)
       (return-from generate-room-world))
     ;; convert room models
-    (eus2urdf-room-for-gazebo room :make-static t)
+    (eus2urdf-room-for-gazebo room :make-static t :make-world-file t :make-launch-file t)
     ))
 (warn "(generate-room-models \"room73b2\")~%")
 

@@ -34,8 +34,8 @@
     </include>
     <!-- Objects -->
     <include>
-      <uri>model://cupboard_static</uri>
-      <pose>2 0 0 0 0 3.1415</pose>
+      <uri>model://cupboard</uri>
+      <pose>1 0 0 0 0 3.1415</pose>
     </include>
   </world>
 </sdf>
