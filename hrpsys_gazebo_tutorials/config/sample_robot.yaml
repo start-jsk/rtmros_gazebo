@@ -1,6 +1,9 @@
 hrpsys_gazebo_configuration:
+# name of robot (using for namespace)
   robotname: SampleRobot
-##
+# joint_id (order) conversion from gazebo to hrpsys, joint_id_list[gazebo_id] := hrpsys_id
+  joint_id_list: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28]
+# joints list used in gazebo, sizeof(joint_id_list) == sizeof(joints)
   joints:
     - RLEG_HIP_R
     - RLEG_HIP_P
@@ -31,7 +34,7 @@ hrpsys_gazebo_configuration:
     - WAIST_P
     - WAIST_R
     - CHEST
-## jointid:
+## joint gain settings
   gains:
     LLEG_HIP_R:      {p: 4000.0, d:   0.4, i: 0.0, i_clamp: 0.0}
     LLEG_HIP_P:      {p: 4000.0, d:   0.4, i: 0.0, i_clamp: 0.0}
@@ -62,19 +65,24 @@ hrpsys_gazebo_configuration:
     RARM_WRIST_Y:    {p: 4000.0, d:   0.4, i: 0.0, i_clamp: 0.0}
     RARM_WRIST_P:    {p: 4000.0, d:   0.4, i: 0.0, i_clamp: 0.0}
     RARM_WRIST_R:    {p: 4000.0, d:   0.4, i: 0.0, i_clamp: 0.0}
-##
-  force_torque_sensors:
-    - lfsensor
-    - rfsensor 
-    - lhsensor
-    - rhsensor 
-  force_torque_sensors_config:
-    lfsensor: {joint_name: 'LLEG_ANKLE_R', frame_id: 'LLEG_LINK6'}
-    rfsensor: {joint_name: 'RLEG_ANKLE_R', frame_id: 'RLEG_LINK6'}
-    lhsensor: {joint_name: 'LARM_WRIST_P', frame_id: 'LARM_LINK6'}
-    rhsensor: {joint_name: 'RARM_WRIST_P', frame_id: 'RARM_LINK6'}
-##
-  imu_sensors:
-    - imu_sensor0
-  imu_sensors:
-    imu_sensor0: {name: 'waist_imu', link_name: 'WAIST_LINK0', frame_id: 'WAIST_LINK0'}
+## force sensor settings
+## list of force sensorname
+  # force_torque_sensors:
+  #   - lfsensor
+  #   - rfsensor
+  #   - lhsensor
+  #   - rhsensor
+## configuration of force sensor
+## key of force_torque_sensors_config should be a member of force_torque_sensors
+  # force_torque_sensors_config:
+  #   lfsensor: {joint_name: 'LLEG_ANKLE_R', frame_id: 'LLEG_LINK6', translation: [0, 0, 0], rotation: [1, 0, 0, 0]}
+  #   rfsensor: {joint_name: 'RLEG_ANKLE_R', frame_id: 'RLEG_LINK6', translation: [0, 0, 0], rotation: [1, 0, 0, 0]}
+  #   lhsensor: {joint_name: 'LARM_WRIST_P', frame_id: 'LARM_LINK6'}
+  #   rhsensor: {joint_name: 'RARM_WRIST_P', frame_id: 'RARM_LINK6'}
+## IMU sensor settings
+## configuration of IMU sensor
+## key of imu_sensors_config should be a member of imu_sensors
+  # imu_sensors:
+  #   - imu_sensor0
+  # imu_sensors_config:
+  #   imu_sensor0: {ros_name: 'waist_imu', link_name: 'WAIST_LINK0', frame_id: 'WAIST_LINK0'}
