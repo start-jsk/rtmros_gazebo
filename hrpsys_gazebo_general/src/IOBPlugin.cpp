@@ -495,11 +495,9 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
       this->robotState.kd_position[i] * this->errorTerms[i].d_q_p_dt +
       this->robotState.kp_velocity[i] * this->errorTerms[i].qd_p +
       this->jointCommand.effort[i];
-    //ROS_INFO("0 force:%d -> %f", i, forceUnclamped);
 
     // keep unclamped force for integral tie-back calculation
     double forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
-    //ROS_INFO("1 force:%d -> %f (%f %f)", i, forceClamped, -this->effortLimit[i], this->effortLimit[i]);
 
     // integral tie-back during control saturation if using integral gain
     if (!math::equal(forceClamped,forceUnclamped) &&
@@ -510,15 +508,11 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
                                                 static_cast<double>(this->robotState.i_effort_min[i]),
                                                 static_cast<double>(this->robotState.i_effort_max[i]));
     }
-    //ROS_INFO("2 force:%d -> %f", i, forceClamped);
-
     // clamp force after integral tie-back
     forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
 
-
     // apply force to joint
     this->joints[i]->SetForce(0, forceClamped);
-    //ROS_INFO("3 force:%d -> %f", i, forceClamped);
 
     // fill in jointState efforts
     this->robotState.effort[i] = forceClamped;

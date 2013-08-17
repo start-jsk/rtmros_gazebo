@@ -69,7 +69,6 @@ namespace gazebo
 
     struct force_sensor_info {
       physics::JointPtr joint;
-      //std::string joint_name;
       std::string frame_id;
       PosePtr pose;
     };
@@ -78,7 +77,6 @@ namespace gazebo
       physics::LinkPtr link;
       ImuSensorPtr sensor;
       std::string sensor_name;
-      //std::string joint_name;
       std::string frame_id;
     };
 
@@ -160,12 +158,6 @@ namespace gazebo
       // not number
       return 0.0;
     }
-
-#if 0
-    physics::JointControllerPtr jointController;
-    transport::NodePtr node;
-    transport::PublisherPtr jointCmdPub;
-#endif
 
   };
 }
