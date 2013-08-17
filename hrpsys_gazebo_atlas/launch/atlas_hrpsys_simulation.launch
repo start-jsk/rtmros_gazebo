@@ -3,7 +3,7 @@
   <param name="use_sim_time" value="true" />
 
   <!-- hrpsys -->
-  <include file="$(find hrpsys)/launch/hrpsys.launch">
+  <include file="$(find hrpsys_tools)/launch/hrpsys.launch">
     <arg name="PROJECT_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas.xml" />
     <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas.dae" />
     <arg name="CONF_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas.conf" />
