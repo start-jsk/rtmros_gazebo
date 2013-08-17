@@ -56,7 +56,10 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       std::string rname = param_val["robotname"];
       XmlRpc::XmlRpcValue joint_lst = param_val["joints"];
       XmlRpc::XmlRpcValue fsensors = param_val["force_torque_sensors"];
+      XmlRpc::XmlRpcValue fsensors_config = param_val["force_torque_sensors_config"];
       XmlRpc::XmlRpcValue imusensors = param_val["imu_sensors"];
+      XmlRpc::XmlRpcValue imusensors_config = param_val["imu_sensors_config"];
+
       if (rname != this->robot_name) {
         ROS_ERROR("mismatch robotnames: %s (ros parameter) != %s (gazebo element)",
                   rname.c_str(), this->robot_name.c_str());
@@ -73,8 +76,13 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       } else {
         ROS_WARN("Controlled Joints: no setting exists");
       }
-      if (fsensors.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
-        for(XmlRpc::XmlRpcValue::iterator f = fsensors.begin(); f != fsensors.end(); f++) {
+      // Force sensor setting
+      if (fsensors.getType() == XmlRpc::XmlRpcValue::TypeArray &&
+          fsensors_config.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
+        for(int s = 0; s < fsensors.size(); s++) {
+          this->forceSensorNames.push_back(fsensors[s]);
+        }
+        for(XmlRpc::XmlRpcValue::iterator f = fsensors_config.begin(); f != fsensors_config.end(); f++) {
           std::string sensor_name = f->first;
           if (f->second.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
             std::string jn = f->second["joint_name"];
@@ -86,9 +94,28 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
             if(!fsi.joint) {
               gzerr << "force torque joint (" << jn << ") not found\n";
             } else {
-              fsi.joint_name = jn;
               fsi.frame_id = fi;
-              sensorJoints[sensor_name] = fsi;
+              this->forceSensors[sensor_name] = fsi;
+              XmlRpc::XmlRpcValue trs = f->second["translation"];
+              XmlRpc::XmlRpcValue rot = f->second["rotation"];
+              fsi.pose.reset();
+              if ((trs.getType() == XmlRpc::XmlRpcValue::TypeArray) ||
+                  (rot.getType() == XmlRpc::XmlRpcValue::TypeArray)) {
+                math::Vector3 vtr;
+                math::Quaternion qt;
+                if (trs.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+                  vtr.x = xmlrpc_value_as_double(trs[0]);
+                  vtr.y = xmlrpc_value_as_double(trs[1]);
+                  vtr.z = xmlrpc_value_as_double(trs[2]);
+                }
+                if (rot.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+                  qt.w = xmlrpc_value_as_double(rot[0]);
+                  qt.x = xmlrpc_value_as_double(rot[1]);
+                  qt.y = xmlrpc_value_as_double(rot[2]);
+                  qt.z = xmlrpc_value_as_double(rot[3]);
+                }
+                fsi.pose = PosePtr(new math::Pose (vtr, qt));
+              }
             }
           } else {
             ROS_ERROR("Force-Torque sensor: %s has invalid configuration", sensor_name.c_str());
@@ -97,11 +124,16 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       } else {
         ROS_WARN("Force-Torque sensor: no setting exists");
       }
-      if (imusensors.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
-        for(XmlRpc::XmlRpcValue::iterator im = imusensors.begin(); im != imusensors.end(); im++) {
+      // IMU sensor setting
+      if (imusensors.getType() == XmlRpc::XmlRpcValue::TypeArray &&
+          imusensors_config.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
+        for(int s = 0; s < imusensors.size(); s++) {
+          this->imuSensorNames.push_back(imusensors[s]);
+        }
+        for(XmlRpc::XmlRpcValue::iterator im = imusensors_config.begin(); im != imusensors_config.end(); im++) {
           std::string sensor_name = im->first;
           if (im->second.getType() == XmlRpc::XmlRpcValue::TypeStruct) {
-            std::string sn = im->second["name"];
+            std::string sn = im->second["ros_name"];
             std::string ln = im->second["link_name"];
             std::string fi = im->second["frame_id"];
             ROS_INFO("imu: %s, %s, %s, %s", sensor_name.c_str(), sn.c_str(),
@@ -383,11 +415,51 @@ void IOBPlugin::GetAndPublishRobotStates(const common::Time &_curTime){
   }
 
   // force sensors
-  //
+  this->robotState.sensors.resize(this->forceSensorNames.size());
+  for (unsigned int i = 0; i < this->forceSensorNames.size(); i++) {
+    forceSensorMap::iterator it = this->forceSensors.find(this->forceSensorNames[i]);
+    if(it != this->forceSensors.end()) {
+      physics::JointPtr jt = it->second.joint;
+      if (!!jt) {
+        physics::JointWrench wrench = jt->GetForceTorque(0u);
+        this->robotState.sensors[i].name = this->forceSensorNames[i];
+        this->robotState.sensors[i].frame_id = it->second.frame_id;
+        this->robotState.sensors[i].force.x = wrench.body2Force.x;
+        this->robotState.sensors[i].force.y = wrench.body2Force.y;
+        this->robotState.sensors[i].force.z = wrench.body2Force.z;
+        this->robotState.sensors[i].torque.x = wrench.body2Torque.x;
+        this->robotState.sensors[i].torque.y = wrench.body2Torque.y;
+        this->robotState.sensors[i].torque.z = wrench.body2Torque.z;
+        if (!!it->second.pose) {
+          // convert force
+        }
+      }
+    }
+  }
 
   // imu sensors
-  //
-
+  this->robotState.Imus.resize(this->imuSensorNames.size());
+  for (unsigned int i = 0; i < this->imuSensorNames.size(); i++) {
+    imuSensorMap::iterator it = this->imuSensors.find(this->imuSensorNames[i]);
+    ImuSensorPtr sp = it->second.sensor;
+    if(!!sp) {
+      this->robotState.Imus[i].name = this->imuSensorNames[i];
+      this->robotState.Imus[i].frame_id = it->second.frame_id;
+      math::Vector3 wLocal = sp->GetAngularVelocity();
+      math::Vector3 accel = sp->GetLinearAcceleration();
+      math::Quaternion imuRot = sp->GetOrientation();
+      this->robotState.Imus[i].angular_velocity.x = wLocal.x;
+      this->robotState.Imus[i].angular_velocity.y = wLocal.y;
+      this->robotState.Imus[i].angular_velocity.z = wLocal.z;
+      this->robotState.Imus[i].linear_acceleration.x = accel.x;
+      this->robotState.Imus[i].linear_acceleration.y = accel.y;
+      this->robotState.Imus[i].linear_acceleration.z = accel.z;
+      this->robotState.Imus[i].orientation.x = imuRot.x;
+      this->robotState.Imus[i].orientation.y = imuRot.y;
+      this->robotState.Imus[i].orientation.z = imuRot.z;
+      this->robotState.Imus[i].orientation.w = imuRot.w;
+    }
+  }
   // publish robot states
   this->pubRobotStateQueue->push(this->robotState, this->pubRobotState);
 }

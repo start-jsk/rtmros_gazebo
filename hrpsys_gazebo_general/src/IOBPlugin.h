@@ -17,7 +17,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/condition.hpp>
 
-#include <gazebo/math/Vector3.hh>
+#include <gazebo/math/gzmath.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/transport/TransportTypes.hh>
@@ -45,6 +45,7 @@ namespace gazebo
   typedef boost::shared_ptr< sensors::ImuSensor > ImuSensorPtr;
   typedef hrpsys_gazebo_msgs::JointCommand JointCommand;
   typedef hrpsys_gazebo_msgs::RobotState RobotState;
+  typedef boost::shared_ptr< math::Pose > PosePtr;
 
   class IOBPlugin : public ModelPlugin
   {
@@ -68,17 +69,19 @@ namespace gazebo
 
     struct force_sensor_info {
       physics::JointPtr joint;
-      std::string joint_name;
+      //std::string joint_name;
       std::string frame_id;
+      PosePtr pose;
     };
 
     struct imu_sensor_info {
       physics::LinkPtr link;
       ImuSensorPtr sensor;
       std::string sensor_name;
-      std::string joint_name;
+      //std::string joint_name;
       std::string frame_id;
     };
+
     ros::NodeHandle* rosNode;
     ros::CallbackQueue rosQueue;
 
@@ -103,8 +106,12 @@ namespace gazebo
     std::vector<std::string> jointNames;
     physics::Joint_V joints;
 
-    std::map< std::string, struct force_sensor_info > sensorJoints;
-    std::map< std::string, struct imu_sensor_info > imuSensors;
+    typedef std::map< std::string, struct force_sensor_info > forceSensorMap;
+    typedef std::map< std::string, struct imu_sensor_info > imuSensorMap;
+    std::vector<std::string> forceSensorNames;
+    std::vector<std::string> imuSensorNames;
+    forceSensorMap forceSensors;
+    imuSensorMap imuSensors;
 
     std::vector<double> effortLimit;
 
@@ -124,6 +131,35 @@ namespace gazebo
     //
     std::string robot_name;
     std::string controller_name;
+
+    static inline int xmlrpc_value_as_int(XmlRpc::XmlRpcValue &v) {
+      if((v.getType() == XmlRpc::XmlRpcValue::TypeDouble) ||
+         (v.getType() == XmlRpc::XmlRpcValue::TypeInt)) {
+        if(v.getType() == XmlRpc::XmlRpcValue::TypeDouble) {
+          double d = v;
+          return (int)d;
+        } else {
+          int i = v;
+          return i;
+        }
+      }
+      // not number
+      return 0;
+    }
+    static inline double xmlrpc_value_as_double(XmlRpc::XmlRpcValue &v) {
+      if((v.getType() == XmlRpc::XmlRpcValue::TypeDouble) ||
+         (v.getType() == XmlRpc::XmlRpcValue::TypeInt)) {
+        if(v.getType() == XmlRpc::XmlRpcValue::TypeDouble) {
+          double d = v;
+          return d;
+        } else {
+          int i = v;
+          return (double)i;
+        }
+      }
+      // not number
+      return 0.0;
+    }
 
 #if 0
     physics::JointControllerPtr jointController;
