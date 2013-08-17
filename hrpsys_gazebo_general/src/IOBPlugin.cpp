@@ -21,11 +21,11 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 
   this->robot_name = "default";
   if (_sdf->HasElement("robotname")) {
-    this->robot_name = _sdf->GetValueString("robotname");
+    this->robot_name = _sdf->Get<std::string>("robotname");
   }
   this->controller_name = "default_controller";
   if (_sdf->HasElement("controller")) {
-    this->controller_name = _sdf->GetValueString("controller");
+    this->controller_name = _sdf->Get<std::string>("controller");
   }
 
   // initialize ros
