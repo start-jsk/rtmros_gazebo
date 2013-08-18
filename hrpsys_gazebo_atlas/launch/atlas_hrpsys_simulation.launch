@@ -12,10 +12,5 @@
   </include>
 
   <!-- ROS bridge -->
-  <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch">
-    <arg name="SIMULATOR_NAME" value="atlas(Robot)0" />
-    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas.dae" />
-    <arg name="COLLADA_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas.dae" />
-    <!--arg name="CONF_FILE_ARG" value="-o example.HrpsysSeqStateROSBridge.config_file:$(find hrpsys_gazebo_atlas)/models/atlas.conf" /-->
-  </include>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch"/>
 </launch>

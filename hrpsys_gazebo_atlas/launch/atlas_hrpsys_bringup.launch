@@ -22,14 +22,16 @@
             file="$(find hrpsys_gazebo_atlas)/config/atlas_controller_config.yaml" />
 
   <!-- hrpsys_ros_bridge -->
-  <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" >
-    <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
-    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
-    <arg name="COLLADA_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
-    <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" />
-
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
     <arg name="USE_ROBOTHARDWARE" value="true" />
   </include>
+  <!-- <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" > -->
+  <!--   <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" /> -->
+  <!--   <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" /> -->
+  <!--   <arg name="COLLADA_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" /> -->
+  <!--   <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" /> -->
+  <!--   <arg name="USE_ROBOTHARDWARE" value="true" /> -->
+  <!-- </include> -->
 
   <!-- BEGIN:openrtm connection -->
   <!-- <env name="ROBOT_NAME" value="$(arg ROBOT_NAME)" /> -->
