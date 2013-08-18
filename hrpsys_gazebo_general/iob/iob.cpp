@@ -399,25 +399,18 @@ int write_dgain(int id, double gain)
 int read_force_sensor(int id, double *forces)
 {
   CHECK_FORCE_SENSOR_ID(id);
-  // for (int i=0; i<6; i++){
-  //     forces[i] = ((double)random()-RAND_MAX/2)/(RAND_MAX/2)*2
-  //         + 2 + force_offset[id][i]; // 2 = initial offset
-  // }
-#if 0
-  std::vector<geometry_msgs::Wrench*> fsensors;
-  fsensors.push_back(&(js.l_hand));
-  fsensors.push_back(&(js.r_hand));
-  fsensors.push_back(&(js.l_foot));
-  fsensors.push_back(&(js.r_foot));
-  if(init_sub_flag){
-    forces[0] = fsensors[id]->force.x + force_offset[id][0];
-    forces[1] = fsensors[id]->force.y + force_offset[id][1];
-    forces[2] = fsensors[id]->force.z + force_offset[id][2];
-    forces[3] = fsensors[id]->torque.x + force_offset[id][3];
-    forces[4] = fsensors[id]->torque.y + force_offset[id][4];
-    forces[5] = fsensors[id]->torque.z + force_offset[id][5];
+
+  if (id >= js.sensors.size()) {
+    return E_ID;
   }
-#endif
+  if (init_sub_flag) {
+    forces[0] = js.sensors[id].force.x + force_offset[id][0];
+    forces[1] = js.sensors[id].force.y + force_offset[id][1];
+    forces[2] = js.sensors[id].force.z + force_offset[id][2];
+    forces[3] = js.sensors[id].torque.x + force_offset[id][3];
+    forces[4] = js.sensors[id].torque.y + force_offset[id][4];
+    forces[5] = js.sensors[id].torque.z + force_offset[id][5];
+  }
   return TRUE;
 }
 
@@ -547,7 +540,7 @@ int write_dio(unsigned short buf)
 
 // callback
 static void setJointStates(const RobotState::ConstPtr &_js) {
-  ROS_DEBUG(";; subscribe JointState");
+  ROS_DEBUG(";; subscribe RobotState");
   js = *_js;
   init_sub_flag = TRUE;
 }
