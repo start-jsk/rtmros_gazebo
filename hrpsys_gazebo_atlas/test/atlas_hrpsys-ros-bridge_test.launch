@@ -1,0 +1,10 @@
+<!-- =*- mode: xml -*- -->
+<launch>
+  <!-- test program written by euslisp -->
+  <test test-name="atlas_test_eus" pkg="roseus"
+        type="roseus" args="$(find hrpsys_gazebo_atlas)/test/atlas-hrpsys-ros-bridge-test.l &quot;(run-hrpsys-ros-bridge-test \&quot;atlas\&quot; :robot-model-pkg-name \&quot;hrpsys_gazebo_atlas\&quot;)&quot;"
+        time-limit="300"/>
+
+  <!-- setup xx_startup.launch and xx_ros_bridge.launch -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_simulation.launch" />
+</launch>
