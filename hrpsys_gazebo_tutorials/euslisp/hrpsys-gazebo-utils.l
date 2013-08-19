@@ -18,7 +18,7 @@
 (warn "~%(eus2urdf-for-gazebo (make-askul-gdh-cupboard) \"cupboard\")~%")
 
 
-(defun eus2urdf-room-for-gazebo (room &key make-static make-fixed make-world-file make-launch-file (robot-name "HRP2JSK"))
+(defun eus2urdf-room-for-gazebo (room &key make-static make-fixed make-world-file make-launch-file (robot-name "SampleRobot"))
   (let* ((room-name (string-downcase (send room :name)))
 	 (package-dir-path (string-downcase (read (piped-fork "rospack find hrpsys_gazebo_tutorials"))))
 	 (world-src-file-path (format nil "~a/worlds/world_source.world" package-dir-path))
