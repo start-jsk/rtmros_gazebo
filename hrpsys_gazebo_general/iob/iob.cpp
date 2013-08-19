@@ -144,6 +144,7 @@ int set_number_of_joints(int num)
 
 int set_number_of_force_sensors(int num)
 {
+    std::cerr << ";; set_number_of_force_sensors = " << num;
     forces.resize(num);
     force_offset.resize(num);
     for (unsigned int i=0; i<forces.size();i++){
@@ -665,8 +666,9 @@ int open_iob(void)
     // Note that we'll still accept TCP connections for this topic
     // (e.g., from rospy nodes, which don't support UDP);
     // we just prefer UDP.
-    jointStatesSo.transport_hints =
-      ros::TransportHints().unreliable().reliable().tcpNoDelay(true);
+    // temporary use TCP / Using UDP occured some problem when message size more than 1500.
+    //jointStatesSo.transport_hints =
+    //ros::TransportHints().maxDatagramSize(3000).unreliable().reliable().tcpNoDelay(true);
     sub_robot_state = rosnode->subscribe(jointStatesSo);
 
     std::cerr << "JointState IOB is opened" << std::endl;
