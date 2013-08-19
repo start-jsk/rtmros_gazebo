@@ -38,8 +38,8 @@ def eus2urdf_for_gazebo_pyscript (name, collada_path, overwrite=True):
     os.system('sed -i -e \"s@<robot name=\\"inst_kinsystem\\"@<robot name=\\"%s\\"@g\" %s' % (name, urdf_path))
     os.system('sed -i -e \"1,/  <link /s/  <link /  <gazebo>\\n    <static>false<\/static>\\n  <\/gazebo>\\n  <link /\" %s' % urdf_path)
 
-    print "[eus2urdf] add inertia property to urdf   # Inertia value is not correct. Inertia should be added at eus2collada."
-    os.system('sed -i -e \"s@  </link>@    <inertial>\\n      <mass value=\\\"20\\\"/>\\n      <origin xyz=\\\"0 0 0.2\\\" rpy=\\\"0 0 0\\\"/>\\n      <inertia ixx=\\\"1\\\" ixy=\\\"0\\\" ixz=\\\"0\\\" iyy=\\\"1\\\" iyz=\\\"0\\\" izz=\\\"0\\\"/>\\n    </inertial>\\n  </link>@g\" %s' % urdf_path)
+    # print "[eus2urdf] add inertia property to urdf   # Inertia value is not correct. Inertia should be added at eus2collada."
+    # os.system('sed -i -e \"s@  </link>@    <inertial>\\n      <mass value=\\\"20\\\"/>\\n      <origin xyz=\\\"0 0 0.2\\\" rpy=\\\"0 0 0\\\"/>\\n      <inertia ixx=\\\"1\\\" ixy=\\\"0\\\" ixz=\\\"0\\\" iyy=\\\"1\\\" iyz=\\\"0\\\" izz=\\\"0\\\"/>\\n    </inertial>\\n  </link>@g\" %s' % urdf_path)
 
 
 if __name__ == '__main__':
