@@ -160,6 +160,7 @@ int set_number_of_force_sensors(int num)
 
 int set_number_of_gyro_sensors(int num)
 {
+    std::cerr << ";; set_number_of_gyro_sensors = " << num;
     gyros.resize(num);
     gyro_offset.resize(num);
     for (unsigned int i=0; i<gyros.size();i++){
@@ -175,13 +176,14 @@ int set_number_of_gyro_sensors(int num)
 
 int set_number_of_accelerometers(int num)
 {
+    std::cerr << ";; set_number_of_number_of_accelerometers = " << num;
     accelerometers.resize(num);
     accel_offset.resize(num);
     for (unsigned int i=0; i<accelerometers.size();i++){
         accelerometers[i].resize(3);
         accel_offset[i].resize(3);
         for (int j=0; j<3; j++){
-            accelerometers[i][j] = j == 2 ? 9.81 : 0.0;
+            accelerometers[i][j] = j == 2 ? 9.81 : 0.0; // z direction should be virtical???
             accel_offset[i][j] = 0;
         }
     }
@@ -411,6 +413,8 @@ int read_force_sensor(int id, double *forces)
     forces[3] = js.sensors[id].torque.x + force_offset[id][3];
     forces[4] = js.sensors[id].torque.y + force_offset[id][4];
     forces[5] = js.sensors[id].torque.z + force_offset[id][5];
+  } else {
+    forces[0] = forces[1] = forces[2] = forces[3] = forces[4] = forces[5] = 0.0;
   }
   return TRUE;
 }
@@ -418,58 +422,44 @@ int read_force_sensor(int id, double *forces)
 int read_gyro_sensor(int id, double *rates)
 {
   CHECK_GYRO_SENSOR_ID(id);
-  // for (int i=0; i<3; i++){
-  //     rates[i] = ((double)random()-RAND_MAX/2)/(RAND_MAX/2)*0.01
-  //         + 0.01 + gyro_offset[id][i]; // 0.01 = initial offset
-  // }
-#if 0
+  if (id >= js.Imus.size()) {
+    return E_ID;
+  }
   if(init_sub_flag){
-    // use atlas orientation
-    Eigen::Quaternion<double> q(js.orientation.w,
-                                js.orientation.x,
-                                js.orientation.y,
-                                js.orientation.z);
+#if 0
+    Eigen::Quaternion<double> q(js.Imus[id].orientation.w,
+                                js.Imus[id].orientation.x,
+                                js.Imus[id].orientation.y,
+                                js.Imus[id].orientation.z);
     hrp::Vector3 rpy = hrp::rpyFromRot(q.toRotationMatrix());
     rates[0] = rpy[0];
     rates[1] = rpy[1];
     rates[2] = rpy[2];
-
-    // rates[0] = js.angular_velocity.x
-    //   + 0.01 + gyro_offset[id][0]; // 0.01 = initial offset
-    // rates[1] = js.angular_velocity.y
-    //   + 0.01 + gyro_offset[id][1]; // 0.01 = initial offset
-    // rates[2] = js.angular_velocity.z
-    //   + 0.01 + gyro_offset[id][2]; // 0.01 = initial offset
+#endif
+    rates[0] = js.Imus[id].angular_velocity.x + gyro_offset[id][0];
+    rates[1] = js.Imus[id].angular_velocity.y + gyro_offset[id][1];
+    rates[2] = js.Imus[id].angular_velocity.z + gyro_offset[id][2];
   } else {
     // tempolary values when sensor is not ready.
     rates[0] = rates[1] = rates[2] = 0.0;
   }
-#endif
   return TRUE;
 }
 
 int read_accelerometer(int id, double *accels)
 {
   CHECK_ACCELEROMETER_ID(id);
-#if 0
-  // for (int i=0; i<3; i++){
-  //     double randv = ((double)random()-RAND_MAX/2)/(RAND_MAX/2)*0.01;
-  //     accels[i] = (i == 2 ? (9.8+randv) : randv)
-  //         + 0.01 + accel_offset[id][i]; // 0.01 = initial offset
-  // }
+  if (id >= js.Imus.size()) {
+    return E_ID;
+  }
   if(init_sub_flag){
-    accels[0] = js.linear_acceleration.x
-      + 0.01 + accel_offset[id][0]; // 0.01 = initial offset
-    accels[1] = js.linear_acceleration.y
-      + 0.01 + accel_offset[id][1]; // 0.01 = initial offset
-    accels[2] = js.linear_acceleration.z
-      + 0.01 + accel_offset[id][2]; // 0.01 = initial offset
+    accels[0] = js.Imus[id].linear_acceleration.x + accel_offset[id][0];
+    accels[1] = js.Imus[id].linear_acceleration.y + accel_offset[id][1];
+    accels[2] = js.Imus[id].linear_acceleration.z + accel_offset[id][2];
   } else {
     // tempolary values when sensor is not ready.
-    accels[0] = accels[1] = 0.0;
-    accels[2] = 9.8;
+    accels[0] = accels[1] = accels[2] = 0.0;
   }
-#endif
   return TRUE;
 }
 
@@ -599,7 +589,7 @@ int open_iob(void)
         joint_real2model_vec.push_back(i);
       }
     } else if (joint_real2model_vec.size() != joint_lst.size()) {
-      ROS_ERROR("size differece on joint_id_list and joints (%d,  %d)",
+      ROS_ERROR("size differece on joint_id_list and joints (%ld,  %ld)",
                 joint_real2model_vec.size(), joint_lst.size());
     }
 
