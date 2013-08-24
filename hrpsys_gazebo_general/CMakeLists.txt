@@ -48,4 +48,5 @@ link_directories( ${GAZEBO_LIBRARY_DIRS} )
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/plugins)
 
 rosbuild_add_library(IOBPlugin src/IOBPlugin.cpp)
+rosbuild_add_library(AddForcePlugin src/AddForcePlugin.cpp)
 
