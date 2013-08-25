@@ -1,9 +1,15 @@
+<!-- automatically generated -->
 <?xml version="1.0" ?>
 <database>
   <name>hrpsys_gazebo</name>
   <license>Creative Commons Attribution 3.0 Unported</license>
 
   <models>
+    <uri>file://3d-coord-arrow</uri>
+    <uri>file://3d-coord-arrow_static</uri>
     <uri>file://cupboard</uri>
+    <uri>file://cupboard_fixed</uri>
+    <uri>file://cupboard_static</uri>
+    <uri>file://simple-box</uri>
   </models>
 </database>
