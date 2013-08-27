@@ -114,7 +114,8 @@ namespace gazebo
     // Called by the world update start event
     void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
-      this->link->AddRelativeForce(this->force);
+      this->link->AddForce(this->force);
+      // this->link->AddRelativeForce(this->force);
       // this->link->AddForceAtRelativePosition(this->force, this->position);
       this->link->AddTorque(this->torque);
     }
