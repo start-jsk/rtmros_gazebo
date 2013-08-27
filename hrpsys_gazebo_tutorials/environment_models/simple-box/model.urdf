@@ -29,9 +29,9 @@
       </geometry>
     </collision>
     <inertial>
-      <mass value="20" />
+      <mass value="2" />
       <origin xyz="0 0 0" rpy="0 -0 0"/>
-      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
     </inertial>
   </link>
   <gazebo reference="nil_link">
@@ -41,8 +41,12 @@
   <gazebo>
     <plugin filename="libAddForcePlugin.so" name="simple_box_add_force_plugin" >
       <linkname>nil_link</linkname>
-      <force>0 0 0</force>
-      <torque>0 0 0.03</torque>
+    </plugin>
+    <plugin filename="libGetVelPlugin.so" name="simple_box_get_vel_plugin" >
+      <linkname>nil_link</linkname>
+    </plugin>
+    <plugin filename="libSetVelPlugin.so" name="simple_box_set_vel_plugin" >
+      <linkname>nil_link</linkname>
     </plugin>
   </gazebo>
 </robot>
