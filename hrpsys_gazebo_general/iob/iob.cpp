@@ -426,6 +426,7 @@ int read_gyro_sensor(int id, double *rates)
     return E_ID;
   }
   if(init_sub_flag){
+    std::cerr << "sub: ..." << std::endl;
 #if 0
     Eigen::Quaternion<double> q(js.Imus[id].orientation.w,
                                 js.Imus[id].orientation.x,
@@ -673,7 +674,16 @@ int open_iob(void)
     jointcommand = initial_jointcommand;
     isInitialized = true;
     std::cerr << ";; " << number_of_joints() << " / " << initial_jointcommand.position.size() << " / " << NUM_OF_REAL_JOINT << std::endl;
-    std::cerr << ";; Open IOB / finish " << std::endl;
+    std::cerr << ";; block until subscribing first robot_state";
+    ros::Rate rr(100);
+    ros::spinOnce();
+    while (!init_sub_flag) {
+      std::cerr << ".";
+      rr.sleep();
+      ros::spinOnce();
+    }
+    std::cerr << std::endl << ";; Open IOB / finish " << std::endl;
+
     return TRUE;
 }
 
