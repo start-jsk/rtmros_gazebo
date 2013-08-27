@@ -30,7 +30,7 @@
     <!-- settings -->
     <arg name="USE_COMMON" default="true" />
     <arg name="USE_ROBOTHARDWARE" default="true" />
-    <arg name="USE_WALKING" default="false" />
+    <arg name="USE_WALKING" default="true" />
     <arg name="USE_COLLISIONCHECK" default="true" />
     <arg name="USE_IMPEDANCECONTROLLER" default="false" />
     <arg name="USE_SOFTERRORLIMIT" default="true" />
