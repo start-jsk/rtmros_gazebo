@@ -426,7 +426,6 @@ int read_gyro_sensor(int id, double *rates)
     return E_ID;
   }
   if(init_sub_flag){
-    std::cerr << "sub: ..." << std::endl;
 #if 0
     Eigen::Quaternion<double> q(js.Imus[id].orientation.w,
                                 js.Imus[id].orientation.x,
