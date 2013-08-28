@@ -20,5 +20,5 @@
   <!-- Robot Description -->
 
   <param name="robot_description" textfile="$(arg ROBOT_MODEL)"/>
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publiser" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 </launch>
