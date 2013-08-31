@@ -1,7 +1,8 @@
 <launch>
-  <arg name="ROBOT_NAME" default="HRP2JSK" />
+  <rosparam command="load"
+            file="$(find jsk_hrpsys_ros_bridge)/models/HRP2JSK_controller_config.yaml" />
 
   <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
-    <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
+    <arg name="ROBOT_NAME" value="HRP2JSK" />
   </include>
 </launch>
