@@ -1,11 +1,13 @@
 <launch>
   <arg name="gzname" default="gazebo"/>
   <arg name="WORLD" default="HRP2JSK.world"/>
-  <arg name="HRPSYS_GAZEBO_CONFIG" default="$(find hrpsys_gazebo_tutorials)/config/hrp2jsk.yaml" />
+  <arg name="PAUSED" default="false"/>
 
   <include file="$(find hrpsys_gazebo_tutorials)/launch/gazebo_robot_no_controllers.launch">
     <arg name="gzname" value="$(arg gzname)" />
     <arg name="WORLD" value="$(arg WORLD)" />
-    <arg name="HRPSYS_GAZEBO_CONFIG" value="$(arg HRPSYS_GAZEBO_CONFIG)" />
+    <arg name="PAUSED" value="$(arg PAUSED)"/>
+    <arg name="HRPSYS_GAZEBO_CONFIG" value="$(find hrpsys_gazebo_tutorials)/config/hrp2jsk.yaml" />
+    <arg name="ROBOT_MODEL" value="$(find HRP2JSK)/HRP2JSK.urdf" />
   </include>
 </launch>

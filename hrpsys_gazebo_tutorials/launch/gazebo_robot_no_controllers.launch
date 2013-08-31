@@ -2,8 +2,7 @@
   <arg name="gzname" default="gazebo"/>
   <arg name="WORLD" default="SampleRobot.world"/>
   <arg name="HRPSYS_GAZEBO_CONFIG" default="$(find hrpsys_gazebo_tutorials)/config/samplerobot.yaml" />
-  <arg name="ROBOT_MODEL" default="$(find SampleRobot)/SampleRobot.urdf" />
-
+  <arg name="ROBOT_MODEL" default="$(find SampleRobot)/SampleRobot.urdf" />b
   <arg name="PAUSED" default="false"/>
 
   <arg if="$(arg PAUSED)"
