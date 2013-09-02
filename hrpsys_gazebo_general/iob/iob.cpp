@@ -549,11 +549,13 @@ int open_iob(void)
 
     joint_real2model_vec.resize(0);
     std::string controller_name;
-    if (rosnode->hasParam("hrpsys_gazebo_iob")) {
-      if (!rosnode->getParam("hrpsys_gazebo_iob", controller_name)) {
-        controller_name = "hrpsys_gazebo_configuration";
-      }
+    char *ret = getenv("HRPSYS_GAZEBO_IOB");
+    if (ret != NULL) {
+      controller_name.assign(ret);
+    } else {
+      controller_name = "hrpsys_gazebo_configuration";
     }
+    ROS_INFO_STREAM( "iob: \"" << controller_name << "\" is used as configuration name" );
 
     if (rosnode->hasParam(controller_name + "/joint_id_list")) {
       XmlRpc::XmlRpcValue param_val;
@@ -564,10 +566,10 @@ int open_iob(void)
           joint_real2model_vec.push_back(num);
         }
       } else {
-        ROS_WARN("%s/joint_id_list is not list of integer", controller_name.c_str());
+        ROS_WARN("iob: %s/joint_id_list is not list of integer", controller_name.c_str());
       }
     } else {
-      ROS_DEBUG("%s/joint_id_list is nothing", controller_name.c_str());
+      ROS_DEBUG("iob: %s/joint_id_list is nothing", controller_name.c_str());
     }
 
     XmlRpc::XmlRpcValue param_val;
