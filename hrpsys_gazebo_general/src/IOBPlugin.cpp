@@ -267,19 +267,19 @@ void IOBPlugin::LoadPIDGainsFromParameter() {
     std::string i_clamp_str = std::string(joint_ns)+"i_clamp";
     std::string vp_str = std::string(joint_ns)+"vp";
 
-    if (!rosnode->getParam(p_str, p_val)) {
+    if (!this->rosNode->getParam(p_str, p_val)) {
       ROS_WARN("IOBPlugin: couldn't find a P param for %s", joint_ns.c_str());
     }
-    if (!rosnode->getParam(i_str, i_val)) {
+    if (!this->rosNode->getParam(i_str, i_val)) {
       ROS_WARN("IOBPlugin: couldn't find a I param for %s", joint_ns.c_str());
     }
-    if (!rosnode->getParam(d_str, d_val)) {
+    if (!this->rosNode->getParam(d_str, d_val)) {
       ROS_WARN("IOBPlugin: couldn't find a D param for %s", joint_ns.c_str());
     }
-    if (!rosnode->getParam(i_clamp_str, i_clamp_val)) {
+    if (!this->rosNode->getParam(i_clamp_str, i_clamp_val)) {
       ROS_WARN("IOBPlugin: couldn't find a I_CLAMP param for %s", joint_ns.c_str());
     }
-    if (!rosnode->getParam(vp_str, vp_val)) {
+    if (!this->rosNode->getParam(vp_str, vp_val)) {
       ROS_WARN("IOBPlugin: couldn't find a VP param for %s", joint_ns.c_str());
     }
 
