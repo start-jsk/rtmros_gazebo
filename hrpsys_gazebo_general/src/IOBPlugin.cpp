@@ -260,25 +260,36 @@ void IOBPlugin::LoadPIDGainsFromParameter() {
     joint_ns += ("/gains/" + this->joints[i]->GetName() + "/");
 
     // this is so ugly
-    double p_val = 0, i_val = 0, d_val = 0, i_clamp_val = 0;
+    double p_val = 0, i_val = 0, d_val = 0, i_clamp_val = 0, vp_val = 0;
     std::string p_str = std::string(joint_ns)+"p";
     std::string i_str = std::string(joint_ns)+"i";
     std::string d_str = std::string(joint_ns)+"d";
     std::string i_clamp_str = std::string(joint_ns)+"i_clamp";
-    if (!this->rosNode->getParam(p_str, p_val) ||
-        !this->rosNode->getParam(i_str, i_val) ||
-        !this->rosNode->getParam(d_str, d_val) ||
-        !this->rosNode->getParam(i_clamp_str, i_clamp_val))
-      {
-        ROS_ERROR("couldn't find a param for %s", joint_ns.c_str());
-        continue;
-      }
+    std::string vp_str = std::string(joint_ns)+"vp";
+
+    if (!rosnode->getParam(p_str, p_val)) {
+      ROS_WARN("IOBPlugin: couldn't find a P param for %s", joint_ns.c_str());
+    }
+    if (!rosnode->getParam(i_str, i_val)) {
+      ROS_WARN("IOBPlugin: couldn't find a I param for %s", joint_ns.c_str());
+    }
+    if (!rosnode->getParam(d_str, d_val)) {
+      ROS_WARN("IOBPlugin: couldn't find a D param for %s", joint_ns.c_str());
+    }
+    if (!rosnode->getParam(i_clamp_str, i_clamp_val)) {
+      ROS_WARN("IOBPlugin: couldn't find a I_CLAMP param for %s", joint_ns.c_str());
+    }
+    if (!rosnode->getParam(vp_str, vp_val)) {
+      ROS_WARN("IOBPlugin: couldn't find a VP param for %s", joint_ns.c_str());
+    }
+
     // store these directly on altasState, more efficient for pub later
     this->robotState.kp_position[i]  =  p_val;
     this->robotState.ki_position[i]  =  i_val;
     this->robotState.kd_position[i]  =  d_val;
     this->robotState.i_effort_min[i] = -i_clamp_val;
     this->robotState.i_effort_max[i] =  i_clamp_val;
+    this->robotState.kp_velocity[i]  =  vp_val;
   }
 }
 
