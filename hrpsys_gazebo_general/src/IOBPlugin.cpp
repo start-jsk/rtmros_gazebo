@@ -399,11 +399,11 @@ void IOBPlugin::SetJointCommand(const JointCommand::ConstPtr &_msg) {
 void IOBPlugin::UpdateStates() {
   common::Time curTime = this->world->GetSimTime();
   if (curTime > this->lastControllerUpdateTime) {
-    // update
-
     // gather robot state data and publish them
     this->GetAndPublishRobotStates(curTime);
-
+    //
+    // wait retrun of controller
+    //
     {
       boost::mutex::scoped_lock lock(this->mutex);
       this->UpdatePIDControl((curTime - this->lastControllerUpdateTime).Double());
@@ -481,8 +481,8 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
     // truncate joint position within range of motion
     double positionTarget = math::clamp(this->jointCommand.position[i],
-                                        this->joints[i]->GetLowStop(0).Radian(),
-                                        this->joints[i]->GetHighStop(0).Radian());
+                                        static_cast<double>(this->joints[i]->GetLowStop(0).Radian()),
+                                        static_cast<double>(this->joints[i]->GetHighStop(0).Radian()));
 
     double q_p = positionTarget - this->robotState.position[i];
 
@@ -495,24 +495,26 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
       this->jointCommand.velocity[i] - this->robotState.velocity[i];
 
     this->errorTerms[i].k_i_q_i = math::clamp(this->errorTerms[i].k_i_q_i +
-                                              _dt * this->robotState.ki_position[i] * this->errorTerms[i].q_p,
+                                              _dt *
+                                              static_cast<double>(this->robotState.ki_position[i])
+                                              * this->errorTerms[i].q_p,
                                               static_cast<double>(this->robotState.i_effort_min[i]),
                                               static_cast<double>(this->robotState.i_effort_max[i]));
 
     // use gain params to compute force cmd
     double forceUnclamped =
-      this->robotState.kp_position[i] * this->errorTerms[i].q_p +
-      this->errorTerms[i].k_i_q_i +
-      this->robotState.kd_position[i] * this->errorTerms[i].d_q_p_dt +
-      this->robotState.kp_velocity[i] * this->errorTerms[i].qd_p +
-      this->jointCommand.effort[i];
+      static_cast<double>(this->robotState.kp_position[i]) * this->errorTerms[i].q_p +
+                                                             this->errorTerms[i].k_i_q_i +
+      static_cast<double>(this->robotState.kd_position[i]) * this->errorTerms[i].d_q_p_dt +
+      static_cast<double>(this->robotState.kp_velocity[i]) * this->errorTerms[i].qd_p +
+                                                             this->jointCommand.effort[i];
 
     // keep unclamped force for integral tie-back calculation
     double forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
 
     // integral tie-back during control saturation if using integral gain
-    if (!math::equal(forceClamped,forceUnclamped) &&
-        !math::equal((double)this->robotState.ki_position[i],0.0) ) {
+    if (!math::equal(forceClamped, forceUnclamped) &&
+        !math::equal(static_cast<double>(this->robotState.ki_position[i]), 0.0)) {
       // lock integral term to provide continuous control as system moves
       // out of staturation
       this->errorTerms[i].k_i_q_i = math::clamp(this->errorTerms[i].k_i_q_i + (forceClamped - forceUnclamped),
