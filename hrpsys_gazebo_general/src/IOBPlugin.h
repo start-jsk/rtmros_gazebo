@@ -104,6 +104,11 @@ namespace gazebo
     std::vector<std::string> jointNames;
     physics::Joint_V joints;
 
+    std::vector<double> lastJointCFMDamping;
+    std::vector<double> jointDampingModel;
+    std::vector<double> jointDampingMax;
+    std::vector<double> jointDampingMin;
+
     typedef std::map< std::string, struct force_sensor_info > forceSensorMap;
     typedef std::map< std::string, struct imu_sensor_info > imuSensorMap;
     std::vector<std::string> forceSensorNames;
