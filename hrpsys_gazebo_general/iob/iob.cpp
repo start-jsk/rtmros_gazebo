@@ -668,6 +668,8 @@ int open_iob(void)
     // temporary use TCP / Using UDP occured some problem when message size more than 1500.
     //jointStatesSo.transport_hints =
     //ros::TransportHints().maxDatagramSize(3000).unreliable().reliable().tcpNoDelay(true);
+    jointStatesSo.transport_hints =
+      ros::TransportHints().reliable().tcpNoDelay(true);
     sub_robot_state = rosnode->subscribe(jointStatesSo);
 
     std::cerr << "JointState IOB is opened" << std::endl;
