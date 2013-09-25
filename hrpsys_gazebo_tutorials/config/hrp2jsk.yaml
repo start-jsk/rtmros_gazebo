@@ -55,18 +55,18 @@ hrpsys_gazebo_configuration:
     RARM_JOINT5:  {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
     RARM_JOINT6:  {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
     RARM_JOINT7:  {p:   20.0, d:  0.02, i: 0.0, i_clamp: 0.0}
-    LLEG_JOINT0:  {p:  800.0, d:   2.0, i: 0.0, i_clamp: 0.0}
-    LLEG_JOINT1:  {p: 1200.0, d:   4.0, i: 0.0, i_clamp: 0.0}
-    LLEG_JOINT2:  {p: 3000.0, d:  15.0, i: 0.0, i_clamp: 0.0}
-    LLEG_JOINT3:  {p: 2500.0, d:  12.5, i: 0.0, i_clamp: 0.0}
-    LLEG_JOINT4:  {p: 2000.0, d:  10.0, i: 0.0, i_clamp: 0.0}
-    LLEG_JOINT5:  {p: 1000.0, d:   4.0, i: 0.0, i_clamp: 0.0}
-    RLEG_JOINT0:  {p:  800.0, d:   2.0, i: 0.0, i_clamp: 0.0}
-    RLEG_JOINT1:  {p: 1200.0, d:   4.0, i: 0.0, i_clamp: 0.0}
-    RLEG_JOINT2:  {p: 3000.0, d:  15.0, i: 0.0, i_clamp: 0.0}
-    RLEG_JOINT3:  {p: 2500.0, d:  12.5, i: 0.0, i_clamp: 0.0}
-    RLEG_JOINT4:  {p: 2000.0, d:  10.0, i: 0.0, i_clamp: 0.0}
-    RLEG_JOINT5:  {p: 1000.0, d:   2.0, i: 0.0, i_clamp: 0.0}
+    LLEG_JOINT0:  {p: 1500.0, d:   2.0, i: 0.0, i_clamp: 10.0}
+    LLEG_JOINT1:  {p: 2000.0, d:   4.0, i: 0.0, i_clamp: 10.0}
+    LLEG_JOINT2:  {p: 3800.0, d:  15.0, i: 0.0, i_clamp: 10.0}
+    LLEG_JOINT3:  {p: 3400.0, d:  12.5, i: 0.0, i_clamp: 10.0}
+    LLEG_JOINT4:  {p: 2800.0, d:  10.0, i: 0.0, i_clamp: 10.0}
+    LLEG_JOINT5:  {p: 1600.0, d:   4.0, i: 0.0, i_clamp: 10.0}
+    RLEG_JOINT0:  {p: 1500.0, d:   2.0, i: 0.0, i_clamp: 10.0}
+    RLEG_JOINT1:  {p: 2000.0, d:   4.0, i: 0.0, i_clamp: 10.0}
+    RLEG_JOINT2:  {p: 3800.0, d:  15.0, i: 0.0, i_clamp: 10.0}
+    RLEG_JOINT3:  {p: 3400.0, d:  12.5, i: 0.0, i_clamp: 10.0}
+    RLEG_JOINT4:  {p: 2800.0, d:  10.0, i: 0.0, i_clamp: 10.0}
+    RLEG_JOINT5:  {p: 1600.0, d:   2.0, i: 0.0, i_clamp: 10.0}
   force_torque_sensors:
     - lfsensor
     - rfsensor 
@@ -74,10 +74,10 @@ hrpsys_gazebo_configuration:
     - rhsensor 
   force_torque_sensors_config:
 ## TODO: add translation and rotation
-    lfsensor: {joint_name: 'LLEG_JOINT5', frame_id: 'LLEG_LINK5'}
-    rfsensor: {joint_name: 'RLEG_JOINT5', frame_id: 'RLEG_LINK5'}
-    lhsensor: {joint_name: 'LARM_JOINT6', frame_id: 'LARM_LINK6'}
-    rhsensor: {joint_name: 'RARM_JOINT6', frame_id: 'RARM_LINK6'}
+    lfsensor: {joint_name: 'LLEG_JOINT5', frame_id: 'LLEG_LINK5', translation: [0, 0, -0.105], rotation: [1, 0, 0, 0]}
+    rfsensor: {joint_name: 'RLEG_JOINT5', frame_id: 'RLEG_LINK5', translation: [0, 0, -0.105], rotation: [1, 0, 0, 0]}
+    lhsensor: {joint_name: 'LARM_JOINT6', frame_id: 'LARM_LINK6', translation: [0, 0, -0.0775], rotation: [1, 0, 0, 0]}
+    rhsensor: {joint_name: 'RARM_JOINT6', frame_id: 'RARM_LINK6', translation: [0, 0, -0.0775], rotation: [1, 0, 0, 0]}
   imu_sensors:
     - imu_sensor0
   imu_sensors_config:
