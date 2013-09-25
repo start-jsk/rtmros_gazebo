@@ -470,14 +470,26 @@ void IOBPlugin::GetAndPublishRobotStates(const common::Time &_curTime){
         physics::JointWrench wrench = jt->GetForceTorque(0u);
         this->robotState.sensors[i].name = this->forceSensorNames[i];
         this->robotState.sensors[i].frame_id = it->second.frame_id;
-        this->robotState.sensors[i].force.x = wrench.body2Force.x;
-        this->robotState.sensors[i].force.y = wrench.body2Force.y;
-        this->robotState.sensors[i].force.z = wrench.body2Force.z;
-        this->robotState.sensors[i].torque.x = wrench.body2Torque.x;
-        this->robotState.sensors[i].torque.y = wrench.body2Torque.y;
-        this->robotState.sensors[i].torque.z = wrench.body2Torque.z;
         if (!!it->second.pose) {
           // convert force
+	  math::Vector3 force_trans = it->second.pose->rot * wrench.body2Force;
+	  math::Vector3 torque_trans = it->second.pose->rot * wrench.body2Torque;
+	  // rotate force
+	  this->robotState.sensors[i].force.x = force_trans.x;
+	  this->robotState.sensors[i].force.y = force_trans.y;
+	  this->robotState.sensors[i].force.z = force_trans.z;
+	  // rotate torque + additional torque
+	  torque_trans += it->second.pose->pos.Cross(force_trans);
+	  this->robotState.sensors[i].torque.x = torque_trans.x;
+	  this->robotState.sensors[i].torque.y = torque_trans.y;
+	  this->robotState.sensors[i].torque.z = torque_trans.z;
+	} else {
+	  this->robotState.sensors[i].force.x = wrench.body2Force.x;
+	  this->robotState.sensors[i].force.y = wrench.body2Force.y;
+	  this->robotState.sensors[i].force.z = wrench.body2Force.z;
+	  this->robotState.sensors[i].torque.x = wrench.body2Torque.x;
+	  this->robotState.sensors[i].torque.y = wrench.body2Torque.y;
+	  this->robotState.sensors[i].torque.z = wrench.body2Torque.z;
         }
       }
     }
