@@ -18,7 +18,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 macro (generate_gazebo_urdf_file _robot_name)
   set(_out_dir "${PROJECT_SOURCE_DIR}/robot_models/${_robot_name}")
-  set(_out_urdf_file "${_out_dir}/SampleRobot.urdf")
+  set(_out_urdf_file "${_out_dir}/${_robot_name}.urdf")
   add_custom_command(OUTPUT ${_out_dir}/meshes
     COMMAND mkdir ${_out_dir}/meshes)
   add_custom_command(OUTPUT ${_out_dir}/hrpsys
