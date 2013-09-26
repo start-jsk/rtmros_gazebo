@@ -24,8 +24,8 @@ fi
 
 if [ ! -e ${OUTPUT_DIR}/hrpsys ]; then
     mkdir -p ${OUTPUT_DIR}/hrpsys
-    ln -s  ${INPUT_DIR}/${ROBOT_NAME}.conf ${OUTPUT_DIR}/hrpsys
-    ln -s  ${INPUT_DIR}/${ROBOT_NAME}.RobotHardware.conf ${OUTPUT_DIR}/hrpsys
-    ln -s  ${INPUT_DIR}/${ROBOT_NAME}.dae ${OUTPUT_DIR}/hrpsys
-    ln -s  ${INPUT_DIR}/${ROBOT_NAME}_nosim.xml ${OUTPUT_DIR}/hrpsys
 fi
+ln -sf ${INPUT_DIR}/${ROBOT_NAME}.conf ${OUTPUT_DIR}/hrpsys
+ln -sf ${INPUT_DIR}/${ROBOT_NAME}.RobotHardware.conf ${OUTPUT_DIR}/hrpsys
+ln -sf ${INPUT_DIR}/${ROBOT_NAME}.dae ${OUTPUT_DIR}/hrpsys
+ln -sf ${INPUT_DIR}/${ROBOT_NAME}_nosim.xml ${OUTPUT_DIR}/hrpsys
