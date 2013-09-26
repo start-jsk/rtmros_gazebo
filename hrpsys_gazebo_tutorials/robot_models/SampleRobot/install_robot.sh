@@ -3,7 +3,7 @@
 OUTPUT_DIR=$(rospack find hrpsys_gazebo_tutorials)/robot_models/SampleRobot
 OUTPUT_FILE=${OUTPUT_DIR}/SampleRobot.urdf
 
-if [ ! -e ${OUTPUT_DIR}/hrpsys ]; then
+if [ ! -e ${OUTPUT_DIR}/hrpsys -o "$1" = "--force" ]; then
 ##
     mkdir ${OUTPUT_DIR}/meshes
     rosrun collada_tools collada_to_urdf $(rospack find hrpsys_ros_bridge_tutorials)/models/SampleRobot.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix 'package://SampleRobot/meshes' --output_file=${OUTPUT_FILE}
