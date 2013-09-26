@@ -16,6 +16,25 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+macro (generate_gazebo_urdf_file _robot_name)
+  set(_out_dir "${PROJECT_SOURCE_DIR}/robot_models/${_robot_name}")
+  set(_out_urdf_file "${_out_dir}/SampleRobot.urdf")
+  add_custom_command(OUTPUT ${_out_dir}/meshes
+    COMMAND mkdir ${_out_dir}/meshes)
+  add_custom_command(OUTPUT ${_out_dir}/hrpsys
+    COMMAND mkdir ${_out_dir}/hrpsys)
+  add_custom_command(OUTPUT ${_out_urdf_file}
+    COMMAND ${_out_dir}/install_robot.sh --force
+    DEPENDS ${_out_dir}/hrpsys ${_out_dir}/meshes)
+  add_custom_target(${_robot_name}_compile DEPENDS ${_out_urdf_file})
+  list(APPEND compile_robots ${_robot_name}_compile)
+endmacro()
+
+generate_gazebo_urdf_file(SampleRobot)
+
+add_custom_target(all_robots_compile ALL DEPENDS ${compile_robots})
+
+
 #uncomment if you have defined messages
 #rosbuild_genmsg()
 #uncomment if you have defined services
