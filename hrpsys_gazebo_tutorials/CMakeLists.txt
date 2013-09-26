@@ -24,7 +24,7 @@ macro (generate_gazebo_urdf_file _robot_name)
   add_custom_command(OUTPUT ${_out_dir}/hrpsys
     COMMAND mkdir ${_out_dir}/hrpsys)
   add_custom_command(OUTPUT ${_out_urdf_file}
-    COMMAND ${_out_dir}/install_robot.sh --force
+    COMMAND ${_out_dir}/install_robot.sh
     DEPENDS ${_out_dir}/hrpsys ${_out_dir}/meshes)
   add_custom_target(${_robot_name}_compile DEPENDS ${_out_urdf_file})
   list(APPEND compile_robots ${_robot_name}_compile)

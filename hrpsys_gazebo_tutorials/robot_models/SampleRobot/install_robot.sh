@@ -1,12 +1,13 @@
 #!/bin/bash
 
-OUTPUT_DIR=$(rospack find hrpsys_gazebo_tutorials)/robot_models/SampleRobot
-OUTPUT_FILE=${OUTPUT_DIR}/SampleRobot.urdf
+ROBOT_NAME=SampleRobot
+OUTPUT_DIR=$(rospack find hrpsys_gazebo_tutorials)/robot_models/${ROBOT_NAME}
+OUTPUT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}.urdf
 
-if [ ! -e ${OUTPUT_DIR}/hrpsys -o "$1" = "--force" ]; then
+if [ ! -e ${OUTPUT_FILE} ]; then
 ##
-    mkdir ${OUTPUT_DIR}/meshes
-    rosrun collada_tools collada_to_urdf $(rospack find hrpsys_ros_bridge_tutorials)/models/SampleRobot.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix 'package://SampleRobot/meshes' --output_file=${OUTPUT_FILE}
+    mkdir -p ${OUTPUT_DIR}/meshes
+    rosrun collada_tools collada_to_urdf $(rospack find hrpsys_ros_bridge_tutorials)/models/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
 ## add Plugin settings
     sed -i -e 's@</robot>@  <gazebo>\n    <plugin filename="libIOBPlugin.so" name="hrpsys_gazebo_plugin" >\n      <robotname>SampleRobot</robotname>\n      <controller>hrpsys_gazebo_configuration</controller>\n    </plugin>\n  </gazebo>\n</robot>@g' ${OUTPUT_FILE}
 ## add IMU sensor (TODO: sensors should be added when converting from collada file)
@@ -18,10 +19,12 @@ if [ ! -e ${OUTPUT_DIR}/hrpsys -o "$1" = "--force" ]; then
     sed -i -e '/<gazebo reference="RLEG_LINK6">/{N;N;N;N;s@  <gazebo reference="RLEG_LINK6">\n    <mu1>0.9</mu1>\n    <mu2>0.9</mu2>\n  </gazebo>@  <gazebo reference="RLEG_LINK6">\n    <kp>1000000.0</kp>\n    <kd>100.0</kd>\n    <mu1>1.5</mu1>\n    <mu2>1.5</mu2>\n    <fdir1>1 0 0</fdir1>\n    <maxVel>10.0</maxVel>\n    <minDepth>0.00</minDepth>\n  </gazebo>@;}' ${OUTPUT_FILE}
 # continuous joint not working in GAZEBO
     sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
+fi
 
-    mkdir ${OUTPUT_DIR}/hrpsys
-    ln -s  $(rospack find hrpsys_ros_bridge_tutorials)/models/SampleRobot.conf ${OUTPUT_DIR}/hrpsys
-    ln -s  $(rospack find hrpsys_ros_bridge_tutorials)/models/SampleRobot.RobotHardware.conf ${OUTPUT_DIR}/hrpsys
-    ln -s  $(rospack find hrpsys_ros_bridge_tutorials)/models/SampleRobot.dae ${OUTPUT_DIR}/hrpsys
-    ln -s  $(rospack find hrpsys_ros_bridge_tutorials)/models/SampleRobot_nosim.xml ${OUTPUT_DIR}/hrpsys
+if [ ! -e ${OUTPUT_DIR}/hrpsys ]; then
+    mkdir -p ${OUTPUT_DIR}/hrpsys
+    ln -s  $(rospack find hrpsys_ros_bridge_tutorials)/models/${ROBOT_NAME}.conf ${OUTPUT_DIR}/hrpsys
+    ln -s  $(rospack find hrpsys_ros_bridge_tutorials)/models/${ROBOT_NAME}.RobotHardware.conf ${OUTPUT_DIR}/hrpsys
+    ln -s  $(rospack find hrpsys_ros_bridge_tutorials)/models/${ROBOT_NAME}.dae ${OUTPUT_DIR}/hrpsys
+    ln -s  $(rospack find hrpsys_ros_bridge_tutorials)/models/${ROBOT_NAME}_nosim.xml ${OUTPUT_DIR}/hrpsys
 fi
