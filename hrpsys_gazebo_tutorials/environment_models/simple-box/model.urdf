@@ -1,51 +1,41 @@
-<?xml version="1.0"?>
-<robot name="simple-box-robot"
-       xmlns:xi="http://www.w3.org/2001/XInclude"
-       xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
-       xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
-       xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
-       xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
-       xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
-       xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
-       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
-       xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
-       xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
-       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
-       xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics">
-  <gazebo>
-    <static>false</static>
-  </gazebo>
+<robot name="simple_box2">
   <link name="nil_link">
+    <inertial>
+      <origin xyz="0 0 -0.35" /> 
+      <mass value="2" />
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
     <visual>
-      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <origin xyz="0 0 -0.35"/>
       <geometry>
-        <mesh filename="model://simple-box/meshes/nil_link_mesh.dae" scale="1 1 1" />
+        <box size="0.25 0.5 0.35" />
       </geometry>
     </visual>
     <collision>
-      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <origin xyz="0 0 -0.35"/>
       <geometry>
-        <mesh filename="model://simple-box/meshes/nil_link_mesh.dae" scale="1 1 1" />
+        <box size="0.25 0.5 0.35" />
       </geometry>
     </collision>
-    <inertial>
-      <mass value="2" />
-      <origin xyz="0 0 0" rpy="0 -0 0"/>
-      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
-    </inertial>
   </link>
   <gazebo reference="nil_link">
-    <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
+    <material>Gazebo/Blue</material>
+  </gazebo>
+  <gazebo reference="nil_link">
+    <mu1>2.0</mu1>
+    <mu2>2.0</mu2>
   </gazebo>
   <gazebo>
     <plugin filename="libAddForcePlugin.so" name="simple_box_add_force_plugin" >
+      <objname>simple_box_for_holding</objname>
       <linkname>nil_link</linkname>
     </plugin>
     <plugin filename="libGetVelPlugin.so" name="simple_box_get_vel_plugin" >
+      <objname>simple_box_for_holding</objname>
       <linkname>nil_link</linkname>
     </plugin>
     <plugin filename="libSetVelPlugin.so" name="simple_box_set_vel_plugin" >
+      <objname>simple_box_for_holding</objname>
       <linkname>nil_link</linkname>
     </plugin>
   </gazebo>
