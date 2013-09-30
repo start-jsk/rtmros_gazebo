@@ -3,10 +3,10 @@
 (ros::load-ros-manifest "geometry_msgs")
 
 
-(defun init-gazebo-plugin ()
+(defun init-gazebo-plugin (&optional objname)
   (ros::roseus "GazeboPluginUtilsEus")
   (init-add-force)
-  (init-set-vel)
+  (init-set-vel objname)
   (init-get-vel)
 )
 
@@ -72,12 +72,12 @@
     ))
 
 
-(defun init-set-vel ()
+(defun init-set-vel (&optional objname)
   (ros::roseus "SetVelEus")
-  (ros::advertise "/SetVelPlugin/PoseCommand" geometry_msgs::pose 1)
+  (ros::advertise (format nil "~a~a" (if objname objname nil) "/SetVelPlugin/PoseCommand") geometry_msgs::pose 1)
   (ros::rate 100))
 
-(defun set-pose (&optional (_c (make-coords)))
+(defun set-pose (&optional (_c (make-coords)) objname)
   (let* ((msg (instance geometry_msgs::pose :init))
 	 (pos (scale 0.001 (send _c :worldpos)))
 	 (rot (send _c :worldrot))
@@ -89,7 +89,7 @@
     (send msg :orientation :x (elt quat 1))
     (send msg :orientation :y (elt quat 2))
     (send msg :orientation :z (elt quat 3))
-    (ros::publish "/SetVelPlugin/PoseCommand" msg))
+    (ros::publish (format nil "~a~a" (if objname objname nil) "/SetVelPlugin/PoseCommand") msg))
   )
 
 
