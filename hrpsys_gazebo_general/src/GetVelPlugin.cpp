@@ -36,6 +36,10 @@ namespace gazebo
       this->model = _parent;
 
       // read option args in sdf tags
+      this->obj_name = "obj";
+      if (_sdf->HasElement("objname")) {
+	this->obj_name = _sdf->Get<std::string>("objname");
+      }
       this->link_name = "root";
       if (_sdf->HasElement("linkname")) {
 	this->link_name = _sdf->Get<std::string>("linkname");
@@ -67,15 +71,15 @@ namespace gazebo
 
       // ros topic publications
       this->pubRelVelQueue = this->pmq.addPub<geometry_msgs::TwistStamped>();
-      this->pubRelVel = this->rosNode->advertise<geometry_msgs::TwistStamped>("/GetVelPlugin/RelVel", 100, true);
+      this->pubRelVel = this->rosNode->advertise<geometry_msgs::TwistStamped>("/" + this->obj_name + "/GetVelPlugin/RelVel", 100, true);
       this->pubAbsVelQueue = this->pmq.addPub<geometry_msgs::TwistStamped>();
-      this->pubAbsVel = this->rosNode->advertise<geometry_msgs::TwistStamped>("/GetVelPlugin/AbsVel", 100, true);
+      this->pubAbsVel = this->rosNode->advertise<geometry_msgs::TwistStamped>("/" + this->obj_name + "/GetVelPlugin/AbsVel", 100, true);
       this->pubRelAccelQueue = this->pmq.addPub<geometry_msgs::TwistStamped>();
-      this->pubRelAccel = this->rosNode->advertise<geometry_msgs::TwistStamped>("/GetVelPlugin/RelAccel", 100, true);
+      this->pubRelAccel = this->rosNode->advertise<geometry_msgs::TwistStamped>("/" + this->obj_name + "/GetVelPlugin/RelAccel", 100, true);
       this->pubAbsAccelQueue = this->pmq.addPub<geometry_msgs::TwistStamped>();
-      this->pubAbsAccel = this->rosNode->advertise<geometry_msgs::TwistStamped>("/GetVelPlugin/AbsAccel", 100, true);
+      this->pubAbsAccel = this->rosNode->advertise<geometry_msgs::TwistStamped>("/" + this->obj_name + "/GetVelPlugin/AbsAccel", 100, true);
       this->pubPoseQueue = this->pmq.addPub<geometry_msgs::PoseStamped>();
-      this->pubPose = this->rosNode->advertise<geometry_msgs::PoseStamped>("/GetVelPlugin/Pose", 100, true);
+      this->pubPose = this->rosNode->advertise<geometry_msgs::PoseStamped>("/" + this->obj_name + "/GetVelPlugin/Pose", 100, true);
 
       // Listen to the update event.
       this->updateConnection = event::Events::ConnectWorldUpdateBegin(boost::bind(&GetVel::OnUpdate, this, _1));
@@ -170,6 +174,7 @@ namespace gazebo
   private:
     physics::ModelPtr model;
     physics::WorldPtr world;
+    std::string obj_name;
     std::string link_name;
     physics::LinkPtr link;
     event::ConnectionPtr updateConnection;

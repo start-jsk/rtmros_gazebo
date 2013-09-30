@@ -31,6 +31,10 @@ namespace gazebo
       this->model = _parent;
 
       // read option args in sdf tags
+      this->obj_name = "obj";
+      if (_sdf->HasElement("objname")) {
+	this->obj_name = _sdf->Get<std::string>("objname");
+      }
       this->link_name = "root";
       if (_sdf->HasElement("linkname")) {
 	this->link_name = _sdf->Get<std::string>("linkname");
@@ -58,11 +62,11 @@ namespace gazebo
     void DeferredLoad() {
       // ros topic subscribtions
       ros::SubscribeOptions VelCommandSo =
-	ros::SubscribeOptions::create<geometry_msgs::Twist>("/SetVelPlugin/VelCommand", 100,
+	ros::SubscribeOptions::create<geometry_msgs::Twist>("/" + this->obj_name + "/SetVelPlugin/VelCommand", 100,
 						    boost::bind(&SetVel::SetVelCommand, this, _1),
 						    ros::VoidPtr(), &this->rosQueue);
       ros::SubscribeOptions PoseCommandSo =
-	ros::SubscribeOptions::create<geometry_msgs::Pose>("/SetVelPlugin/PoseCommand", 100,
+	ros::SubscribeOptions::create<geometry_msgs::Pose>("/" + this->obj_name + "/SetVelPlugin/PoseCommand", 100,
 					      boost::bind(&SetVel::SetPoseCommand, this, _1),
 					      ros::VoidPtr(), &this->rosQueue);
       // Enable TCP_NODELAY because TCP causes bursty communication with high jitter,
@@ -119,6 +123,7 @@ namespace gazebo
 
   private:
     physics::ModelPtr model;
+    std::string obj_name;
     std::string link_name;
     math::Vector3 linear_vel;
     math::Vector3 angular_vel;

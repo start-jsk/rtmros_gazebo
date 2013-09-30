@@ -31,6 +31,10 @@ namespace gazebo
       this->model = _parent;
 
       // read option args in sdf tags
+      this->obj_name = "obj";
+      if (_sdf->HasElement("objname")) {
+	this->obj_name = _sdf->Get<std::string>("objname");
+      }
       this->link_name = "root";
       if (_sdf->HasElement("linkname")) {
 	this->link_name = _sdf->Get<std::string>("linkname");
@@ -72,11 +76,11 @@ namespace gazebo
     void DeferredLoad() {
       // ros topic subscribtions
       ros::SubscribeOptions ForceCommandSo =
-	ros::SubscribeOptions::create<geometry_msgs::Wrench>("/AddForcePlugin/ForceCommand", 100,
+	ros::SubscribeOptions::create<geometry_msgs::Wrench>("/" + this->obj_name + "/AddForcePlugin/ForceCommand", 100,
 						    boost::bind(&AddForce::SetForceCommand, this, _1),
 						    ros::VoidPtr(), &this->rosQueue);
       ros::SubscribeOptions ForcePositionSo =
-	ros::SubscribeOptions::create<geometry_msgs::Vector3>("/AddForcePlugin/ForcePosition", 100,
+	ros::SubscribeOptions::create<geometry_msgs::Vector3>("/" + this->obj_name + "/AddForcePlugin/ForcePosition", 100,
 					      boost::bind(&AddForce::SetForcePosition, this, _1),
 					      ros::VoidPtr(), &this->rosQueue);
       // Enable TCP_NODELAY because TCP causes bursty communication with high jitter,
@@ -132,6 +136,7 @@ namespace gazebo
   private:
     physics::ModelPtr model;
     std::string link_name;
+    std::string obj_name;
     math::Vector3 force;
     math::Vector3 torque;
     math::Vector3 position;
