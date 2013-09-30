@@ -17,6 +17,39 @@
     ))
 (warn "~%(eus2urdf-for-gazebo (make-askul-gdh-cupboard) \"cupboard\")~%")
 
+(defun irteus2urdf-for-gazebo
+  (model
+   &optional
+   (tmp-dir "/tmp")
+   ;; buf
+   name)
+  (cond
+   ((not (subclassp (class model) cascaded-link))
+    (format t "invalid class, not childclass of cascaded-link~%"))
+   ((null (send model :links)) (format t "please setq links~%"))
+   (t
+    (setq name (send model :name))
+    (if (or (not (stringp (send model :name)))
+	    (zerop (length (send model :name))))
+	(send model :name
+	      (remove #\: (format nil "~A" (send model :name)))))
+    (collada::eus2collada model tmp-dir)
+    (cond
+     ((probe-file (format nil "~A/~A.dae" tmp-dir (send model :name)))
+      (format t "generate ~A.dae~%convert to urdf~%" (send model :name))
+      (unix:system
+       (format nil
+	       (concatenate
+		string
+		"rosrun hrpsys_gazebo_tutorials"
+		" eus2urdf_for_gazebo_pyscript.py ~a ~a/~a.dae"
+		"& cp `rospack find hrpsys_gazebo_tutorials`/environment_models/~A/model.urdf"
+		" ~A.urdf")
+	       (send model :name) tmp-dir (send model :name)
+	       (send model :name) (send model :name))))
+     (t (format nil "dae error~%")))
+    (send model :name name)
+    )))
 
 (defun eus2urdf-room-for-gazebo (room &key make-static make-fixed make-world-file make-launch-file (robot-name "SampleRobot"))
   (let* ((room-name (string-downcase (send room :name)))
