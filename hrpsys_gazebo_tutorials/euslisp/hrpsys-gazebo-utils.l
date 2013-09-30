@@ -42,9 +42,7 @@
 	       (concatenate
 		string
 		"rosrun hrpsys_gazebo_tutorials"
-		" eus2urdf_for_gazebo_pyscript.py ~a ~a/~a.dae"
-		"& cp `rospack find hrpsys_gazebo_tutorials`/environment_models/~A/model.urdf"
-		" ~A.urdf")
+		" eus2urdf_for_gazebo_pyscript.py ~a ~a/~a.dae")
 	       (send model :name) tmp-dir (send model :name)
 	       (send model :name) (send model :name))))
      (t (format nil "dae error~%")))
