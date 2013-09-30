@@ -36,7 +36,7 @@ namespace gazebo
       this->model = _parent;
 
       // read option args in sdf tags
-      this->obj_name = "obj";
+      this->obj_name = "";
       if (_sdf->HasElement("objname")) {
 	this->obj_name = _sdf->Get<std::string>("objname");
       }
