@@ -1,4 +1,4 @@
-<robot name="simple_box2">
+<robot name="simple_box">
   <link name="nil_link">
     <inertial>
       <origin xyz="0 0 -0.35" /> 
@@ -27,15 +27,15 @@
   </gazebo>
   <gazebo>
     <plugin filename="libAddForcePlugin.so" name="simple_box_add_force_plugin" >
-      <objname>simple_box_for_holding</objname>
+      <objname>simple_box</objname>
       <linkname>nil_link</linkname>
     </plugin>
     <plugin filename="libGetVelPlugin.so" name="simple_box_get_vel_plugin" >
-      <objname>simple_box_for_holding</objname>
+      <objname>simple_box</objname>
       <linkname>nil_link</linkname>
     </plugin>
     <plugin filename="libSetVelPlugin.so" name="simple_box_set_vel_plugin" >
-      <objname>simple_box_for_holding</objname>
+      <objname>simple_box</objname>
       <linkname>nil_link</linkname>
     </plugin>
   </gazebo>
