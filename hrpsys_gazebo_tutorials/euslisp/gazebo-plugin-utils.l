@@ -6,6 +6,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; class definition
 
+(defun init-gazebo-plugin
+  (&optional (_objname ""))
+  (instance gazebo-plugin-obj-operate :init _objname)
+  )
+
 (defclass gazebo-plugin-obj-operate
   :super propertied-object
   :slots (objname
