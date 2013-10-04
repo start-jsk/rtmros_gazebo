@@ -38,6 +38,8 @@
 #include "hrpsys_gazebo_msgs/JointCommand.h"
 #include "hrpsys_gazebo_msgs/RobotState.h"
 
+#include "hrpsys_gazebo_msgs/SyncCommand.h"
+
 #include "PubQueue.h"
 
 namespace gazebo
@@ -57,15 +59,24 @@ namespace gazebo
   private:
     void UpdateStates();
     void RosQueueThread();
+    void SrvQueueThread();
     void DeferredLoad();
-    void GetAndPublishRobotStates(const common::Time &_curTime);
+    void GetRobotStates(const common::Time &_curTime);
     void SetJointCommand(const JointCommand::ConstPtr &_msg);
+    void SetJointCommand_impl(const JointCommand &_msg);
     void LoadPIDGainsFromParameter();
     void ZeroJointCommand();
     void UpdatePIDControl(double _dt);
 
     void GetIMUState(const common::Time &_curTime);
     void GetForceTorqueSensorState(const common::Time &_curTime);
+
+    bool serviceCallback(hrpsys_gazebo_msgs::SyncCommandRequest &req,
+                         hrpsys_gazebo_msgs::SyncCommandResponse &res);
+#if 0
+    bool serviceCallbackd(std_srvs::EmptyRequest &req,
+                          std_srvs::EmptyResponse &res);
+#endif
 
     struct force_sensor_info {
       physics::JointPtr joint;
@@ -82,6 +93,7 @@ namespace gazebo
 
     ros::NodeHandle* rosNode;
     ros::CallbackQueue rosQueue;
+    ros::CallbackQueue srvQueue;
 
     physics::WorldPtr world;
     physics::ModelPtr model;
@@ -89,7 +101,8 @@ namespace gazebo
 
     event::ConnectionPtr updateConnection;
 
-    boost::thread callbackQueeuThread;
+    boost::thread callbackQueeuThread_msg;
+    boost::thread callbackQueeuThread_srv;
     boost::thread deferredLoadThread;
 
     common::Time lastControllerUpdateTime;
@@ -97,6 +110,8 @@ namespace gazebo
     RobotState robotState;
     ros::Publisher pubRobotState;
     PubQueue<RobotState>::Ptr pubRobotStateQueue;
+
+    ros::ServiceServer controlServ;
 
     JointCommand jointCommand;
     ros::Subscriber subIOBCommand;
@@ -132,8 +147,13 @@ namespace gazebo
     PubMultiQueue pmq;
     boost::mutex mutex;
     //
+    boost::mutex uniq_mutex;
+    boost::condition_variable wait_service_cond_;
+    boost::condition_variable return_service_cond_;
+    //
     std::string robot_name;
     std::string controller_name;
+    bool use_synchronized_command;
 
     static inline int xmlrpc_value_as_int(XmlRpc::XmlRpcValue &v) {
       if((v.getType() == XmlRpc::XmlRpcValue::TypeDouble) ||

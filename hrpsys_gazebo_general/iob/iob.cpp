@@ -10,6 +10,7 @@
 
 #include <hrpsys_gazebo_msgs/JointCommand.h>
 #include <hrpsys_gazebo_msgs/RobotState.h>
+#include <hrpsys_gazebo_msgs/SyncCommand.h>
 
 #include <hrpUtil/Eigen3d.h>
 
@@ -17,13 +18,18 @@ typedef hrpsys_gazebo_msgs::JointCommand JointCommand;
 typedef hrpsys_gazebo_msgs::RobotState RobotState;
 
 static ros::NodeHandle* rosnode;
+
+static ros::ServiceClient serv_command;
 static ros::Publisher pub_joint_command;
 static ros::Subscriber sub_robot_state;
+static bool iob_synchronized;
+static bool start_robothw = false;
+
 static JointCommand jointcommand;
 static JointCommand initial_jointcommand;
 
 static RobotState js;
-static int init_sub_flag = FALSE;
+static bool init_sub_flag = false;
 
 static std::vector<double> command;
 static std::vector<double> prev_command;
@@ -37,7 +43,7 @@ static std::vector<std::vector<double> > accel_offset;
 static std::vector<int> power;
 static std::vector<int> servo;
 static bool isLocked = false;
-static int frame = 0;
+static unsigned long long frame = 0;
 static timespec g_ts;
 static long g_period_ns=1000000;
 static ros::Time rg_ts;
@@ -144,7 +150,7 @@ int set_number_of_joints(int num)
 
 int set_number_of_force_sensors(int num)
 {
-    std::cerr << ";; set_number_of_force_sensors = " << num;
+    std::cerr << ";; set_number_of_force_sensors = " << num << std::endl;
     forces.resize(num);
     force_offset.resize(num);
     for (unsigned int i=0; i<forces.size();i++){
@@ -160,7 +166,7 @@ int set_number_of_force_sensors(int num)
 
 int set_number_of_gyro_sensors(int num)
 {
-    std::cerr << ";; set_number_of_gyro_sensors = " << num;
+    std::cerr << ";; set_number_of_gyro_sensors = " << num << std::endl;
     gyros.resize(num);
     gyro_offset.resize(num);
     for (unsigned int i=0; i<gyros.size();i++){
@@ -176,7 +182,7 @@ int set_number_of_gyro_sensors(int num)
 
 int set_number_of_accelerometers(int num)
 {
-    std::cerr << ";; set_number_of_number_of_accelerometers = " << num;
+  std::cerr << ";; set_number_of_number_of_accelerometers = " << num << std::endl;
     accelerometers.resize(num);
     accel_offset.resize(num);
     for (unsigned int i=0; i<accelerometers.size();i++){
@@ -333,6 +339,7 @@ int read_command_angles(double *angles)
 
 int write_command_angles(const double *angles)
 {
+    //std::cerr << "[iob] write command[" << frame << "]" << std::endl;
     for (int i=0; i<number_of_joints(); i++){
       prev_command[i] = command[i];
       command[i] = angles[i];
@@ -345,9 +352,23 @@ int write_command_angles(const double *angles)
       jointcommand.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
     }
 
-    pub_joint_command.publish(jointcommand);
-
-    ros::spinOnce();
+    if (iob_synchronized) {
+      hrpsys_gazebo_msgs::SyncCommandRequest req;
+      req.joint_command = jointcommand;
+      hrpsys_gazebo_msgs::SyncCommandResponse res;
+      //std::cerr << "[iob] service call" << std::endl;
+      serv_command.call(req, res);
+      //std::cerr << "[iob] service returned" << std::endl;
+      js = res.robot_state;
+      init_sub_flag = true;
+    } else {
+      pub_joint_command.publish(jointcommand);
+      ros::spinOnce();
+    }
+    if (!start_robothw) {
+      frame = 1;
+      start_robothw = true;
+    }
 
     return TRUE;
 }
@@ -447,6 +468,7 @@ int read_gyro_sensor(int id, double *rates)
     // tempolary values when sensor is not ready.
     rates[0] = rates[1] = rates[2] = 0.0;
   }
+  //fprintf(stderr, "rates[%ld]: %f %f %f\n", frame, rates[0], rates[1], rates[2]);
   return TRUE;
 }
 
@@ -464,6 +486,7 @@ int read_accelerometer(int id, double *accels)
     // tempolary values when sensor is not ready.
     accels[0] = accels[1] = accels[2] = 0.0;
   }
+  //fprintf(stderr, "accels[%ld]: %f %f %f\n", frame, accels[0], accels[1], accels[2]);
   return TRUE;
 }
 
@@ -499,31 +522,37 @@ int read_gauges(double *gauges)
 
 int read_actual_velocity(int id, double *vel)
 {
+    // TODO: impliment here
     return FALSE;
 }
 
 int read_command_velocity(int id, double *vel)
 {
+    // TODO: impliment here
     return FALSE;
 }
 
 int write_command_velocity(int id, double vel)
 {
+    // TODO: impliment here
     return FALSE;
 }
 
 int read_actual_velocities(double *vels)
 {
+    // TODO: impliment here
     return FALSE;
 }
 
 int read_command_velocities(double *vels)
 {
+    // TODO: impliment here
     return FALSE;
 }
 
 int write_command_velocities(const double *vels)
 {
+    // TODO: impliment here
     return FALSE;
 }
 
@@ -545,32 +574,61 @@ int write_dio(unsigned short buf)
 
 // callback
 static void setJointStates(const RobotState::ConstPtr &_js) {
-  ROS_DEBUG(";; subscribe RobotState");
+  ROS_DEBUG("[iob] subscribe RobotState");
   js = *_js;
   init_sub_flag = TRUE;
+  //if (iob_synchronized) {
+  //ROS_WARN("iob subscribed wrong topic ...");
+  //}
 }
 
 int open_iob(void)
 {
     static bool isInitialized = false;
     if ( isInitialized ) return TRUE;
+    isInitialized = true;
 
-    std::cerr << ";; Open IOB / start " << std::endl;
+    std::cerr << "[iob] Open IOB / start " << std::endl;
+
+    std::string node_name;
+    {
+      char *ret = getenv("HRPSYS_GAZEBO_IOB_NAME");
+      if (ret != NULL) {
+        node_name.assign(ret);
+      } else {
+        node_name = "hrpsys_gazebo_iob";
+      }
+      std::cerr << "[iob] set node name : " << node_name << std::endl;
+    }
 
     std::map<std::string, std::string> arg;
     ros::init(arg, "hrpsys_gazebo_iob", ros::init_options::NoSigintHandler);
-
     rosnode = new ros::NodeHandle();
+    ros::WallDuration(0.5).sleep(); // wait for initializing ros
+
+    std::string controller_name;
+    {
+      char *ret = getenv("HRPSYS_GAZEBO_IOB");
+      if (ret != NULL) {
+        controller_name.assign(ret);
+      } else {
+        controller_name = "hrpsys_gazebo_configuration";
+      }
+      ROS_INFO_STREAM( "[iob] set controller_name : " << controller_name);
+    }
+    {
+      char *ret = getenv("HRPSYS_GAZEBO_IOB_SYNCHRONIZED");
+      if (ret != NULL) {
+        std::string ret_str(ret);
+
+        iob_synchronized = true;
+        ROS_INFO("[iob] use synchronized command");
+      } else {
+        iob_synchronized = false;
+      }
+    }
 
     joint_real2model_vec.resize(0);
-    std::string controller_name;
-    char *ret = getenv("HRPSYS_GAZEBO_IOB");
-    if (ret != NULL) {
-      controller_name.assign(ret);
-    } else {
-      controller_name = "hrpsys_gazebo_configuration";
-    }
-    ROS_INFO_STREAM( "iob: \"" << controller_name << "\" is used as configuration name" );
 
     if (rosnode->hasParam(controller_name + "/joint_id_list")) {
       XmlRpc::XmlRpcValue param_val;
@@ -581,10 +639,10 @@ int open_iob(void)
           joint_real2model_vec.push_back(num);
         }
       } else {
-        ROS_WARN("iob: %s/joint_id_list is not list of integer", controller_name.c_str());
+        ROS_WARN("[iob] %s/joint_id_list is not list of integer", controller_name.c_str());
       }
     } else {
-      ROS_DEBUG("iob: %s/joint_id_list is nothing", controller_name.c_str());
+      ROS_DEBUG("[iob] %s/joint_id_list is nothing", controller_name.c_str());
     }
 
     XmlRpc::XmlRpcValue param_val;
@@ -597,7 +655,7 @@ int open_iob(void)
           joint_lst.push_back(nstr);
         }
     } else {
-      ROS_ERROR("%s/joints is not list of joint name", controller_name.c_str());
+      ROS_ERROR("[iob] %s/joints is not list of joint name", controller_name.c_str());
     }
 
     if (joint_real2model_vec.size() == 0) {
@@ -605,7 +663,7 @@ int open_iob(void)
         joint_real2model_vec.push_back(i);
       }
     } else if (joint_real2model_vec.size() != joint_lst.size()) {
-      ROS_ERROR("size differece on joint_id_list and joints (%ld,  %ld)",
+      ROS_ERROR("[iob] size differece on joint_id_list and joints (%ld,  %ld)",
                 joint_real2model_vec.size(), joint_lst.size());
     }
 
@@ -637,19 +695,19 @@ int open_iob(void)
       std::string i_clamp_str = std::string(joint_ns)+"i_clamp";
       std::string vp_str = std::string(joint_ns)+"vp";
       if (!rosnode->getParam(p_str, p_val)) {
-        ROS_WARN("couldn't find a P param for %s", joint_ns.c_str());
+        ROS_WARN("[iob] couldn't find a P param for %s", joint_ns.c_str());
       }
       if (!rosnode->getParam(i_str, i_val)) {
-        ROS_WARN("couldn't find a I param for %s", joint_ns.c_str());
+        ROS_WARN("[iob] couldn't find a I param for %s", joint_ns.c_str());
       }
       if (!rosnode->getParam(d_str, d_val)) {
-        ROS_WARN("couldn't find a D param for %s", joint_ns.c_str());
+        ROS_WARN("[iob] couldn't find a D param for %s", joint_ns.c_str());
       }
       if (!rosnode->getParam(i_clamp_str, i_clamp_val)) {
-        ROS_WARN("couldn't find a I_CLAMP param for %s", joint_ns.c_str());
+        ROS_WARN("[iob] couldn't find a I_CLAMP param for %s", joint_ns.c_str());
       }
       if (!rosnode->getParam(vp_str, vp_val)) {
-        ROS_WARN("couldn't find a VP param for %s", joint_ns.c_str());
+        ROS_WARN("[iob] couldn't find a VP param for %s", joint_ns.c_str());
       }
       // store these directly on altasState, more efficient for pub later
       initial_jointcommand.kp_position[i] = p_val;
@@ -666,28 +724,36 @@ int open_iob(void)
     std::string rname_str = std::string(controller_name) + "/robotname";
     rosnode->getParam(rname_str, robotname);
 
-    initial_jointcommand.desired_controller_period_ms = static_cast<unsigned int>(g_period_ns * 1e-6);
+    initial_jointcommand.desired_controller_period_ms =
+      static_cast<unsigned int>(g_period_ns * 1e-6);
 
-    pub_joint_command = rosnode->advertise <JointCommand> (robotname + "/joint_command", 1, true);
+    if (iob_synchronized) {
+      serv_command =
+        ros::service::createClient<hrpsys_gazebo_msgs::SyncCommand> ("/iob_command", true); // persistent = true,
+      ROS_INFO("[iob] waiting service %s", "/iob_command");
+      serv_command.waitForExistence();
+      ROS_INFO("[iob] found service %s", "/iob_command");
+    } else {
+      pub_joint_command = rosnode->advertise <JointCommand> (robotname + "/joint_command", 1, true);
 
-    // ros topic subscribtions
-    ros::SubscribeOptions jointStatesSo =
-      ros::SubscribeOptions::create<RobotState>(robotname + "/robot_state", 1, setJointStates,
-                                                ros::VoidPtr(), rosnode->getCallbackQueue());
-    // Because TCP causes bursty communication with high jitter,
-    // declare a preference on UDP connections for receiving
-    // joint states, which we want to get at a high rate.
-    // Note that we'll still accept TCP connections for this topic
-    // (e.g., from rospy nodes, which don't support UDP);
-    // we just prefer UDP.
-    // temporary use TCP / Using UDP occured some problem when message size more than 1500.
-    //jointStatesSo.transport_hints =
-    //ros::TransportHints().maxDatagramSize(3000).unreliable().reliable().tcpNoDelay(true);
-    jointStatesSo.transport_hints =
-      ros::TransportHints().reliable().tcpNoDelay(true);
-    sub_robot_state = rosnode->subscribe(jointStatesSo);
+      // ros topic subscribtions
+      ros::SubscribeOptions jointStatesSo =
+        ros::SubscribeOptions::create<RobotState>(robotname + "/robot_state", 1, setJointStates,
+                                                  ros::VoidPtr(), rosnode->getCallbackQueue());
+      // Because TCP causes bursty communication with high jitter,
+      // declare a preference on UDP connections for receiving
+      // joint states, which we want to get at a high rate.
+      // Note that we'll still accept TCP connections for this topic
+      // (e.g., from rospy nodes, which don't support UDP);
+      // we just prefer UDP.
+      // temporary use TCP / Using UDP occured some problem when message size more than 1500.
+      //jointStatesSo.transport_hints =
+      //ros::TransportHints().maxDatagramSize(3000).unreliable().reliable().tcpNoDelay(true);
+      jointStatesSo.transport_hints =
+        ros::TransportHints().reliable().tcpNoDelay(true);
+      sub_robot_state = rosnode->subscribe(jointStatesSo);
+    }
 
-    std::cerr << "JointState IOB is opened" << std::endl;
     for (int i=0; i < number_of_joints(); i++){
         command[i] = 0.0;
         power[i] = OFF;
@@ -697,24 +763,36 @@ int open_iob(void)
     rg_ts = ros::Time::now();
 
     jointcommand = initial_jointcommand;
-    isInitialized = true;
-    std::cerr << ";; " << number_of_joints() << " / " << initial_jointcommand.position.size() << " / " << NUM_OF_REAL_JOINT << std::endl;
-    std::cerr << ";; block until subscribing first robot_state";
-    ros::Rate rr(100);
-    ros::spinOnce();
-    while (!init_sub_flag) {
-      std::cerr << ".";
-      rr.sleep();
+    std::cerr << "[iob]  " << number_of_joints() << " / " << initial_jointcommand.position.size() << " / " << NUM_OF_REAL_JOINT << std::endl;
+
+    if (iob_synchronized) {
+      hrpsys_gazebo_msgs::SyncCommandRequest req;
+      req.joint_command = jointcommand;
+      hrpsys_gazebo_msgs::SyncCommandResponse res;
+      std::cerr << "[iob] first service call" << std::endl;
+      serv_command.call(req, res);
+      std::cerr << "[iob] first service returned" << std::endl;
+      js = res.robot_state;
+      init_sub_flag = true;
+    } else {
+      std::cerr << "[iob] block until subscribing first robot_state";
+      ros::Rate rr(100);
       ros::spinOnce();
+      while (!init_sub_flag) {
+        std::cerr << ".";
+        rr.sleep();
+        ros::spinOnce();
+      }
     }
-    std::cerr << std::endl << ";; Open IOB / finish " << std::endl;
+
+    std::cerr << "[iob] Open IOB / finish " << std::endl;
 
     return TRUE;
 }
 
 int close_iob(void)
 {
-    std::cerr << ";; IOB is closed" << std::endl;
+    std::cerr << "[iob] IOB is closed" << std::endl;
     return TRUE;
 }
 
@@ -892,6 +970,15 @@ double timespec_compare(timespec *ts1, timespec *ts2)
 
 int wait_for_iob_signal()
 {
+  if (iob_synchronized) {
+    //std::cerr << "wait>" << std::endl;
+    if (start_robothw) {
+      // no wait
+    }
+    //std::cerr << "wait<" << std::endl;
+    return 0;
+  } else {
+    //
     ros::Time rnow;
     ros::Duration tm = ros::Duration(0, g_period_ns);
     ros::WallDuration wtm = ros::WallDuration(0, 100000); // 0.1 ms
@@ -909,6 +996,9 @@ int wait_for_iob_signal()
     }
 
     return 0;
+  }
+
+  return 0;
 }
 
 size_t length_of_extra_servo_state(int id)

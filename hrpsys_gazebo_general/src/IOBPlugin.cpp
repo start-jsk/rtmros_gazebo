@@ -27,7 +27,10 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   if (_sdf->HasElement("controller")) {
     this->controller_name = _sdf->Get<std::string>("controller");
   }
-
+  this->use_synchronized_command = false;
+  if (_sdf->HasElement("synchronized_command")) {
+    this->use_synchronized_command = _sdf->Get<bool>("synchronized_command");
+  }
   // initialize ros
   if (!ros::isInitialized()) {
     gzerr << "Not loading plugin since ROS hasn't been "
@@ -50,6 +53,19 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 
   // creating joints from ros param
   if (this->rosNode->hasParam(this->controller_name)) {
+    {
+      std::string pname = this->controller_name + "/use_synchronized_command";
+      if (this->rosNode->hasParam(pname)) {
+        bool ret;
+        this->rosNode->getParam(pname, ret);
+        if (!this->use_synchronized_command) {
+          this->use_synchronized_command = ret;
+        } else {
+          ROS_WARN("override use_synchronized_command at %d by %d",
+                   this->use_synchronized_command, ret);
+        }
+      }
+    }
     XmlRpc::XmlRpcValue param_val;
     this->rosNode->getParam(this->controller_name, param_val);
     if (param_val.getType() ==  XmlRpc::XmlRpcValue::TypeStruct) {
@@ -348,107 +364,147 @@ void IOBPlugin::DeferredLoad() {
   IOBCommandSo.transport_hints = ros::TransportHints().reliable().tcpNoDelay(true);
   this->subIOBCommand = this->rosNode->subscribe(IOBCommandSo);
 
-  // ros callback queue for processing subscription
-  this->callbackQueeuThread = boost::thread(boost::bind(&IOBPlugin::RosQueueThread, this));
+  if (this->use_synchronized_command) {
+    // ros service
+    ROS_INFO("use synchronized command");
+    ros::AdvertiseServiceOptions IOBServO =
+      ros::AdvertiseServiceOptions::create<hrpsys_gazebo_msgs::SyncCommand>
+      ("/iob_command",  boost::bind(&IOBPlugin::serviceCallback, this, _1, _2),
+       ros::VoidPtr(), &this->srvQueue);
+    controlServ = this->rosNode->advertiseService(IOBServO);
 
-  //
+    // ros callback queue for processing subscription
+    this->callbackQueeuThread_srv =
+      boost::thread(boost::bind(&IOBPlugin::SrvQueueThread, this));
+  }
+
+  this->callbackQueeuThread_msg =
+    boost::thread(boost::bind(&IOBPlugin::RosQueueThread, this));
+
   this->updateConnection =
     event::Events::ConnectWorldUpdateBegin(boost::bind(&IOBPlugin::UpdateStates, this));
 }
-
 void IOBPlugin::SetJointCommand(const JointCommand::ConstPtr &_msg) {
+  this->SetJointCommand_impl(*_msg);
+}
+void IOBPlugin::SetJointCommand_impl(const JointCommand &_msg) {
   // Update Joint Command
   boost::mutex::scoped_lock lock(this->mutex);
 
-  this->jointCommand.header.stamp = _msg->header.stamp;
+  this->jointCommand.header.stamp = _msg.header.stamp;
 
   // for jointCommand, only position, velocity and efforts are used.
-  if (_msg->position.size() == this->jointCommand.position.size())
-    std::copy(_msg->position.begin(), _msg->position.end(), this->jointCommand.position.begin());
+  if (_msg.position.size() == this->jointCommand.position.size())
+    std::copy(_msg.position.begin(), _msg.position.end(), this->jointCommand.position.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements position[%ld] than expected[%ld]",
-      _msg->position.size(), this->jointCommand.position.size());
+      _msg.position.size(), this->jointCommand.position.size());
 
-  if (_msg->velocity.size() == this->jointCommand.velocity.size())
-    std::copy(_msg->velocity.begin(), _msg->velocity.end(), this->jointCommand.velocity.begin());
+  if (_msg.velocity.size() == this->jointCommand.velocity.size())
+    std::copy(_msg.velocity.begin(), _msg.velocity.end(), this->jointCommand.velocity.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements velocity[%ld] than expected[%ld]",
-      _msg->velocity.size(), this->jointCommand.velocity.size());
+      _msg.velocity.size(), this->jointCommand.velocity.size());
 
-  if (_msg->effort.size() == this->jointCommand.effort.size())
-    std::copy(_msg->effort.begin(), _msg->effort.end(), this->jointCommand.effort.begin());
+  if (_msg.effort.size() == this->jointCommand.effort.size())
+    std::copy(_msg.effort.begin(), _msg.effort.end(), this->jointCommand.effort.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements effort[%ld] than expected[%ld]",
-      _msg->effort.size(), this->jointCommand.effort.size());
+      _msg.effort.size(), this->jointCommand.effort.size());
 
   // the rest are stored in robotState for publication
-  if (_msg->kp_position.size() == this->robotState.kp_position.size())
-    std::copy(_msg->kp_position.begin(), _msg->kp_position.end(), this->robotState.kp_position.begin());
+  if (_msg.kp_position.size() == this->robotState.kp_position.size())
+    std::copy(_msg.kp_position.begin(), _msg.kp_position.end(), this->robotState.kp_position.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements kp_position[%ld] than expected[%ld]",
-      _msg->kp_position.size(), this->robotState.kp_position.size());
+      _msg.kp_position.size(), this->robotState.kp_position.size());
 
-  if (_msg->ki_position.size() == this->robotState.ki_position.size())
-    std::copy(_msg->ki_position.begin(), _msg->ki_position.end(), this->robotState.ki_position.begin());
+  if (_msg.ki_position.size() == this->robotState.ki_position.size())
+    std::copy(_msg.ki_position.begin(), _msg.ki_position.end(), this->robotState.ki_position.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements ki_position[%ld] than expected[%ld]",
-      _msg->ki_position.size(), this->robotState.ki_position.size());
+      _msg.ki_position.size(), this->robotState.ki_position.size());
 
-  if (_msg->kd_position.size() == this->robotState.kd_position.size())
-    std::copy(_msg->kd_position.begin(), _msg->kd_position.end(), this->robotState.kd_position.begin());
+  if (_msg.kd_position.size() == this->robotState.kd_position.size())
+    std::copy(_msg.kd_position.begin(), _msg.kd_position.end(), this->robotState.kd_position.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements kd_position[%ld] than expected[%ld]",
-      _msg->kd_position.size(), this->robotState.kd_position.size());
+      _msg.kd_position.size(), this->robotState.kd_position.size());
 
-  if (_msg->kp_velocity.size() == this->robotState.kp_velocity.size())
-    std::copy(_msg->kp_velocity.begin(), _msg->kp_velocity.end(), this->robotState.kp_velocity.begin());
+  if (_msg.kp_velocity.size() == this->robotState.kp_velocity.size())
+    std::copy(_msg.kp_velocity.begin(), _msg.kp_velocity.end(), this->robotState.kp_velocity.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements kp_velocity[%ld] than expected[%ld]",
-      _msg->kp_velocity.size(), this->robotState.kp_velocity.size());
+      _msg.kp_velocity.size(), this->robotState.kp_velocity.size());
 
-  if (_msg->i_effort_min.size() == this->robotState.i_effort_min.size())
-    std::copy(_msg->i_effort_min.begin(), _msg->i_effort_min.end(), this->robotState.i_effort_min.begin());
+  if (_msg.i_effort_min.size() == this->robotState.i_effort_min.size())
+    std::copy(_msg.i_effort_min.begin(), _msg.i_effort_min.end(), this->robotState.i_effort_min.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements i_effort_min[%ld] than expected[%ld]",
-      _msg->i_effort_min.size(), this->robotState.i_effort_min.size());
+      _msg.i_effort_min.size(), this->robotState.i_effort_min.size());
 
-  if (_msg->i_effort_max.size() == this->robotState.i_effort_max.size())
-    std::copy(_msg->i_effort_max.begin(), _msg->i_effort_max.end(), this->robotState.i_effort_max.begin());
+  if (_msg.i_effort_max.size() == this->robotState.i_effort_max.size())
+    std::copy(_msg.i_effort_max.begin(), _msg.i_effort_max.end(), this->robotState.i_effort_max.begin());
   else
     ROS_DEBUG("JointCommand message contains different number of"
       " elements i_effort_max[%ld] than expected[%ld]",
-      _msg->i_effort_max.size(), this->robotState.i_effort_max.size());
+      _msg.i_effort_max.size(), this->robotState.i_effort_max.size());
 
   this->jointCommand.desired_controller_period_ms =
-    _msg->desired_controller_period_ms;
+    _msg.desired_controller_period_ms;
 }
 
 void IOBPlugin::UpdateStates() {
+  //ROS_DEBUG("update");
   common::Time curTime = this->world->GetSimTime();
   if (curTime > this->lastControllerUpdateTime) {
-    // gather robot state data and publish them
-    this->GetAndPublishRobotStates(curTime);
-    //
-    // wait retrun of controller
-    //
+    // gather robot state data
+    this->GetRobotStates(curTime);
+    // publish robot states
+    this->pubRobotStateQueue->push(this->robotState, this->pubRobotState);
+    if (this->use_synchronized_command) {
+      {
+        boost::unique_lock<boost::mutex> lock(this->uniq_mutex);
+        //ROS_DEBUG("return notify");
+        return_service_cond_.notify_all();
+
+        //ROS_DEBUG("service wait");
+        wait_service_cond_.wait(lock);
+      }
+    }
     {
       boost::mutex::scoped_lock lock(this->mutex);
       this->UpdatePIDControl((curTime - this->lastControllerUpdateTime).Double());
     }
-
     this->lastControllerUpdateTime = curTime;
   }
 }
 
-void IOBPlugin::GetAndPublishRobotStates(const common::Time &_curTime){
+bool IOBPlugin::serviceCallback(hrpsys_gazebo_msgs::SyncCommandRequest &req,
+                                hrpsys_gazebo_msgs::SyncCommandResponse &res)
+{
+  this->SetJointCommand_impl(req.joint_command);
+  {
+    boost::unique_lock<boost::mutex> lock(this->uniq_mutex);
+    //ROS_DEBUG("service notify");
+    wait_service_cond_.notify_all();
+
+    //ROS_DEBUG("return wait");
+    return_service_cond_.wait(lock);
+    res.robot_state = this->robotState;
+  }
+  return true;
+}
+
+void IOBPlugin::GetRobotStates(const common::Time &_curTime){
 
   // populate robotState from robot
   this->robotState.header.stamp = ros::Time(_curTime.sec, _curTime.nsec);
@@ -518,8 +574,6 @@ void IOBPlugin::GetAndPublishRobotStates(const common::Time &_curTime){
       this->robotState.Imus[i].orientation.w = imuRot.w;
     }
   }
-  // publish robot states
-  this->pubRobotStateQueue->push(this->robotState, this->pubRobotState);
 }
 
 void IOBPlugin::UpdatePIDControl(double _dt) {
@@ -625,7 +679,13 @@ void IOBPlugin::RosQueueThread() {
   static const double timeout = 0.01;
 
   while (this->rosNode->ok()) {
+    ros::spinOnce();
     this->rosQueue.callAvailable(ros::WallDuration(timeout));
+  }
+}
+void IOBPlugin::SrvQueueThread() {
+  while (this->rosNode->ok()) {
+    this->srvQueue.callAvailable();
   }
 }
 }

@@ -15,7 +15,7 @@ execute_process(
   OUTPUT_STRIP_TRAILING_WHITESPACE
 )
 
-include_directories(${hrpsys_PACKAGE_PATH}/include;${hrpsys_gazebo_msgs_PACKAGE_PATH}/msg_gen/cpp/include)
+include_directories(${hrpsys_PACKAGE_PATH}/include;${hrpsys_gazebo_msgs_PACKAGE_PATH}/msg_gen/cpp/include;${hrpsys_gazebo_msgs_PACKAGE_PATH}/srv_gen/cpp/include)
 link_directories("/opt/ros/${ROS_DISTRO}/lib")
 add_library(${target} SHARED iob.cpp)
 target_link_libraries(${target} rt roscpp rostime)
