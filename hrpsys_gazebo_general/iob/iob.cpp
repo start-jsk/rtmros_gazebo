@@ -47,6 +47,7 @@ static unsigned long long frame = 0;
 static timespec g_ts;
 static long g_period_ns=1000000;
 static ros::Time rg_ts;
+static int num_of_substeps = 1;
 
 #define CHECK_JOINT_ID(id) if ((id) < 0 || (id) >= number_of_joints()) return E_ID
 #define CHECK_FORCE_SENSOR_ID(id) if ((id) < 0 || (id) >= number_of_force_sensors()) return E_ID
@@ -366,7 +367,7 @@ int write_command_angles(const double *angles)
       ros::spinOnce();
     }
     if (!start_robothw) {
-      frame = 1;
+      frame = 0;
       start_robothw = true;
     }
 
@@ -607,7 +608,7 @@ int open_iob(void)
     ros::WallDuration(0.5).sleep(); // wait for initializing ros
 
     std::string controller_name;
-    {
+    { // setting configuration name
       char *ret = getenv("HRPSYS_GAZEBO_IOB");
       if (ret != NULL) {
         controller_name.assign(ret);
@@ -616,15 +617,26 @@ int open_iob(void)
       }
       ROS_INFO_STREAM( "[iob] set controller_name : " << controller_name);
     }
-    {
+    { // setting synchronized
       char *ret = getenv("HRPSYS_GAZEBO_IOB_SYNCHRONIZED");
       if (ret != NULL) {
         std::string ret_str(ret);
-
-        iob_synchronized = true;
-        ROS_INFO("[iob] use synchronized command");
+        if (ret_str.size() > 0) {
+          iob_synchronized = true;
+          ROS_INFO("[iob] use synchronized command");
+        }
       } else {
         iob_synchronized = false;
+      }
+    }
+    { // setting substeps
+      char *ret = getenv("HRPSYS_GAZEBO_IOB_SUBSTEPS");
+      if (ret != NULL) {
+        int num = atoi(ret);
+        if (num > 0) {
+          num_of_substeps = num;
+          ROS_INFO("[iob] use substeps %d", num);
+        }
       }
     }
 
@@ -931,12 +943,28 @@ int read_torque_limit(int id, double *limit)
 unsigned long long read_iob_frame()
 {
     ++frame;
+    if (iob_synchronized && start_robothw) {
+      if(frame % num_of_substeps != 0) {
+        // tick gazebo ...
+        hrpsys_gazebo_msgs::SyncCommandRequest req;
+        req.joint_command = jointcommand;
+        hrpsys_gazebo_msgs::SyncCommandResponse res;
+        //std::cerr << "[iob] service call" << std::endl;
+        serv_command.call(req, res);
+        //std::cerr << "[iob] service returned" << std::endl;
+        js = res.robot_state;
+      } // else break to executing RobotHardware
+    }
     return frame;
 }
 
 int number_of_substeps()
 {
+  if (iob_synchronized) {
+    return num_of_substeps;
+  } else {
     return 1;
+  }
 }
 
 int read_power(double *voltage, double *current)
