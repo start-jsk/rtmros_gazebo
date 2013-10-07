@@ -160,6 +160,7 @@ namespace gazebo
 
       // set pose
       pose = this->link->GetWorldCoGPose();
+      // pose = this->link->GetWorldPose();
       _pose.pose.position.x = pose.pos.x;
       _pose.pose.position.y = pose.pos.y;
       _pose.pose.position.z = pose.pos.z;

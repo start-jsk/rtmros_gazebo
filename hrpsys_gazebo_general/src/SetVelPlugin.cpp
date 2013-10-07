@@ -101,7 +101,8 @@ namespace gazebo
       this->model->SetAngularVel(math::Vector3(0, 0, 0));
       this->pose.Set(math::Vector3(_msg->position.x, _msg->position.y, _msg->position.z),
 		     math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
-      this->model->SetLinkWorldPose(this->pose, this->link);
+      // this->model->SetLinkWorldPose(this->pose, this->link);
+      this->model->SetWorldPose(this->pose, this->link);
       gzmsg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
     }
 
