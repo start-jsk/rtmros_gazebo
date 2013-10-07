@@ -7,14 +7,15 @@
 ;; class definition
 
 (defun init-gazebo-plugin
-  (&optional (_objname ""))
-  (instance gazebo-plugin-obj-operate :init _objname)
-  )
+  (&optional (_objname "") (_objmodel nil))
+  (let* ((gp (instance gazebo-plugin-obj-operate :init _objname)))
+    (when _objmodel (send _objmodel :put :gp gp))
+    gp))
 
 (defclass gazebo-plugin-obj-operate
   :super propertied-object
   :slots (objname
-	 abs-vel abs-accel rel-vel rel-accel pose)
+	  abs-vel abs-accel rel-vel rel-accel pose)
   )
 
 (defmethod gazebo-plugin-obj-operate
@@ -29,8 +30,8 @@
    (send self :init-get-vel)
    (send self :update))
   (:update ()
-   (ros::spin-once))
-  ;; add-froce plugin
+	   (ros::spin-once))
+  ;; add-froce plugin ;;;;;;
   (:init-add-force
    ()
    (ros::roseus "AddForceEus")
@@ -48,7 +49,7 @@
   (:reset-force
    ()
    (send self :add-force (float-vector 0 0 0)))
-  ;; get-vel plugin
+  ;; get-vel plugin ;;;;;;
   (:init-get-vel
    ()
    (ros::roseus "GetVelEus")
@@ -57,21 +58,11 @@
    (ros::subscribe (format nil "~a~a" objname "/GetVelPlugin/RelVel") geometry_msgs::TwistStamped #'send self :get-rel-vel-cb)
    (ros::subscribe (format nil "~a~a" objname "/GetVelPlugin/RelAccel") geometry_msgs::TwistStamped #'send self :get-rel-accel-cb)
    (ros::subscribe (format nil "~a~a" objname "/GetVelPlugin/Pose") geometry_msgs::PoseStamped #'send self :get-vel-cb))
-  (:get-abs-vel-cb
-   (msg)
-   (setq abs-vel msg))
-  (:get-abs-accel-cb
-   (msg)
-   (setq abs-accel msg))
-  (:get-rel-vel-cb
-   (msg)
-   (setq rel-vel msg))
-  (:get-rel-accel-cb
-   (msg)
-   (setq rel-accel msg))
-  (:get-vel-cb
-   (msg)
-   (setq pose msg))
+  (:get-abs-vel-cb (msg) (setq abs-vel msg))
+  (:get-abs-accel-cb (msg) (setq abs-accel msg))
+  (:get-rel-vel-cb (msg) (setq rel-vel msg))
+  (:get-rel-accel-cb (msg) (setq rel-accel msg))
+  (:get-vel-cb (msg) (setq pose msg))
   (:get-abs-vel
    ()
    (send self :update)
@@ -104,7 +95,7 @@
 	  (quat (rosvector42eusvector (send (send pose :pose) :orientation)))
 	  (rot (quaternion2matrix quat)))
      (make-coords :pos pos :rot rot)))
-  ;; set-vel plugin
+  ;; set-vel plugin ;;;;;;
   (:init-set-vel
    ()
    (ros::roseus "SetVelEus")
@@ -131,27 +122,49 @@
   )
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; pose
+
+(defun obj-gzb2eus
+  (&optional (obj *obj*) &key (loop? nil))
+  (unless (send obj :get :gp)
+    (warning-message 1 "^a has no gazebo plugin instance.~%" (send obj :name))
+    (return-from gzb2eus))
+  (do-until-key
+   (let* ((pose (send (send obj :get :gp) :get-pose)))
+     (send obj :newcoords pose))
+   (send *pickview* :draw-objects)
+   (unless loop? (return))
+   (unix::usleep (* 10 1000)))
+  )
+
+(defun obj-eus2gzb
+  (&optional (obj *obj*))
+  (unless (send obj :get :gp)
+    (warning-message 1 "^a has no gazebo plugin instance.~%" (send obj :name))
+    (return-from eus2gzb))
+  (let* ((pose (send obj :worldcoords)))
+    (send (send obj :get :gp) :set-pose pose))
+  )
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; samples
 
 (defun tilt-box-by-pd-control (&optional (objname "") (dest-pitch (/ pi 4)))
-  (setq *gpoo* (instance gazebo-plugin-obj-operate :init objname))
+  (setq *gp* (init-gazebo-plugin objname))
   (unix::usleep (* 1000 1000))
-  ;; (do-until-key
-  ;;  (unix::usleep (* 10 1000))
-  ;;  (print (send (send *gpoo* :get-pose) :rot)))
   (do-until-key
    (let* ((dest-pitch-angle dest-pitch)
-  	(crnt-pitch-angle (elt (car (rpy-angle (send (send *gpoo* :get-pose) :rot))) 1))
-  	(diff-pitch-angle (- dest-pitch-angle crnt-pitch-angle))
-  	(crnt-dpitch-angle (elt (send *gpoo* :get-angular-vel (send *gpoo* :get-abs-vel)) 1))
-  	(p-gain 4.0) ;; (p-gain 150)
-  	(d-gain 4.0) ;; (d-gain 75)
-  	(pitch-moment (+ (* p-gain diff-pitch-angle) (- (* d-gain crnt-dpitch-angle))))
-  	(f (float-vector 0 0 0))
-  	(m (float-vector 0 pitch-moment 0)))
-     (send *gpoo* :add-force f m)
+	  (crnt-pitch-angle (elt (car (rpy-angle (send (send *gp* :get-pose) :rot))) 1))
+	  (diff-pitch-angle (- dest-pitch-angle crnt-pitch-angle))
+	  (crnt-dpitch-angle (elt (send *gp* :get-angular-vel (send *gp* :get-abs-vel)) 1))
+	  (p-gain 4.0) ;; (p-gain 150)
+	  (d-gain 4.0) ;; (d-gain 75)
+	  (pitch-moment (+ (* p-gain diff-pitch-angle) (- (* d-gain crnt-dpitch-angle))))
+	  (f (float-vector 0 0 0))
+	  (m (float-vector 0 pitch-moment 0)))
+     (send *gp* :add-force f m)
      (warn "angle: ~a  moment: ~a~%" (rad2deg crnt-pitch-angle) pitch-moment)
      (unix::usleep (* 100 1000))))
   )
