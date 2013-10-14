@@ -327,7 +327,8 @@
       (do-until-key
        (real2model)
        (send *atlas* :newcoords (make-coords :rpy (get-hrpsys-imu-rpy)))
-       (send *irtviewer* :draw-objects)
+       (cond (*pickview* (send *pickview* :draw-objects))
+	     (*irtviewer* (send *pickview* :draw-objects)))
        (x::window-main-one)
        (unix::usleep (* 10 1000)))
     (send *atlas* :newcoords (make-coords :rpy (get-hrpsys-imu-rpy)))
@@ -382,7 +383,17 @@
    ()
    (send self :reset-pose)
    (send self :fix-leg-to-coords (make-coords))
-   (send self :legs :move-end-pos #f(0 0 70) :world)
+   (send self :legs :move-end-pos #f(0 0 100) :world)
+   (send self :fix-leg-to-coords (make-coords))
+   (send self :move-centroid-on-foot
+	 :both '(:rleg :lleg)
+	 :target-centroid-pos (send self :calc-target-centroid-pos :both '(:rleg :lleg)))
+   )
+  (:walk-manip-pose
+   ()
+   (send self :reset-manip-pose)
+   (send self :fix-leg-to-coords (make-coords))
+   (send self :legs :move-end-pos #f(0 0 100) :world)
    (send self :fix-leg-to-coords (make-coords))
    (send self :move-centroid-on-foot
 	 :both '(:rleg :lleg)

@@ -15,22 +15,30 @@
 (setq ros::*compile-message* nil)
 
 ;; mask vectors / reference atlas_msgs::AtlasState
-(defconstant *torso-mask-vector*
-  (float-vector 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
-(defconstant *head-mask-vector*
-  (float-vector 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
-(defconstant *lleg-mask-vector*
-  (float-vector 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0))
-(defconstant *rleg-mask-vector*
-  (float-vector 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0))
-(defconstant *larm-mask-vector*
-  (float-vector 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0))
-(defconstant *rarm-mask-vector*
-  (float-vector 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1))
-(defconstant *manip-mask-vector*
-  (float-vector 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1))
-(defconstant *stand-mask-vector*
-  (float-vector 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0))
+(unless (constantp '*torso-mask-vector*)
+  (defconstant *torso-mask-vector*
+    (float-vector 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)))
+(unless (constantp '*head-mask-vector*)
+  (defconstant *head-mask-vector*
+    (float-vector 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)))
+(unless (constantp '*lleg-mask-vector*)
+  (defconstant *lleg-mask-vector*
+    (float-vector 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)))
+(unless (constantp '*rleg-mask-vector*)
+  (defconstant *rleg-mask-vector*
+    (float-vector 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0)))
+(unless (constantp '*larm-mask-vector*)
+  (defconstant *larm-mask-vector*
+    (float-vector 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0)))
+(unless (constantp '*rarm-mask-vector*)
+  (defconstant *rarm-mask-vector*
+    (float-vector 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1)))
+(unless (constantp '*manip-mask-vector*)
+  (defconstant *manip-mask-vector*
+    (float-vector 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1)))
+(unless (constantp '*stand-mask-vector*)
+  (defconstant *stand-mask-vector*
+    (float-vector 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0)))
 
 (ros::roseus "atlas_interface")
 
