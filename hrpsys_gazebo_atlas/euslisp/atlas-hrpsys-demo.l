@@ -1,3 +1,5 @@
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+
 
 (defun atlas-walk-demo
   ()
@@ -57,13 +59,13 @@
   (model2real :wait t :time 2000)
   (unix::usleep (* 2000 1000))
   (send *ri* :go-stop)
-)
+  )
 
 
 (defun atlas-st-demo
   ()
 
-   ;; init
+  ;; init
   (my-init)
   (send *ri* :start-auto-balancer)
   (send *ri* :start-st)
@@ -129,7 +131,7 @@
   (unix:usleep (* 1000 1000))
   (obj-gzb2eus)
   (fix-leg)
-  (send *obj* :newcoords (make-coords :pos #f(850 0 0)))
+  (send *obj* :newcoords (make-coords :pos #f(825 0 0)))
   (obj-eus2gzb)
   (send *pickview* :draw-objects)
 
@@ -143,12 +145,13 @@
   (set-ref-force :x -50 :y -50 :arm :rarm)
   (set-ref-force :x -50 :y 50 :arm :larm)
   (send *ri* :set-auto-balancer-param
-	:default-zmp-offsets (list (float-vector 225 0 0) (float-vector 225 0 0)))
+	:default-zmp-offsets (list (float-vector 200 0 0) (float-vector 200 0 0)))
   (send *ri* :go-velocity 0.1 0 0)
   (unix:usleep (* 15 1000 1000))
   (send *ri* :autobalancerservice_goStop) ;; :go-stop but keep auto-balancer
   (send *ri* :set-auto-balancer-param
 	:default-zmp-offsets (list (float-vector 30 0 0) (float-vector 30 0 0)))
+  (unix:usleep (* 1 1000 1000))
 
   ;; release
   (set-ref-force :arm :arms)
