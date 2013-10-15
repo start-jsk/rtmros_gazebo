@@ -179,8 +179,18 @@
   ;; start-walk
   (send *ri* :go-velocity 0.2 0 0)
 
-  (warn "input following command to stop walking~% (send *ri* :autobalancerservice_goStop)~%")
+  (warn "input following command to stop walking~% (go-stop-with-abc)~%")
   )
 
-
+;; go-pos,go-vel,go-stop keeping auto balancer
+(defun go-pos-with-abc
+  (xx yy th &key (wait t))
+  (send *ri* :go-pos-no-wait xx yy th)
+  (when wait (send *ri* :wait-foot-steps)))
+(defun go-vel-with-abc
+  (xx yy th)
+  (send *ri* :go-velocity xx yy th))
+(defun go-stop-with-abc
+  ()
+  (send *ri* :autobalancerservice_goStop))
 
