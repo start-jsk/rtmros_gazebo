@@ -163,5 +163,24 @@
 
 
 
+(defun atlas-qual-door-demo
+  ()
+
+  ;; init
+  (my-init)
+  (send *ri* :start-st)
+  (send *ri* :start-auto-balancer)
+
+  ;; set pose
+  (grasp :real t)
+  (send *atlas* :angle-vector #f(0.0 0.0 0.0 0.0 28.8 -24.981 -79.9998 -67.5002 -54.007 0.0 28.8 24.981 79.9998 -67.5002 -54.007 69.8105 0.066304 -38.0241 -0.066304 -31.7866 -0.010269 69.8101 0.066304 -38.0215 -0.066304 -31.7888 -0.010269 0.0))
+  (model2real :wait t :time 4000)
+
+  ;; start-walk
+  (send *ri* :go-velocity 0.2 0 0)
+
+  (warn "input following command to stop walking~% (send *ri* :autobalancerservice_goStop)~%")
+  )
+
 
 
