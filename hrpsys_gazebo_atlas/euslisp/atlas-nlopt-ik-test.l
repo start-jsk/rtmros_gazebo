@@ -1,5 +1,5 @@
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-model.l")
-(require "package://nlopt_eus_wrapper/euslisp/nlopt.l")
+(require "package://eus_nlopt/euslisp/nlopt.l")
 (defvar *robot* (atlas-with-hand))
 
 (defvar *move-target* (list (send *robot* :rarm :end-coords)))
@@ -221,6 +221,7 @@
   (cond ((and (not eus?) move-base?) (funcall (cdr (assoc :del-6dof-links move-base?)))))
   ret)
 
+#|
 ;(fullbody-ik-test :target-limb '(:rarm :larm :rleg :lleg) :move-base? t :eus? nil)
 ;(fullbody-ik-test :target-limb '(:rarm) :move-base? nil)
 
