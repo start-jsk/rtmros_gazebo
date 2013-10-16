@@ -44,7 +44,7 @@
     <arg name="USE_ROBOTHARDWARE" default="true" />
     <arg name="USE_WALKING" default="true" />
     <arg name="USE_COLLISIONCHECK" default="true" />
-    <arg name="USE_IMPEDANCECONTROLLER" default="false" />
+    <arg name="USE_IMPEDANCECONTROLLER" default="true" />
     <arg name="USE_SOFTERRORLIMIT" default="true" />
     <arg name="USE_IMAGESENSOR" default="false" />
   </include>
