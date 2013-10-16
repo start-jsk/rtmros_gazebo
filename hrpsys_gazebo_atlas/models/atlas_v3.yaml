@@ -1,0 +1,76 @@
+##
+## - collada_joint_name : euslisp_joint_name (start with :)
+##
+
+torso:
+  - back_bkz : torso-waist-y
+  - back_bky : torso-waist-p
+  - back_bkx : torso-waist-r
+
+larm:
+  - l_arm_elx : larm-elbow-p
+  - l_arm_ely : larm-elbow-y
+  - l_arm_wrx : larm-wrist-p
+  - l_arm_shx : larm-shoulder-r
+  - l_arm_shy : larm-shoulder-y
+  - l_arm_wry : larm-wrist-y
+
+rarm:
+  - r_arm_elx : rarm-elbow-p
+  - r_arm_ely : rarm-elbow-y
+  - r_arm_wrx : rarm-wrist-p
+  - r_arm_shx : rarm-shoulder-r
+  - r_arm_shy : rarm-shoulder-y
+  - r_arm_wry : rarm-wrist-y
+
+lleg:
+  - l_leg_kny : lleg-knee-p
+  - l_leg_akx : lleg-ankle-r
+  - l_leg_hpy : lleg-crotch-p
+  - l_leg_hpx : lleg-crotch-r
+  - l_leg_aky : lleg-ankle-p
+  - l_leg_hpz : lleg-crotch-y
+
+rleg:
+  - r_leg_kny : rleg-knee-p
+  - r_leg_akx : rleg-ankle-r
+  - r_leg_hpy : rleg-crotch-p
+  - r_leg_hpx : rleg-crotch-r
+  - r_leg_aky : rleg-ankle-p
+  - r_leg_hpz : rleg-crotch-y
+
+head:
+  - neck_ry : head-neck-p
+
+##
+## end-coords
+##
+larm-end-coords: 
+  parent : l_hand
+  translate : [0, 0.1, 0]
+  rotate : [0, 1, 0, 0]
+rarm-end-coords:
+  parent : r_hand
+  translate : [0, -0.1, 0]
+  rotate : [0, 1, 0, 0]
+head-end-coords:
+  translate : [-0.01, 0, 0.1]
+  rotate    : [0, 1, 0, 90]
+lleg-end-coords:
+  parent : l_foot      
+  translate : [0.0, 0, -0.08]
+  rotate    : [0, 1, 0, 0]
+rleg-end-coords:
+  parent : r_foot      
+  translate : [0.0, 0, -0.08]
+  rotate    : [0, 1, 0, 0]
+
+##
+## reset-pose
+##
+angle-vector:
+  reset-pose : [0.0, 0.0, 0.0, 30.0, 90.0, 0.0, -80.0, 15.0, 0.0, -30.0, 90.0, 0.0, 80.0, 15.0, 0.0, 30.0, 0.0, -20.0, 0.0, -10.0, 0.0, 30.0, 0.0, -20.0, 0.0, -10.0, 0.0, 0.0, 0.0]
+  ## pose for pre-walk
+  stand-pose : [0.0, 0.0, 0.0, 28.5, 114.5, 0.0, -75.0, 17.0, 0.0, -28.5, 114.5, 0.0, 75.0, 17.0, 0.0, 28.0, -1.7, -12.5, 1.7, -15.5, 0.0, 28.0, 1.7, -12.5, -1.7, -15.5, 0.0, 0.0]
+  bdi-stand-pose : [0.0, 0.0, 0.0, 28.5, 114.5, 0.0, -75.0, 17.0, 0.0, -28.5, 114.5, 0.0, 75.0, 17.0, 0.0, 30.0, -4.4, -13.5, 4.4, -15.5, 0.0, 30.0, 4.4, -13.5, -4.4, -15.5, 0.0, -35.0]
+#  reset-manip-pose : [300.0, 75.0, 50.0, 110.0, -110.0, -20.0, -10.0, -10.0, -75.0, 50.0, -110.0, -110.0, 20.0, -10.0, -10.0, 0.0, 50.0]
