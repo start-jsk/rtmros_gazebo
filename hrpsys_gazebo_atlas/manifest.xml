@@ -15,7 +15,7 @@
   <depend package="hrpsys_ros_bridge"/>
 
   <!-- atlas gazebo -->
-  <depend package="atlas_utils"/>
+  <!--depend package="atlas_utils"/--> <!-- comment out at drcsim 3.0 and later -->
   <depend package="atlas_msgs" />
   <depend package="sandia_hand_msgs"/>
   <depend package="osrf_msgs" />
@@ -33,8 +33,7 @@
   <depend package="resized_imagetransport" />
 
   <!-- octomap -->
-  <depend package="octomap_server" />
-
+  <!-- depend package="octomap_server" /--> <!-- comment out at groovy -->
   <!-- -->
-  <depend package="footstep_planner" />
+  <!-- depend package="footstep_planner" /--> <!-- comment out at groovy -->
 </package>
