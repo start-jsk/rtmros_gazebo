@@ -17,3 +17,5 @@ sed -i -e '/<collision>/{N;N;N;s@<collision>\n      <origin xyz="0 0 0" rpy="0 -
 # continuous joint not working in GAZEBO
 sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
 
+# if you want to simulate self collision, uncomment the following line. (robot motion becomes unstable.)
+# sed -i -e "s@</mu2>@</mu2>\n    <selfCollide>true</selfCollide>@g" ${OUTPUT_FILE}
