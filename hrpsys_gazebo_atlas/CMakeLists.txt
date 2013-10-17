@@ -31,16 +31,16 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_find_ros_package(hrpsys_ros_bridge)
 include(${hrpsys_ros_bridge_PACKAGE_PATH}/cmake/compile_robot_model.cmake)
 
-rosbuild_find_ros_package(atlas)
-if (EXISTS ${atlas_PACKAGE_PATH}/atlas.urdf)
+rosbuild_find_ros_package(atlas_description)
+if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
 set(atlas_urdf "${PROJECT_SOURCE_DIR}/build/atlas.jsk.urdf")
 set(atlas_dae  "${PROJECT_SOURCE_DIR}/models/atlas.dae")
 add_custom_command(
   OUTPUT  ${atlas_urdf}
-  COMMAND cp ${atlas_PACKAGE_PATH}/atlas.urdf ${atlas_urdf}
+  COMMAND rosrun xacro xacro.py ${atlas_description_PACKAGE_PATH}/robots/atlas.urdf.xacro > ${atlas_urdf}
   COMMAND sed -i -e 's/link name=\"head\"/link name=\"atlas_head\"/' ${atlas_urdf}
   COMMAND sed -i -e 's/link=\"head\"/link=\"atlas_head\"/g' ${atlas_urdf}
-  DEPENDS ${atlas_PACKAGE_PATH}/atlas.urdf
+  DEPENDS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf
 )
 add_custom_command(
   OUTPUT ${atlas_dae}
@@ -80,7 +80,7 @@ compile_collada_model(${atlas_v3_dae}
   --robothardware-conf-file-option "pdgains.file_name: ${PROJECT_SOURCE_DIR}/models/PDgains.sav"
   --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
   --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
-  --conf-file-option "abc_end_effectors: :rarm,r_arm_mwx,back_ubx, :larm,l_arm_mwx,back_ubx, :rleg,r_leg_lax,pelvis, :lleg,l_leg_lax,pelvis,"
+  --conf-file-option "abc_end_effectors: :rarm,r_arm_wrx,back_bkx, :larm,l_arm_wrx,back_bkx, :rleg,r_leg_akx,pelvis, :lleg,l_leg_akx,pelvis,"
   --proj-file-root-option "0,0,1.0,0,0,1,0"
   )
 endif()
