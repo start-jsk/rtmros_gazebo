@@ -691,34 +691,34 @@ int open_iob(void)
     // Hardcoded List of Joint Names
     // List of joint names in the Atlas robot. Note the order must not change for this function to work correctly.
     std::vector<std::string> names;
-    names.push_back("atlas::back_lbz"); // 0
-    names.push_back("atlas::back_mby"); // 1
-    names.push_back("atlas::back_ubx"); // 2
+    names.push_back("atlas::back_bkz"); // 0
+    names.push_back("atlas::back_bky"); // 1
+    names.push_back("atlas::back_bkx"); // 2
     names.push_back("atlas::neck_ay"); // 9
-    names.push_back("atlas::l_leg_uhz"); // 28
-    names.push_back("atlas::l_leg_mhx"); // 29
-    names.push_back("atlas::l_leg_lhy"); // 30
+    names.push_back("atlas::l_leg_hpz"); // 28
+    names.push_back("atlas::l_leg_hpx"); // 29
+    names.push_back("atlas::l_leg_hpy"); // 30
     names.push_back("atlas::l_leg_kny"); // 31
-    names.push_back("atlas::l_leg_uay"); // 32
-    names.push_back("atlas::l_leg_lax"); // 33
-    names.push_back("atlas::r_leg_uhz"); // 34
-    names.push_back("atlas::r_leg_mhx"); // 35
-    names.push_back("atlas::r_leg_lhy"); // 36
+    names.push_back("atlas::l_leg_aky"); // 32
+    names.push_back("atlas::l_leg_akx"); // 33
+    names.push_back("atlas::r_leg_hpz"); // 34
+    names.push_back("atlas::r_leg_hpx"); // 35
+    names.push_back("atlas::r_leg_hpy"); // 36
     names.push_back("atlas::r_leg_kny"); // 37
-    names.push_back("atlas::r_leg_uay"); // 38
-    names.push_back("atlas::r_leg_lax"); // 39
-    names.push_back("atlas::l_arm_usy"); // 3
+    names.push_back("atlas::r_leg_aky"); // 38
+    names.push_back("atlas::r_leg_akx"); // 39
+    names.push_back("atlas::l_arm_shy"); // 3
     names.push_back("atlas::l_arm_shx"); // 4
     names.push_back("atlas::l_arm_ely"); // 5
     names.push_back("atlas::l_arm_elx"); // 6
-    names.push_back("atlas::l_arm_uwy"); // 7
-    names.push_back("atlas::l_arm_mwx"); // 8
-    names.push_back("atlas::r_arm_usy"); // 21
+    names.push_back("atlas::l_arm_wry"); // 7
+    names.push_back("atlas::l_arm_wrx"); // 8
+    names.push_back("atlas::r_arm_shy"); // 21
     names.push_back("atlas::r_arm_shx"); // 22
     names.push_back("atlas::r_arm_ely"); // 23
     names.push_back("atlas::r_arm_elx"); // 24
-    names.push_back("atlas::r_arm_uwy"); // 25
-    names.push_back("atlas::r_arm_mwx"); // 26
+    names.push_back("atlas::r_arm_wry"); // 25
+    names.push_back("atlas::r_arm_wrx"); // 26
 
     //names.push_back("atlas::center_bottom_led_frame_joint"); // 10
     //names.push_back("atlas::center_top_led_frame_joint"); // 11
