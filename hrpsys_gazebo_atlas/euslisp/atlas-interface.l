@@ -647,42 +647,135 @@
        ))))
 
 ;; degで指定した角度でリミットトルクが出るようにゲインを設定
+#|
+  /opt/ros/groovy/share/drcsim_gazebo/config/whole_body_trajectory_controller_v3.yaml
+  gains:
+    l_leg_hpz: {p:     5.0, d:  0.01, i:   0.0, i_clamp:    0.0}
+    l_leg_hpx: {p:   100.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+    l_leg_hpy: {p:  2000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
+    l_leg_kny: {p:  1000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
+    l_leg_aky: {p:   900.0, d:   2.0, i:   0.0, i_clamp:    0.0}
+    l_leg_akx: {p:   300.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+    r_leg_hpz: {p:     5.0, d:  0.01, i:   0.0, i_clamp:    0.0}
+    r_leg_hpx: {p:   100.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+    r_leg_hpy: {p:  2000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
+    r_leg_kny: {p:  1000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
+    r_leg_aky: {p:   900.0, d:   2.0, i:   0.0, i_clamp:    0.0}
+    r_leg_akx: {p:   300.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+    l_arm_shy: {p:  2000.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+    l_arm_shx: {p:  1000.0, d:  20.0, i:   0.0, i_clamp:    0.0}
+    l_arm_ely: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+    l_arm_elx: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+    l_arm_wry: {p:    50.0, d:   0.1, i:   0.0, i_clamp:    0.0}
+    l_arm_wrx: {p:   100.0, d:   0.2, i:   0.0, i_clamp:    0.0}
+    r_arm_shy: {p:  2000.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+    r_arm_shx: {p:  1000.0, d:  20.0, i:   0.0, i_clamp:    0.0}
+    r_arm_ely: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+    r_arm_elx: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+    r_arm_wry: {p:    50.0, d:   0.1, i:   0.0, i_clamp:    0.0}
+    r_arm_wrx: {p:   100.0, d:   0.2, i:   0.0, i_clamp:    0.0}
+    neck_ry:   {p:    20.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+    back_bkz:  {p:    20.0, d:   0.1, i:   0.0, i_clamp:    0.0}
+    back_bky:  {p:  4000.0, d:  02.0, i:   0.0, i_clamp:    0.0}
+    back_bkx:  {p:  2000.0, d:  01.0, i:   0.0, i_clamp:    0.0}
+
+    joint name="back_bkx"   effort="200"
+    joint name="back_bky"   effort="206.84"
+    joint name="back_bkz"   effort="124.016"
+    joint name="l_arm_elx"  effort="114"
+    joint name="l_arm_ely"  effort="114"
+    joint name="l_arm_shx"  effort="170"
+    joint name="l_arm_shy"  effort="212"
+    joint name="l_arm_wrx"  effort="60"
+    joint name="l_arm_wry"  effort="114"
+    joint name="l_leg_akx"  effort="90"
+    joint name="l_leg_aky"  effort="700"
+    joint name="l_leg_hpx"  effort="180"
+    joint name="l_leg_hpy"  effort="260"
+    joint name="l_leg_hpz"  effort="110"
+    joint name="l_leg_kny"  effort="220"
+    joint name="neck_ry"    effort="5"
+    joint name="r_arm_elx"  effort="114"
+    joint name="r_arm_ely"  effort="114"
+    joint name="r_arm_shx"  effort="170"
+    joint name="r_arm_shy"  effort="212"
+    joint name="r_arm_wrx"  effort="60"
+    joint name="r_arm_wry"  effort="114"
+    joint name="r_leg_akx"  effort="90" -> (rad2deg (* 100 (/ 90.0[Nm] 300[Nm/rad]))) -> 1718.87
+    joint name="r_leg_aky"  effort="700"
+    joint name="r_leg_hpx"  effort="180"
+    joint name="r_leg_hpy"  effort="260"
+    joint name="r_leg_hpz"  effort="110"
+    joint name="r_leg_kny"  effort="220"
+
+   '(((:name 'l_leg_hpz) (:p     5.0) (:effort    110))
+     ((:name 'l_leg_hpx) (:p   100.0) (:effort    180))
+     ((:name 'l_leg_hpy) (:p  2000.0) (:effort    260))
+     ((:name 'l_leg_kny) (:p  1000.0) (:effort    220))
+     ((:name 'l_leg_aky) (:p   900.0) (:effort    700))
+     ((:name 'l_leg_akx) (:p   300.0) (:effort     90))
+     ((:name 'r_leg_hpz) (:p     5.0) (:effort    110))
+     ((:name 'r_leg_hpx) (:p   100.0) (:effort    180))
+     ((:name 'r_leg_hpy) (:p  2000.0) (:effort    260))
+     ((:name 'r_leg_kny) (:p  1000.0) (:effort    220))
+     ((:name 'r_leg_aky) (:p   900.0) (:effort    700))
+     ((:name 'r_leg_akx) (:p   300.0) (:effort     90))
+     ((:name 'l_arm_shy) (:p  2000.0) (:effort    212))
+     ((:name 'l_arm_shx) (:p  1000.0) (:effort    170))
+     ((:name 'l_arm_ely) (:p   200.0) (:effort    114))
+     ((:name 'l_arm_elx) (:p   200.0) (:effort    114))
+     ((:name 'l_arm_wry) (:p    50.0) (:effort    114))
+     ((:name 'l_arm_wrx) (:p   100.0) (:effort     60))
+     ((:name 'r_arm_shy) (:p  2000.0) (:effort    212))
+     ((:name 'r_arm_shx) (:p  1000.0) (:effort    170))
+     ((:name 'r_arm_ely) (:p   200.0) (:effort    114))
+     ((:name 'r_arm_elx) (:p   200.0) (:effort    114))
+     ((:name 'r_arm_wry) (:p    50.0) (:effort    114))
+     ((:name 'r_arm_wrx) (:p   100.0) (:effort     60))
+     ((:name 'neck_ry)   (:p    20.0) (:effort      5))
+     ((:name 'back_bkz)  (:p    20.0) (:effort    124.016))
+     ((:name 'back_bky)  (:p  4000.0) (:effort    206.84))
+     ((:name 'back_bkx)  (:p  2000.0) (:effort    200)))
+
+    (mapcar #'(lambda (param) (let ((name (cadr (assoc :name param)))(gain (cadr (assoc :p param))) (limit (cadr (assoc :effort param))) x) (setq x (rad2deg (* 100 (/ limit gain)))) (print (list name limit gain x)) x)) daa)
+|#
+
 (defun atlas-set-servo-gain-by-torque-limit
   (&optional (deg 1) (limb :all))
   (when (or (equal limb :all) (equal limb :torso))
-    (send *ri* :set-servo-gain-percentage "back_lbz"  (/ 35528  deg))
-    (send *ri* :set-servo-gain-percentage "back_mby"  (/ 296    deg))
-    (send *ri* :set-servo-gain-percentage "back_ubx"  (/ 272    deg)))
+    (send *ri* :set-servo-gain-percentage "back_bkz"  (/ 35528  deg))
+    (send *ri* :set-servo-gain-percentage "back_bky"  (/ 296    deg))
+    (send *ri* :set-servo-gain-percentage "back_bkx"  (/ 572    deg)))
   (when (or (equal limb :all) (equal limb :head))
     (send *ri* :set-servo-gain-percentage "neck_ay"   (/ 1432   deg)))
   (when (or (equal limb :all) (equal limb :lleg) (equal limb :legs))
-    (send *ri* :set-servo-gain-percentage "l_leg_uhz" (/ 126051 deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_mhx" (/ 10313  deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_lhy" (/ 745    deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_hpz" (/ 126051 deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_hpx" (/ 10313  deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_hpy" (/ 745    deg))
     (send *ri* :set-servo-gain-percentage "l_leg_kny" (/ 1261   deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_uay" (/ 1401   deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_lax" (/ 1719   deg)))
+    (send *ri* :set-servo-gain-percentage "l_leg_aky" (/ 4456   deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_akx" (/ 1719   deg)))
   (when (or (equal limb :all) (equal limb :rleg) (equal limb :legs))
-    (send *ri* :set-servo-gain-percentage "r_leg_uhz" (/ 126051 deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_mhx" (/ 10313  deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_lhy" (/ 745    deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_hpz" (/ 126051 deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_hpx" (/ 10313  deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_hpy" (/ 745    deg))
     (send *ri* :set-servo-gain-percentage "r_leg_kny" (/ 1261   deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_uay" (/ 1401   deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_lax" (/ 1719   deg)))
+    (send *ri* :set-servo-gain-percentage "r_leg_aky" (/ 4456   deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_akx" (/ 1719   deg)))
   (when (or (equal limb :all) (equal limb :larm) (equal limb :arms))
-    (send *ri* :set-servo-gain-percentage "l_arm_usy" (/ 607    deg))
+    (send *ri* :set-servo-gain-percentage "l_arm_shy" (/ 607    deg))
     (send *ri* :set-servo-gain-percentage "l_arm_shx" (/ 974    deg))
     (send *ri* :set-servo-gain-percentage "l_arm_ely" (/ 3266   deg))
     (send *ri* :set-servo-gain-percentage "l_arm_elx" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_uwy" (/ 13063  deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_mwx" (/ 3438   deg)))
+    (send *ri* :set-servo-gain-percentage "l_arm_wry" (/ 13063  deg))
+    (send *ri* :set-servo-gain-percentage "l_arm_wrx" (/ 3438   deg)))
   (when (or (equal limb :all) (equal limb :rarm) (equal limb :arms))
-    (send *ri* :set-servo-gain-percentage "r_arm_usy" (/ 607    deg))
+    (send *ri* :set-servo-gain-percentage "r_arm_shy" (/ 607    deg))
     (send *ri* :set-servo-gain-percentage "r_arm_shx" (/ 974    deg))
     (send *ri* :set-servo-gain-percentage "r_arm_ely" (/ 3266   deg))
     (send *ri* :set-servo-gain-percentage "r_arm_elx" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_uwy" (/ 13063  deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_mwx" (/ 3438   deg)))
+    (send *ri* :set-servo-gain-percentage "r_arm_wry" (/ 13063  deg))
+    (send *ri* :set-servo-gain-percentage "r_arm_wrx" (/ 3438   deg)))
   )
 
 ;; usage ;; (fix-leg-strigde (float-vector 0 20 0))
