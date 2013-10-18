@@ -82,21 +82,22 @@
 
 (publish-collision-object *drc-car* *atlas* "pelvis")
 
-(send *me* :sync-robot-model *atlas*)
-
 ;; collision aware ik
+(send *me* :sync-robot-model *atlas*)
 (send *me* :get-ik-for-pose
       (send *atlas* :larm :end-coords :copy-worldcoords)
       :larm :end-coords (list :larm :end-coords))
-
 (send *me* :sync-robot-model *atlas* t)
 
+;; motion plan
 (send *atlas* :reset-pose)
 (send *me* :sync-robot-model *atlas*)
 (send *me* :motion-plan :larm)
 
+;; motion plan
 (send *atlas* :reset-pose)
 (send *me* :sync-robot-model *atlas*)
 (send *me* :motion-plan :rarm-torso)
+
 
 |#
