@@ -660,7 +660,7 @@ int open_iob(void)
     names.push_back("atlas::back_bkz"); // 0
     names.push_back("atlas::back_bky"); // 1
     names.push_back("atlas::back_bkx"); // 2
-    names.push_back("atlas::neck_ay"); // 9
+    names.push_back("atlas::neck_ry"); // 9
     names.push_back("atlas::l_leg_hpz"); // 28
     names.push_back("atlas::l_leg_hpx"); // 29
     names.push_back("atlas::l_leg_hpy"); // 30
