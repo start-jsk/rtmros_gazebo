@@ -9,7 +9,7 @@
   (&key (real t)
 	(set-reset-pose t)
 	(servo-gain
-	 (list (cons :legs 1.0)
+	 (list (cons :legs 3.0)
 	       (cons :torso 2.0)
 	       (cons :arms 4.0)
 	       (cons :head 5.0))))
