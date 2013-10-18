@@ -328,94 +328,6 @@ int read_actual_angle(int id, double *angle)
   //*angle = command[id]+0.01;
   //*angle = command[id];
   if(init_sub_flag){
-    // switch(id){
-    // case 0:
-    //   *angle = js.position[0];
-    //   break;
-    // case 1:
-    //   *angle = js.position[1];
-    //   break;
-    // case 2:
-    //   *angle = js.position[2];
-    //   break;
-    // case 9:
-    //   *angle = js.position[3];
-    //   break;
-    // case 28:
-    //   *angle = js.position[4];
-    //   break;
-    // case 29:
-    //   *angle = js.position[5];
-    //   break;
-    // case 30:
-    //   *angle = js.position[6];
-    //   break;
-    // case 31:
-    //   *angle = js.position[7];
-    //   break;
-    // case 32:
-    //   *angle = js.position[8];
-    //   break;
-    // case 33:
-    //   *angle = js.position[9];
-    //   break;
-    // case 34:
-    //   *angle = js.position[10];
-    //   break;
-    // case 35:
-    //   *angle = js.position[11];
-    //   break;
-    // case 36:
-    //   *angle = js.position[12];
-    //   break;
-    // case 37:
-    //   *angle = js.position[13];
-    //   break;
-    // case 38:
-    //   *angle = js.position[14];
-    //   break;
-    // case 39:
-    //   *angle = js.position[15];
-    //   break;
-    // case 3:
-    //   *angle = js.position[16];
-    //   break;
-    // case 4:
-    //   *angle = js.position[17];
-    //   break;
-    // case 5:
-    //   *angle = js.position[18];
-    //   break;
-    // case 6:
-    //   *angle = js.position[19];
-    //   break;
-    // case 7:
-    //   *angle = js.position[20];
-    //   break;
-    // case 8:
-    //   *angle = js.position[21];
-    //   break;
-    // case 21:
-    //   *angle = js.position[22];
-    //   break;
-    // case 22:
-    //   *angle = js.position[23];
-    //   break;
-    // case 23:
-    //   *angle = js.position[24];
-    //   break;
-    // case 24:
-    //   *angle = js.position[25];
-    //   break;
-    // case 25:
-    //   *angle = js.position[26];
-    //   break;
-    // case 26:
-    //   *angle = js.position[27];
-    //   break;
-    // default:
-    //   *angle = command[id];
-    // }
     if (JOINT_ID_MODEL2REAL(id) < 0) {
       *angle = command[id];
     }else{
@@ -502,35 +414,6 @@ int write_command_angles(const double *angles)
     }
 
     jointcommands.header.stamp = ros::Time::now();
-
-    // jointcommands.position[0] = command[0];
-    // jointcommands.position[1] = command[1];
-    // jointcommands.position[2] = command[2];
-    // jointcommands.position[3] = command[9];
-    // jointcommands.position[4] = command[28];
-    // jointcommands.position[5] = command[29];
-    // jointcommands.position[6] = command[30];
-    // jointcommands.position[7] = command[31];
-    // jointcommands.position[8] = command[32];
-    // jointcommands.position[9] = command[33];
-    // jointcommands.position[10] = command[34];
-    // jointcommands.position[11] = command[35];
-    // jointcommands.position[12] = command[36];
-    // jointcommands.position[13] = command[37];
-    // jointcommands.position[14] = command[38];
-    // jointcommands.position[15] = command[39];
-    // jointcommands.position[16] = command[3];
-    // jointcommands.position[17] = command[4];
-    // jointcommands.position[18] = command[5];
-    // jointcommands.position[19] = command[6];
-    // jointcommands.position[20] = command[7];
-    // jointcommands.position[21] = command[8];
-    // jointcommands.position[22] = command[21];
-    // jointcommands.position[23] = command[22];
-    // jointcommands.position[24] = command[23];
-    // jointcommands.position[25] = command[24];
-    // jointcommands.position[26] = command[25];
-    // jointcommands.position[27] = command[26];
 
     for (int i=0; i<NUM_OF_REAL_JOINT; i++){
       jointcommands.position[i] = command[JOINT_ID_REAL2MODEL(i)];
