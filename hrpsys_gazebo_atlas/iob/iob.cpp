@@ -46,10 +46,92 @@ static ros::Time rg_ts;
 #define CHECK_GYRO_SENSOR_ID(id) if ((id) < 0 || (id) >= number_of_gyro_sensors()) return E_ID
 #define CHECK_ATTITUDE_SENSOR_ID(id) if ((id) < 0 || (id) >= number_of_attitude_sensors()) return E_ID
 
+#if 0
+Collada Robot Model (MODEL)
+ [0] back_bkz
+ [1] back_bky
+ [2] back_bkx
+ [3] l_arm_shy
+ [4] l_arm_shx
+ [5] l_arm_ely
+ [6] l_arm_elx
+ [7] l_arm_wry
+ [8] l_arm_wrx
+ [9] l_situational_awareness_camera_joint
+[10] l_situational_awareness_camera_optical_frame_joint
+[11] neck_ry
+[12] center_bottom_led_frame_joint
+[13] center_top_led_frame_joint
+[14] head_imu_joint
+[15] hokuyo_joint
+[16] head_hokuyo_joint
+[17] left_camera_frame_joint
+[18] left_camera_optical_frame_joint
+[19] left_led_frame_joint
+[20] right_camera_frame_joint
+[21] right_camera_optical_frame_joint
+[22] right_led_frame_joint
+[23] r_arm_shy
+[24] r_arm_shx
+[25] r_arm_ely
+[26] r_arm_elx
+[27] r_arm_wry
+[28] r_arm_wrx
+[29] r_situational_awareness_camera_joint
+[30] r_situational_awareness_camera_optical_frame_joint
+[31] imu_joint
+[32] l_leg_hpz
+[33] l_leg_hpx
+[34] l_leg_hpy
+[35] l_leg_kny
+[36] l_leg_aky
+[37] l_leg_akx
+[38] r_leg_hpz
+[39] r_leg_hpx
+[40] r_leg_hpy
+[41] r_leg_kny
+[42] r_leg_aky
+[43] r_leg_akx
+
+gazebo robot model (REAL)
+'back_bkz'
+'back_bky'
+'back_bkx'
+'neck_ry'
+'l_leg_hpz'
+'l_leg_hpx'
+'l_leg_hpy'
+'l_leg_kny'
+'l_leg_aky'
+'l_leg_akx'
+'r_leg_hpz'
+'r_leg_hpx'
+'r_leg_hpy'
+'r_leg_kny'
+'r_leg_aky'
+'r_leg_akx'
+'l_arm_shy'
+'l_arm_shx'
+'l_arm_ely'
+'l_arm_elx'
+'l_arm_wry'
+'l_arm_wrx'
+'r_arm_shy'
+'r_arm_shx'
+'r_arm_ely'
+'r_arm_elx'
+'r_arm_wry' 
+'r_arm_wrx'
+#endif
+
 #define JOINT_ID_REAL2MODEL(id) joint_id_real2model[id]
 #define JOINT_ID_MODEL2REAL(id) joint_id_model2real(id)
 #define NUM_OF_REAL_JOINT sizeof(joint_id_real2model)/sizeof(joint_id_real2model[0])
-static int joint_id_real2model[] = {0, 1, 2, 9, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26};
+/* for atlas_v3 */
+static int joint_id_real2model[] = {0, 1, 2, 11, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 3, 4, 5, 6, 7, 8, 23, 24, 25, 26, 27, 28};
+/* for atlas (old model without backpack) */
+// static int joint_id_real2model[] = {0, 1, 2, 9, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26};
+
 static int joint_id_model2real(int id)
 {
   for (int i = 0; i < NUM_OF_REAL_JOINT; i++){
@@ -453,7 +535,7 @@ int write_command_angles(const double *angles)
     for (int i=0; i<NUM_OF_REAL_JOINT; i++){
       jointcommands.position[i] = command[JOINT_ID_REAL2MODEL(i)];
       jointcommands.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
-      jointcommands.kp_velocity[i] = 100;
+      jointcommands.kp_velocity[i] = 0;
     }
 
     pub_joint_commands_.publish(jointcommands);
@@ -690,6 +772,7 @@ int open_iob(void)
     // http://gazebosim.org/wiki/Tutorials/drcsim/2.2/sending_joint_controller_commands_over_ros
     // Hardcoded List of Joint Names
     // List of joint names in the Atlas robot. Note the order must not change for this function to work correctly.
+    /* for atlas_v3 */
     std::vector<std::string> names;
     names.push_back("atlas::back_bkz"); // 0
     names.push_back("atlas::back_bky"); // 1
@@ -719,6 +802,36 @@ int open_iob(void)
     names.push_back("atlas::r_arm_elx"); // 24
     names.push_back("atlas::r_arm_wry"); // 25
     names.push_back("atlas::r_arm_wrx"); // 26
+
+    /* for atlas (old model without backpack) */
+    // names.push_back("atlas::back_lbz"); // 0
+    // names.push_back("atlas::back_mby"); // 1
+    // names.push_back("atlas::back_ubx"); // 2
+    // names.push_back("atlas::neck_ay"); // 9
+    // names.push_back("atlas::l_leg_uhz"); // 28
+    // names.push_back("atlas::l_leg_mhx"); // 29
+    // names.push_back("atlas::l_leg_lhy"); // 30
+    // names.push_back("atlas::l_leg_kny"); // 31
+    // names.push_back("atlas::l_leg_uay"); // 32
+    // names.push_back("atlas::l_leg_lax"); // 33
+    // names.push_back("atlas::r_leg_uhz"); // 34
+    // names.push_back("atlas::r_leg_mhx"); // 35
+    // names.push_back("atlas::r_leg_lhy"); // 36
+    // names.push_back("atlas::r_leg_kny"); // 37
+    // names.push_back("atlas::r_leg_uay"); // 38
+    // names.push_back("atlas::r_leg_lax"); // 39
+    // names.push_back("atlas::l_arm_usy"); // 3
+    // names.push_back("atlas::l_arm_shx"); // 4
+    // names.push_back("atlas::l_arm_ely"); // 5
+    // names.push_back("atlas::l_arm_elx"); // 6
+    // names.push_back("atlas::l_arm_uwy"); // 7
+    // names.push_back("atlas::l_arm_mwx"); // 8
+    // names.push_back("atlas::r_arm_usy"); // 21
+    // names.push_back("atlas::r_arm_shx"); // 22
+    // names.push_back("atlas::r_arm_ely"); // 23
+    // names.push_back("atlas::r_arm_elx"); // 24
+    // names.push_back("atlas::r_arm_uwy"); // 25
+    // names.push_back("atlas::r_arm_mwx"); // 26
 
     //names.push_back("atlas::center_bottom_led_frame_joint"); // 10
     //names.push_back("atlas::center_top_led_frame_joint"); // 11
