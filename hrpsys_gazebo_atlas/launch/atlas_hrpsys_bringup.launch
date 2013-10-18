@@ -19,7 +19,7 @@
 
   <rosparam if="$(arg USE_LIMB_TRAJECTORY)"
             command="load"
-            file="$(find hrpsys_gazebo_atlas)/config/atlas_controller_config.yaml" />
+            file="$(find hrpsys_gazebo_atlas)/config/atlas_v3_controller_config.yaml" />
 
   <!-- hrpsys_ros_bridge -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
