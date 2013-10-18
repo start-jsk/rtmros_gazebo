@@ -18,14 +18,15 @@
         (setq *atlas-init-called* t)
         (atlas-init :set-reset-pose set-reset-pose :set-user-mode nil))
     (if (not (boundp '*atlas*)) (setq *atlas* (atlas-with-hand))))
-  (unless (boundp '*translated-atlas-arm-end-coords*) ;; fix end-coords when generate euslisp 
-    (setq *translated-atlas-arm-end-coords* t)
-    (send (send *atlas* :larm :end-coords) :translate #f(0 125 0) :local)
-    (send (send *atlas* :rarm :end-coords) :translate #f(0 -125 0) :local)
-    (send (send (send (send *atlas* :larm :end-coords)
-                      :rotate (deg2rad -20) :x) :translate #f(0 0 -30) :local) :translate #f(0 -20 0) :local)
-    (send (send (send (send *atlas* :rarm :end-coords)
-                      :rotate (deg2rad 20) :x) :translate #f(0 0 -30) :local) :translate #f(0 20 0) :local))
+  ;; fix end-coords when generate euslisp 
+  ;; (unless (boundp '*translated-atlas-arm-end-coords*)
+  ;;   (setq *translated-atlas-arm-end-coords* t)
+  ;;   (send (send *atlas* :larm :end-coords) :translate #f(0 125 0) :local)
+  ;;   (send (send *atlas* :rarm :end-coords) :translate #f(0 -125 0) :local)
+  ;;   (send (send (send (send *atlas* :larm :end-coords)
+  ;;                     :rotate (deg2rad -20) :x) :translate #f(0 0 -30) :local) :translate #f(0 -20 0) :local)
+  ;;   (send (send (send (send *atlas* :rarm :end-coords)
+  ;;                     :rotate (deg2rad 20) :x) :translate #f(0 0 -30) :local) :translate #f(0 20 0) :local))
   (when real
     (mapcar
      #'(lambda (k)

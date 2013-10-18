@@ -47,22 +47,28 @@ head:
 ##
 larm-end-coords: 
   parent : l_hand
-  translate : [0, 0.1, 0]
-  rotate : [0, 1, 0, 0]
+  translate : [0.0, 0.195946, -0.02135]
+  rotate : [1, 0, 0, -20]
+  # translate : [0, 0.1, 0]
+  # rotate : [0, 1, 0, 0]
 rarm-end-coords:
   parent : r_hand
-  translate : [0, -0.1, 0]
-  rotate : [0, 1, 0, 0]
+  translate : [0.0, -0.195946, -0.02135]
+  rotate : [1, 0, 0, 20]
+  # translate : [0, -0.1, 0]
+  # rotate : [0, 1, 0, 0]
 head-end-coords:
   translate : [-0.01, 0, 0.1]
   rotate    : [0, 1, 0, 90]
 lleg-end-coords:
   parent : l_foot      
-  translate : [0.0, 0, -0.08]
+  translate : [0.04, 0, -0.08]
+  # translate : [0.0, 0, -0.08]
   rotate    : [0, 1, 0, 0]
 rleg-end-coords:
   parent : r_foot      
-  translate : [0.0, 0, -0.08]
+  translate : [0.04, 0, -0.08]
+  # translate : [0.0, 0, -0.08]
   rotate    : [0, 1, 0, 0]
 
 ##

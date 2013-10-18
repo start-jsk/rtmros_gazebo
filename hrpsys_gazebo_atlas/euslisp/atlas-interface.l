@@ -347,7 +347,7 @@
   (:set-recommended-walk-params
    ()
    (send self :set-auto-balancer-param
-         :default-zmp-offsets (list (float-vector 30 0 0) (float-vector 30 0 0)))
+         :default-zmp-offsets (list (float-vector 40 0 0) (float-vector 40 0 0)))
    (send self :set-st-param
          :k-tpcc-p #f(2.5 2.5)
          :k-tpcc-x #f(5 5)
