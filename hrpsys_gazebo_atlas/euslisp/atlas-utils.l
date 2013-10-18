@@ -1,7 +1,11 @@
 ;; init
 (setq *lr-reverse* nil)
 
-(defun my-init
+(defun my-init (&rest args)
+  (ros::ros-error "(my-init) is deprecated, use atlas-init-ex")
+  (apply #'atlas-init-ex args))
+
+(defun atlas-init-ex
   (&key (real t)
 	(set-reset-pose t)
 	(servo-gain
@@ -14,7 +18,7 @@
         (setq *atlas-init-called* t)
         (atlas-init :set-reset-pose set-reset-pose :set-user-mode nil))
     (if (not (boundp '*atlas*)) (setq *atlas* (atlas-with-hand))))
-  (unless (boundp '*translated-atlas-arm-end-coords*)
+  (unless (boundp '*translated-atlas-arm-end-coords*) ;; fix end-coords when generate euslisp 
     (setq *translated-atlas-arm-end-coords* t)
     (send (send *atlas* :larm :end-coords) :translate #f(0 125 0) :local)
     (send (send *atlas* :rarm :end-coords) :translate #f(0 -125 0) :local)
@@ -28,7 +32,7 @@
 	 (atlas-set-servo-gain-by-torque-limit
 	  (cdr k) (car k)))
      servo-gain)
-    (set-hand-kp 50.0))
+    (set-hand-kp 10.0))
   (setq *robot* *atlas*)
   (objects (list *atlas*))
   t)
