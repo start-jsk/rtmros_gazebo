@@ -742,12 +742,14 @@
 
 (defun atlas-set-servo-gain-by-torque-limit
   (&optional (deg 1) (limb :all))
+  (if (not (memq limb '(:all :torso :head :lleg :rleg :larm :rarm :legs :arms)))
+      (ros::ros-error "atlas-set-servo-gain-by-torque-limit failed, unknown limb ~A" limb))
   (when (or (equal limb :all) (equal limb :torso))
     (send *ri* :set-servo-gain-percentage "back_bkz"  (/ 35528  deg))
     (send *ri* :set-servo-gain-percentage "back_bky"  (/ 296    deg))
     (send *ri* :set-servo-gain-percentage "back_bkx"  (/ 572    deg)))
   (when (or (equal limb :all) (equal limb :head))
-    (send *ri* :set-servo-gain-percentage "neck_ay"   (/ 1432   deg)))
+    (send *ri* :set-servo-gain-percentage "neck_ry"   (/ 1432   deg)))
   (when (or (equal limb :all) (equal limb :lleg) (equal limb :legs))
     (send *ri* :set-servo-gain-percentage "l_leg_hpz" (/ 126051 deg))
     (send *ri* :set-servo-gain-percentage "l_leg_hpx" (/ 10313  deg))
