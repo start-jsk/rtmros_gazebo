@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
   <arg name="KILL_SERVERS" default="false" />
-  <arg name="ROBOT_NAME" default="atlas" />
+  <arg name="ROBOT_NAME" default="atlas_v3" />
   <arg name="SIMULATOR_NAME" default="RobotHardware0" />
   <arg name="CONF_FILE" default="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).conf" />
   <arg name="USE_LIMB_TRAJECTORY" default="true" />
@@ -23,6 +23,7 @@
 
   <!-- hrpsys_ros_bridge -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
+    <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
     <arg name="USE_ROBOTHARDWARE" value="true" />
   </include>
   <!-- <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" > -->
