@@ -11,7 +11,7 @@
 (setq ros::*compile-message* t)
 (ros::roseus-add-msgs "visualization_msgs")
 (ros::roseus-add-msgs "sensor_msgs")
-(ros::roseus-add-msgs "geometry_msgs")
+;;(ros::roseus-add-msgs "geometry_msgs")
 (setq ros::*compile-message* nil)
 
 ;; mask vectors / reference atlas_msgs::AtlasState
