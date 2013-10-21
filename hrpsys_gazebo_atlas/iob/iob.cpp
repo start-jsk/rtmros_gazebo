@@ -1083,6 +1083,11 @@ int length_digital_input(void)
   return 0;
 }
 
+int write_digital_output_with_mask(const char *doutput, const char *mask)
+{
+  return FALSE;
+}
+
 int length_digital_output(void)
 {
   return 0;
