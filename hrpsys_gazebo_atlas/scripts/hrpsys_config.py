@@ -1,7 +1,11 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('hrpsys_tools')
-import sys; sys.path.insert (0, roslib.packages.get_pkg_dir('hrpsys')+'/scripts');
-from hrpsys_config import *
+import roslib; roslib.load_manifest('hrpsys')
+import OpenRTM_aist.RTM_IDL # for catkin
+import sys
+
+import hrpsys
+from hrpsys.hrpsys_config import *
+import OpenHRP
 
 class ATLASHrpsysConfigurator(HrpsysConfigurator):
     def connectComps(self):
