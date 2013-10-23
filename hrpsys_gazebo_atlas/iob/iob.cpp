@@ -413,20 +413,28 @@ int write_command_angles(const double *angles)
         command[i] = angles[i];
     }
 
-    jointcommands.header.stamp = ros::Time::now();
+    atlas_msgs::AtlasCommand send_com(jointcommands);
+    send_com.header.stamp = ros::Time::now();
 
-    for (int i=0; i<NUM_OF_REAL_JOINT; i++){
-      jointcommands.position[i] = command[JOINT_ID_REAL2MODEL(i)];
-      jointcommands.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
-      if(i == 8 || i == 9 || i == 14 || i == 15) {
-	jointcommands.kp_velocity[i]  = 0;
+    for (int i=0; i<NUM_OF_REAL_JOINT; i++) {
+      if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
+        send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
+        send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
+        //send_com.kp_velocity[i]  = 0;
+        send_com.kp_velocity[i]  = 50;
       } else {
-	//jointcommands.kp_velocity[i]  = 0;
-	jointcommands.kp_velocity[i]  = 50;
+        send_com.position[i] = 0;
+        send_com.velocity[i] = 0;
+        send_com.effort[i] = 0;
+        send_com.kp_position[i] = 0;
+        send_com.ki_position[i] = 0;
+        send_com.kd_position[i] = 0;
+        send_com.kp_velocity[i]  = 0;
+        send_com.kp_velocity[i]  = 0;
       }
     }
 
-    pub_joint_commands_.publish(jointcommands);
+    pub_joint_commands_.publish(send_com);
 
     ros::spinOnce();
 
@@ -770,12 +778,7 @@ int open_iob(void)
 
         jointcommands.velocity[i]     = 0;
         jointcommands.effort[i]       = 0;
-	if(i == 8 || i == 9 || i == 14 || i == 15) {
-	  jointcommands.kp_velocity[i]  = 0;
-	} else {
-	  // jointcommands.kp_velocity[i]  = 0;
-	  jointcommands.kp_velocity[i]  = 50;
-	}
+        jointcommands.kp_velocity[i]  = 50;
     }
     jointcommands.desired_controller_period_ms = static_cast<unsigned int>(g_period_ns * 1e-6);
     //
