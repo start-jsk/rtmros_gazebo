@@ -414,6 +414,8 @@ int write_command_angles(const double *angles)
     }
 
     atlas_msgs::AtlasCommand send_com(jointcommands);
+    bool servo_on = true;
+
     send_com.header.stamp = ros::Time::now();
 
     for (int i=0; i<NUM_OF_REAL_JOINT; i++) {
@@ -427,6 +429,7 @@ int write_command_angles(const double *angles)
 	  send_com.kp_velocity[i]  = 50;
 	}
       } else {
+	servo_on = false;
         send_com.position[i] = 0;
         send_com.velocity[i] = 0;
         send_com.effort[i] = 0;
@@ -438,7 +441,9 @@ int write_command_angles(const double *angles)
       }
     }
 
-    pub_joint_commands_.publish(send_com);
+    if (servo_on) {
+      pub_joint_commands_.publish(send_com);
+    }
 
     ros::spinOnce();
 
