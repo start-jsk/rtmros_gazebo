@@ -442,6 +442,7 @@ int write_command_angles(const double *angles)
     }
 
     if (servo_on) {
+      // ROS_INFO_STREAM("pub: " << send_com);
       pub_joint_commands_.publish(send_com);
     }
 
