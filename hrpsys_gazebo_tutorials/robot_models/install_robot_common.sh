@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # usage
-# ./install_robot.sh ROBOT_NAME (model directory)
+# ./install_robot.sh ROBOT_NAME (model directory) (output directory)
 
 ROBOT_NAME=$1
 if [ $# -gt 1 ]; then
@@ -10,7 +10,12 @@ else
     INPUT_DIR=$(rospack find hrpsys_ros_bridge_tutorials)/models
 fi
 
-OUTPUT_DIR=$(rospack find hrpsys_gazebo_tutorials)/robot_models/${ROBOT_NAME}
+if [ $# -gt 2 ]; then
+    OUTPUT_DIR=$3
+else
+    OUTPUT_DIR=$(rospack find hrpsys_gazebo_tutorials)/robot_models/${ROBOT_NAME}
+fi
+
 OUTPUT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}.urdf
 SED_SCRIPT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}_optional_urdf_setting.sh
 
