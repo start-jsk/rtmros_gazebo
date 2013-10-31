@@ -18,7 +18,7 @@ controller_configuration:
       - r_arm_wry
       - r_arm_wrx
   - group_name: lleg
-    controller_name: /torso_controller
+    controller_name: /lleg_controller
     joint_list:
       - l_leg_hpz
       - l_leg_hpx
@@ -27,7 +27,7 @@ controller_configuration:
       - l_leg_aky
       - l_leg_akx
   - group_name: rleg
-    controller_name: /torso_controller
+    controller_name: /rleg_controller
     joint_list:
       - r_leg_hpz
       - r_leg_hpx
@@ -36,7 +36,7 @@ controller_configuration:
       - r_leg_aky
       - r_leg_akx
   - group_name: torso
-    controller_name: /larm_torso_controller
+    controller_name: /torso_controller
     joint_list:
       - back_bkz
       - back_bky
