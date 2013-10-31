@@ -1,0 +1,18 @@
+<launch>
+  <arg name="USE_LIMB_TRAJECTORY" default="true" />
+
+  <param name="robot_description"
+         command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'" />
+
+  <node pkg="robot_state_publisher" type="state_publisher" name="robot_state_publisher">
+    <param name="publish_frequency" type="double" value="100.0" />
+  </node>
+
+  <!-- hrpsys controller launch -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_bringup.launch">
+    <arg name="USE_LIMB_TRAJECTORY" value="$(arg USE_LIMB_TRAJECTORY)" />
+  </include>
+
+  <!-- tf for sensors -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_sensor_tf.launch" />
+</launch>
