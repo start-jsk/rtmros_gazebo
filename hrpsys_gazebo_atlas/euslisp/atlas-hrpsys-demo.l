@@ -268,6 +268,40 @@
 
 ;; demo function ;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun atlas-balancing-demo
+  ()
+
+  (atlas-init-ex)
+
+  (warning-message 1 "servo on with hrpsys_dashboard~%")
+  (my-wait)
+
+  (set-user) ;; go to USER MODE
+
+  ;; bend legs keep balancing
+  (real2model)
+  (fix-leg)
+  (send *atlas* :legs :move-end-pos #f(0 0 100) :world)
+  (move-centroid)
+  (model2real :time 5000)
+
+  (send *ri* :start-auto-balancer)
+  ;; (send *ri* :start-st) ;; st is unstable now
+
+  ;; move upper body
+  (send *atlas* :arms :elbow-p :joint-angle -100)
+  (model2real)
+
+  (let ((cnt 0))
+    (do-until-key
+     (incf cnt)
+     (send *atlas* :larm :elbow-p :joint-angle (+ (abs (* 100 (sin (/ cnt 2.0))))))
+     (send *atlas* :rarm :elbow-p :joint-angle (- (abs (* 100 (cos (/ cnt 2.0))))))
+     (if (evenp (/ cnt 3))
+	 (send *atlas* :legs :move-end-pos #f(0 0 30) :world)
+       (send *atlas* :legs :move-end-pos #f(0 0 -30) :world))
+     (model2real :wait t :time 1000)))) 
+
 (defun atlas-walk-demo
   ()
 
