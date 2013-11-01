@@ -612,3 +612,24 @@
   (send *atlas* :angle-vector #f(33.5356 46.4636 14.0039 64.2606 95.3945 -24.981 -79.9998 -25.5105 15.0798 -26.4997 154.671 -17.5356 69.7715 -18.2152 -72.1545 140.375 -5.39242 -77.1493 6.91985 -20.0 14.013 140.375 -4.13608 -76.1416 -0.52805 -20.0 -16.8734 -35.0))
   (progn (model2real :time 5000) (send *ri* :wait-interpolation))
 )
+
+
+
+;; for safety comfirmation
+
+(defun draw-real-robot
+  ()
+  (unless (boundp '*atlas2*)
+    (setq *atlas2* (copy-object *atlas*))
+    (gl::transparent *atlas2* 0.1)
+    (objects (append (objects) (list *atlas2*))))
+
+  (send *atlas2* :angle-vector (send *ri* :state :potentio-vector))
+  (send *atlas2* :newcoords (send *atlas* :worldcoords))
+  (send *irtviewer* :draw-objects))
+
+(defun model2real-safe
+  ()
+  (warning-message 2 "send to real robot ?~%")
+  (when (y-or-n-p)
+    (model2real :wait t :time 5000)))
