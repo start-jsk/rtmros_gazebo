@@ -41,3 +41,7 @@ controller_configuration:
       - back_bkz
       - back_bky
       - back_bkx
+  - group_name: head
+    controller_name: /head_controller
+    joint_list:
+      - neck_ry

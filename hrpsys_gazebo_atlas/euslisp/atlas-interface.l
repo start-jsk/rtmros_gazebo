@@ -74,6 +74,60 @@
      (send self :set-recommended-walk-params)
      (setq vel-x-ratio 1.0 vel-y-ratio 1.0 vel-th-ratio 15.0)
      ))
+  ;;
+  ;; controller setting
+  (:larm-controller ()
+   (list
+    (list
+     (cons :controller-action "larm_controller/follow_joint_trajectory_action")
+     (cons :controller-state "larm_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "l_arm_shy" "l_arm_shx" "l_arm_ely" "l_arm_elx" "l_arm_wry" "l_arm_wrx")))))
+  (:rarm-controller ()
+   (list
+    (list
+     (cons :controller-action "rarm_controller/follow_joint_trajectory_action")
+     (cons :controller-state "rarm_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "r_arm_shy" "r_arm_shx" "r_arm_ely" "r_arm_elx" "r_arm_wry" "r_arm_wrx")))))
+  (:lleg-controller ()
+   (list
+    (list
+     (cons :controller-action "lleg_controller/joint_trajectory_action")
+     (cons :controller-state "lleg_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "l_leg_hpz" "l_leg_hpx" "l_leg_hpy" "l_leg_kny" "l_leg_aky" "l_leg_akx")))))
+  (:rleg-controller ()
+   (list
+    (list
+     (cons :controller-action "rleg_controller/joint_trajectory_action")
+     (cons :controller-state "rleg_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "r_leg_hpz" "r_leg_hpx" "r_leg_hpy" "r_leg_kny" "r_leg_aky" "r_leg_akx")))))
+  (:head-controller ()
+   (list
+    (list
+     (cons :controller-action "head_controller/joint_trajectory_action")
+     (cons :controller-state "head_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "neck_ry")))))
+  (:torso-controller ()
+   (list
+    (list
+     (cons :controller-action "torso_controller/joint_trajectory_action")
+     (cons :controller-state "torso_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "back_bkz" "back_bky" "back_bkx")))))
+  (:default-controller ()
+   (append
+    (send self :larm-controller)
+    (send self :rarm-controller)
+    (send self :lleg-controller)
+    (send self :rleg-controller)
+    (send self :head-controller)
+    (send self :torso-controller)
+    ))
+  ;;
   (:sim-interface-state-cb
    (msg)
    (let* ((pos-est (send msg :pos_est))
