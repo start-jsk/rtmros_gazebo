@@ -1,6 +1,221 @@
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
 
+
+;; validation function ;;;;;;;;;;;;;;;;;;;;;;;
+(defun init-hrpsys-test
+  ()
+
+  (atlas-init-ex)
+  (fix-leg)
+  (warning-message 1 "set servo-on by dashboard~%")
+  (my-wait)
+  ;; (send *ri* :start-auto-balancer)
+  (set-user)
+
+  (warning-message 3 "followings are test function~%")
+  (warning-message 3 "  (test-upper-angle)~%")
+  (warning-message 3 "  (test-lower-angle)~%")
+  )
+
+
+(defun test-upper-angle
+  (&key (real nil))
+
+  (warning-message 1 "test-upper-angle~%")
+
+  (warning-message 1 "[test-uppper-angle] reset-pose~%")
+  (send *atlas* :reset-pose)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+  
+  (warning-message 1 "[test-uppper-angle] move shoulder-y~%")
+  (send *atlas* :reset-pose)
+  (send *atlas* :rarm :shoulder-y :joint-angle -20 :relative t)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+
+  (warning-message 1 "[test-uppper-angle] move shoulder-r~%")
+  (send *atlas* :reset-pose)
+  (send *atlas* :rarm :shoulder-y :joint-angle -20 :relative t)
+  (send *atlas* :rarm :shoulder-r :joint-angle -10 :relative t)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+
+  (warning-message 1 "[test-uppper-angle] move elbow-p~%")
+  (send *atlas* :reset-pose)
+  (send *atlas* :rarm :shoulder-y :joint-angle -20 :relative t)
+  (send *atlas* :rarm :shoulder-r :joint-angle -10 :relative t)
+  (send *atlas* :rarm :elbow-p :joint-angle -20 :relative t)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+  
+  (warning-message 1 "[test-uppper-angle] move elbow-p~%")
+  (send *atlas* :reset-manip-pose)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+
+  (warning-message 1 "[test-all-angle] reset-pose~%")
+  (send *atlas* :reset-pose)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  )
+
+(defun test-lower-angle
+  (&key (real nil))
+
+  (warning-message 1 "test-lower-angle~%")
+
+  (warning-message 1 "[test-lower-angle] reset-pose~%")
+  (send *atlas* :reset-pose)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+  
+  (warning-message 1 "[test-lower-angle] walk-pose~%")
+  (send *atlas* :walk-pose)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+
+  (warning-message 1 "[test-lower-angle] move left leg above~%")
+  (send *atlas* :walk-pose)
+  (send *atlas* :lleg :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+  
+  (warning-message 1 "[test-lower-angle] move left leg outer~%")
+  (send *atlas* :walk-pose)
+  (send *atlas* :lleg :move-end-pos #f(0 100 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+
+  (warning-message 1 "[test-lower-angle] move left leg yaw direction~%")
+  (send *atlas* :walk-pose)
+  (send *atlas* :lleg :move-end-pos #f(0 100 100))
+  (send *atlas* :lleg :move-end-rot 30 :z)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+
+  (warning-message 1 "[test-lower-angle] move both leg above~%")
+  (send *atlas* :walk-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  (my-wait)
+
+  (warning-message 1 "[test-lower-angle] reset-pose~%")
+  (send *atlas* :reset-pose)
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe) (draw-real-robot))
+  )
+
+(defun test-force-sensor
+  ()
+
+  (warning-message 1 "test-force-sensor~%")
+
+  (my-wait)
+  (warning-message 1 "print arm force sensor~%")
+  (do-until-key
+   (unix::usleep (* 1000 1000))
+   (warning-message 2 "left: ~a  right: ~a ~%"
+		    (send *ri* :state :absolute-force-vector :larm)
+		    (send *ri* :state :absolute-force-vector :rarm)))
+
+  (my-wait)
+  (warning-message 1 "print leg force sensor~%")
+  (do-until-key
+   (unix::usleep (* 1000 1000))
+   (warning-message 2 "left: ~a  right: ~a~%"
+		    (send *ri* :state :absolute-force-vector :lleg)
+		    (send *ri* :state :absolute-force-vector :rleg)))
+  )
+
+(defun test-imu-sensor
+  ()
+
+  (warning-message 1 "test-imu-sensor~%")
+
+  (my-wait)
+  (warning-message 1 "apply hrpsys imu value to the eus model~%")
+  (move-robot-with-imu :loop-p t)
+  (fix-leg))
+
+
+(defun test-auto-balancer
+  (&key (real nil))
+
+  (warning-message 1 "test-auto-balancer~%")
+
+  (warning-message 1 "check that the robot is in the air~%")
+  (y-or-n-p)
+
+  (my-wait)
+  (warning-message 1 "call (send *ri* :start-auto-balancer)~%")
+  (when real (send *ri* :start-auto-balancer))
+  
+  (my-wait)
+  (warning-message 1 "send reset-manip-pose with bending knees~%")
+  (send *atlas* :reset-manip-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real :wait t :time 3000))
+
+  (my-wait)
+  (warning-message 1 "call (send *ri* :stop-auto-balancer)~%")
+  (when real (send *ri* :stop-auto-balancer))
+
+  (my-wait)
+  (warning-message 1 "send reset-pose~%")
+  (send *atlas* :reset-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real :wait t :time 3000))
+
+  (my-wait)
+  (warning-message 1 "call (send *ri* :start-auto-balancer)~%")
+  (when real (send *ri* :start-auto-balancer))
+  
+  (my-wait)
+  (warning-message 1 "send reset-pose with bending knees~%")
+  (send *atlas* :reset-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real :wait t :time 3000))
+
+  (warning-message 1 "move the robot on the ground~%")
+  (y-or-n-p)
+  )
+
+(defun test-impedance
+  ()
+
+  (warning-message 1 "test-impedance~%")
+
+  (warning-message 1 "call (send *ri* :stop-auto-balancer)~%")
+  (send *ri* :stop-auto-balancer)
+
+  (warning-message 1 "test-impedance~%")
+  (send *ri* :start-impedance :larm)
+
+  (warning-message 1 "test-impedance~%")
+  (send *ri* :set-impedance-controller-param :larm :ref-force #f(-10 0 0))
+
+  (send *ri* :stop-impedance :larm)
+  )
+
+
+;; demo function ;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun atlas-walk-demo
   ()
 
