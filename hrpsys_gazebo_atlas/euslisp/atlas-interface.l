@@ -93,28 +93,28 @@
   (:lleg-controller ()
    (list
     (list
-     (cons :controller-action "lleg_controller/joint_trajectory_action")
+     (cons :controller-action "lleg_controller/follow_joint_trajectory_action")
      (cons :controller-state "lleg_controller/state")
      (cons :action-type control_msgs::FollowJointTrajectoryAction)
      (cons :joint-names (list "l_leg_hpz" "l_leg_hpx" "l_leg_hpy" "l_leg_kny" "l_leg_aky" "l_leg_akx")))))
   (:rleg-controller ()
    (list
     (list
-     (cons :controller-action "rleg_controller/joint_trajectory_action")
+     (cons :controller-action "rleg_controller/follow_joint_trajectory_action")
      (cons :controller-state "rleg_controller/state")
      (cons :action-type control_msgs::FollowJointTrajectoryAction)
      (cons :joint-names (list "r_leg_hpz" "r_leg_hpx" "r_leg_hpy" "r_leg_kny" "r_leg_aky" "r_leg_akx")))))
   (:head-controller ()
    (list
     (list
-     (cons :controller-action "head_controller/joint_trajectory_action")
+     (cons :controller-action "head_controller/follow_joint_trajectory_action")
      (cons :controller-state "head_controller/state")
      (cons :action-type control_msgs::FollowJointTrajectoryAction)
      (cons :joint-names (list "neck_ry")))))
   (:torso-controller ()
    (list
     (list
-     (cons :controller-action "torso_controller/joint_trajectory_action")
+     (cons :controller-action "torso_controller/follow_joint_trajectory_action")
      (cons :controller-state "torso_controller/state")
      (cons :action-type control_msgs::FollowJointTrajectoryAction)
      (cons :joint-names (list "back_bkz" "back_bky" "back_bkx")))))
