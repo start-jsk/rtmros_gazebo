@@ -44,4 +44,6 @@
 
   <!-- tf for sensors -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_sensor_tf.launch" />
+
+  <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="atlas_dashboard" />
 </launch>
