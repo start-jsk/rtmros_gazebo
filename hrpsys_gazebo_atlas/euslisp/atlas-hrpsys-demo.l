@@ -159,6 +159,53 @@
   (warning-message 1 "check that the robot is in the air~%")
   (y-or-n-p)
 
+  (warning-message 1 "send reset-manip-pose with bending knees~%")
+  (my-wait)
+  (send *atlas* :reset-manip-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real :wait t :time 3000))
+
+  (warning-message 1 "call (send *ri* :start-auto-balancer)~%")
+  (my-wait)
+  (when real (send *ri* :start-auto-balancer))
+
+  (warning-message 1 "move the robot on the ground~%")
+  (y-or-n-p)
+
+  (warning-message 1 "move waist in the loop~%")
+  (my-wait)
+  (let ((cnt 0))
+    (do-until-key
+     (incf cnt)
+     (send *atlas* :reset-manip-pose)
+     (send *atlas* :legs :move-end-pos #f(0 0 100))
+     (send *atlas* :torso :waist-y :joint-angle (+ (* 25 (sin (/ cnt 2.0)))))
+     (send *atlas* :torso :waist-p :joint-angle (+ (abs (* 25 (sin (/ cnt 2.0))))))
+     (model2real :wait t :time 3000)))
+
+  (warning-message 1 "move legs in the loop~%")
+  (my-wait)
+  (let ((cnt 0))
+    (do-until-key
+     (incf cnt)
+     (send *atlas* :reset-manip-pose)
+     (send *atlas* :legs :move-end-pos #f(0 0 100))
+     (send *atlas* :legs :move-end-pos (float-vector 0 0 (+ 100 (* 25 (sin (/ cnt 2.0))))))
+     (send *irtviewer* :draw-objects)
+     (unix:usleep (* 1000 100))))
+
+
+  )
+
+(defun test-auto-balancer-old
+  (&key (real nil))
+
+  (warning-message 1 "test-auto-balancer~%")
+
+  (warning-message 1 "check that the robot is in the air~%")
+  (y-or-n-p)
+
   (my-wait)
   (warning-message 1 "call (send *ri* :start-auto-balancer)~%")
   (when real (send *ri* :start-auto-balancer))
@@ -202,14 +249,19 @@
   (warning-message 1 "test-impedance~%")
 
   (warning-message 1 "call (send *ri* :stop-auto-balancer)~%")
+  (my-wait)
   (send *ri* :stop-auto-balancer)
 
-  (warning-message 1 "test-impedance~%")
+  (warning-message 1 "call (send *ri* :start-impedance :larm)~%")
+  (my-wait)
   (send *ri* :start-impedance :larm)
 
-  (warning-message 1 "test-impedance~%")
+  (warning-message 1 "set ref-force #f(-10 0 0)~%")
+  (my-wait)
   (send *ri* :set-impedance-controller-param :larm :ref-force #f(-10 0 0))
 
+  (my-wait)
+  (warning-message 1 "call (send *ri* :stop-impedance :larm)~%")
   (send *ri* :stop-impedance :larm)
   )
 
