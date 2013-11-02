@@ -14,7 +14,25 @@
         name="atlas_laser_snapshotter"
         output="screen" >
     <remap from="joint_states" to="/multisense_sl/joint_states" />
+    <remap from="full_cloud2" to="/laser/full_cloud2_raw" />
     <!-- publish /full_cloud2 -->
+  </node>
+
+  <node pkg="robot_self_filter"
+        type="self_filter" clear_params="true"
+        name="robot_shadow_self_filter" respawn="true" output="screen">
+    <!-- The topic for the input cloud -->
+    <remap from="cloud_in" to="/laser/full_cloud2_raw" />
+    <!-- The topic for the output cloud -->
+    <remap from="cloud_out" to="/laser/full_cloud2" />
+    <!-- The frame of the sensor used to obtain the data to be                                                                       \
+         filtered; This parameter is optional. If it is not specified,                                                               \
+         shadow points will be considered outside -->
+    <!--param name="sensor_frame" type="string" value="laser_tilt_link" /-->
+    <!-- Minimum distance to sensor (for point not to be considered inside)-->
+    <param name="subsample_value" type="double" value="0.0"/>
+    <!-- The names of the links the sensor can see -->
+    <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/tilt_self_filter.yaml" />
   </node>
 
   <!-- start tilting -->
