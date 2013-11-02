@@ -51,6 +51,7 @@ add_custom_command(
 compile_collada_model(${atlas_dae}
   --euscollada-option "--without-technique-limit"
   --robothardware-conf-file-option "pdgains.file_name: ${PROJECT_SOURCE_DIR}/models/PDgains.sav"
+  --conf-dt-option "0.003"
   --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
   --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
   --conf-file-option "abc_end_effectors: :rarm,r_arm_mwx,back_ubx, :larm,l_arm_mwx,back_ubx, :rleg,r_leg_lax,pelvis, :lleg,l_leg_lax,pelvis,"
