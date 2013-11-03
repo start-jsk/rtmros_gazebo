@@ -629,7 +629,8 @@
   (send *irtviewer* :draw-objects))
 
 (defun model2real-safe
-  ()
+  (&key (time 5000))
   (warning-message 2 "send to real robot ?~%")
   (when (y-or-n-p)
-    (model2real :wait t :time 5000)))
+    (model2real :wait t :time time)))
+
