@@ -39,6 +39,7 @@ static int frame = 0;
 static timespec g_ts;
 static long g_period_ns=1000000;
 static ros::Time rg_ts;
+static ros::Time last_callback_time;
 
 #define CHECK_JOINT_ID(id) if ((id) < 0 || (id) >= number_of_joints()) return E_ID
 #define CHECK_FORCE_SENSOR_ID(id) if ((id) < 0 || (id) >= number_of_force_sensors()) return E_ID
@@ -446,6 +447,12 @@ int write_command_angles(const double *angles)
       pub_joint_commands_.publish(send_com);
     }
 
+    // check if the joint_states are published
+    if ( ros::Time::now()  - last_callback_time > ros::Duration(10.0) ) {
+      ROS_ERROR_STREAM("/atlas/atlas_state  has not been published last 5.0 seconds, check by `rostopic info /atlas/atlas_state`");
+      last_callback_time = ros::Time::now();
+    }
+
     ros::spinOnce();
 
     return TRUE;
@@ -662,6 +669,7 @@ int write_dio(unsigned short buf)
 // callback
 static void setJointStates(const atlas_msgs::AtlasState::ConstPtr &_js) {
   ROS_DEBUG(";; subscribe JointState");
+  last_callback_time = ros::Time::now();
   js = *_js;
   init_sub_flag = TRUE;
 }
@@ -802,6 +810,7 @@ int open_iob(void)
 
     // subscribe
     // ros topic subscribtions
+    last_callback_time = ros::Time::now();
     ros::SubscribeOptions jointStatesSo =
       ros::SubscribeOptions::create<atlas_msgs::AtlasState>("/atlas/atlas_state", 1, setJointStates,
                                                             ros::VoidPtr(), rosnode->getCallbackQueue());
