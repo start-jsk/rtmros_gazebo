@@ -395,3 +395,88 @@
 	:k-brot-tc #f(0.1 0.1))~%")
 
   )
+
+
+(defun test-reach-ground
+  (&key (real nil))
+
+  (warning-message 1 "test-reach-ground~%")
+
+  (warning-message 1 "check that the robot is in the air~%")
+  (y-or-n-p)
+
+  (send *robot* :reset-pose)
+  (send *robot* :newcoords (make-coords))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe :time 10000))
+
+  (dolist (h (list -300 -500 -700))
+    (send *robot* :fullbody-inverse-kinematics
+	  (list
+	   (make-coords :pos (float-vector 700 -100 h))
+	   (copy-object (send *robot* :rleg :end-coords :worldcoords))
+	   (copy-object (send *robot* :lleg :end-coords :worldcoords)))
+	  :rotation-axis (list nil t t)
+	  :move-target
+	  (mapcar
+	   #'(lambda (k) (send *robot* k :end-coords))
+	   '(:rarm :rleg :lleg))
+	  :min #F(-1000 -1000 -1000 -200 -200 -200)
+	  :max #F(1000 1000 1000 200 200 200)
+	  :root-link-virtual-joint-weight
+	  #F(0.01 0.01 1 0.01 0.01 0.01)
+	  :revert-if-fail nil
+	  :link-list
+	  (mapcar
+	   #'(lambda (k)
+	       (send *robot* :link-list
+		     (send (send *robot* k :end-coords) :parent)))
+	   '(:rarm :rleg :lleg))
+	  :debug-view :no-message
+	  )
+    (send *irtviewer* :draw-objects)
+    (when real (model2real-safe :time 10000)))
+  )
+
+(defun test-reach-ground
+  (&key (real nil))
+
+  (warning-message 1 "test-reach-ground~%")
+
+  (warning-message 1 "check that the robot is in the air~%")
+  (y-or-n-p)
+
+  (send *robot* :reset-pose)
+  (send *robot* :newcoords (make-coords))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real-safe :time 10000))
+
+  (dolist (h (list -300 -500 -700))
+    (send *robot* :fullbody-inverse-kinematics
+	  (list
+	   (make-coords :pos (float-vector 700 -100 h))
+	   (copy-object (send *robot* :rleg :end-coords :worldcoords))
+	   (copy-object (send *robot* :lleg :end-coords :worldcoords)))
+	  :rotation-axis (list nil t t)
+	  :move-target
+	  (mapcar
+	   #'(lambda (k) (send *robot* k :end-coords))
+	   '(:rarm :rleg :lleg))
+	  :min #F(-1000 -1000 -1000 -200 -200 -200)
+	  :max #F(1000 1000 1000 200 200 200)
+	  :root-link-virtual-joint-weight
+	  #F(0.01 0.01 1 0.01 0.01 0.01)
+	  :revert-if-fail nil
+	  :link-list
+	  (mapcar
+	   #'(lambda (k)
+	       (send *robot* :link-list
+		     (send (send *robot* k :end-coords) :parent)))
+	   '(:rarm :rleg :lleg))
+	  :debug-view :no-message
+	  )
+    (send *irtviewer* :draw-objects)
+    (when real (model2real-safe :time 10000)))
+  )
+
+
