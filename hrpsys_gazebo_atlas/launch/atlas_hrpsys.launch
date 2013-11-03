@@ -7,6 +7,7 @@
   <arg name="USE_OCTOMAP" default="true" />
   <arg name="USE_BDI_ACTION" default="true" />
   <arg name="USE_LIMB_TRAJECTORY" default="true" />
+  <arg name="RECORD_ROSBAG" default="false" />
 
   <!-- hrpsys controller launch -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_bringup.launch">
@@ -46,4 +47,13 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_sensor_tf.launch" />
 
   <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="atlas_dashboard" />
+
+  <!-- bdi_controller -->
+  <node if="$(arg USE_BDI_ACTION)"
+        pkg="atlas_msgs" type="actionlib_server" name="walking_actionlib_server" />
+
+  <!-- rosbag -->
+  <node if="$(arg RECORD_ROSBAG)"
+        pkg="hrpsys_gazebo_atlas" type="rosbag_record_atlas.sh" name="rosbag_record_atlas" />
+
 </launch>
