@@ -5,3 +5,9 @@ filters:
    params: 
      lower_threshold: 0.25
      upper_threshold: 29.5
+ - name: intent
+   type: laser_filters/LaserScanIntensityFilter
+   params:
+     lower_threshold: 500.0
+     upper_threshold: 100000.0
+     disp_histogram: 0
