@@ -18,10 +18,12 @@ class ATLASHrpsysConfigurator(HrpsysConfigurator):
         if (len(s_rate)>0) and self.rh.port(s_rate[0].name) != None: # check existence of sensor ;; currently original HRP4C.xml has different naming rule of gsensor and gyrometer
             disconnectPorts(self.rh.port(s_rate[0].name), self.kf.port("rate"))
             connectPorts(self.rh.port(s_rate[0].name), self.kf.port("rpyIn"))
+
         # delete co, when use collisoin detector is not used
 #        disconnectPorts(self.rh.port("q"), self.co.port("qCurrent"))
 #        disconnectPorts(self.st.port("q"), self.co.port("qRef"))
 #        disconnectPorts(self.co.port("q"), self.el.port("qRef"))
+
         # delete co, and input current angle, to use collisoin detector just for checking
         #disconnectPorts(self.rh.port("q"), self.co.port("qCurrent"))
         disconnectPorts(self.st.port("q"), self.co.port("qRef"))
