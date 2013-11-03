@@ -39,4 +39,8 @@
   <node name="start_tilt_laser_node"
         type="start-laser.py" pkg="hrpsys_gazebo_atlas"
         output="screen" args="1.1424"/> <!-- 2pi / 5.5 sec -->
+  <node name="start_tilt_laser_node_dyn"
+	type="dynparam" pkg="dynamic_reconfigure"
+	args="set /multisense_sl motor_speed 1.1424"
+	output="screen" />
 </launch>
