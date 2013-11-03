@@ -176,7 +176,7 @@
   (y-or-n-p)
 
   (warning-message 1 "move waist in the loop~%")
-  (my-wait)
+  (y-or-n-p)
   (let ((cnt 0))
     (do-until-key
      (incf cnt)
@@ -188,9 +188,13 @@
      (if real
 	 (model2real :wait t :time 3000)
        (unix::usleep (* 100 1000)))))
+  (send *atlas* :reset-manip-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real :wait t :time 5000))
 
   (warning-message 1 "move legs in the loop~%")
-  (my-wait)
+  (y-or-n-p)
   (let ((cnt 0))
     (do-until-key
      (incf cnt)
@@ -201,9 +205,13 @@
      (if real
 	 (model2real :wait t :time 5000)
        (unix::usleep (* 100 1000)))))
+  (send *atlas* :reset-manip-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real :wait t :time 5000))
 
   (warning-message 1 "move left arm in the loop~%")
-  (my-wait)
+  (y-or-n-p)
   (let ((cnt 0))
     (do-until-key
      (incf cnt)
@@ -215,9 +223,13 @@
      (if real
 	 (model2real :wait t :time 4000)
        (unix::usleep (* 100 1000)))))
+  (send *atlas* :reset-manip-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real :wait t :time 5000))
 
   (warning-message 1 "move both arms in the loop~%")
-  (my-wait)
+  (y-or-n-p)
   (let ((cnt 0))
     (do-until-key
      (incf cnt)
@@ -231,6 +243,10 @@
      (if real
 	 (model2real :wait t :time 4000)
        (unix::usleep (* 100 1000)))))
+  (send *atlas* :reset-manip-pose)
+  (send *atlas* :legs :move-end-pos #f(0 0 100))
+  (send *irtviewer* :draw-objects)
+  (when real (model2real :wait t :time 5000))
   )
 
 
