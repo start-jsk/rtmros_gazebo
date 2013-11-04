@@ -24,7 +24,7 @@
     <!-- The topic for the input cloud -->
     <remap from="cloud_in" to="/laser/full_cloud2_raw" />
     <!-- The topic for the output cloud -->
-    <remap from="cloud_out" to="/laser/full_cloud2" />
+    <remap from="cloud_out" to="/laser/full_cloud2_filtered" />
     <!-- The frame of the sensor used to obtain the data to be                                                                       \
          filtered; This parameter is optional. If it is not specified,                                                               \
          shadow points will be considered outside -->
@@ -34,6 +34,18 @@
     <!-- The names of the links the sensor can see -->
     <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/tilt_self_filter.yaml" />
   </node>
+
+  <!-- pusblish dummy cloud -->
+  <node name="empty_cloud_publisher" pkg="jsk_pr2_startup"
+        type="publish_empty_cloud.py">
+    <param name="frame_id" value="/pelvis" />
+  </node>
+  <node name="atlas_laser_mux" pkg="topic_tools" type="mux"
+        args="/laser/full_cloud2 /laser/full_cloud2_filtered empty_cloud">
+    <remap from="mux" to="atlas_laser_mux"/>
+  </node>
+
+
 
   <!-- start tilting -->
   <node name="start_tilt_laser_node"
