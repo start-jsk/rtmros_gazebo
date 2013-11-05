@@ -82,12 +82,16 @@ compile_collada_model(${atlas_v3_dae}
   --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
   --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
   --conf-file-option "abc_end_effectors: :rarm,r_arm_wrx,back_bkx, :larm,l_arm_wrx,back_bkx, :rleg,r_leg_akx,pelvis, :lleg,l_leg_akx,pelvis,"
+  --conf-file-option "collision_pair: pelvis:l_arm_wrx pelvis:l_arm_wry pelvis:r_arm_wrx pelvis:r_arm_wry l_arm_wrx:l_leg_akx l_arm_wrx:l_leg_aky l_arm_wry:l_leg_kny l_arm_wry:l_leg_kny r_arm_wrx:r_leg_akx r_arm_wrx:r_leg_aky r_arm_wry:r_leg_kny r_arm_wry:r_leg_kny r_arm_wrx:l_arm_wrx r_arm_wrx:l_arm_wry r_arm_wry:l_arm_wrx r_arm_wry:l_arm_wry r_leg_akx:l_leg_akx r_leg_akx:l_leg_aky r_leg_akx:l_leg_kny r_leg_aky:l_leg_akx r_leg_aky:l_leg_aky r_leg_aky:l_leg_kny r_leg_kny:l_leg_akx r_leg_kny:l_leg_aky r_leg_kny:l_leg_kny"
+#  --conf-file-option "collision_pair: back_bkx:l_arm_wrx back_bkx:l_arm_wry back_bkx:r_arm_wrx back_bkx:r_arm_wry back_bky:l_arm_wrx back_bky:l_arm_wry back_bky:r_arm_wrx back_bky:r_arm_wry back_bkz:l_arm_wrx back_bkz:l_arm_wry back_bkz:r_arm_wrx back_bkz:r_arm_wry l_arm_wrx:l_leg_akx l_arm_wrx:l_leg_aky l_arm_wry:l_leg_kny l_arm_wry:l_leg_kny r_arm_wrx:r_leg_akx r_arm_wrx:r_leg_aky r_arm_wry:r_leg_kny r_arm_wry:r_leg_kny r_arm_wrx:l_arm_wrx r_arm_wrx:l_arm_wry r_arm_wry:l_arm_wrx r_arm_wry:l_arm_wry r_leg_akx:l_leg_akx r_leg_akx:l_leg_aky r_leg_akx:l_leg_kny r_leg_aky:l_leg_akx r_leg_aky:l_leg_aky r_leg_aky:l_leg_kny r_leg_kny:l_leg_akx r_leg_kny:l_leg_aky r_leg_kny:l_leg_kny"
   --proj-file-root-option "0,0,1.0,0,0,1,0"
   )
 endif()
 
 ## ALL
 list(GET compile_robots 0 compile_robot)
+list(LENGTH compile_robots compile_robots_num)
+if (compile_robots_num GREATER 0)
 list(REMOVE_AT compile_robots 0)
 add_custom_target(openhrp_robots ALL)
 add_dependencies(openhrp_robots ${compile_robot})
@@ -96,7 +100,7 @@ foreach(compile_target ${compile_robots})
   list(GET compile_robots 0 compile_robot)
   list(REMOVE_AT compile_robots 0)
 endforeach(compile_target ${compile_robots})
-
+endif (compile_robots_num GREATER 0)
 #
 # set(atlas_dae  "${PROJECT_SOURCE_DIR}/models/atlas.dae")
 # set(atlas_eus  "${PROJECT_SOURCE_DIR}/models/atlas.l")
