@@ -633,4 +633,3 @@
   (warning-message 2 "send to real robot ?~%")
   (when (y-or-n-p)
     (model2real :wait t :time time)))
-

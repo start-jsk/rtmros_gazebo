@@ -200,10 +200,10 @@
      (incf cnt)
      (send *atlas* :reset-manip-pose)
      (send *atlas* :legs :move-end-pos #f(0 0 100))
-     (send *atlas* :legs :move-end-pos (float-vector 0 0 (+ 100 (* 25 (sin (/ cnt 2.0))))))
+     (send *atlas* :legs :move-end-pos (float-vector 0 0 (+ 100 (* 65 (sin (/ cnt 1.0))))))
      (send *irtviewer* :draw-objects)
      (if real
-	 (model2real :wait t :time 5000)
+	 (model2real :wait t :time 3000)
        (unix::usleep (* 100 1000)))))
   (send *atlas* :reset-manip-pose)
   (send *atlas* :legs :move-end-pos #f(0 0 100))
@@ -346,17 +346,17 @@
   (my-wait)
   (send *ri* :stop-auto-balancer)
 
-  (warning-message 1 "call (send *ri* :start-impedance :larm)~%")
+  (warning-message 1 "call (send *ri* :start-impedance :rarm)~%")
   (my-wait)
-  (send *ri* :start-impedance :larm)
+  (send *ri* :start-impedance :rarm)
 
   (warning-message 1 "set ref-force #f(-10 0 0)~%")
   (my-wait)
-  (send *ri* :set-impedance-controller-param :larm :ref-force #f(-10 0 0))
+  (send *ri* :set-impedance-controller-param :rarm :ref-force #f(-10 0 0))
 
   (my-wait)
-  (warning-message 1 "call (send *ri* :stop-impedance :larm)~%")
-  (send *ri* :stop-impedance :larm)
+  (warning-message 1 "call (send *ri* :stop-impedance :rarm)~%")
+  (send *ri* :stop-impedance :rarm)
   )
 
 
