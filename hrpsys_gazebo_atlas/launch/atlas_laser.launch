@@ -1,5 +1,5 @@
 <launch>
-  <arg name="FIXED_FRAME" default="/pelvis" />
+  <arg name="FIXED_FRAME" default="/head" />
 
   <node pkg="laser_assembler" type="laser_scan_assembler"
         name="laser_scan_assembler_node"
@@ -25,8 +25,8 @@
     <remap from="cloud_in" to="/laser/full_cloud2_raw" />
     <!-- The topic for the output cloud -->
     <remap from="cloud_out" to="/laser/full_cloud2_filtered" />
-    <!-- The frame of the sensor used to obtain the data to be                                                                       \
-         filtered; This parameter is optional. If it is not specified,                                                               \
+    <!-- The frame of the sensor used to obtain the data to be
+	 filtered; This parameter is optional. If it is not specified,
          shadow points will be considered outside -->
     <!--param name="sensor_frame" type="string" value="laser_tilt_link" /-->
     <!-- Minimum distance to sensor (for point not to be considered inside)-->
@@ -37,15 +37,15 @@
 
   <!-- pusblish dummy cloud -->
   <node name="empty_cloud_publisher" pkg="jsk_pr2_startup"
+	output="screen"
         type="publish_empty_cloud.py">
-    <param name="frame_id" value="/pelvis" />
+    <param name="frame_id" value="/head_hokuyo_frame" />
+    <param name="max_range" value="2.6" />
   </node>
   <node name="atlas_laser_mux" pkg="topic_tools" type="mux"
         args="/laser/full_cloud2 /laser/full_cloud2_filtered empty_cloud">
     <remap from="mux" to="atlas_laser_mux"/>
   </node>
-
-
 
   <!-- start tilting -->
   <node name="start_tilt_laser_node"
