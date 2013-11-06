@@ -1,6 +1,7 @@
 <launch>
-  <arg name="FIXED_FRAME" default="/head" />
+  <arg name="FIXED_FRAME" default="/map" />
 
+  <!-- laser assembler for recognizing environment -->
   <node pkg="laser_assembler" type="laser_scan_assembler"
         name="laser_scan_assembler_node"
         output="screen" >
@@ -9,7 +10,6 @@
     <param name="fixed_frame" type="string" value="$(arg FIXED_FRAME)"/>
     <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/atlas_laser_filter.yaml" />
   </node>
-
   <node pkg="hrpsys_gazebo_atlas" type="atlas_laser_snapshotter"
         name="atlas_laser_snapshotter"
         output="screen" >
@@ -17,7 +17,6 @@
     <remap from="full_cloud2" to="/laser/full_cloud2_raw" />
     <!-- publish /full_cloud2 -->
   </node>
-
   <node pkg="robot_self_filter"
         type="self_filter" clear_params="true"
         name="robot_shadow_self_filter" respawn="true" output="screen">
@@ -35,15 +34,29 @@
     <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/tilt_self_filter.yaml" />
   </node>
 
-  <!-- pusblish dummy cloud -->
+  <!-- laser to point cloud for moveit -->
+  <node pkg="laser_filters" type="scan_to_cloud_filter_chain"
+	name="atlas_scan_to_cloud"
+	output="screen" clear_params="true">
+    <remap from="scan" to="/multisense_sl/laser/scan" />
+    <remap from="cloud_filtered" to="/laser/tilt_cloud_filtered" />
+    <!--param name="target_frame" value="/pelvis" /-->
+    <!--param name="target_frame" value="/head" /-->
+    <param name="target_frame" value="/head_hokuyo_frame" />
+    <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/atlas_scan_to_cloud.yaml" />
+  </node>
+
+  <!-- pusblish dummy cloud for moveit -->
   <node name="empty_cloud_publisher" pkg="jsk_pr2_startup"
 	output="screen"
         type="publish_empty_cloud.py">
     <param name="frame_id" value="/head_hokuyo_frame" />
-    <param name="max_range" value="2.6" />
+    <param name="max_range" value="4.0" />
+    <param name="rate" value="3" />
+    <param name="rotate_points" value="true" />
   </node>
   <node name="atlas_laser_mux" pkg="topic_tools" type="mux"
-        args="/laser/full_cloud2 /laser/full_cloud2_filtered empty_cloud">
+        args="/laser/moveit_input_cloud2 /laser/tilt_cloud_filtered /empty_cloud ">
     <remap from="mux" to="atlas_laser_mux"/>
   </node>
 

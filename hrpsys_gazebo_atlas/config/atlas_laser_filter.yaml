@@ -10,11 +10,12 @@ filters:
  - name: through
    type: laser_filters/LaserScanRangeFilter
    params: 
-     lower_threshold: 0.3
-## for manipulation
-     upper_threshold: 2.8
 ## for localization
-#     upper_threshold: 29.5
+     lower_threshold: 0.7
+     upper_threshold: 29.5
+## for manipulation
+#     lower_threshold: 0.3
+#     upper_threshold: 2.8
  - name: intent
    type: laser_filters/LaserScanIntensityFilter
    params:
