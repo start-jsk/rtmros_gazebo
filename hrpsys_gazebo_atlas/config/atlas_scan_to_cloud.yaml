@@ -19,10 +19,11 @@ scan_filter_chain:
 ## for localization
 #     lower_threshold: 0.7
 #     upper_threshold: 29.5
-# - name: intent
-#   type: laser_filters/LaserScanIntensityFilter
-#   params:
-#     lower_threshold: 750.0
-#     upper_threshold: 100000.0
-#     disp_histogram: 0
+## comment out for gazebo
+ - name: intent
+   type: laser_filters/LaserScanIntensityFilter
+   params:
+     lower_threshold: 750.0
+     upper_threshold: 100000.0
+     disp_histogram: 0
 #cloud_filter_chain:
