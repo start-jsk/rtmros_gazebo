@@ -21,6 +21,7 @@ if (_make_failed)
 endif(_make_failed)
 
 include_directories(${catkin_INCLUDE_DIRS})
+link_directories(${catkin_LIBRARY_DIRS})
 
 ## laser assember is not catkinized
 include_directories(/opt/ros/groovy/stacks/laser_assembler/srv_gen/cpp/include/)
