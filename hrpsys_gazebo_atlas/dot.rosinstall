@@ -1,0 +1,17 @@
+- git: 
+    uri: https://github.com/ros-perception/perception_pcl.git
+    local-name: perception_pcl
+    version: groovy-devel
+- git:
+    uri: https://github.com/ros-perception/pcl_msgs.git
+    local-name: pcl_msgs
+- svn: 
+    uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk
+    local-name: jsk-ros-pkg
+- svn:
+    uri: https://rtm-ros-robotics.googlecode.com/svn/trunk/rtmros_gazebo
+    local-name: rtm-ros-robotics/rtmros_gazebo
+- git:
+    uri: https://github.com/YoheiKakiuchi/moveit_robots.git
+    local-name: moveit_robots
+
