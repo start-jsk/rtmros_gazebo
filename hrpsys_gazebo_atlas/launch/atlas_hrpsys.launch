@@ -1,10 +1,11 @@
 <launch>
   <arg name="USE_LASER" default="true" />
   <arg name="USE_SCREENPOINT" default="true" />
-  <arg name="USE_VIEW" default="false" />
-  <arg name="USE_IMAGE_TRANSPORT" default="false" />
-  <arg name="USE_OCTOMAP" default="true" />
+  <arg name="USE_VIEW" default="true" />
   <arg name="USE_LIMB_TRAJECTORY" default="true" />
+
+  <arg name="USE_IMAGE_TRANSPORT" default="false" />
+  <arg name="USE_OCTOMAP" default="false" />
   <arg name="RECORD_ROSBAG" default="false" />
 
   <!-- obsolated -->
