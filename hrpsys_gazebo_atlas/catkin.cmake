@@ -2,14 +2,22 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general)
+find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description)
 
-catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general)
+catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description)
 
-set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_PREFIX}/share/hrpsys_ros_bridge)
+if(EXISTS ${hrpsys_ros_bridge_SOURCE_DIR})
+  set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_SOURCE_DIR})
+else()
+  set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_PREFIX}/share/hrpsys_ros_bridge)
+endif()
 include(${hrpsys_ros_bridge_PACKAGE_PATH}/cmake/compile_robot_model.cmake)
 
-set(atlas_description_PACKAGE_PATH ${atlas_description_PREFIX}/share/atlas_description)
+if(EXISTS ${atlas_description_SOURCE_DIR})
+  set(atlas_description_PACKAGE_PATH ${atlas_description_SOURCE_DIR})
+else()
+  set(atlas_description_PACKAGE_PATH ${atlas_description_PREFIX}/share/atlas_description)
+endif()
 if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
   set(atlas_urdf "${PROJECT_SOURCE_DIR}/build/atlas.jsk.urdf")
   set(atlas_dae  "${PROJECT_SOURCE_DIR}/models/atlas.dae")
@@ -35,6 +43,8 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
     --conf-file-option "abc_end_effectors: :rarm,r_arm_mwx,back_ubx, :larm,l_arm_mwx,back_ubx, :rleg,r_leg_lax,pelvis, :lleg,l_leg_lax,pelvis,"
     --proj-file-root-option "0,0,1.0,0,0,1,0"
     )
+else()
+  message(FATAL_ERROR "${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf is not found")
 endif()
 
 if (EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
@@ -63,6 +73,8 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
     #  --conf-file-option "collision_pair: back_bkx:l_arm_wrx back_bkx:l_arm_wry back_bkx:r_arm_wrx back_bkx:r_arm_wry back_bky:l_arm_wrx back_bky:l_arm_wry back_bky:r_arm_wrx back_bky:r_arm_wry back_bkz:l_arm_wrx back_bkz:l_arm_wry back_bkz:r_arm_wrx back_bkz:r_arm_wry l_arm_wrx:l_leg_akx l_arm_wrx:l_leg_aky l_arm_wry:l_leg_kny l_arm_wry:l_leg_kny r_arm_wrx:r_leg_akx r_arm_wrx:r_leg_aky r_arm_wry:r_leg_kny r_arm_wry:r_leg_kny r_arm_wrx:l_arm_wrx r_arm_wrx:l_arm_wry r_arm_wry:l_arm_wrx r_arm_wry:l_arm_wry r_leg_akx:l_leg_akx r_leg_akx:l_leg_aky r_leg_akx:l_leg_kny r_leg_aky:l_leg_akx r_leg_aky:l_leg_aky r_leg_aky:l_leg_kny r_leg_kny:l_leg_akx r_leg_kny:l_leg_aky r_leg_kny:l_leg_kny"
     --proj-file-root-option "0,0,1.0,0,0,1,0"
     )
+else()
+  message(FATAL_ERROR "${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro")
 endif()
 
 

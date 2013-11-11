@@ -28,6 +28,7 @@
   <build_depend>jsk_pcl_ros</build_depend>
   <build_depend>resized_imagetransport</build_depend>
   <build_depend>hrpsys_gazebo_general</build_depend>
+  <build_depend>atlas_description</build_depend>
 
   <run_depend>roseus</run_depend>
   <run_depend>pr2eus</run_depend>
@@ -43,6 +44,7 @@
   <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>resized_imagetransport</run_depend>
   <run_depend>hrpsys_gazebo_general</run_depend>
+  <run_depend>atlas_description</run_depend>
 
   <export>
 
