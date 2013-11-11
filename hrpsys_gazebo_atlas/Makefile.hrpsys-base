@@ -2,17 +2,23 @@ all: installed
 
 SVN_DIR = `rospack build hrpsys`/build/hrpsys-base
 
+INSTALL_DIR ?= `rospack find hrpsys_gazebo_atlas`
+OPENRTM_DIR ?= `rospack find openrtm_aist`
+OPENHRP_DIR ?= `rospack find openhrp3`
+PKG_CONFIG_PATH_SETUP ?= PKG_CONFIG_PATH=`rospack find openrtm_aist`/lib/pkgconfig:`rospack find openhrp3`/lib/pkgconfig:$(PKG_CONFIG_PATH)
+
 installed:
 	mkdir -p build/hrpsys-base && cd build/hrpsys-base && \
-	PKG_CONFIG_PATH=`rospack find openrtm_aist`/lib/pkgconfig:`rospack find openhrp3`/lib/pkgconfig:$(PKG_CONFIG_PATH) \
+	${PKG_CONFIG_PATH_SETUP} \
 	cmake \
-	-DCMAKE_INSTALL_PREFIX=`rospack find hrpsys_gazebo_atlas` \
-	-DOPENRTM_DIR=`rospack find openrtm_aist` \
+	-DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+	-DOPENRTM_DIR=${OPENRTM_DIR} \
+	-DOPENHRP_DIR=${OPENHRP_DIR} \
         -DCOMPILE_JAVA_STUFF=OFF \
 	-DENABLE_INSTALL_RPATH=ON \
 	-DENABLE_INSTALL_RPATH_TO_SELF=ON \
 	-DLIBIO_DIR=${CURDIR}/iob \
-	`rospack find hrpsys`/build/hrpsys-base-source && \
+	${CURDIR}/build/hrpsys-base-source && \
 	(cd idl && make && make install ) && \
 	(cd lib && make && make install ) && \
 	(cd rtc/RobotHardware && make && make install )

@@ -1,0 +1,50 @@
+<package>
+  <name>hrpsys_gazebo_atlas</name>
+  <version>0.1.0</version>
+  <description>hrpsys_gazebo_atlas</description>
+
+  <maintainer email="youhei@jsk.t.u-tokyo.ac.jp">Yohei Kakiuchi</maintainer>
+
+  <license>BSD</license>
+
+  <url type="website">http://ros.org/wiki/hrpsys_gazebo_atlas</url>
+  <!-- <url type="bugtracker"></url> -->
+
+  <author email="youhei@jsk.t.u-tokyo.ac.jp">Yohei Kakiuchi</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roseus</build_depend>
+  <build_depend>pr2eus</build_depend>
+  <build_depend>hrpsys_ros_bridge</build_depend>
+  <build_depend>atlas_msgs</build_depend>
+  <build_depend>sandia_hand_msgs</build_depend>
+  <build_depend>osrf_msgs</build_depend>
+  <build_depend>pr2_controller_manager</build_depend>
+  <build_depend>collada_urdf_jsk_patch</build_depend>
+  <build_depend>tf</build_depend>
+  <build_depend>laser_assembler</build_depend>
+  <build_depend>image_view2</build_depend>
+  <build_depend>jsk_pcl_ros</build_depend>
+  <build_depend>resized_imagetransport</build_depend>
+  <build_depend>hrpsys_gazebo_general</build_depend>
+
+  <run_depend>roseus</run_depend>
+  <run_depend>pr2eus</run_depend>
+  <run_depend>hrpsys_ros_bridge</run_depend>
+  <run_depend>atlas_msgs</run_depend>
+  <run_depend>sandia_hand_msgs</run_depend>
+  <run_depend>osrf_msgs</run_depend>
+  <run_depend>pr2_controller_manager</run_depend>
+  <run_depend>collada_urdf_jsk_patch</run_depend>
+  <run_depend>tf</run_depend>
+  <run_depend>laser_assembler</run_depend>
+  <run_depend>image_view2</run_depend>
+  <run_depend>jsk_pcl_ros</run_depend>
+  <run_depend>resized_imagetransport</run_depend>
+  <run_depend>hrpsys_gazebo_general</run_depend>
+
+  <export>
+
+  </export>
+</package>
