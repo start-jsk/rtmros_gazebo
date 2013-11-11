@@ -449,7 +449,7 @@ int write_command_angles(const double *angles)
 
     // check if the joint_states are published
     if ( ros::Time::now()  - last_callback_time > ros::Duration(10.0) ) {
-      ROS_ERROR_STREAM("/atlas/atlas_state  has not been published last 5.0 seconds, check by `rostopic info /atlas/atlas_state`");
+      ROS_ERROR_STREAM("/atlas/atlas_state  has not been published last 10.0 seconds, check by `rostopic info /atlas/atlas_state`");
       last_callback_time = ros::Time::now();
     }
 
