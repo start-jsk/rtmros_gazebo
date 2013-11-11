@@ -1,6 +1,6 @@
 all: installed
 
-SVN_DIR = `rospack build hrpsys`/build/hrpsys-base
+SVN_DIR ?= `rospack find hrpsys`/build/hrpsys-base-source
 
 INSTALL_DIR ?= `rospack find hrpsys_gazebo_atlas`
 OPENRTM_DIR ?= `rospack find openrtm_aist`
@@ -18,7 +18,7 @@ installed:
 	-DENABLE_INSTALL_RPATH=ON \
 	-DENABLE_INSTALL_RPATH_TO_SELF=ON \
 	-DLIBIO_DIR=${CURDIR}/iob \
-	${CURDIR}/build/hrpsys-base-source && \
+	${SVN_DIR} && \
 	(cd idl && make && make install ) && \
 	(cd lib && make && make install ) && \
 	(cd rtc/RobotHardware && make && make install )

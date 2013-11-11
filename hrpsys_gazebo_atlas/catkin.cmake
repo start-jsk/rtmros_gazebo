@@ -14,7 +14,7 @@ set(OPENRTM_DIR ${openrtm_aist_PREFIX}/lib/openrtm_aist)
 set(OPENHRP_DIR ${openhrp3_PREFIX}/share/openhrp3)
 set(ENV{PKG_CONFIG_PATH} $ENV{PKG_CONFIG_PATH}:${CATKIN_DEVEL_PREFIX}/lib/pkgconfig)
 execute_process(COMMAND svn co http://hrpsys-base.googlecode.com/svn/trunk ${PROJECT_SOURCE_DIR}/build/hrpsys-base-source) ## deb does not have source modules
-execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f Makefile.hrpsys-base OPENRTM_DIR=${OPENRTM_DIR} OPENHRP_DIR=${OPENHRP_DIR} PKG_CONFIG_PATH_SETUP= INSTALL_DIR=${CATKIN_DEVEL_PREFIX}
+execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f Makefile.hrpsys-base OPENRTM_DIR=${OPENRTM_DIR} OPENHRP_DIR=${OPENHRP_DIR} SVN_DIR=${PROJECT_SOURCE_DIR} PKG_CONFIG_PATH_SETUP= INSTALL_DIR=${CATKIN_DEVEL_PREFIX}
                 RESULT_VARIABLE _make_failed)
 if (_make_failed)
   message(FATAL_ERROR "Build of hrpsys failed")
