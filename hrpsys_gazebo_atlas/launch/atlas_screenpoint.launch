@@ -1,7 +1,7 @@
 <launch>
   <arg name="USE_STEREO" default="false" />
   <arg name="CAMERA" default="/multisense_sl/camera/left" />
-  <arg name="POINTS_TOPIC" default="/full_cloud2" />
+  <arg name="POINTS_TOPIC" default="/laser/full_cloud2_filtered" />
   <arg name="USE_VIEW" default="true" />
 
   <!-- use stereo camera -->
