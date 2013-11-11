@@ -1,8 +1,8 @@
 <launch>
-  <arg name="FIXED_FRAME" default="/pelvis" />  <!-- /imu_floor -->
+  <arg name="FIXED_FRAME" default="/head" />  <!-- /imu_floor -->
   <arg name="USE_TILT_LASER" default="true" />
   <arg name="TARGET_FRAME" default="/head_hokuyo_frame" />
-  <arg name="CLOUD_IN" default="/full_cloud2" />
+  <arg name="CLOUD_IN" default="/laser/full_cloud2_filered" />
 
   <!-- start tilting -->
   <group if="$(arg USE_TILT_LASER)">
