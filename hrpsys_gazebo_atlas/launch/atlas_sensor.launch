@@ -1,0 +1,8 @@
+<launch>
+  <!-- a launch file for launching sensor stuff  -->
+ <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_laser.launch" />
+ <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_octomap.launch">
+    <arg name="USE_TILT_LASER" value="false" />
+ </include>
+ <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_sensor_tf.launch" />
+</launch>
