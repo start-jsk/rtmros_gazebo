@@ -51,7 +51,7 @@
 	output="screen"
         type="publish_empty_cloud.py">
     <param name="frame_id" value="/head_hokuyo_frame" />
-    <param name="max_range" value="4.0" />
+    <param name="max_range" value="5.0" />
     <param name="rate" value="3" />
     <param name="rotate_points" value="true" />
   </node>
