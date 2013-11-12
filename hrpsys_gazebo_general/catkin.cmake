@@ -30,4 +30,8 @@ add_library(IOBPlugin src/IOBPlugin.cpp)
 add_library(AddForcePlugin src/AddForcePlugin.cpp)
 add_library(SetVelPlugin src/SetVelPlugin.cpp)
 add_library(GetVelPlugin src/GetVelPlugin.cpp)
+add_dependencies(IOBPlugin hrpsys_gazebo_msgs_gencpp)
+add_dependencies(AddForcePlugin hrpsys_gazebo_msgs_gencpp)
+add_dependencies(SetVelPlugin hrpsys_gazebo_msgs_gencpp)
+add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
 
