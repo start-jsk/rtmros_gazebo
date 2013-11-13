@@ -2,9 +2,10 @@
 
 set -x
 
+source /opt/ros/groovy/setup.bash
 #
+mkdir -p catkin_ws/src
 cd catkin_ws
-mkdir src
 catkin_workspace_init
 wstool init
 wstool merge https://rtm-ros-robotics.googlecode.com/svn-history/trunk/rtmros_gazebo/hrpsys_gazebo_atlas/dot.rosinstall
