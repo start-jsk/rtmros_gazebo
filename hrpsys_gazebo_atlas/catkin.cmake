@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description)
+find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description collada_urdf_jsk_patch)
 
 catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description)
 
@@ -30,7 +30,7 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
     )
   add_custom_command(
     OUTPUT ${atlas_dae}
-    COMMAND rosrun collada_urdf_jsk_patch urdf_to_collada ${atlas_urdf} ${atlas_dae}.bak
+    COMMAND ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/urdf_to_collada ${atlas_urdf} ${atlas_dae}.bak
     COMMAND rosrun hrpsys_gazebo_atlas add_sensor_to_collada.py ${atlas_dae}.bak > ${atlas_dae}
     DEPENDS ${atlas_urdf}
     )
@@ -59,7 +59,7 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
     )
   add_custom_command(
     OUTPUT ${atlas_v3_dae}
-    COMMAND rosrun collada_urdf_jsk_patch urdf_to_collada ${atlas_v3_urdf} ${atlas_v3_dae}.bak
+    COMMAND ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/urdf_to_collada ${atlas_v3_urdf} ${atlas_v3_dae}.bak
     COMMAND rosrun hrpsys_gazebo_atlas add_sensor_to_collada.py ${atlas_v3_dae}.bak > ${atlas_v3_dae}
     DEPENDS ${atlas_v3_urdf}
     )

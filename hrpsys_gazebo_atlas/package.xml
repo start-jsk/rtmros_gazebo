@@ -26,6 +26,7 @@
   <build_depend>laser_assembler</build_depend>
   <build_depend>image_view2</build_depend>
   <build_depend>jsk_pcl_ros</build_depend>
+  <build_depend>collada_urdf_jsk_patch</build_depend>
   <build_depend>resized_imagetransport</build_depend>
   <build_depend>hrpsys_gazebo_general</build_depend>
   <build_depend>atlas_description</build_depend>
@@ -41,6 +42,7 @@
   <run_depend>tf</run_depend>
   <run_depend>laser_assembler</run_depend>
   <run_depend>image_view2</run_depend>
+  <run_depend>collada_urdf_jsk_patch</run_depend>
   <run_depend>jsk_pcl_ros</run_depend>
   <run_depend>resized_imagetransport</run_depend>
   <run_depend>hrpsys_gazebo_general</run_depend>
