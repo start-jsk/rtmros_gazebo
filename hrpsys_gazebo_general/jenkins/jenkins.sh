@@ -8,7 +8,7 @@ DISTRO=${1:-groovy}
 source /opt/ros/${DISTRO}/setup.bash
 #
 mkdir -p catkin_ws/src
-cd catkin_ws
+cd catkin_ws/src
 catkin_init_workspace
 wstool init
 wstool merge https://rtm-ros-robotics.googlecode.com/svn-history/trunk/rtmros_gazebo/hrpsys_gazebo_atlas/dot.rosinstall
