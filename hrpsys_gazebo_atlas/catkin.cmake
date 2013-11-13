@@ -31,7 +31,7 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
   add_custom_command(
     OUTPUT ${atlas_dae}
     COMMAND ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/urdf_to_collada ${atlas_urdf} ${atlas_dae}.bak
-    COMMAND rosrun hrpsys_gazebo_atlas add_sensor_to_collada.py ${atlas_dae}.bak > ${atlas_dae}
+    COMMAND ${PROJECT_SOURCE_DIR}/scripts/add_sensor_to_collada.py ${atlas_dae}.bak > ${atlas_dae}
     DEPENDS ${atlas_urdf}
     )
   compile_collada_model(${atlas_dae}
@@ -60,7 +60,7 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
   add_custom_command(
     OUTPUT ${atlas_v3_dae}
     COMMAND ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/urdf_to_collada ${atlas_v3_urdf} ${atlas_v3_dae}.bak
-    COMMAND rosrun hrpsys_gazebo_atlas add_sensor_to_collada.py ${atlas_v3_dae}.bak > ${atlas_v3_dae}
+    COMMAND ${PROJECT_SOURCE_DIR}/scripts/add_sensor_to_collada.py ${atlas_v3_dae}.bak > ${atlas_v3_dae}
     DEPENDS ${atlas_v3_urdf}
     )
   compile_collada_model(${atlas_v3_dae}
