@@ -1,12 +1,13 @@
 <launch>
   <arg name="USE_LASER" default="true" />
-  <arg name="USE_SCREENPOINT" default="true" />
-  <arg name="USE_VIEW" default="false" />
   <arg name="USE_HAND"  default="true" />
-  <arg name="USE_IMAGE_TRANSPORT" default="false" />
-  <arg name="USE_OCTOMAP" default="true" />
   <arg name="USE_BDI_ACTION" default="true" />
   <arg name="USE_LIMB_TRAJECTORY" default="true" />
+
+  <arg name="USE_SCREENPOINT" default="false" />
+  <arg name="USE_VIEW" default="false" />
+  <arg name="USE_IMAGE_TRANSPORT" default="false" />
+  <arg name="USE_OCTOMAP" default="false" />
   <arg name="RECORD_ROSBAG" default="false" />
 
   <!-- hrpsys controller launch -->
@@ -41,7 +42,8 @@
 
   <!-- bdi_controller -->
   <node if="$(arg USE_BDI_ACTION)"
-        pkg="atlas_msgs" type="actionlib_server" name="walking_actionlib_server" />
+        pkg="drcsim_gazebo_ros_plugins" type="actionlib_server"
+	name="walking_actionlib_server" />
 
   <!-- tf for sensors -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_sensor_tf.launch" />
