@@ -19,7 +19,7 @@ cd ..
 sudo apt-get update
 rosdep update
 rosdep install --from-paths src --ignore-src --rosdistro ${DISTRO} -y -r
-sudo apt-get install ros-${DISTRO}-hrpsys-ros-bridge ## this should installed as rosdep install command
+sudo apt-get install -y ros-${DISTRO}-hrpsys-ros-bridge ## this should installed as rosdep install command
 catkin_make
 
 ##
