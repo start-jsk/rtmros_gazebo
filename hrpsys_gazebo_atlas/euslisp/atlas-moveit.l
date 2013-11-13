@@ -8,11 +8,18 @@
 
 (defmethod atlas-moveit-environment
   (:init
-   (&key ((:robot rb) (atlas)))
+   (&key ((:robot rb)))
+   (unless rb
+     (cond
+      ((boundp '*atlas*)
+       (let ((tmp *atlas*))
+	 (setq rb (atlas))
+	 (setq *atlas* tmp)))
+      (t (setq rb (atlas)))))
    (send-super :init :robot rb
                :frame-id "pelvis"
                :multi-dof-joint-name "virtual_joint"
-               :multi-dof-frame-id   "/world") ;; /world should be published
+               :multi-dof-frame-id   "/odom") ;; /world should be published
    )
   (:default-configuration ()
    (list (list :rarm
@@ -70,6 +77,13 @@
   )
 
 #|
+(setq *me* (instance atlas-moveit-environment :init)) ;; call (atlas) inside it
+(send *ri* :set-moveit-environment *me*)
+;;
+(send *ri* :angle-vector-make-trajectory (send *atlas* :angle-vector))
+|#
+
+#|
 (setq *co* (instance collision-object-publisher :init))
 (setq *me* (instance atlas-moveit-environment :init)) ;; call (atlas) inside it
 
@@ -98,6 +112,5 @@
 (send *atlas* :reset-pose)
 (send *me* :sync-robot-model *atlas*)
 (send *me* :motion-plan :rarm-torso)
-
 
 |#
