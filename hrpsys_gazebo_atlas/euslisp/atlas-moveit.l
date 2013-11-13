@@ -77,10 +77,15 @@
   )
 
 #|
-(setq *me* (instance atlas-moveit-environment :init)) ;; call (atlas) inside it
-(send *ri* :set-moveit-environment *me*)
+(alas-init-ex)
+(send *ri* :set-moveit-environment 
+      (instance atlas-moveit-environment :init)) ;; call (atlas) inside it
 ;;
-(send *ri* :angle-vector-make-trajectory (send *atlas* :angle-vector))
+;; just planning
+(send *ri* :angle-vector-make-trajectory (send *atlas* :angle-vector) :move-arm :larm :use-torso nil)
+;;
+;; move
+(send *ri* :angle-vector-motion-plan (send *atlas* :angle-vector) :move-arm :larm :use-torso nil)
 |#
 
 #|
