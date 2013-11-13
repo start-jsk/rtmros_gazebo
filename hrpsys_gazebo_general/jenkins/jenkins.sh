@@ -1,8 +1,11 @@
 #!/bin/bash
 
+trap 'exit 1' ERR
+
 set -x
 
-source /opt/ros/groovy/setup.bash
+DISTRO=${1:-groovy}
+source /opt/ros/${DISTRO}/setup.bash
 #
 mkdir -p catkin_ws/src
 cd catkin_ws
@@ -15,8 +18,8 @@ cd ..
 #
 sudo apt-get update
 rosdep update
-rosdep install --from-paths src --ignore-src --rosdistro groovy -y -r
-sudo apt-get install ros-groovy-hrpsys-ros-bridge ## this should installed as rosdep install command
+rosdep install --from-paths src --ignore-src --rosdistro ${DISTRO} -y -r
+sudo apt-get install ros-${DISTRO}-hrpsys-ros-bridge ## this should installed as rosdep install command
 catkin_make
 
 ##
