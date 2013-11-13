@@ -14,7 +14,7 @@ cd ..
 
 #
 sudo apt-get update
-rosdep udpate
+rosdep update
 rosdep install --from-paths src --ignore-src --rosdistro groovy -y -r
 sudo apt-get install ros-groovy-hrpsys-ros-bridge ## this should installed as rosdep install command
 catkin_make
