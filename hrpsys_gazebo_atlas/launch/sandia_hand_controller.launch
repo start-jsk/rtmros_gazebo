@@ -1,11 +1,13 @@
 <launch>
+  <arg name="launch_teleop" default="true" />
   <!-- left hand -->
   <node ns="sandia_hand_left"
         pkg="hrpsys_gazebo_atlas" type="hand_controller" name="controller_manager"
         output="screen" >
     <param name="robot_description" textfile="$(find hrpsys_gazebo_atlas)/models/sandia_hand_left.urdf" />
     <remap from="commands" to="/sandia_hands/l_hand/joint_commands" />
-    <remap from="in_joint_states" to="/sandia_hands/l_hand/joint_states" />
+    <remap from="in_joint_states" to="/atlas/joint_states" />
+    <!-- <remap from="in_joint_states" to="/sandia_hands/l_hand/joint_states" /> -->
   </node>
   <node ns="sandia_hand_left"
         pkg="pr2_controller_manager" type="spawner" name="spawner"
@@ -20,7 +22,8 @@
         output="screen" >
     <param name="robot_description" textfile="$(find hrpsys_gazebo_atlas)/models/sandia_hand_right.urdf" />
     <remap from="commands" to="/sandia_hands/r_hand/joint_commands" />
-    <remap from="in_joint_states" to="/sandia_hands/r_hand/joint_states" />
+    <remap from="in_joint_states" to="/atlas/joint_states" />
+    <!-- <remap from="in_joint_states" to="/sandia_hands/r_hand/joint_states" /> -->
   </node>
   <node ns="sandia_hand_right"
         pkg="pr2_controller_manager" type="spawner" name="spawner"
@@ -28,5 +31,12 @@
   </node>
   <rosparam ns="sandia_hand_right"
             file="$(find hrpsys_gazebo_atlas)/config/sandia_hand_right_controller.yaml" command="load" />
-
+  <node ns="sandia_hand_left" pkg="">
+  </node>
+  
+  <group if="($arg launch_teleop)">
+    <node ns="sandia_hands/l_hand" name="simple_grasp_left" pkg="sandia_hand_teleop" type="simple_grasp.py"/>
+    <node ns="sandia_hands/r_hand" name="simple_grasp_right" pkg="sandia_hand_teleop" type="simple_grasp.py"/>
+  </group>
+    
 </launch>
