@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(HRP2JSK_moveit_config)
+project(hrp2jsk_moveit_config)
 
 find_package(catkin REQUIRED)
 

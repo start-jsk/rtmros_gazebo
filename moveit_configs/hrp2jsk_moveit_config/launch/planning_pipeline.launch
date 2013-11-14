@@ -5,6 +5,6 @@
 
   <arg name="pipeline" default="ompl" />
 
-  <include file="$(find HRP2JSK_moveit_config)/launch/$(arg pipeline)_planning_pipeline.launch" />
+  <include file="$(find hrp2jsk_moveit_config)/launch/$(arg pipeline)_planning_pipeline.launch" />
 
 </launch>

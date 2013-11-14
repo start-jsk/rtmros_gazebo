@@ -6,11 +6,11 @@
   <param if="$(arg load_robot_description)" name="robot_description" textfile="$(find HRP2JSK)/HRP2JSK.urdf"/>
 
   <!-- The semantic description that corresponds to the URDF -->
-  <param name="robot_description_semantic" textfile="$(find HRP2JSK_moveit_config)/config/HRP2JSK.srdf" />
+  <param name="robot_description_semantic" textfile="$(find hrp2jsk_moveit_config)/config/HRP2JSK.srdf" />
   
   <!-- Load to the parameter server yaml files -->
   <group ns="robot_description_planning">    
-    <rosparam command="load" file="$(find HRP2JSK_moveit_config)/config/joint_limits.yaml"/>
+    <rosparam command="load" file="$(find hrp2jsk_moveit_config)/config/joint_limits.yaml"/>
   </group>
   
 </launch>

@@ -14,5 +14,5 @@
   <param name="use_controller_manager" value="$(arg use_controller_manager)" />
 
   <!-- load controller_list and controller_manager_ns -->
-  <rosparam file="$(find HRP2JSK_moveit_config)/config/hrp2jsk_controllers.yaml"/>
+  <rosparam file="$(find hrp2jsk_moveit_config)/config/hrp2jsk_controllers.yaml"/>
 </launch>
