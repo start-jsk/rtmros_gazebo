@@ -346,16 +346,33 @@ int write_command_angles(const double *angles)
       command[i] = angles[i];
     }
 
-    jointcommand.header.stamp = ros::Time::now();
+    JointCommand send_com(jointcommands);
+    bool servo_on = true;
+
+    send_com.header.stamp = ros::Time::now();
 
     for (int i=0; i<NUM_OF_REAL_JOINT; i++) {
-      jointcommand.position[i] = command[JOINT_ID_REAL2MODEL(i)];
-      jointcommand.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
+      if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
+        send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
+        send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
+      } else {
+        servo_on = false;
+        send_com.position[i] = 0;
+        send_com.velocity[i] = 0;
+        send_com.effort[i] = 0;
+        send_com.kp_position[i] = 0;
+        send_com.ki_position[i] = 0;
+        send_com.kd_position[i] = 0;
+        send_com.kp_velocity[i]  = 0;
+        send_com.kp_velocity[i]  = 0;
+      }
     }
 
     if (iob_synchronized) {
       hrpsys_gazebo_msgs::SyncCommandRequest req;
-      req.joint_command = jointcommand;
+      if (servo_on) {
+        req.joint_command = send_com;
+      }
       hrpsys_gazebo_msgs::SyncCommandResponse res;
       //std::cerr << "[iob] service call" << std::endl;
       serv_command.call(req, res);
@@ -363,7 +380,9 @@ int write_command_angles(const double *angles)
       js = res.robot_state;
       init_sub_flag = true;
     } else {
-      pub_joint_command.publish(jointcommand);
+      if(servo_on) {
+        pub_joint_command.publish(send_com);
+      }
       ros::spinOnce();
     }
     if (!start_robothw) {
