@@ -346,7 +346,7 @@ int write_command_angles(const double *angles)
       command[i] = angles[i];
     }
 
-    JointCommand send_com(jointcommands);
+    JointCommand send_com(jointcommand);
     bool servo_on = true;
 
     send_com.header.stamp = ros::Time::now();
