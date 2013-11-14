@@ -1,14 +1,17 @@
-(load-ros-manifest "gazebo_msgs")
+(ros::load-ros-manifest "gazebo_msgs")
 
 #|
 topic
 "/gazebo/set_link_state" gazebo_msgs::LinkState
 "/gazebo/set_model_state" gazebo_msgs::ModelState
 |#
-(defun get-link-states ()
-  (one-shot-subscribe "/gazebo/link_states" gazebo_msgs::LinkStates :timeout 1.0))
-(defun get-model-states ()
-  (one-shot-subscribe "/gazebo/model_states" gazebo_msgs::ModelStates :timeout 1.0))
+;;
+;; get states topic
+;;
+(defun gazebo-get-link-states (&optional (timeout 1000))
+  (one-shot-subscribe "/gazebo/link_states" gazebo_msgs::LinkStates :timeout timeout))
+(defun gazebo-get-model-states (&optional (timeout 1000))
+  (one-shot-subscribe "/gazebo/model_states" gazebo_msgs::ModelStates :timeout timeout))
 
 #|
 service
@@ -18,27 +21,84 @@ service
 "/gazebo/clear_body_wrenches" gazebo_msgs::BodyRequest
 "/gazebo/clear_joint_forces" gazebo_msgs::JointRequest
 
-"/gazebo/get_link_state" gazebo_msgs::GetLinkState
-"/gazebo/get_model_state" gazebo_msgs::GetModelState
-
-"/gazebo/set_link_state" gazebo_msgs::SetLinkState
-"/gazebo/set_model_state" gazebo_msgs::SetModelState
-
-"/gazebo/get_joint_properties" gazebo_msgs::GetJointProperties
-"/gazebo/get_link_properties" gazebo_msgs::GetLinkProperties
-
 "/gazebo/set_joint_properties" gazebo_msgs::SetJointProperties
 "/gazebo/set_link_properties" gazebo_msgs::SetLinkProperties
-
-"/gazebo/get_physics_properties" gazebo_msgs::GetPhysicsProperties
 "/gazebo/set_physics_properties" gazebo_msgs::SetPhysicsProperties
-
-"/gazebo/get_world_properties" gazebo_msgs::GetWorldProperties
-
-"/gazebo/get_model_properties" gazebo_msgs::GetModelProperties
-
-"/gazebo/set_model_configuration" gazebo_msgs::SetModelConfiguration
 |#
+
+;; set configuration
+(defun gazebo-set-model-configuration (model_name &key (param_name)
+                                                  (joint-list) (name-list) (positions))
+  (let ((srv (instance gazebo_msgs::SetModelConfiguration :init
+                       :model_name model_name
+                       :urdf_param_name param_name
+                       :joint_names
+                       (if joint-list
+                           (mapcar #'(lambda (j) (send j :name)) joint-list)
+                         name-list)
+                       :joint_positions
+                       (if joint-list
+                           (map float-vector #'(lambda (j) (send j :joint-angle)) joint-list)
+                         positions)
+                       )))
+    (ros::service-call "/gazebo/set_model_configuration" srv)))
+
+;;
+;; get properties service
+;;
+(defun gazebo-get-joint-properties (joint_name)
+  (let ((srv (instance gazebo_msgs::GetJointPropertiesRequest :init
+                       :joint_name joint_name)))
+    (ros::service-call "/gazebo/get_joint_properties" srv)))
+(defun gazebo-get-link-properties (link_name)
+  (let ((srv (instance gazebo_msgs::GetLinkPropertiesRequest :init
+                       :link_name link_name)))
+    (ros::service-call "/gazebo/get_link_properties" srv)))
+(defun gazebo-get-model-properties (model_name)
+  (let ((srv (instance gazebo_msgs::GetModelPropertiesRequest :init
+                       :model_name model_name)))
+    (ros::service-call "/gazebo/get_model_properties" srv)))
+(defun gazebo-get-physics-properties ()
+  (let ((srv (instance gazebo_msgs::GetPhysicsPropertiesRequest)))
+    (ros::service-call "/gazebo/get_physics_properties" srv)))
+(defun gazebo-get-world-properties ()
+  (let ((srv (instance gazebo_msgs::GetWorldPropertiesRequest)))
+    (ros::service-call "/gazebo/get_world_properties" srv)))
+
+(defun gazebo-get-link-state (link_name &optional (ref_frame ""))
+  (let ((srv (instance gazebo_msgs::GetLinkStateRequest
+                       :init :link_name link_name
+                       :reference_frame ref_frame)))
+    (ros::service-call "/gazebo/get_link_state" srv)))
+(defun gazebo-get-model-state (model_name &optional (rel_name ""))
+  (let ((srv (instance gazebo_msgs::GetModelStateRequest
+                       :init :model_name model_name
+                       :relative_entity_name rel_name)))
+    (ros::service-call "/gazebo/get_model_state" srv)))
+
+;;
+;; get states service
+;;
+(defun gazebo-set-link-state (link_name link_coords &key (twist (instance geometry_msgs::Twist :init))
+                                        (reference-frame ""))
+  (let ((srv (instance gazebo_msgs::SetLinkStateRequest :init
+                       :link_state
+                       (instance gazebo_msgs::LinkState :init
+                                 :link_name link_name
+                                 :pose (ros::coords->tf-pose link_coords)
+                                 :twist twist
+                                 :reference_frame reference-frame))))
+    (ros::service-call "/gazebo/set_link_state" srv)))
+(defun gazebo-set-model-state (model_name model_coords &key (twist (instance geometry_msgs::Twist :init))
+                                        (reference-frame ""))
+  (let ((srv (instance gazebo_msgs::SetModelStateRequest :init
+                       :model_state
+                       (instance gazebo_msgs::ModelState :init
+                                 :model_name model_name
+                                 :pose (ros::coords->tf-pose model_coords)
+                                 :twist twist
+                                 :reference_frame reference-frame))))
+    (ros::service-call "/gazebo/set_model_state" srv)))
 
 #|
 "/gazebo/spawn_gazebo_model" gazebo_msgs::SpawnModel
@@ -47,40 +107,37 @@ service
 
 "/gazebo/delete_model" gazebo_msgs::DeleteModel
 |#
+;;
+;; spawn and delete model
+;;
+
+
+;;
+;; simulation util
+;;
 (defun gazebo-pause-physics ()
   (let ((srv (instance std_srvs::EmptyRequest :init)))
     (ros::service-call "/gazebo/pause_physics" srv)))
-(defun gazebo-pause-physics ()
+(defun gazebo-unpause-physics ()
   (let ((srv (instance std_srvs::EmptyRequest :init)))
     (ros::service-call "/gazebo/unpause_physics" srv)))
-(defun gazebo-reset-simulation ()
+(defun gazebo-reset-simulation () ;; controller not be reseted
   (let ((srv (instance std_srvs::EmptyRequest :init)))
     (ros::service-call "/gazebo/reset_simulation" srv)))
 (defun gazebo-reset-world ()
   (let ((srv (instance std_srvs::EmptyRequest :init)))
     (ros::service-call "/gazebo/reset_world" srv)))
 
-#|
-    def on_servo_on(self, evt):
-      servo = rospy.ServiceProxy("/RobotHardwareServiceROSBridge/servo", OpenHRP_RobotHardwareService_servo )
-      power = rospy.ServiceProxy("/RobotHardwareServiceROSBridge/power", OpenHRP_RobotHardwareService_power )
-      actual = rospy.ServiceProxy("/StateHolderServiceROSBridge/goActual", OpenHRP_StateHolderService_goActual )
-      try:
-        power(OpenHRP_RobotHardwareService_powerRequest("all",0))
-        time.sleep(1)
-        actual(OpenHRP_StateHolderService_goActualRequest())
-        time.sleep(2)
-        servo(OpenHRP_RobotHardwareService_servoRequest("all",0))
-      except rospy.ServiceException, e:
-        wx.MessageBox("Failed to put the hrpsys in servo on mode: service call failed with error: %s"%(e), "Error", wx.OK|wx.ICON_ERROR)
+(defun hrpsys-servo-on ()
+  (send *ri* :RobotHardwareService_power :name "all" :ss 0)
+  (unix::usleep (* 1000 1000))
+  (send *ri* :RobotHardwareService_goActual)
+  (unix::usleep (* 2 1000 1000))
+  (send *ri* :RobotHardwareService_servo :name "all" :ss 0)
+  )
 
-    def on_servo_off(self, evt):
-      servo = rospy.ServiceProxy("/RobotHardwareServiceROSBridge/servo", OpenHRP_RobotHardwareService_servo )
-      power = rospy.ServiceProxy("/RobotHardwareServiceROSBridge/power", OpenHRP_RobotHardwareService_power )
-      try:
-        servo(OpenHRP_RobotHardwareService_servoRequest("all",1));
-        time.sleep(1)
-        power(OpenHRP_RobotHardwareService_powerRequest("all",1))
-      except rospy.ServiceException, e:
-        wx.MessageBox("Failed to put the hrpsys in servo off mode: service call failed with error: %s"%(e), "Error", wx.OK|wx.ICON_ERROR)
-|#
+(defun hrpsys-servo-off ()
+  (send *ri* :RobotHardwareService_servo :name "all" :ss 1)
+  (unix::usleep (* 1000 1000))
+  (send *ri* :RobotHardwareService_power :name "all" :ss 1)
+  )
