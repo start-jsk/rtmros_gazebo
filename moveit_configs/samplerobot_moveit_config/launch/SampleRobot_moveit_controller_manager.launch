@@ -14,5 +14,5 @@
   <param name="use_controller_manager" value="$(arg use_controller_manager)" />
 
   <!-- load controller_list and controller_manager_ns -->
-  <rosparam file="$(find SampleRobot_moveit_config)/config/samplerobot_controllers.yaml"/>
+  <rosparam file="$(find samplerobot_moveit_config)/config/samplerobot_controllers.yaml"/>
 </launch>

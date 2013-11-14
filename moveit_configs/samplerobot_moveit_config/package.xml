@@ -1,6 +1,6 @@
 <package>
 
-  <name>SampleRobot_moveit_config</name>
+  <name>samplerobot_moveit_config</name>
   <version>0.2.0</version>
   <description>
      An automatically generated package with all the configuration and launch files for using the SampleRobot with the MoveIt Motion Planning Framework
