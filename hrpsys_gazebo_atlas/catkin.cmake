@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description collada_urdf_jsk_patch)
+find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description)
 
 catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description)
 
@@ -13,11 +13,15 @@ else()
 endif()
 include(${hrpsys_ros_bridge_PACKAGE_PATH}/cmake/compile_robot_model.cmake)
 
+find_package(PkgConfig)
+pkg_check_modules(collada_urdf_jsk_patch collada_urdf_jsk_patch)
+
 if(EXISTS ${atlas_description_SOURCE_DIR})
   set(atlas_description_PACKAGE_PATH ${atlas_description_SOURCE_DIR})
 else()
   set(atlas_description_PACKAGE_PATH ${atlas_description_PREFIX}/share/atlas_description)
 endif()
+if (collada_urdf_jsk_patch_FOUND)
 if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
   set(atlas_urdf "${PROJECT_SOURCE_DIR}/build/atlas.jsk.urdf")
   set(atlas_dae  "${PROJECT_SOURCE_DIR}/models/atlas.dae")
@@ -47,7 +51,7 @@ else()
   message(FATAL_ERROR "${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf is not found")
 endif()
 
-if (EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
+if (${collada_urdf_jsk_patch_FOUND} AND EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
   set(atlas_v3_urdf "${PROJECT_SOURCE_DIR}/build/atlas_v3.jsk.urdf")
   set(atlas_v3_dae  "${PROJECT_SOURCE_DIR}/models/atlas_v3.dae")
   add_custom_command(
@@ -76,7 +80,7 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
 else()
   message(FATAL_ERROR "${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro")
 endif()
-
+endif (collada_urdf_jsk_patch_FOUND)
 
 # Build hrpsys for gazebo
 find_package(PkgConfig)
