@@ -57,8 +57,8 @@
                      atlas_msgs::AtlasSimInterfaceCommand 1)
      (ros::subscribe "atlas/atlas_sim_interface_state"
                      atlas_msgs::AtlasSimInterfaceState #'send self :sim-interface-state-cb)
-     (ros::subscribe "pointcloud_screenpoint_nodelet/output_point"
-		     geometry_msgs::PointStamped #'send self :point-stamped-cb)
+     ;; (ros::subscribe "pointcloud_screenpoint_nodelet/output_point"
+     ;;   geometry_msgs::PointStamped #'send self :point-stamped-cb)
      ;; do not use in Qualification
      (unless qualify
        (ros::advertise "atlas/mode" std_msgs::String 1)
@@ -148,14 +148,19 @@
      ))
   (:point-stamped-cb
    (msg)
+   (print (string-left-trim "/" (send (send msg :header) :frame_id)))
+   (if (member (string-left-trim "/" (send (send msg :header) :frame_id))
+               (send-all (send *atlas* :links) :name)
+               :test #'equal)
    (let* ((frame-id (send (send msg :header) :frame_id))
 	  (point (send msg :point))
 	  (frame (read-from-string (format nil ":~a" (string-left-trim "/" frame-id))))
 	  (pos (scale 1000 (float-vector (send point :x) (send point :y) (send point :z)))))
+     (print frame)
      (send *atlas* :angle-vector (send self :state :potentio-vector))
      (send self :put :point
 	   (send (send *atlas* :worldcoords) :inverse-transform-vector (send (send (send *atlas* frame) :copy-worldcoords) :transform-vector pos)))
-     ))
+     )))
   (:wait-for-start-bdi-walk (&optional (timeout 5.0))
    (send self :wait-for-start-behavior 4 timeout))
   (:wait-for-bdi-walk (&optional (timeout 5.0))
@@ -565,7 +570,7 @@
 ;; (send *ri* :bdi_footstep (footstep-planning-armin (make-coords :pos (scale 1000 (float-vector 1 1 0)) :rpy (list 0 0 0)) (make-coords :pos (scale 1000 (float-vector 17.3 9 0)) :rpy (list 0 0 0))))
 
 (defun atlas-init
-  (&key (set-reset-pose nil) (set-user-mode t) (unset-limit t) (with-hand t))
+  (&key (set-reset-pose nil) (set-user-mode nil) (unset-limit t) (with-hand t))
   (if (not (boundp '*ri*)) (setq *ri* (instance atlas-interface :init)))
   ;; (if (not (boundp '*ri*)) (setq *ri* (instance atlas-interface :init :use-tf2 t)))
   (if (not (boundp '*atlas*)) (setq *atlas* (atlas-with-hand)))
