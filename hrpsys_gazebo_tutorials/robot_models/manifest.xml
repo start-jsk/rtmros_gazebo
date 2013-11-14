@@ -7,5 +7,6 @@
     <uri>file://SampleRobot</uri>
     <uri>file://HRP2JSK</uri>
     <uri>file://HRP2JSKNTS</uri>
+    <uri>file://STARO</uri>
   </models>
 </database>
