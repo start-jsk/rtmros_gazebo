@@ -88,43 +88,47 @@ service
 (defun gazebo-spawn-model (model_name
                            model_xml
                            &key (name_space "/") (initial-pose (make-coords))
-                           (reference-frame "") (type :urdf))
-  (let ((srv (instance gazebo_msgs::SpawnModel :init
+                           (reference-frame "") (type :urdf) (wait nil))
+
+  (let ((srv (instance gazebo_msgs::SpawnModelRequest :init
                        :model_name model_name
                        :model_xml model_xml
                        :robot_namespace name_space
-                       :initial-pose (ros::coords->tf-pose initial-pose)
+                       :initial_pose (ros::coords->tf-pose initial-pose)
                        :reference_frame reference-frame))
         res)
     (case type
       (:urdf
+       (if wait (ros::wait-for-service "/gazebo/spawn_urdf_model"))
        (setq res (ros::service-call "/gazebo/spawn_urdf_model" srv)))
       (:sdf
+       (if wait (ros::wait-for-service "/gazebo/spawn_sdf_model"))
        (setq res (ros::service-call "/gazebo/spawn_sdf_model" srv)))
       (:gazebo
+       (if wait (ros::wait-for-service "/gazebo/spawn_gazebo_model"))
        (setq res (ros::service-call "/gazebo/spawn_gazebo_model" srv)))
       (t (ros::ros-error "unknown type ~A" type)))
     res
     ))
 (defun gazebo-delete-model (model_name)
-  (let ((srv (instance gazebo_msgs::DeleteModel :init
+  (let ((srv (instance gazebo_msgs::DeleteModelRequest :init
                        :model_name model_name)))
     (ros::service-call "/gazebo/delete_model" srv)))
 
-
 ;; set configuration
-(defun gazebo-set-model-configuration (model_name &key (param_name)
+(defun gazebo-set-model-configuration (model_name &key (param_name "") (wait nil)
                                                   (joint-list) (name-list) (positions))
-  (let ((srv (instance gazebo_msgs::SetModelConfiguration :init
+  (if wait (ros::wait-for-service "/gazebo/set_model_configuration"))
+  (let ((srv (instance gazebo_msgs::SetModelConfigurationRequest :init
                        :model_name model_name
-                       :urdf_param_name param_name
+                       :urdf_param_name param_name ;; not using now in gazebo_ros_pkgs
                        :joint_names
                        (if joint-list
-                           (mapcar #'(lambda (j) (send j :name)) joint-list)
+                           (mapcar #'(lambda (j) (format nil "~A::~A" model_name (send j :name))) joint-list)
                          name-list)
                        :joint_positions
                        (if joint-list
-                           (map float-vector #'(lambda (j) (send j :joint-angle)) joint-list)
+                           (map float-vector #'(lambda (j) (send j :ros-joint-angle)) joint-list)
                          positions)
                        )))
     (ros::service-call "/gazebo/set_model_configuration" srv)))
@@ -132,10 +136,12 @@ service
 ;;
 ;; simulation util
 ;;
-(defun gazebo-pause-physics ()
+(defun gazebo-pause-physics (&optional (wait nil))
+  (if wait (ros::wait-for-service "/gazebo/pause_physics"))
   (let ((srv (instance std_srvs::EmptyRequest :init)))
     (ros::service-call "/gazebo/pause_physics" srv)))
-(defun gazebo-unpause-physics ()
+(defun gazebo-unpause-physics (&optional (wait nil))
+  (if wait (ros::wait-for-service "/gazebo/unpause_physics"))
   (let ((srv (instance std_srvs::EmptyRequest :init)))
     (ros::service-call "/gazebo/unpause_physics" srv)))
 (defun gazebo-reset-simulation () ;; controller not be reseted
@@ -163,7 +169,7 @@ service
 ;; euslisp utility
 ;;
 (defun read-xml-from-file (path)
-  (let ((rpath (ros::resolve-path path))
+  (let ((rpath (ros::resolve-ros-path path))
         (newline (coerce (list 10) string))
         str)
     (when rpath
@@ -172,7 +178,23 @@ service
        (let (ln)
          (while (setq ln (read-line f nil nil))
            (push ln str))))
-      (setq str (nreverse str))
       (reduce #'(lambda (x y) (concatenate string y newline x)) str)
       )
     ))
+#|
+(ros::roseus "gazebomsgtest")
+(load "package://hrpsys_ros_bridge_tutorials/euslisp/samplerobot-interface.l")
+(samplerobot)
+(send *samplerobot* :reset-pose)
+
+(gazebo-pause-physics)
+
+(gazebo-spawn-model "SampleRobot" (read-xml-from-file "package://SampleRobot/SampleRobot.urdf")
+                    :initial-pose (make-coords :pos #f(0 0 800)))
+(gazebo-get-model-properties "SampleRobot")
+
+(gazebo-set-model-configuration "SampleRobot" :joint-list (send *samplerobot* :joint-list))
+(gazebo-set-model-state "SampleRobot" (make-coords :pos #f(0 0 760)))
+
+(gazebo-unpause-physics)
+|#
