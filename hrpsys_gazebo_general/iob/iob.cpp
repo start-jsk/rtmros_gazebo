@@ -636,6 +636,18 @@ int open_iob(void)
       }
       ROS_INFO_STREAM( "[iob] set controller_name : " << controller_name);
     }
+    std::string robotname;
+    { // setting configuration name
+      char *ret = getenv("HRPSYS_GAZEBO_ROBOTNAME");
+      if (ret != NULL) {
+        robotname.assign(ret);
+      } else {
+        std::string rname_str = std::string(controller_name) + "/robotname";
+        rosnode->getParam(rname_str, robotname);
+      }
+      ROS_INFO_STREAM( "[iob] set robot_name : " << robot_name);
+    }
+    // controller_name -> robotname/controller_name ??
     { // setting synchronized
       char *ret = getenv("HRPSYS_GAZEBO_IOB_SYNCHRONIZED");
       if (ret != NULL) {
@@ -751,19 +763,15 @@ int open_iob(void)
       initial_jointcommand.kp_velocity[i]  = vp_val;
     }
 
-    std::string robotname;
-    std::string rname_str = std::string(controller_name) + "/robotname";
-    rosnode->getParam(rname_str, robotname);
-
     initial_jointcommand.desired_controller_period_ms =
       static_cast<unsigned int>(g_period_ns * 1e-6);
 
     if (iob_synchronized) {
       serv_command =
-        ros::service::createClient<hrpsys_gazebo_msgs::SyncCommand> ("/iob_command", true); // persistent = true,
-      ROS_INFO("[iob] waiting service %s", "/iob_command");
+        ros::service::createClient<hrpsys_gazebo_msgs::SyncCommand> (robotname + "/iob_command", true); // persistent = true,
+      ROS_INFO("[iob] waiting service %s", robotname + "/iob_command");
       serv_command.waitForExistence();
-      ROS_INFO("[iob] found service %s", "/iob_command");
+      ROS_INFO("[iob] found service %s", robotname + "/iob_command");
     } else {
       pub_joint_command = rosnode->advertise <JointCommand> (robotname + "/joint_command", 1, true);
 
