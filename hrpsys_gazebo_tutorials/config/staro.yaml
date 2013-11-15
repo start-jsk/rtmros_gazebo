@@ -78,8 +78,8 @@ hrpsys_gazebo_configuration:
 #     rfsensor: {joint_name: 'RLEG_JOINT5', frame_id: 'RLEG_LINK5', translation: [0, 0, -0.105], rotation: [1, 0, 0, 0]}
 #     lhsensor: {joint_name: 'LARM_JOINT7', frame_id: 'LARM_LINK7', translation: [0, 0, -0.0775], rotation: [1, 0, 0, 0]}
 #     rhsensor: {joint_name: 'RARM_JOINT7', frame_id: 'RARM_LINK7', translation: [0, 0, -0.0775], rotation: [1, 0, 0, 0]}
-#   imu_sensors:
-#     - imu_sensor0
-#   imu_sensors_config:
-# ## TODO: add translation and rotation
-#     imu_sensor0: {ros_name: 'waist_imu', link_name: 'CHEST_LINK1', frame_id: 'CHEST_LINK1'}
+  imu_sensors:
+    - imu_sensor0
+  imu_sensors_config:
+## TODO: add translation and rotation
+     imu_sensor0: {ros_name: 'waist_imu', link_name: 'CHEST_LINK1', frame_id: 'CHEST_LINK1'}
