@@ -13,6 +13,7 @@ catkin_init_workspace
 wstool init
 wstool merge https://rtm-ros-robotics.googlecode.com/svn-history/trunk/rtmros_gazebo/hrpsys_gazebo_atlas/dot.rosinstall
 wstool update
+find -name manifest.xml -exec  mv {} {}.bak \; ##
 cd ..
 
 #
