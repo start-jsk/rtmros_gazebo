@@ -2,16 +2,16 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description)
-
-catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description)
-
-
 # atlas only works with gazebo ( we need osrf_msgs package )
 if(NOT ("$ENV{ROS_DISTRO}" STREQUAL "groovy"))
   message(WARNING "[WARNING] hrpsys_gazebo_atlas does not support $ENV{ROS_DISTRO}")
   return()
 endif()
+
+find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description)
+
+catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description)
+
 
 if(EXISTS ${hrpsys_ros_bridge_SOURCE_DIR})
   set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_SOURCE_DIR})
