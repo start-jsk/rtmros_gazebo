@@ -1,7 +1,21 @@
-;(jsk)(rbrain)
+#-:jsk  (jsk)
+#-:rbrain-basic (rbrain)
 
 (require "atlas-model.l")
 ;(require "models/arrow-object.l")
+
+
+;;;;;;; overwrite ;;;;;;;;
+
+(defmethod cascaded-link
+  (:cog-convergence-check
+   (centroid-thre target-centroid-pos &optional centroid-offset-func)
+   (let ((cdiff
+	  (send self :difference-cog-position target-centroid-pos centroid-offset-func)))
+     (cond
+      ((numberp centroid-thre) (> centroid-thre (norm cdiff)))
+      ((functionp centroid-thre) (funcall cdiff))
+      ((vectorp centroid-thre) (v< (map float-vector #'abs cdiff) centroid-thre))))))
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
@@ -89,9 +103,11 @@
   (send *centroid-object*
 	:newcoords
 	(make-coords
-	 :pos (concatenate float-vector
-			   (subseq centroid 0 2)
-			   (list (+ 10 (aref leg-h 2))))))
+	 :pos (v+
+	       #F(0 0 -200)
+	       (concatenate float-vector
+			    (subseq centroid 0 2)
+			    (list (+ 10 (aref leg-h 2)))))))
   (send *gun-coords*
 	:newcoords
 	(copy-object
@@ -169,10 +185,17 @@
 (send *sandia_hand_right* :grasp-pose)
 (init-pose)
 
-(defvar *centroid-object* (make-sphere 100))
+(defvar *centroid-object* (make-cylinder 20 400))
 (send *centroid-object* :set-color #F(1 1 0))
 
-(objects (list *gun-coords* *robot* *centroid-object*))
+(defvar *triangle* (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
+(send *triangle* :set-color #F(0 1 0))
+(send *triangle* :rotate (deg2rad 90) :y)
+(send *triangle* :translate #F(600 -200 400) :world)
+(gl::transparent *triangle* 0.3)
+
+(if (not (and (boundp '*viewer*) *viewer*)) (pickview :no-menu t))
+(objects (list *gun-coords* *robot* *centroid-object* *triangle*))
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
@@ -185,12 +208,19 @@
 ;(send *robot* :torso :waist-r :max-angle 20)
 ;(send *robot* :torso :waist-r :min-angle -20)
 (send *robot* :angle-vector
-      (float-vector 25.4776 -0.987876 19.4208 39.3306 89.1445 -15.045 -61.043 -87.097 123.173 -79.6676 97.4329 44.4873 62.4767 -22.7042 97.6796 113.718 -7.92263 -80.6963 7.89733 -33.0058 -0.005333 114.137 5.74936 -81.015 -5.77465 -33.1054 -0.001929 0.0))
+      (float-vector 30.2942 14.5437 19.8382 83.7327 59.5451 23.0702 -72.3031 -87.9407 172.319 -99.3999 93.7892 50.9956 60.4444 -24.5719 94.5786 113.802 -7.9603 -80.5369 7.93411 -33.2496 -0.00524 114.234 5.71181 -80.8654 -5.738 -33.3534 -0.002034 0.0))
+					;      (float-vector 25.4776 -0.987876 19.4208 39.3306 89.1445 -15.045 -61.043 -87.097 123.173 -79.6676 97.4329 44.4873 62.4767 -22.7042 97.6796 113.718 -7.92263 -80.6963 7.89733 -33.0058 -0.005333 114.137 5.74936 -81.015 -5.77465 -33.1054 -0.001929 0.0))
 (send *robot* :newcoords
       (make-coords
-       :pos #f(-221.164 -9.79048 -111.357)
-       :rot #2f((1.0 -5.742127e-05 -0.000283) (5.729671e-05 1.0 -0.00044) (0.000283 0.00044 1.0))))
+       :pos #f(-219.358 -10.1211 -111.377);#f(-221.164 -9.79048 -111.357)
+       :rot #2f((1.0 -5.742127e-05 -0.000283) (5.729671e-05 1.0 -0.00044) (0.000283 0.00044 1.0))));#2f((1.0 -5.742127e-05 -0.000283) (5.729671e-05 1.0 -0.00044) (0.000283 0.00044 1.0))))
 (fix-gun-coords)
+(defvar *fix-leg-coords*
+  (mapcar
+   #'(lambda (k)
+       (send *robot* k :end-coords
+	     :copy-worldcoords))
+   '(:rleg :lleg)))
 (send *viewer* :draw-objects)
 
 (defun str-subscriber
@@ -233,7 +263,9 @@
     )
    ((> (aref (send msg :buttons) 1) 0.1)
     (print 'waist-fix)
-    (waist-fix)
+    (waist-fix :waist-key :waist-r :cnt 3)
+    (waist-fix :waist-key :waist-p :cnt 3)
+    (waist-fix :waist-key :waist-y :cnt 3)
     (print 'done)
     ))
   (let ((move
@@ -280,11 +312,7 @@
 	   (list (send *gun-coords* :worldcoords)
 		 (car (send *robot* :rarm :end-coords
 			    :descendants)))
-	   (mapcar
-	    #'(lambda (k)
-		(send *robot* k :end-coords
-		      :copy-worldcoords))
-	    '(:rleg :lleg))))
+	   *fix-leg-coords*))
     ;;
     (cond
      ((setq
@@ -328,7 +356,35 @@
 	     :debug-view nil
 	     :thre (make-list 4 :initial-element 5)
 	     :rthre (make-list 4 :initial-element (deg2rad 3))
-	     :centroid-thre 130
+	     ;:centroid-thre 130
+	     :centroid-thre
+	     (let ((margin 1.0)
+		   (foot-convex
+		    (apply
+		     #'vmax
+		     (mapcar
+		      #'(lambda (f)
+			  (map float-vector #'abs (apply #'v- (send f :vertices))))
+		      (flatten
+		       (send-all
+			(send (send *robot* :rleg :end-coords :parent)
+			      :faces)
+			:edges)))))
+		   (foot-dist
+		    (map float-vector
+			 #'abs
+			 (apply #'v-
+				(mapcar
+				 #'(lambda (k)
+				     (send *robot* k :end-coords
+					   :worldpos))
+				 '(:rleg :lleg))))))
+	       (float-vector
+		(* margin (/ (aref foot-convex 0) 2.0))
+		(* margin
+		   (+ (/ (aref foot-convex 1) 2.0)
+		      (/ (aref foot-dist 1) 2.0)))))
+	     ;;
 	     :warnp t))
       (fix-gun-coords)
       (send *robot* :head :look-at
