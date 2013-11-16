@@ -15,7 +15,68 @@
      (cond
       ((numberp centroid-thre) (> centroid-thre (norm cdiff)))
       ((functionp centroid-thre) (funcall cdiff))
-      ((vectorp centroid-thre) (v< (map float-vector #'abs cdiff) centroid-thre))))))
+      ((vectorp centroid-thre) (v< (map float-vector #'abs cdiff) centroid-thre)))))
+  )
+
+(defmethod euscollada-robot
+  (:fullbody-inverse-kinematics-with-error
+   (target-coords
+    &rest
+    args
+    &key
+    (revert-if-fail t)
+    link-list move-target
+    rotation-axis translation-axis thre rthre
+    target-centroid-pos centroid-thre centroid-offset-func
+    &allow-other-keys)
+   (let* ((initial-av (copy-object (send self :angle-vector)))
+	  (inital-coords (copy-object (send self :worldcoords)))
+	  (target-coords
+	   (mapcar #'(lambda (x)
+		       (if (functionp x) (funcall x) x))
+		   target-coords))
+	  dif-pos dif-rot success cdiff
+	  )
+     (if (atom (car link-list)) (setq link-list (list link-list)))
+     (if (atom move-target) (setq move-target (list move-target)))
+     (if (atom target-coords) (setq target-coords (list target-coords)))
+     (if (atom rotation-axis) (setq rotation-axis (list rotation-axis)))
+     (if (atom translation-axis) (setq translation-axis (list translation-axis)))
+     (if (atom thre) (setq thre (list thre)))
+     (if (atom rthre) (setq rthre (list rthre)))
+     (send* self :fullbody-inverse-kinematics target-coords
+	    :revert-if-fail nil args)
+     (setq dif-pos
+	   (mapcar #'(lambda (mv tc trans-axis)
+		       (send mv :difference-position tc
+			     :translation-axis trans-axis))
+		   move-target target-coords translation-axis))
+     (setq dif-rot
+	   (mapcar #'(lambda (mv tc rot-axis)
+		       (send mv :difference-rotation tc
+			     :rotation-axis rot-axis))
+		   move-target target-coords rotation-axis))
+     (setq cdiff
+	   (send self :difference-cog-position
+		 target-centroid-pos centroid-offset-func))
+     (setq success
+	   (send self :ik-convergence-check
+		 t dif-pos dif-rot
+		 rotation-axis translation-axis thre rthre
+		 centroid-thre target-centroid-pos centroid-offset-func))
+     (cond
+      ((and (not success) revert-if-fail)
+       (send self :angle-vector initial-av)
+       (send self :newcoords inital-coords)
+       (list
+	(cons :dif-pos dif-pos)
+	(cons :dif-rot dif-rot)
+	(cons :thre thre)
+	(cons :rthre rthre)
+	(cons :cog-dif cdiff)
+	(cons :cthre centroid-thre))
+       )
+      (t (send self :angle-vector))))))
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
@@ -195,7 +256,9 @@
 (gl::transparent *triangle* 0.3)
 
 (if (not (and (boundp '*viewer*) *viewer*)) (pickview :no-menu t))
-(objects (list *gun-coords* *robot* *centroid-object* *triangle*))
+(objects
+ (list *gun-coords* *robot*
+       *centroid-object* *triangle*))
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
@@ -204,17 +267,22 @@
 ;(require "package://eus_nlopt/euslisp/nlopt-ik-overwrite.l")
 (require "package://eus_nlopt/euslisp/nlopt-ik.l")
 
+(defun init-grasp-pose
+  nil
+  (send *robot* :angle-vector
+	(float-vector 30.2942 14.5437 19.8382 83.7327 59.5451 23.0702 -72.3031 -87.9407 172.319 -99.3999 93.7892 50.9956 60.4444 -24.5719 94.5786 113.802 -7.9603 -80.5369 7.93411 -33.2496 -0.00524 114.234 5.71181 -80.8654 -5.738 -33.3534 -0.002034 0.0))
+  (send *robot* :newcoords
+	(make-coords
+	 :pos (float-vector -219.358 -10.1211 -111.377)
+	 :rot (copy-object
+	       #2f((1.0 -5.742127e-05 -0.000283)
+		   (5.729671e-05 1.0 -0.00044)
+		   (0.000283 0.00044 1.0)))))
+  (fix-gun-coords)
+  )
+
 (send-all (send *robot* :joint-list) :max-joint-velocity 1.0)
-;(send *robot* :torso :waist-r :max-angle 20)
-;(send *robot* :torso :waist-r :min-angle -20)
-(send *robot* :angle-vector
-      (float-vector 30.2942 14.5437 19.8382 83.7327 59.5451 23.0702 -72.3031 -87.9407 172.319 -99.3999 93.7892 50.9956 60.4444 -24.5719 94.5786 113.802 -7.9603 -80.5369 7.93411 -33.2496 -0.00524 114.234 5.71181 -80.8654 -5.738 -33.3534 -0.002034 0.0))
-					;      (float-vector 25.4776 -0.987876 19.4208 39.3306 89.1445 -15.045 -61.043 -87.097 123.173 -79.6676 97.4329 44.4873 62.4767 -22.7042 97.6796 113.718 -7.92263 -80.6963 7.89733 -33.0058 -0.005333 114.137 5.74936 -81.015 -5.77465 -33.1054 -0.001929 0.0))
-(send *robot* :newcoords
-      (make-coords
-       :pos #f(-219.358 -10.1211 -111.377);#f(-221.164 -9.79048 -111.357)
-       :rot #2f((1.0 -5.742127e-05 -0.000283) (5.729671e-05 1.0 -0.00044) (0.000283 0.00044 1.0))));#2f((1.0 -5.742127e-05 -0.000283) (5.729671e-05 1.0 -0.00044) (0.000283 0.00044 1.0))))
-(fix-gun-coords)
+(init-grasp-pose)
 (defvar *fix-leg-coords*
   (mapcar
    #'(lambda (k)
@@ -289,6 +357,8 @@
    (move #F(0 0 0))
    (rpy '(0 0 0))
    (rotate? t)
+   (translate? t)
+   ;; meta
    (coords-org
     (copy-object (send *gun-coords* :worldcoords)))
    (prev-state
@@ -297,9 +367,64 @@
 	   (copy-object (send *robot* :angle-vector)))
      (cons :worldcoords
 	   (copy-object (send *robot* :worldcoords)))))
-   ret)
-  (let (target-coords)
-    ;(send *gun-coords* :translate move :world)
+   (move-target
+    (mapcar
+     #'(lambda (k)
+	 (send *robot* k :end-coords))
+     '(:rarm :larm :rleg :lleg)))
+   (link-list
+    (mapcar
+     #'(lambda (k)
+	 (send *robot* :link-list
+	       (send *robot* k :end-coords :parent)
+	       (if (find k nil);'(:rarm :larm))
+		   (send *robot* k :root-link))))
+     '(:rarm :larm :rleg :lleg)))
+   (target-centroid-pos
+    (scale
+     0.5
+     (apply #'v+
+	    (mapcar
+	     #'(lambda (k)
+		 (send *robot* k :end-coords
+		       :worldpos))
+	     '(:rleg :lleg)))))
+   (additional-weight-list
+    (mapcar
+     #'(lambda (k gain)
+	 (list (send *robot* :torso k :child-link)
+	       gain))
+     (list :waist-r :waist-p :waist-y)
+     (list 1e-3 1e-3 1e-3)))
+   (centroid-thre
+    (let ((margin 1.0)
+	  (foot-convex
+	   (apply
+	    #'vmax
+	    (mapcar
+	     #'(lambda (f)
+		 (map float-vector #'abs (apply #'v- (send f :vertices))))
+	     (flatten
+	      (send-all
+	       (send (send *robot* :rleg :end-coords :parent)
+		     :faces)
+	       :edges)))))
+	  (foot-dist
+	   (map float-vector
+		#'abs
+		(apply #'v-
+		       (mapcar
+			#'(lambda (k)
+			    (send *robot* k :end-coords
+				  :worldpos))
+			'(:rleg :lleg))))))
+      (float-vector
+       (* margin (/ (aref foot-convex 0) 2.0))
+       (* margin
+	  (+ (/ (aref foot-convex 1) 2.0)
+	     (/ (aref foot-dist 1) 2.0))))))
+   )
+  (let (target-coords ret)
     (send *gun-coords* :newcoords
 	  (make-coords
 	   :pos (v+ (send *gun-coords* :worldpos)
@@ -313,79 +438,32 @@
 		 (car (send *robot* :rarm :end-coords
 			    :descendants)))
 	   *fix-leg-coords*))
+    (setq
+     ret
+     (send *robot*
+	   :fullbody-inverse-kinematics-with-error
+	   target-coords
+	   :move-target move-target
+	   :link-list link-list
+	   :rotation-axis (list rotate? t t t)
+	   :translation-axis (list translate? t t t)
+	   :target-centroid-pos target-centroid-pos
+	   :cog-gain 0.1
+	   :additional-weight-list additional-weight-list
+	   :stop 10
+	   :debug-view nil
+	   :thre (make-list 4 :initial-element 5)
+	   :rthre (make-list 4 :initial-element (deg2rad 3))
+	   :centroid-thre centroid-thre
+	   ;:root-link-virtual-joint-weight
+	   ;#F(0.1 0.1 1 0.1 0.1 0.1)
+	   ;:min #F(-1000 -1000 -1000 -200 -200 -200)
+	   ;:max #F(1000 1000 1000 200 200 200)
+	   :dump-command nil
+	   :warnp t))
     ;;
     (cond
-     ((setq
-       ret
-       (send *robot*
-	     :fullbody-inverse-kinematics
-	     target-coords
-	     :move-target
-	     (mapcar
-	      #'(lambda (k)
-		  (send *robot* k :end-coords))
-	      '(:rarm :larm :rleg :lleg))
-	     :link-list
-	     (mapcar
-	      #'(lambda (k)
-		  (send *robot* :link-list
-			(send *robot* k :end-coords :parent)
-			(if (find k nil);'(:rarm :larm))
-			    (send *robot* k :root-link))))
-	      '(:rarm :larm :rleg :lleg))
-	     :rotation-axis (list rotate? t t t)
-	     :translation-axis (list t t t t)
-	     :target-centroid-pos; nil
-	     (scale
-	      0.5
-	      (apply #'v+
-		     (mapcar
-		      #'(lambda (k)
-			  (send *robot* k :end-coords
-				:worldpos))
-		      '(:rleg :lleg))))
-	     :cog-gain 0.1
-	     :additional-weight-list
-	     (mapcar
-	      #'(lambda (k gain)
-		  (list (send *robot* :torso k :child-link)
-			gain))
-	      (list :waist-r :waist-p :waist-y)
-	      (list 1e-3 1e-3 1e-3))
-	     :stop 10
-	     :debug-view nil
-	     :thre (make-list 4 :initial-element 5)
-	     :rthre (make-list 4 :initial-element (deg2rad 3))
-	     ;:centroid-thre 130
-	     :centroid-thre
-	     (let ((margin 1.0)
-		   (foot-convex
-		    (apply
-		     #'vmax
-		     (mapcar
-		      #'(lambda (f)
-			  (map float-vector #'abs (apply #'v- (send f :vertices))))
-		      (flatten
-		       (send-all
-			(send (send *robot* :rleg :end-coords :parent)
-			      :faces)
-			:edges)))))
-		   (foot-dist
-		    (map float-vector
-			 #'abs
-			 (apply #'v-
-				(mapcar
-				 #'(lambda (k)
-				     (send *robot* k :end-coords
-					   :worldpos))
-				 '(:rleg :lleg))))))
-	       (float-vector
-		(* margin (/ (aref foot-convex 0) 2.0))
-		(* margin
-		   (+ (/ (aref foot-convex 1) 2.0)
-		      (/ (aref foot-dist 1) 2.0)))))
-	     ;;
-	     :warnp t))
+     ((vectorp ret)
       (fix-gun-coords)
       (send *robot* :head :look-at
 	    (send *gun-coords* :worldpos))
@@ -406,7 +484,10 @@
 		  *success-state-collection*)
 		 0 40)))
       )
-     (t (send *gun-coords* :newcoords coords-org)))
+     (t
+      (format t "[ik-main] fail!!~%")
+      (print ret)
+      (send *gun-coords* :newcoords coords-org)))
     ret
     ))
 
@@ -439,65 +520,69 @@
 		#'spacenav-subscriber
 		1)
 
-(ros::rate 10)
-(do-until-key
- (if (not (ros::ok)) (return-from nil nil))
- (x::window-main-one)
- (ros::spin-once)
- (ros::sleep))
+(defun demo-mouse-controller
+  nil
+  (ros::rate 10)
+  (do-until-key
+   (if (not (ros::ok)) (return-from nil nil))
+   (x::window-main-one)
+   (ros::spin-once)
+   (ros::sleep)))
+
+(defun demo-pos-controller
+  (&key
+   (pos (car (triangle-pos-list))))
+  (let (ret
+	move)
+    (do-until-key
+     (waist-fix :waist-key :waist-r :cnt 20)
+     (waist-fix :waist-key :waist-p :cnt 20)
+     (waist-fix :waist-key :waist-y :cnt 20)
+     (setq move
+	   (v- pos (send *gun-coords* :worldpos)))
+     (if (< (norm move) 50) (return-from nil t))
+     (setq move
+	   (scale
+	    30
+	    (normalize-vector move)))
+     (setq ret (ik-main :move move :rotate? :x))
+     (if (listp ret)
+	 (setq ret (ik-main :rpy
+			    (list (- (random 2.0) 1) 0 0)
+			    :translate? :yz)))
+     (x::window-main-one))))
+
+(defun triangle-pos-list
+  nil
+  (union
+   (send
+    (find-if
+     #'(lambda (f)
+	 (find :bottom (send f :id)))
+     (send *triangle* :faces))
+    :vertices)
+   nil))
+
+;(demo-mouse-controller)
 
 #|
 
-
-#|
-(let ((target-coords
-       (append
-	(list (send *gun-coords* :worldcoords)
-	      (car (send *robot* :rarm :end-coords
-			 :descendants)))
-	(mapcar
-	 #'(lambda (k)
-	     (send *robot* k :end-coords :copy-worldcoords))
-	 '(:rleg :lleg)))))
-  (mapcar
-   #'(lambda (alg oc)
-       (send *robot*
-	     :fullbody-inverse-kinematics
-	     target-coords
-	     :move-target
-	     (mapcar
-	      #'(lambda (k)
-		  (send *robot* k :end-coords))
-	      '(:rarm :larm :rleg :lleg))
-	     :link-list
-	     (mapcar
-	      #'(lambda (k)
-		  (send *robot* :link-list
-			(send *robot* k :end-coords :parent)
-			(if (find k nil);'(:rarm :larm))
-			    (send *robot* k :root-link))))
-	      '(:rarm :larm :rleg :lleg))
-	     :rotation-axis (list :x t t t)
-	     :translation-axis (list t t t t)
-	     :thre (make-list 4 :initial-element 5)
-	     :rthre (make-list 4 :initial-element (deg2rad 3))
-	     :target-centroid-pos; nil
-	     (scale
-	      0.5
-	      (apply #'v+
-		     (mapcar
-		      #'(lambda (k)
-			  (send *robot* k :end-coords :worldpos))
-		      '(:rleg :lleg))))
-	     :centroid-thre 100
-	     :cog-gain 0.1
-	     :algorithm alg
-	     :ftol 1e-20 :xtol 1e-20 :eqthre 1e-20
-	     :optimize-command oc
-	     :revert-if-fail t
-	     :warnp t
-	     :stop 50000
-	     :debug-view nil)
-       )
-   '(1 0 1) '(:eus-ik :optimize :eus-ik))
-  )
+(defun demo-pos-controller
+  (&key
+   (pos (car (triangle-pos-list))))
+  (let (ret
+	move)
+    (do-until-key
+     (waist-fix :waist-key :waist-r :cnt 20)
+     (waist-fix :waist-key :waist-p :cnt 20)
+     (waist-fix :waist-key :waist-y :cnt 20)
+     (setq move
+	   (v- pos (send *gun-coords* :worldpos)))
+     (if (< (norm move) 50) (return-from nil t))
+     (setq move
+	   (scale
+	    30
+	    (normalize-vector move)))
+     (setq ret (ik-main :move move :rotate? :x))
+     (if (listp ret) (return-from nil nil))
+     (x::window-main-one))))
