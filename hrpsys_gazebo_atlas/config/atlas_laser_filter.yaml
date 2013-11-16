@@ -11,7 +11,9 @@ filters:
    type: laser_filters/LaserScanRangeFilter
    params: 
 ## for localization
-     lower_threshold: 0.7
+     # lower_threshold: 0.7
+     # upper_threshold: 29.5
+     lower_threshold: 0.3
      upper_threshold: 29.5
 ## for manipulation
 #     lower_threshold: 0.3
