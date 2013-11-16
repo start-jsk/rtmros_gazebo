@@ -249,13 +249,15 @@
 (defvar *centroid-object* (make-cylinder 20 400))
 (send *centroid-object* :set-color #F(1 1 0))
 
-(defvar *triangle* (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
+(defvar *triangle*
+  (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
 (send *triangle* :set-color #F(0 1 0))
 (send *triangle* :rotate (deg2rad 90) :y)
-(send *triangle* :translate #F(600 -200 400) :world)
+(send *triangle* :translate #F(600 -200 600) :world)
 (gl::transparent *triangle* 0.3)
 
-(if (not (and (boundp '*viewer*) *viewer*)) (pickview :no-menu t))
+(if (not (and (boundp '*viewer*) *viewer*))
+    (pickview :no-menu t))
 (objects
  (list *gun-coords* *robot*
        *centroid-object* *triangle*))
@@ -427,11 +429,15 @@
   (let (target-coords ret)
     (send *gun-coords* :newcoords
 	  (make-coords
-	   :pos (v+ (send *gun-coords* :worldpos)
-		    move)
-	   :rpy (map cons #'+
-		     (car (send *gun-coords* :rpy-angle))
-		     rpy)))
+	   :pos
+	   (v+ (send *gun-coords* :worldpos)
+	       move)
+	   :rpy
+	   (map cons #'+
+		(list
+		 0 0
+		 (caar (send *gun-coords* :rpy-angle)))
+		rpy)))
     (setq target-coords
 	  (append
 	   (list (send *gun-coords* :worldcoords)
@@ -548,7 +554,7 @@
      (setq ret (ik-main :move move :rotate? :x))
      (if (listp ret)
 	 (setq ret (ik-main :rpy
-			    (list (- (random 2.0) 1) 0 0)
+			    (list 0 0 (- (random 2.0) 1))
 			    :translate? :yz)))
      (x::window-main-one))))
 
