@@ -1,9 +1,12 @@
 <launch>
   <arg name="ground_pcl_manager" default="ground_pcl_manager" />
   <arg name="manip_pcl_manager" default="manip_pcl_manager" />
+  <arg name="wall_pcl_manager" default="wall_pcl_manager" />
   <node pkg="nodelet" type="nodelet" name="$(arg ground_pcl_manager)" args="manager"
         output="screen" alaunch-prefix="xterm -e gdb --args" />
   <node pkg="nodelet" type="nodelet" name="$(arg manip_pcl_manager)" args="manager"
+        output="screen" alaunch-prefix="xterm -e gdb --args" />
+  <node pkg="nodelet" type="nodelet" name="$(arg wall_pcl_manager)" args="manager"
         output="screen" alaunch-prefix="xterm -e gdb --args" />
   <group ns="ground_pcl_nodelet">
       <!-- ground detection -->
@@ -209,4 +212,124 @@
 
             
     </group>
+
+    <group ns="wall_pcl_nodelet">
+      <!-- wallulation -->
+      <node pkg="nodelet" type="nodelet"
+            name="wall_scene_z_filter"
+            args="load pcl/PassThrough /$(arg wall_pcl_manager)"
+            output="screen" clear_params="true"
+            respawn="true">
+        <remap from="~input" to="/laser/full_cloud2_filtered" />
+        <!-- <remap from="~input" to="/multisense_sl/points2" /> -->
+        <rosparam>
+          filter_field_name: z
+          filter_limit_min: 0.0
+          filter_limit_max: 2.0
+        </rosparam>
+      </node>
+      <node pkg="nodelet" type="nodelet"
+            name="wall_scene_x_filter"
+            args="load pcl/PassThrough /$(arg wall_pcl_manager)"
+            output="screen" clear_params="true"
+            respawn="true">
+        <remap from="~input" to="wall_scene_z_filter/output" />
+        <rosparam>
+          filter_field_name: x
+          filter_limit_min: 0.3
+          filter_limit_max: 1.2
+          input_frame: pelvis
+          output_frame: map
+        </rosparam>
+      </node>
+      <node pkg="nodelet" type="nodelet"
+            name="wall_scene_y_filter"
+            args="load pcl/PassThrough /$(arg wall_pcl_manager)"
+            output="screen" clear_params="true"
+            respawn="true">
+        <remap from="~input" to="wall_scene_x_filter/output" />
+        <rosparam>
+          filter_field_name: y
+          filter_limit_min: -1.0
+          filter_limit_max: 1.0
+          input_frame: pelvis
+          output_frame: pelvis
+        </rosparam>
+      </node>
+
+      <node pkg="nodelet" type="nodelet" name="wall_plane_segmentation" args="load pcl/SACSegmentation /$(arg wall_pcl_manager)" output="screen"
+            respawn="true">
+        <remap from="~input" to="wall_scene_y_filter/output" />
+        <rosparam>
+          # -[ Mandatory parameters
+          model_type: 9
+          distance_threshold: 0.05
+          max_iterations: 5000
+          axis: [-1.0, 0.0, 0.0]
+          eps_angle: 0.3
+          method_type: 0
+          optimize_coefficients: true
+          max_queue_size: 20
+        </rosparam>
+      </node>
+
+      <node pkg="nodelet" type="nodelet" name="extract_nonwall_plane_indices" args="load pcl/ExtractIndices /$(arg wall_pcl_manager)" output="screen"
+            respawn="true">
+        <remap from="~input"   to="wall_scene_y_filter/output" />
+        <remap from="~indices" to="wall_plane_segmentation/inliers" />
+        <rosparam>
+          negative: true
+          max_queue_size: 100
+        </rosparam>
+      </node>
+
+      
+      <!-- Project all plane inliers onto the planes (since they may be slightly off) -->
+      <node pkg="nodelet" type="nodelet" name="project_wall_plane_inliers" args="load pcl/ProjectInliers /$(arg wall_pcl_manager)" output="screen"
+            respawn="true">
+        <remap from="~input"   to="wall_scene_y_filter/output" />
+        <remap from="~indices" to="wall_plane_segmentation/inliers" />
+        <remap from="~model"   to="wall_plane_segmentation/model" />
+        <rosparam>
+          model_type: 9 
+          copy_all_data: false
+          copy_all_fields: false
+          max_queue_size: 100
+          min_inliers: 1000
+        </rosparam>
+      </node>
+
+      <!-- Compute the convex hull of the planes -->
+      <node pkg="nodelet" type="nodelet" name="wall_plane_convex_hull" args="load pcl/ConvexHull2D /$(arg wall_pcl_manager)"  output="screen"
+            respawn="true">
+        <remap from="~input"   to="project_wall_plane_inliers/output" />
+        <rosparam>
+          max_queue_size: 20
+        </rosparam>
+      </node>
+
+      <!-- Extract the object clusters using a polygonal prism -->
+      <!-- <node pkg="nodelet" type="nodelet" name="extract_nonwall_plane_points" args="load pcl/ExtractPolygonalPrismData /$(arg wall_pcl_manager)" output="screen" respawn="true"> -->
+      <!--   <remap from="~input"         to="extract_wall_plane_indices/output" /> -->
+      <!--   <remap from="~planar_hull"   to="wall_plane_convex_hull/output" /> -->
+      <!--   <rosparam> -->
+      <!--     height_min: 0.05 -->
+      <!--     height_max: 1.0 -->
+      <!--     max_queue_size: 20 -->
+      <!--   </rosparam> -->
+      <!-- </node> -->
+
+      <!-- Finally extract the points corresponding to the object indices -->
+      <!-- <node pkg="nodelet" type="nodelet" name="extract_nonwall_plane_indices" args="load pcl/ExtractIndices /$(arg wall_pcl_manager)" output="screen" respawn="true"> -->
+      <!--   <remap from="~input"   to="extract_wall_plane_indices/output" /> -->
+      <!--   <remap from="~indices" to="extract_nonwall_plane_points/output" /> -->
+      <!--   <rosparam> -->
+      <!--     negative: false -->
+      <!--     max_queue_size: 20 -->
+      <!--   </rosparam> -->
+      <!-- </node> -->
+
+            
+    </group>
+    
 </launch>
