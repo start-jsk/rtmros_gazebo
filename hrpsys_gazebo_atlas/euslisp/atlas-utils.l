@@ -633,3 +633,15 @@
   (warning-message 2 "send to real robot ?~%")
   (when (y-or-n-p)
     (model2real :wait t :time time)))
+
+
+
+
+
+(defun init-for-drill
+  ()
+  (atlas-init-ex)
+  (send *ri* :teleport-to (make-coords :pos #f(-6500 -15000 1000) :rpy (list pi/2 0 0)))
+  (warn "set \"servo on\" on drcsim.")
+  (y-or-n-p)
+  (set-user))
