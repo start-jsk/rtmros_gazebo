@@ -361,15 +361,36 @@
 	    float-vector)))))
     (ik-main :move move :rpy rpy)))
 
+(defun ros::tf-point->tf-pose (point)
+  (let ((pose (instance geometry_msgs::PoseStamped :init
+                        :header (instance std_msgs::header :init
+                                          :frame_id (send point :header :frame_id)
+                                          :stamp (send point :header :stamp)))))
+    (send pose :pose :position :x (send point :point :x))
+    (send pose :pose :position :y (send point :point :y))
+    (send pose :pose :position :z (send point :point :z))
+    (send pose :pose :orientation :w 1.0)
+    pose))
+
+
 (defun trianglepoints-subscriber
   (msg)
+  (let ((apose (ros::tf-point->tf-pose (send msg :a)))
+        (bpose (ros::tf-point->tf-pose (send msg :b)))
+        (cpose (ros::tf-point->tf-pose (send msg :c))))
+    (let ((acoords (send *tf* :transform-pose "/pelvis" apose))
+          (bcoords (send *tf* :transform-pose "/pelvis" bpose))
+          (ccoords (send *tf* :transform-pose "/pelvis" cpose)))
+      (let ((a (send acoords :worldpos))
+            (b (send bcoords :worldpos))
+            (c (send ccoords :worldpos)))
   (setq *triangle-normal*
 	(normalize-vector
-	 (v* (v- (send msg :a) (send msg :b))
-	     (v- (send msg :c) (send msg :b)))))
+	 (v* (v- a b)
+	     (v- c b))))
   (setq *triangle*
 	(make-prism
-	 (list (send msg :a) (send msg :b) (send msg :c))
+	 (list a b c)
 	 *triangle-normal*))
   (send *triangle* :set-color #F(0 1 0))
   (gl::transparent *triangle* 0.3)
@@ -380,7 +401,7 @@
   (mapcar
    #'(lambda (p) (demo-pos-controller :pos p))
    (triangle-pos-list))
-  )
+  ))))
 
 (defvar *success-state-collection* nil)
 (defun ik-main
@@ -548,6 +569,7 @@
   (send waist-joint :joint-angle waist-angle))
 
 (ros::roseus "ik_server")
+(setq *tf* (instance ros::transform-listener :init))
 (ros::load-ros-manifest "hrpsys_gazebo_atlas")
 ;;
 (ros::roseus-add-msgs "hrpsys_gazebo_atlas")
@@ -635,7 +657,7 @@
 #|
 
 (defun demo-pos-controller
-  (&key
+ppppp  (&key
    (pos (car (triangle-pos-list))))
   (let (ret
 	move)
@@ -653,3 +675,13 @@
      (setq ret (ik-main :move move :rotate? :x))
      (if (listp ret) (return-from nil nil))
      (x::window-main-one))))
+
+
+|#
+
+
+(ros::rate 10)
+(do-until-key
+ (ros::spin-once)
+ (ros::sleep)
+ )
