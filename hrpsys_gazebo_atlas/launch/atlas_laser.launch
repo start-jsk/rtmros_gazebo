@@ -1,6 +1,5 @@
 <launch>
-  <!-- <arg name="FIXED_FRAME" default="/map" /> -->
-  <arg name="FIXED_FRAME" default="/odom" />
+  <arg name="FIXED_FRAME" default="/map" />
 
   <!-- laser assembler for recognizing environment -->
   <node pkg="laser_assembler" type="laser_scan_assembler"
