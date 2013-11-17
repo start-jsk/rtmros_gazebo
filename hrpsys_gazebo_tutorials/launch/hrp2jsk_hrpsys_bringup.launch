@@ -2,6 +2,17 @@
   <rosparam command="load"
             file="$(find jsk_hrpsys_ros_bridge)/models/HRP2JSK_controller_config.yaml" />
 
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_0"
+        args="0 0 0 0 0 0 /LLEG_LINK5 lfsensor 100" />
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_1"
+        args="0 0 0 0 0 0 /RLEG_LINK5 rfsensor 100" />
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_2"
+        args="0 0 0 0 0 0 /LARM_LINK6 lhsensor 100" />
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_3"
+        args="0 0 0 0 0 0 /RARM_LINK6 rhsensor 100" />
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_4"
+        args="0 0 0 0 0 0 /CHEST_LINK1 gyrometer 100" />
+
   <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
     <arg name="ROBOT_NAME" value="HRP2JSK" />
   </include>
