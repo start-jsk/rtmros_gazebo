@@ -64,10 +64,10 @@
        (ros::advertise "atlas/mode" std_msgs::String 1)
        (ros::advertise "atlas/set_pose" geometry_msgs::Pose 1))
      ;; action lib / needs node of atlas_msgs/actionlib_server
-     (setq bdi-action
-           (instance ros::simple-action-client :init
-                     "atlas/bdi_control" atlas_msgs::WalkDemoAction))
-     (send bdi-action :wait-for-server 3)
+     ;; (setq bdi-action
+     ;;       (instance ros::simple-action-client :init
+     ;;                 "atlas/bdi_control" atlas_msgs::WalkDemoAction))
+     ;; (send bdi-action :wait-for-server 3)
      (setf (get robot :footstep-parameter)
            '(:default-half-offset #f(0.0 100.0 0.0) :forward-offset-length 180.0 :outside-offset-length 85.0 :rotate-rad 40.0))
      (setq walk-seq 0)
@@ -570,7 +570,7 @@
 ;; (send *ri* :bdi_footstep (footstep-planning-armin (make-coords :pos (scale 1000 (float-vector 1 1 0)) :rpy (list 0 0 0)) (make-coords :pos (scale 1000 (float-vector 17.3 9 0)) :rpy (list 0 0 0))))
 
 (defun atlas-init
-  (&key (set-reset-pose nil) (set-user-mode nil) (unset-limit t) (with-hand t))
+  (&key (set-reset-pose nil) (set-user-mode nil) (unset-limit t) (with-hand nil))
   (if (not (boundp '*ri*)) (setq *ri* (instance atlas-interface :init)))
   ;; (if (not (boundp '*ri*)) (setq *ri* (instance atlas-interface :init :use-tf2 t)))
   (if (not (boundp '*atlas*)) (setq *atlas* (atlas-with-hand)))

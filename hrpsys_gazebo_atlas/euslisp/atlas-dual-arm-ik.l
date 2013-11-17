@@ -560,6 +560,12 @@
     (fix-centroid-object)
     (cond
      ((vectorp ret)
+      (send *irtviewer* :draw-objects)
+      (let ((interpolate-time 500))
+	(when 
+	    (> (norm (v- (send *ri* :state :potentio-vector) (send *robot* :angle-vector))) 100)
+	  (setq interpolate-time 4000))
+	(when (boundp '*ri*) (model2real :time interpolate-time :wait t)))
       (send *gun-coords*
 	    :newcoords
 	    (make-coords
