@@ -72,11 +72,13 @@ def pointCB(msg):
 
 def cancelCB(req):
   global g_triangle_point_state
+  rospy.loginfo("canceled")
   g_triangle_point_state.reset()
   return EmptyResponse()
   
 def goCB(req):
   global g_triangle_point_state
+  rospy.loginfo("go")
   g_triangle_point_state.publishTriangles()
   return EmptyResponse()
   
