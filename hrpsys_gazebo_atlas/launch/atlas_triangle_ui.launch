@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="hrpsys_gazebo_atlas" type="triangle_screenpoint.py" name="triangle_screenpoint"
+        clear_params="true">
+  </node>
+</launch>
