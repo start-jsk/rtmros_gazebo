@@ -1,5 +1,5 @@
-#-:jsk  (jsk)
-#-:rbrain-basic (rbrain)
+;#-:jsk  (jsk)
+;#-:rbrain-basic (rbrain)
 
 (require "atlas-model.l")
 ;(require "models/arrow-object.l")
@@ -153,7 +153,7 @@
 	  :worldrot)
     (send hand-offset :worldrot))))
 
-(defun fix-gun-coords
+(defun fix-centroid-object
   (&optional
    (centroid (send *robot* :centroid))
    (leg-h (scale 0.5
@@ -169,10 +169,16 @@
 	       (concatenate float-vector
 			    (subseq centroid 0 2)
 			    (list (+ 10 (aref leg-h 2)))))))
+  )
+
+(defun fix-gun-coords
+  nil
+  (fix-centroid-object)
   (send *gun-coords*
-	:newcoords
+ 	:newcoords
 	(copy-object
-	 (send *robot* :rarm :end-coords :worldcoords))))
+	 (send *robot* :rarm :end-coords :worldcoords)))
+  )
 
 (defmethod robot-model
   (:set-end-coords
@@ -256,8 +262,8 @@
 (send *triangle* :translate #F(600 -200 600) :world)
 (gl::transparent *triangle* 0.3)
 
-(if (not (and (boundp '*viewer*) *viewer*))
-    (pickview :no-menu t))
+;(if (not (and (boundp '*viewer*) *viewer*))
+;    (pickview :no-menu t))
 (objects
  (list *gun-coords* *robot*
        *centroid-object* *triangle*))
@@ -267,7 +273,7 @@
 ;;;;;;;; controller ;;;;;;;;;
 
 ;(require "package://eus_nlopt/euslisp/nlopt-ik-overwrite.l")
-(require "package://eus_nlopt/euslisp/nlopt-ik.l")
+;(require "package://eus_nlopt/euslisp/nlopt-ik.l")
 
 (defun init-grasp-pose
   nil
@@ -425,6 +431,7 @@
        (* margin
 	  (+ (/ (aref foot-convex 1) 2.0)
 	     (/ (aref foot-dist 1) 2.0))))))
+   (debug-view nil)
    )
   (let (target-coords ret)
     (send *gun-coords* :newcoords
@@ -457,7 +464,6 @@
 	   :cog-gain 0.1
 	   :additional-weight-list additional-weight-list
 	   :stop 10
-	   :debug-view nil
 	   :thre (make-list 4 :initial-element 5)
 	   :rthre (make-list 4 :initial-element (deg2rad 3))
 	   :centroid-thre centroid-thre
@@ -466,11 +472,13 @@
 	   ;:min #F(-1000 -1000 -1000 -200 -200 -200)
 	   ;:max #F(1000 1000 1000 200 200 200)
 	   :dump-command nil
+	   :debug-view debug-view
 	   :warnp t))
     ;;
+    (fix-centroid-object)
     (cond
      ((vectorp ret)
-      (fix-gun-coords)
+      ;(fix-gun-coords)
       (send *robot* :head :look-at
 	    (send *gun-coords* :worldpos))
       (send *viewer* :draw-objects)
@@ -539,8 +547,10 @@
   (&key
    (pos (car (triangle-pos-list))))
   (let (ret
-	move)
+	move
+	(cnt 30))
     (do-until-key
+     (if (< (decf cnt) 0) (return-from nil nil))
      (waist-fix :waist-key :waist-r :cnt 20)
      (waist-fix :waist-key :waist-p :cnt 20)
      (waist-fix :waist-key :waist-y :cnt 20)
@@ -552,10 +562,27 @@
 	    30
 	    (normalize-vector move)))
      (setq ret (ik-main :move move :rotate? :x))
-     (if (listp ret)
-	 (setq ret (ik-main :rpy
-			    (list 0 0 (- (random 2.0) 1))
-			    :translate? :yz)))
+     (cond
+      ((vectorp ret))
+      ((evenp (random 2))
+       (setq ret (ik-main
+		  ;:debug-view :no-message
+		  :move
+		  (float-vector
+		   0
+		   (- (random 2.0) 1.0)
+		   (- (random 2.0) 1.0))
+		  :rpy
+		  (list 0 0 (- (random 0.2) 0.1)))))
+      ;; (t
+      ;;  (setq ret (ik-main
+      ;; 		  :move
+      ;; 		  (float-vector
+      ;; 		   0
+      ;; 		   (- (random 2.0) 1.0)
+      ;; 		   (- (random 2.0) 1.0))
+      ;; 		  :rotate? :x)))
+      )
      (x::window-main-one))))
 
 (defun triangle-pos-list
@@ -570,6 +597,11 @@
    nil))
 
 ;(demo-mouse-controller)
+(do-until-key
+ (mapcar
+  #'(lambda (p) (demo-pos-controller :pos p))
+  (triangle-pos-list))
+ )
 
 #|
 
