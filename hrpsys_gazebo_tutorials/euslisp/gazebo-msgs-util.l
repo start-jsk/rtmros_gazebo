@@ -13,18 +13,74 @@ topic
 (defun gazebo-get-model-states (&optional (timeout 1000))
   (one-shot-subscribe "/gazebo/model_states" gazebo_msgs::ModelStates :timeout timeout))
 
-#|
-service
-"/gazebo/apply_body_wrench" gazebo_msgs::ApplyBodyWrench
-"/gazebo/apply_joint_effort" gazebo_msgs::ApplyJointEffort
+;;
+;; wrench service
+;;
+(defun gazebo-apply-body-wrench (body_name wrench &key (reference_frame "")
+                                           (start_time) (duration)
+                                           (reference_point))
+  (let ((srv (instance gazebo_msgs::ApplyBodyWrenchRequest :init
+                       :body_name body_name
+                       :reference_frame reference_frame
+                       :reference_point reference_point
+                       :wrench wrench
+                       :start_time start_time
+                       :ducation duration
+                       )))
+    (ros::service-call "/gazebo/apply_body_wrench" srv)))
+(defun clear_body_wrenches (body_name)
+  (let ((srv (instance gazebo_msgs::BodyRequestRequest :init
+                       :body_name body_name)))
+    (ros::service-call "/gazebo/clear_body_wrench" srv)))
 
-"/gazebo/clear_body_wrenches" gazebo_msgs::BodyRequest
-"/gazebo/clear_joint_forces" gazebo_msgs::JointRequest
+;;
+;; joint service
+;;
+(defun gazebo-apply-joint-effort (joint_name effort &key (start_time) (duration))
+  (let ((srv (instance gazebo_msgs::ApplyJointEffortRequest :init
+                       :joint_name joint_name
+                       :effort effort
+                       :start_time start_time
+                       :ducation duration
+                       )))
+    (ros::service-call "/gazebo/apply_joint_effort" srv)))
+(defun clear_body_wrenches (joint_name)
+  (let ((srv (instance gazebo_msgs::JointRequestRequest :init
+                       :joint_name joint_name)))
+    (ros::service-call "/gazebo/clear_joint_forces" srv)))
 
-"/gazebo/set_joint_properties" gazebo_msgs::SetJointProperties
-"/gazebo/set_link_properties" gazebo_msgs::SetLinkProperties
-"/gazebo/set_physics_properties" gazebo_msgs::SetPhysicsProperties
-|#
+;;
+;; set properties service
+;;
+(defun gazebo-set-joint-properties (joint_name)
+  (let ((srv (instance gazebo_msgs::SetJointPropertiesRequest :init
+                       :joint_name joint_name
+                       ;; :ode_joint_config (instance gazebo_msgs::ODEJointProperties :init)
+                       )))
+    (ros::service-call "/gazebo/set_joint_properties" srv)))
+(defun gazebo-set-link-properties (link_name)
+  (let ((srv (instance gazebo_msgs::SetLinkPropertiesRequest :init
+                       :link_name link_name
+                       ;; :com (ros::coords->tf-pose cds)
+                       ;; :gravity_mode
+                       ;; :mass
+                       ;; :ixx
+                       ;; :ixy
+                       ;; :ixz
+                       ;; :iyy
+                       ;; :iyz
+                       ;; :izz
+                       )))
+    (ros::service-call "/gazebo/set_link_properties" srv)))
+(defun gazebo-set-physics-properties ()
+  (let ((srv (instance gazebo_msgs::SetPhysicsPropertiesRequest :init
+                       ;; :time_step
+                       ;; :max_update_rate
+                       ;; :gravity
+                       ;; :ode_config (instance gazebo_msgs::ODEPhysics :init)
+                       )))
+    (ros::service-call "/gazebo/set_physics_properties" srv)))
+
 ;;
 ;; get properties service
 ;;
@@ -47,6 +103,9 @@ service
   (let ((srv (instance gazebo_msgs::GetWorldPropertiesRequest)))
     (ros::service-call "/gazebo/get_world_properties" srv)))
 
+;;
+;; get state service
+;;
 (defun gazebo-get-link-state (link_name &optional (ref_frame ""))
   (let ((srv (instance gazebo_msgs::GetLinkStateRequest
                        :init :link_name link_name
@@ -59,7 +118,7 @@ service
     (ros::service-call "/gazebo/get_model_state" srv)))
 
 ;;
-;; get states service
+;; set state service
 ;;
 (defun gazebo-set-link-state (link_name link_coords &key (twist (instance geometry_msgs::Twist :init))
                                         (reference-frame ""))
@@ -181,6 +240,15 @@ service
       (reduce #'(lambda (x y) (concatenate string y newline x)) str)
       )
     ))
+
+
+;; hrpsys_gazebo_general
+(defun gazebo-reset-joint-reference (robotname &optional (wait nil))
+  (let ((sname (format nil "~A/reset_joint_reference" robotname))
+        (srv (instance std_srvs::EmptyRequest :init)))
+    (if wait (ros::wait-for-service sname))
+    (ros::service-call sname srv)))
+
 #|
 (ros::roseus "gazebomsgtest")
 (load "package://hrpsys_ros_bridge_tutorials/euslisp/samplerobot-interface.l")
@@ -190,10 +258,11 @@ service
 (gazebo-pause-physics)
 
 (gazebo-spawn-model "SampleRobot" (read-xml-from-file "package://SampleRobot/SampleRobot.urdf")
-                    :initial-pose (make-coords :pos #f(0 0 800)))
+                    :initial-pose (make-coords :pos #f(0 0 1000)))
 (gazebo-get-model-properties "SampleRobot")
 
 (gazebo-set-model-configuration "SampleRobot" :joint-list (send *samplerobot* :joint-list))
+(gazebo-reset-joint-reference)
 (gazebo-set-model-state "SampleRobot" (make-coords :pos #f(0 0 760)))
 
 (gazebo-unpause-physics)
