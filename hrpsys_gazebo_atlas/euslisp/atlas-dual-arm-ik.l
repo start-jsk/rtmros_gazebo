@@ -220,67 +220,74 @@
 
 (send *robot* :set-end-coords)
 
-(setq *gun-coords*
-      (let* ((root (make-sphere 50))
-	     (lcoords
-	      (make-cascoords
-	       :init :link-list
-	       :name :lcoords
-	       :coords
-	       (make-coords
-		:pos #F(0 80 -100)
-		:rpy '(0 0 0))
-	       :parent root))
-	     (rcoords
-	      (make-cascoords
-	       :init :link-list
-	       :name :rcoords
-	       :coords
-	       (make-coords
-		:pos #F(0 -100 80)
-		:rpy '(0 0 -1.57))
-	       :parent root)))
-	(send root :set-color #F(1 0 0))
-	root))
-(init-pose)
-(send *gun-coords* :translate #F(500 0 200))
-(send *robot*
-      :rarm
-      :inverse-kinematics
-      (send (car (send *gun-coords* :descendants))
-	    :worldcoords)
-      :link-list
-      (send *robot* :link-list
-	    (send *robot* :rarm :end-coords :parent))
-      :debug-view :no-message)
-(send *robot* :set-end-coords
-      :rhand-coords
-      (send *gun-coords* :worldcoords))
-(send (send *robot* :rarm :end-coords)
-      :assoc
-      (cadr (send *gun-coords* :descendants)))
-(send *sandia_hand_left* :grasp-pose)
-(send *sandia_hand_right* :grasp-pose)
-(init-pose)
+(cond
+ ((not (and (boundp '*gun-coords*) *gun-coords*))
+  (setq *gun-coords*
+	(let* ((root (make-sphere 50))
+	       (lcoords
+		(make-cascoords
+		 :init :link-list
+		 :name :lcoords
+		 :coords
+		 (make-coords
+		  :pos #F(0 80 -100)
+		  :rpy '(0 0 0))
+		 :parent root))
+	       (rcoords
+		(make-cascoords
+		 :init :link-list
+		 :name :rcoords
+		 :coords
+		 (make-coords
+		  :pos #F(0 -100 80)
+		  :rpy '(0 0 -1.57))
+		 :parent root)))
+	  (send root :set-color #F(1 0 0))
+	  root))
+  (init-pose)
+  (send *gun-coords* :translate #F(500 0 200))
+  (send *robot*
+	:rarm
+	:inverse-kinematics
+	(send (car (send *gun-coords* :descendants))
+	      :worldcoords)
+	:link-list
+	(send *robot* :link-list
+	      (send *robot* :rarm :end-coords :parent))
+	:debug-view :no-message)
+  (send *robot* :set-end-coords
+	:rhand-coords
+	(send *gun-coords* :worldcoords))
+  (send (send *robot* :rarm :end-coords)
+	:assoc
+	(cadr (send *gun-coords* :descendants)))
+  (send *sandia_hand_left* :grasp-pose)
+  (send *sandia_hand_right* :grasp-pose)
+  (init-pose)))
 
 (defvar *centroid-object* (make-cylinder 20 400))
 (send *centroid-object* :set-color #F(1 1 0))
 
-(defvar *triangle*
-  (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
-(send *triangle* :set-color #F(0 1 0))
-(send *triangle* :rotate (deg2rad 90) :y)
-(send *triangle* :translate #F(600 -200 600) :world)
-(gl::transparent *triangle* 0.3)
+(defvar *mouse-mode* nil)
 
 ;; (defvar *triangle*
 ;;   (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
 ;; (send *triangle* :set-color #F(0 1 0))
-;; (send *triangle* :rotate (deg2rad 130) :y)
-;; (send *triangle* :translate #F(650 -200 450) :world)
+;; (send *triangle* :rotate (deg2rad 90) :y)
+;; (send *triangle* :translate #F(600 -200 600) :world)
+;; (gl::transparent *triangle* 0.3)
 
-;(if (not (and (boundp '*viewer*) *viewer*))
-;    (pickview :no-menu t))
+(cond
+ ((not (and (boundp '*triangle*) *triangle*))
+  ;; (defvar *triangle*
+  ;;   (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
+  ;; (send *triangle* :set-color #F(0 1 0))
+  ;; (send *triangle* :rotate (deg2rad 90) :y)
+  ;; (send *triangle* :translate #F(600 -200 600) :world)
+  ;; (gl::transparent *triangle* 0.3)
+  (load "triangle.l")
+  (send *triangle* :translate #F(-100 0 0) :world)))
+
 (objects
  (list *gun-coords* *robot*
        *centroid-object* *triangle*))
@@ -341,8 +348,21 @@
     (ik-main :move move)))
 
 (defun spacenav-subscriber
-  (msg)
+  (msg
+   &optional
+   (move-filter '(0 1 1))
+   (rpy-filter '(0 0 1)))
   (cond
+   ((and (> (aref (send msg :buttons) 0) 0.1)
+	 (> (aref (send msg :buttons) 1) 0.1))
+    (format t "mouse-mode~%")
+    (format t "standby..?~%")
+    (setq *mouse-mode* (not *mouse-mode*))
+    (print 3) (unix:sleep 1)
+    (print 2) (unix:sleep 1)
+    (print 1) (unix:sleep 1)
+    (format t "start!!~%")
+    )
    ((null *success-state-collection*) nil)
    ((> (aref (send msg :buttons) 0) 0.1)
     (print 'pop-back-robot-state)
@@ -374,6 +394,14 @@
 	   (coerce
 	    (subseq (send msg :axes) 3 6)
 	    float-vector)))))
+    (setq move
+	  (map float-vector
+	       #'*
+	       move move-filter))
+    (setq rpy
+	  (map float-vector
+	       #'*
+	       rpy rpy-filter))
     (ik-main :move move :rpy rpy)))
 
 (defun ros::tf-point->tf-pose (point)
@@ -559,7 +587,7 @@
 			      (copy-object
 			       (send *robot* :worldcoords))))
 		  *success-state-collection*)
-		 0 40)))
+		 0 100)))
       )
      (t
       (format t "[ik-main] fail!!~%")
@@ -629,9 +657,13 @@
 	(cnt 30))
     (do-until-key
      (if (< (decf cnt) 0) (return-from nil nil))
-     (waist-fix :waist-key :waist-r :cnt 20)
-     (waist-fix :waist-key :waist-p :cnt 20)
-     (waist-fix :waist-key :waist-y :cnt 20)
+     (ros::spin-once)
+     (while *mouse-mode*
+       (ros::sleep)
+       (ros::spin-once))
+     (waist-fix :waist-key :waist-r :cnt 10)
+     (waist-fix :waist-key :waist-p :cnt 10)
+     (waist-fix :waist-key :waist-y :cnt 10)
      (setq move
 	   (v- pos (send *gun-coords* :worldpos)))
      (setq rpy
@@ -661,20 +693,22 @@
       ((vectorp ret))
       (t ;(evenp (random 2))
        (setq ret (ik-main
-		  :debug-view :no-message
+		  ;:debug-view :no-message
+		  :rotate? :x
 		  :move
 		  (progn
 		    (setq buf (random-vector 50.0))
 		    (v- buf
 			(scale (v. buf (triangle-n))
 			       (triangle-n))))
-		  :rpy
-		  (progn
-		    (setq buf (random-vector 0.2))
-		    (v-
-		     buf
-		     (scale (v. buf (reverse (triangle-n)))
-			    (reverse (triangle-n))))))))
+		  ;; :rpy
+		  ;; (progn
+		  ;;   (setq buf (random-vector 0.2))
+		  ;;   (v-
+		  ;;    buf
+		  ;;    (scale (v. buf (reverse (triangle-n)))
+		  ;; 	    (reverse (triangle-n)))))
+		  )))
       ;; (t
       ;;  (setq ret (ik-main
       ;; 		  :move
@@ -714,32 +748,13 @@
 	       (v* (v- (nth 0 vlist) (nth 1 vlist))
 		   (v- (nth 2 vlist) (nth 1 vlist))))))
     (scale
-     (if (> (v. ret (v- c (send *robot* :worldpos))) 0) 1 -1)
+     (if (> (v. ret (v- c (send *robot* :worldpos))) 0)
+	 1 -1)
      ret)))
 
 ;(demo-mouse-controller)
 
 #|
-
-(defun demo-pos-controller
-ppppp  (&key
-   (pos (car (triangle-pos-list))))
-  (let (ret
-	move)
-    (do-until-key
-     (waist-fix :waist-key :waist-r :cnt 20)
-     (waist-fix :waist-key :waist-p :cnt 20)
-     (waist-fix :waist-key :waist-y :cnt 20)
-     (setq move
-	   (v- pos (send *gun-coords* :worldpos)))
-     (if (< (norm move) 50) (return-from nil t))
-     (setq move
-	   (scale
-	    30
-	    (normalize-vector move)))
-     (setq ret (ik-main :move move :rotate? :x))
-     (if (listp ret) (return-from nil nil))
-     (x::window-main-one))))
 
 (ros::rate 10)
 (do-until-key
