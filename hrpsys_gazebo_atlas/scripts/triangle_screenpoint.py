@@ -20,7 +20,7 @@ g_triangle_point_state = None
 class TrianglePointsState():
   def __init__(self):
     self.reset()
-    self.triangle_publisher = rospy.Publisher("/triangle_points", TrianglePoints)
+    self.triangle_publisher = rospy.Publisher("/trianglepoints", TrianglePoints)
     self.point_a_publisher = rospy.Publisher("/triangle_point_a", PointStamped)
     self.point_b_publisher = rospy.Publisher("/triangle_point_b", PointStamped)
     self.point_c_publisher = rospy.Publisher("/triangle_point_c", PointStamped)
