@@ -375,9 +375,9 @@ void IOBPlugin::DeferredLoad() {
     ROS_INFO("use synchronized command");
     ros::AdvertiseServiceOptions IOBServO =
       ros::AdvertiseServiceOptions::create<hrpsys_gazebo_msgs::SyncCommand>
-      ("/iob_command",  boost::bind(&IOBPlugin::serviceCallback, this, _1, _2),
+      (this->robot_name + "/iob_command",  boost::bind(&IOBPlugin::serviceCallback, this, _1, _2),
        ros::VoidPtr(), &this->srvQueue);
-    controlServ = this->rosNode->advertiseService(IOBServO);
+    this->controlServ = this->rosNode->advertiseService(IOBServO);
 
     // ros callback queue for processing subscription
     this->callbackQueeuThread_srv =
