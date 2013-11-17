@@ -262,6 +262,8 @@
 (send *triangle* :translate #F(600 -200 600) :world)
 (gl::transparent *triangle* 0.3)
 
+(defvar *triangle-normal* #F(1 0 0))
+
 ;(if (not (and (boundp '*viewer*) *viewer*))
 ;    (pickview :no-menu t))
 (objects
@@ -359,6 +361,27 @@
 	    float-vector)))))
     (ik-main :move move :rpy rpy)))
 
+(defun trianglepoints-subscriber
+  (msg)
+  (setq *triangle-normal*
+	(normalize-vector
+	 (v* (v- (send msg :a) (send msg :b))
+	     (v- (send msg :c) (send msg :b)))))
+  (setq *triangle*
+	(make-prism
+	 (list (send msg :a) (send msg :b) (send msg :c))
+	 *triangle-normal*))
+  (send *triangle* :set-color #F(0 1 0))
+  (gl::transparent *triangle* 0.3)
+  ;;
+  (objects
+   (list *gun-coords* *robot*
+	 *centroid-object* *triangle*))
+  (mapcar
+   #'(lambda (p) (demo-pos-controller :pos p))
+   (triangle-pos-list))
+  )
+
 (defvar *success-state-collection* nil)
 (defun ik-main
   (&key
@@ -441,6 +464,7 @@
 	       move)
 	   :rpy
 	   (map cons #'+
+;		(car (send *gun-coords* :rpy-angle))
 		(list
 		 0 0
 		 (caar (send *gun-coords* :rpy-angle)))
@@ -524,7 +548,11 @@
   (send waist-joint :joint-angle waist-angle))
 
 (ros::roseus "ik_server")
+(ros::load-ros-manifest "hrpsys_gazebo_atlas")
+;;
+(ros::roseus-add-msgs "hrpsys_gazebo_atlas")
 (ros::roseus-add-msgs "sensor_msgs")
+;;
 (ros::subscribe "/ik_server_command"
 		std_msgs::String
 		#'str-subscriber
@@ -532,6 +560,10 @@
 (ros::subscribe "/spacenav/joy"
 		sensor_msgs::Joy
 		#'spacenav-subscriber
+		1)
+(ros::subscribe "/trianglepoints"
+		hrpsys_gazebo_atlas::trianglepoints
+		#'trianglepoints-subscriber
 		1)
 
 (defun demo-mouse-controller
@@ -545,9 +577,11 @@
 
 (defun demo-pos-controller
   (&key
-   (pos (car (triangle-pos-list))))
+   (pos (car (triangle-pos-list)))
+   (n *triangle-normal*))
   (let (ret
 	move
+	rpy
 	(cnt 30))
     (do-until-key
      (if (< (decf cnt) 0) (return-from nil nil))
@@ -597,11 +631,6 @@
    nil))
 
 ;(demo-mouse-controller)
-(do-until-key
- (mapcar
-  #'(lambda (p) (demo-pos-controller :pos p))
-  (triangle-pos-list))
- )
 
 #|
 
