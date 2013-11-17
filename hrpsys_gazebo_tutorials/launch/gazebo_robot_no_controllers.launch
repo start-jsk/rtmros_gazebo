@@ -1,10 +1,11 @@
 <launch>
   <arg name="gzname" default="gazebo"/>
-  <arg name="WORLD" default="SampleRobot.world"/>
+  <arg name="WORLD" default="SampleRobot.world" />
   <arg name="HRPSYS_GAZEBO_CONFIG" default="$(find hrpsys_gazebo_tutorials)/config/samplerobot.yaml" />
   <arg name="ROBOT_MODEL" default="$(find hrpsys_gazebo_tutorials)/robot_models/SampleRobot/SampleRobot.urdf" />
   <arg name="PAUSED" default="false"/>
   <arg name="SYNCHRONIZED" default="false" />
+  <arg name="ROBOT_INSTANCE_NAME" default="SampleRobot" /> <!-- ROBOT instance Name (name_space) -->
 
   <arg if="$(arg PAUSED)"
        name="paused" value="_paused" />
@@ -16,12 +17,13 @@
   <!-- start gazebo with the hrpsys_gazebo -->
   <node name="gazebo" pkg="drcsim_gazebo" type="run_$(arg gzname)$(arg paused)" args="$(arg WORLD)" output="screen" />
 
-  <!-- controller configuration -->
-  <rosparam command="load" file="$(arg HRPSYS_GAZEBO_CONFIG)" />
-
-  <!-- setting for using synchronized iob -->
-  <param name="/hrpsys_gazebo_configuration/use_synchronized_command"
-         value="$(arg SYNCHRONIZED)" />
+  <group ns="$(arg ROBOT_NAME)" >
+    <!-- controller configuration -->
+    <rosparam command="load" file="$(arg HRPSYS_GAZEBO_CONFIG)" />
+    <!-- setting for using synchronized iob -->
+    <param name="hrpsys_gazebo_configuration/use_synchronized_command"
+           value="$(arg SYNCHRONIZED)" />
+  </group>
 
   <!-- Robot Description -->
   <param name="robot_description" textfile="$(arg ROBOT_MODEL)"/>
