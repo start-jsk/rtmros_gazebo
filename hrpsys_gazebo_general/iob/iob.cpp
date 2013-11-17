@@ -359,11 +359,10 @@ int write_command_angles(const double *angles)
         servo_on = false;
         send_com.position[i] = 0;
         send_com.velocity[i] = 0;
-        send_com.effort[i] = 0;
+        //send_com.effort[i] = 0;
         send_com.kp_position[i] = 0;
         send_com.ki_position[i] = 0;
         send_com.kd_position[i] = 0;
-        send_com.kp_velocity[i]  = 0;
         send_com.kp_velocity[i]  = 0;
       }
     }
