@@ -180,6 +180,17 @@
 	 (send *robot* :rarm :end-coords :worldcoords)))
   )
 
+(defun rpy-from-2vec
+  (target org)
+  (let ((v
+	 (scale
+	  (acos (v. target org))
+	  (normalize-vector (v* target org)))))
+    (reverse
+     (mapcar
+      #'(lambda (n) (v. n v))
+      (list #F(1 0 0) #F(0 1 0) #F(0 0 1))))))
+
 (defmethod robot-model
   (:set-end-coords
    (&key
@@ -262,7 +273,11 @@
 (send *triangle* :translate #F(600 -200 600) :world)
 (gl::transparent *triangle* 0.3)
 
-(defvar *triangle-normal* #F(1 0 0))
+;; (defvar *triangle*
+;;   (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
+;; (send *triangle* :set-color #F(0 1 0))
+;; (send *triangle* :rotate (deg2rad 130) :y)
+;; (send *triangle* :translate #F(650 -200 450) :world)
 
 ;(if (not (and (boundp '*viewer*) *viewer*))
 ;    (pickview :no-menu t))
@@ -372,7 +387,6 @@
     (send pose :pose :orientation :w 1.0)
     pose))
 
-
 (defun trianglepoints-subscriber
   (msg)
   (let ((apose (ros::tf-point->tf-pose (send msg :a)))
@@ -384,24 +398,19 @@
       (let ((a (send acoords :worldpos))
             (b (send bcoords :worldpos))
             (c (send ccoords :worldpos)))
-  (setq *triangle-normal*
-	(normalize-vector
-	 (v* (v- a b)
-	     (v- c b))))
-  (setq *triangle*
-	(make-prism
-	 (list a b c)
-	 *triangle-normal*))
-  (send *triangle* :set-color #F(0 1 0))
-  (gl::transparent *triangle* 0.3)
-  ;;
-  (objects
-   (list *gun-coords* *robot*
-	 *centroid-object* *triangle*))
-  (mapcar
-   #'(lambda (p) (demo-pos-controller :pos p))
-   (triangle-pos-list))
-  ))))
+	(setq *triangle*
+	      (make-prism (list a b c)
+			  (triangle-n (list a b c))))
+	(send *triangle* :set-color #F(0 1 0))
+	(gl::transparent *triangle* 0.3)
+	;;
+	(objects
+	 (list *gun-coords* *robot*
+	       *centroid-object* *triangle*))
+	(mapcar
+	 #'(lambda (p) (demo-pos-controller :pos p))
+	 (triangle-pos-list))
+	))))
 
 (defvar *success-state-collection* nil)
 (defun ik-main
@@ -485,10 +494,10 @@
 	       move)
 	   :rpy
 	   (map cons #'+
-;		(car (send *gun-coords* :rpy-angle))
-		(list
-		 0 0
-		 (caar (send *gun-coords* :rpy-angle)))
+		(car (send *gun-coords* :rpy-angle))
+;		(list
+;		 0 0
+;		 (caar (send *gun-coords* :rpy-angle)))
 		rpy)))
     (setq target-coords
 	  (append
@@ -523,6 +532,15 @@
     (fix-centroid-object)
     (cond
      ((vectorp ret)
+      (send *gun-coords*
+	    :newcoords
+	    (make-coords
+	     :pos
+	     (copy-object
+	      (send *gun-coords* :worldpos))
+	     :rot
+	     (copy-object
+	      (send *robot* :rarm :end-coords :worldrot))))
       ;(fix-gun-coords)
       (send *robot* :head :look-at
 	    (send *gun-coords* :worldpos))
@@ -603,10 +621,11 @@
 (defun demo-pos-controller
   (&key
    (pos (car (triangle-pos-list)))
-   (n *triangle-normal*))
+   (n (triangle-n)))
   (let (ret
 	move
 	rpy
+	buf
 	(cnt 30))
     (do-until-key
      (if (< (decf cnt) 0) (return-from nil nil))
@@ -615,24 +634,47 @@
      (waist-fix :waist-key :waist-y :cnt 20)
      (setq move
 	   (v- pos (send *gun-coords* :worldpos)))
-     (if (< (norm move) 50) (return-from nil t))
+     (setq rpy
+	   (coerce
+	    (rpy-from-2vec
+	     (transform (send *gun-coords* :worldrot)
+			#F(1 0 0))
+	     n)
+	    float-vector))
+     (setq rpy
+	   (v- rpy
+	       (scale (v. rpy
+			  (reverse (triangle-n)))
+		      (reverse (triangle-n)))))
+     (if (and (< (norm move) 50)
+	      (< (norm rpy) (deg2rad 180)))
+	 (return-from nil t))
      (setq move
 	   (scale
-	    30
+	    (min 30 (norm move))
 	    (normalize-vector move)))
-     (setq ret (ik-main :move move :rotate? :x))
+     (setq rpy (scale (min 0.15 (norm rpy))
+		      (normalize-vector rpy)))
+     (setq ret (ik-main :move move :rpy rpy
+			:rotate? :x))
      (cond
       ((vectorp ret))
       (t ;(evenp (random 2))
        (setq ret (ik-main
-		  ;:debug-view :no-message
+		  :debug-view :no-message
 		  :move
-		  (float-vector
-		   0
-		   (- (random 2.0) 1.0)
-		   (- (random 2.0) 1.0))
+		  (progn
+		    (setq buf (random-vector 50.0))
+		    (v- buf
+			(scale (v. buf (triangle-n))
+			       (triangle-n))))
 		  :rpy
-		  (list 0 0 (- (random 0.2) 0.1)))))
+		  (progn
+		    (setq buf (random-vector 0.2))
+		    (v-
+		     buf
+		     (scale (v. buf (reverse (triangle-n)))
+			    (reverse (triangle-n))))))))
       ;; (t
       ;;  (setq ret (ik-main
       ;; 		  :move
@@ -654,6 +696,26 @@
      (send *triangle* :faces))
     :vertices)
    nil))
+
+(defun triangle-n
+  (&optional
+   (vlist
+    (union
+     (send
+      (find-if
+       #'(lambda (f)
+	   (find :bottom (send f :id)))
+       (send *triangle* :faces))
+      :vertices)
+     nil)))
+  (let* ((c (scale (/ 1.0 (length vlist))
+		   (reduce #'v+ vlist)))
+	 (ret (normalize-vector
+	       (v* (v- (nth 0 vlist) (nth 1 vlist))
+		   (v- (nth 2 vlist) (nth 1 vlist))))))
+    (scale
+     (if (> (v. ret (v- c (send *robot* :worldpos))) 0) 1 -1)
+     ret)))
 
 ;(demo-mouse-controller)
 
@@ -690,6 +752,5 @@ ppppp  (&key
   #'(lambda (p) (demo-pos-controller :pos p))
   (triangle-pos-list))
  )
-
 
 |#
