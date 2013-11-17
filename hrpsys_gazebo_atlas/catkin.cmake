@@ -77,6 +77,7 @@ if (${collada_urdf_jsk_patch_FOUND} AND EXISTS ${atlas_description_PACKAGE_PATH}
   compile_collada_model(${atlas_v3_dae}
     --euscollada-option "--without-technique-limit"
     --robothardware-conf-file-option "pdgains.file_name: ${PROJECT_SOURCE_DIR}/models/PDgains.sav"
+    --conf-dt-option "0.003"
     --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
     --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
     --conf-file-option "abc_end_effectors: :rarm,r_arm_wrx,back_bkx, :larm,l_arm_wrx,back_bkx, :rleg,r_leg_akx,pelvis, :lleg,l_leg_akx,pelvis,"
