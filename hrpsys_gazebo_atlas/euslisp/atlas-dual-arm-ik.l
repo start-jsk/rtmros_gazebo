@@ -660,7 +660,7 @@
 	move
 	rpy
 	buf
-	(cnt 30))
+	(cnt 1000))
     (do-until-key
      (if (< (decf cnt) 0) (return-from nil nil))
      (ros::spin-once)
