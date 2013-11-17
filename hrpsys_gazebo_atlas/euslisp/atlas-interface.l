@@ -64,10 +64,10 @@
        (ros::advertise "atlas/mode" std_msgs::String 1)
        (ros::advertise "atlas/set_pose" geometry_msgs::Pose 1))
      ;; action lib / needs node of atlas_msgs/actionlib_server
-     ;; (setq bdi-action
-     ;;       (instance ros::simple-action-client :init
-     ;;                 "atlas/bdi_control" atlas_msgs::WalkDemoAction))
-     ;; (send bdi-action :wait-for-server 3)
+     (setq bdi-action
+           (instance ros::simple-action-client :init
+                     "atlas/bdi_control" atlas_msgs::WalkDemoAction))
+     (send bdi-action :wait-for-server 3)
      (setf (get robot :footstep-parameter)
            '(:default-half-offset #f(0.0 100.0 0.0) :forward-offset-length 180.0 :outside-offset-length 85.0 :rotate-rad 40.0))
      (setq walk-seq 0)
