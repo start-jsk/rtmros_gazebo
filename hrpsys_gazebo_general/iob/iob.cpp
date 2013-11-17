@@ -627,7 +627,7 @@ int open_iob(void)
 
     std::string controller_name;
     { // setting configuration name
-      char *ret = getenv("HRPSYS_GAZEBO_IOB");
+      char *ret = getenv("HRPSYS_GAZEBO_CONFIGURATION");
       if (ret != NULL) {
         controller_name.assign(ret);
       } else {
@@ -640,13 +640,19 @@ int open_iob(void)
       char *ret = getenv("HRPSYS_GAZEBO_ROBOTNAME");
       if (ret != NULL) {
         robotname.assign(ret);
+        // controller_name -> robotname/controller_name
+        controller_name = robotname + "/" + controller_name;
       } else {
         std::string rname_str = std::string(controller_name) + "/robotname";
         rosnode->getParam(rname_str, robotname);
       }
+      if (robotname.empty()) {
+        ROS_ERROR("[iob] did not find robot_name");
+        robotname = "default";
+      }
       ROS_INFO_STREAM( "[iob] set robot_name : " << robotname);
     }
-    // controller_name -> robotname/controller_name ??
+
     { // setting synchronized
       char *ret = getenv("HRPSYS_GAZEBO_IOB_SYNCHRONIZED");
       if (ret != NULL) {

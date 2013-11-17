@@ -19,14 +19,20 @@ IOBPlugin::~IOBPlugin() {
 
 void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 
+  this->controller_name = "hrpsys_gazebo_configuration";
+  if (_sdf->HasElement("controller")) {
+    this->controller_name = _sdf->Get<std::string>("controller");
+  }
+
   this->robot_name = "default";
   if (_sdf->HasElement("robotname")) {
     this->robot_name = _sdf->Get<std::string>("robotname");
   }
-  this->controller_name = "default_controller";
-  if (_sdf->HasElement("controller")) {
-    this->controller_name = _sdf->Get<std::string>("controller");
+  if (this->robot_name == "default") {
+    this->robot_name = _parent->GetScopedName();
+    this->controller_name = this->robot_name + "/" + this->controller_name;
   }
+
   this->use_synchronized_command = false;
   if (_sdf->HasElement("synchronized_command")) {
     this->use_synchronized_command = _sdf->Get<bool>("synchronized_command");
@@ -77,8 +83,8 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       XmlRpc::XmlRpcValue imusensors_config = param_val["imu_sensors_config"];
 
       if (rname != this->robot_name) {
-        ROS_ERROR("mismatch robotnames: %s (ros parameter) != %s (gazebo element)",
-                  rname.c_str(), this->robot_name.c_str());
+        ROS_WARN("mismatch robotnames: %s (ros parameter) != %s (gazebo element)",
+                 rname.c_str(), this->robot_name.c_str());
       } else {
         ROS_INFO("robotname: %s", rname.c_str());
       }
