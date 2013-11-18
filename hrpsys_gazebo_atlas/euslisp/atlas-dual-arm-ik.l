@@ -440,6 +440,31 @@
 	 (triangle-pos-list))
 	))))
 
+(defun leg-coords-fix-from-real
+  nil
+  (let* ((initial-av
+	  (copy-object (send *robot* :angle-vector))))
+    (cond
+     ((and real? (not (and (boundp '*ri*) *ri*)))
+      (require "atlas-interface.l")
+      (atlas-init-ex)
+      (objects
+       (list *robot* *centroid-object*
+	     *gun-coords* *triangle*))
+      (send *ri* :start-auto-balancer)
+      (set-user)
+      ))
+    (real2model)
+    (send *robot* :fix-leg-to-coords (car *fix-leg-coords*) :rleg)
+    (setq *fix-leg-coords*
+	  (mapcar
+	   #'(lambda (k)
+	       (send *robot* k :end-coords :copy-worldcoords))
+	   '(:rleg :lleg)))
+    (ik-main)
+    ))
+
+
 (defvar *success-state-collection* nil)
 (defun ik-main
   (&key
@@ -796,6 +821,7 @@
    (send *robot* :newcoords (cdr (assoc :worldcoords d)))
    (fix-gun-coords)
    (send *viewer* :draw-objects)
+   (x::window-main-one)
    (cond
     (real?
      (model2real :sleep-time inital-sleep :wait t))
