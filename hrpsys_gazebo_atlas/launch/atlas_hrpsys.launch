@@ -6,7 +6,7 @@
 
   <arg name="USE_IMAGE_TRANSPORT" default="false" />
   <arg name="USE_OCTOMAP" default="false" />
-  <arg name="RECORD_ROSBAG" default="false" />
+  <arg name="USE_WEB" default="false" />
 
   <!-- obsolated -->
   <arg name="USE_HAND"  default="false" />
@@ -51,5 +51,7 @@
 
   <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="atlas_dashboard" />
 
-  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_web.launch" />
+  <!-- web UI -->
+  <include if="$(arg USE_WEB)"
+	   file="$(find hrpsys_gazebo_atlas)/launch/atlas_web.launch" />
 </launch>
