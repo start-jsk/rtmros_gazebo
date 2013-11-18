@@ -73,6 +73,18 @@ static inline int joint_id_model2real(int id)
   }
 }
 
+static inline void tick_service_command()
+{
+  // tick gazebo ...
+  hrpsys_gazebo_msgs::SyncCommandRequest req;
+  req.joint_command = jointcommand;
+  hrpsys_gazebo_msgs::SyncCommandResponse res;
+  //std::cerr << "[iob] service call" << std::endl;
+  serv_command.call(req, res);
+  //std::cerr << "[iob] service returned" << std::endl;
+  js = res.robot_state;
+}
+
 #ifdef __APPLE__
 typedef int clockid_t;
 #define CLOCK_MONOTONIC 0
@@ -977,14 +989,7 @@ unsigned long long read_iob_frame()
     ++frame;
     if (iob_synchronized && start_robothw) {
       if(frame % num_of_substeps != 0) {
-        // tick gazebo ...
-        hrpsys_gazebo_msgs::SyncCommandRequest req;
-        req.joint_command = jointcommand;
-        hrpsys_gazebo_msgs::SyncCommandResponse res;
-        //std::cerr << "[iob] service call" << std::endl;
-        serv_command.call(req, res);
-        //std::cerr << "[iob] service returned" << std::endl;
-        js = res.robot_state;
+        tick_service_command();
       } // else break to executing RobotHardware
     }
     return frame;
