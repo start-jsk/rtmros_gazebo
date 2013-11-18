@@ -54,4 +54,7 @@
   <!-- web UI -->
   <include if="$(arg USE_WEB)"
 	   file="$(find hrpsys_gazebo_atlas)/launch/atlas_web.launch" />
+
+  <!-- interactive joint marker and rviz -->
+  <include file="$(find jsk_interactive_marker)/launch/atlas_joint_marker.launch" />
 </launch>
