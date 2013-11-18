@@ -1,5 +1,0 @@
-geometry_msgs/PoseStamped goal
----
-bool success
-sensor_msgs/JointState angle
-
