@@ -441,11 +441,14 @@
 	))))
 
 (defun leg-coords-fix-from-real
-  nil
+  (&key
+   (init-grasp? t))
   (let* ((initial-av
+	  (copy-object (send *robot* :angle-vector)))
+	 (initial-coords
 	  (copy-object (send *robot* :angle-vector))))
     (cond
-     ((and real? (not (and (boundp '*ri*) *ri*)))
+     ((not (and (boundp '*ri*) *ri*))
       (require "atlas-interface.l")
       (atlas-init-ex)
       (objects
@@ -461,15 +464,18 @@
 	   #'(lambda (k)
 	       (send *robot* k :end-coords :copy-worldcoords))
 	   '(:rleg :lleg)))
+    (send *robot* :angle-vector initial-av)
+    (send *robot* :newcoords inital-coords)
+    (if init-grasp? (init-grasp-pose))
     (ik-main)
     ))
-
 
 (defvar *success-state-collection* nil)
 (defun ik-main
   (&key
    (move #F(0 0 0))
    (rpy '(0 0 0))
+   (real? nil)
    (rotate? t)
    (translate? t)
    ;; meta
@@ -586,16 +592,14 @@
     (cond
      ((vectorp ret)
       (send *irtviewer* :draw-objects)
-      (let ((interpolate-time 500))
-	(when
-	    (and
-	     (boundp '*ri*)
-	     *ri*
-	     (> (norm (v- (send *ri* :state :potentio-vector)
-			  (send *robot* :angle-vector))) 100))
-	  (setq interpolate-time 4000))
-	(when (and (boundp '*ri*) *ri*)
-	  (model2real :time interpolate-time :wait t)))
+      (cond
+       ((and real? (boundp '*ri*) *ri*)
+	(let ((interpolate-time 500))
+	  (cond
+	   ((> (norm (v- (send *ri* :state :potentio-vector)
+			 (send *robot* :angle-vector))) 100))
+	   (setq interpolate-time 4000))
+	  (model2real :time interpolate-time :wait t))))
       (send *gun-coords*
 	    :newcoords
 	    (make-coords
