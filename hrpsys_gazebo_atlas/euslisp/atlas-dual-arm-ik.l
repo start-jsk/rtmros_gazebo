@@ -310,6 +310,11 @@
 	       #2f((1.0 -5.742127e-05 -0.000283)
 		   (5.729671e-05 1.0 -0.00044)
 		   (0.000283 0.00044 1.0)))))
+  (setq *fix-leg-coords*
+	(mapcar
+	 #'(lambda (k)
+	     (send *robot* k :end-coords :copy-worldcoords))
+	 '(:rleg :lleg)))  
   (fix-gun-coords)
   )
 
@@ -442,11 +447,12 @@
 
 (defun leg-coords-fix-from-real
   (&key
-   (init-grasp? t))
+   (init-grasp? t)
+   (solve-ik? t))
   (let* ((initial-av
 	  (copy-object (send *robot* :angle-vector)))
 	 (initial-coords
-	  (copy-object (send *robot* :angle-vector))))
+	  (copy-object (send *robot* :worldcoords))))
     (cond
      ((not (and (boundp '*ri*) *ri*))
       (require "atlas-interface.l")
@@ -464,10 +470,11 @@
 	   #'(lambda (k)
 	       (send *robot* k :end-coords :copy-worldcoords))
 	   '(:rleg :lleg)))
-    (send *robot* :angle-vector initial-av)
-    (send *robot* :newcoords inital-coords)
+    ;(send *robot* :angle-vector initial-av)
+    ;(send *robot* :newcoords initial-coords)
     (if init-grasp? (init-grasp-pose))
-    (ik-main)
+    (if solve-ik? (ik-main :rotate? :x))
+    (fix-gun-coords)
     ))
 
 (defvar *success-state-collection* nil)
@@ -476,6 +483,7 @@
    (move #F(0 0 0))
    (rpy '(0 0 0))
    (real? nil)
+   (real-feedback? nil)
    (rotate? t)
    (translate? t)
    ;; meta
@@ -546,6 +554,12 @@
    (debug-view nil)
    )
   (let (target-coords ret)
+    (cond
+     ((and real-feedback?
+	   (boundp '*ri*) *ri*)
+      (leg-coords-fix-from-real
+       :init-grasp? nil
+       :solve-ik? nil)))
     (send *gun-coords* :newcoords
 	  (make-coords
 	   :pos
@@ -594,12 +608,14 @@
       (send *irtviewer* :draw-objects)
       (cond
        ((and real? (boundp '*ri*) *ri*)
-	(let ((interpolate-time 500))
+	(let ((interpolate-time 1000))
 	  (cond
 	   ((> (norm (v- (send *ri* :state :potentio-vector)
-			 (send *robot* :angle-vector))) 100))
-	   (setq interpolate-time 4000))
-	  (model2real :time interpolate-time :wait t))))
+			 (send *robot* :angle-vector))) 100)
+	    (setq interpolate-time 4000)))
+	  (model2real :time interpolate-time :wait t)
+	  (unix::usleep (round (* 500 1000)))
+	  )))
       (send *gun-coords*
 	    :newcoords
 	    (make-coords
@@ -689,7 +705,10 @@
 (defun demo-pos-controller
   (&key
    (pos (car (triangle-pos-list)))
-   (n (triangle-n)))
+   (n (triangle-n))
+   (real? nil)
+   (real-feedback? nil)
+   )
   (let (ret
 	move
 	rpy
@@ -727,13 +746,18 @@
 	    (normalize-vector move)))
      (setq rpy (scale (min 0.15 (norm rpy))
 		      (normalize-vector rpy)))
-     (setq ret (ik-main :move move :rpy rpy
-			:rotate? :x))
+     (setq ret (ik-main
+		:real? real?
+		:real-feedback? real-feedback?
+		:move move :rpy rpy
+		:rotate? :x))
      (cond
       ((vectorp ret))
       (t ;(evenp (random 2))
        (setq ret (ik-main
 		  ;:debug-view :no-message
+		  :real? real?
+		  :real-feedback? real-feedback?
 		  :rotate? :x
 		  :move
 		  (progn
@@ -842,6 +866,12 @@
 (defun mm
   nil
   (require "atlas-interface.l")
+  (cond
+   ((not (and (boundp '*ri*) *ri*))
+    (atlas-init-ex)
+    (objects
+     (list *robot* *centroid-object*
+	   *gun-coords* *triangle*))))
   (stand-up)
   (real2model)
   (model2real :wait t)
@@ -859,5 +889,12 @@
   #'(lambda (p) (demo-pos-controller :pos p))
   (triangle-pos-list))
  )
+
+(mm)
+(init-grasp-pose)
+(model2real :wait t)
+ (mapcar
+  #'(lambda (p) (demo-pos-controller :pos p :real? t :real-feedback? t))
+  (triangle-pos-list))
 
 |#
