@@ -21,8 +21,15 @@
     (send *atlas* :newcoords (make-coords)) ;force to move pelvis origin
     (let ((goal (send req :ik_request :pose_stamped)))
       (let ((goal-in-world (send *tf* :transform-pose "/pelvis" goal)))
+        (let ((args (if (or (string= (send req :ik_request :group_name) "larm_torso")
+                            (string= (send req :ik_request :group_name) "lhand_torso")
+                            (string= (send req :ik_request :group_name) "rarm_torso")
+                            (string= (send req :ik_request :group_name) "rhand_torso"))
+                        (list :link-list (send *atlas* :link-list (send (send *atlas* arm :end-coords) :parent))))))
         ;;(let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :rotation-axis t))) ;default it uses torso
-        (let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :rotation-axis nil))) ;default it uses torso
+        ;;(let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :use-torso t :rotation-axis nil))) ;default it uses torso
+        (let ((ik-ret (send* *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :use-torso t
+                            :rotation-axis nil args))) ;default it uses torso
           (if ik-ret
               (progn
                 (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
@@ -32,7 +39,7 @@
                 )
             (progn
               (send res :error_code :val moveit_msgs::MoveItErrorCodes::*FAILURE*)))
-          res)))))
+          res))))))
 
 
 ;; initialization
