@@ -286,7 +286,7 @@
   ;; (send *triangle* :translate #F(600 -200 600) :world)
   ;; (gl::transparent *triangle* 0.3)
   (load "triangle.l")
-  (send *triangle* :translate #F(-100 0 0) :world)))
+  (send *triangle* :translate #F(-100 0 200) :world)))
 
 (objects
  (list *gun-coords* *robot*
@@ -555,17 +555,22 @@
 	   ;:max #F(1000 1000 1000 200 200 200)
 	   :dump-command nil
 	   :debug-view debug-view
-	   :warnp t))
+	   :warnp nil))
     ;;
     (fix-centroid-object)
     (cond
      ((vectorp ret)
       (send *irtviewer* :draw-objects)
       (let ((interpolate-time 500))
-	(when 
-	    (> (norm (v- (send *ri* :state :potentio-vector) (send *robot* :angle-vector))) 100)
+	(when
+	    (and
+	     (boundp '*ri*)
+	     *ri*
+	     (> (norm (v- (send *ri* :state :potentio-vector)
+			  (send *robot* :angle-vector))) 100))
 	  (setq interpolate-time 4000))
-	(when (boundp '*ri*) (model2real :time interpolate-time :wait t)))
+	(when (and (boundp '*ri*) *ri*)
+	  (model2real :time interpolate-time :wait t)))
       (send *gun-coords*
 	    :newcoords
 	    (make-coords
@@ -593,7 +598,7 @@
 			      (copy-object
 			       (send *robot* :worldcoords))))
 		  *success-state-collection*)
-		 0 100)))
+		 0 500)))
       )
      (t
       (format t "[ik-main] fail!!~%")
@@ -758,9 +763,60 @@
 	 1 -1)
      ret)))
 
+;; export ROS_MASTER_URI=http://10.10.72.112:11311
+;; export ROS_IP=10.10.72.109 && export ROS_HOSTNAME=$ROS_IP
+;; load "ssc-20131118.l"
+(defun demo-collection-play
+  (&key
+   (real? nil)
+   (data (reverse *success-state-collection*))
+   (inital-sleep (if real? 10000 100))
+   d)
+  ;;
+  (cond
+   ((and real? (not (and (boundp '*ri*) *ri*)))
+    (require "atlas-interface.l")
+    (atlas-init-ex)
+    (objects
+     (list *robot* *centroid-object*
+	   *gun-coords* *triangle*))
+    (send *ri* :start-auto-balancer)
+    (set-user)
+    ))
+  ;; (cond
+  ;;  (real?
+  ;;   (init-grasp-pose)
+  ;;   (model2real :sleep-time inital-sleep :wait t)))
+  ;;
+  (do-until-key
+   (if (null data) (return-from nil t))
+   (setq d (car data))
+   (setq data (cdr data))
+   (send *robot* :angle-vector (cdr (assoc :angle-vector d)))
+   (send *robot* :newcoords (cdr (assoc :worldcoords d)))
+   (fix-gun-coords)
+   (send *viewer* :draw-objects)
+   (cond
+    (real?
+     (model2real :sleep-time inital-sleep :wait t))
+    (t (unix:usleep (round (* inital-sleep 1e+3)))))
+   (setq inital-sleep 100))
+  )
+
 ;(demo-mouse-controller)
 
 #|
+
+(atlas-set-servo-gain-by-torque-limit 10 :torso)
+
+(defun mm
+  nil
+  (require "atlas-interface.l")
+  (stand-up)
+  (real2model)
+  (model2real :wait t)
+  (send *ri* :start-auto-balancer)
+  (set-user))
 
 (ros::rate 10)
 (do-until-key
