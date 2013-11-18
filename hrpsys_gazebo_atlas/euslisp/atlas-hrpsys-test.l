@@ -443,7 +443,7 @@
 
   (warning-message 1 "test-reach-ground~%")
 
-  (warning-message 1 "check that the robot is in the air~%")
+  (warning-message 1 "check that the robot is on the ground~%")
   (y-or-n-p)
 
   (send *robot* :reset-pose)
@@ -451,7 +451,7 @@
   (send *irtviewer* :draw-objects)
   (when real (model2real-safe :time 10000))
 
-  (dolist (h (list -300 -500 -700))
+  (dolist (h (list -300 -500 -700 -500 -300))
     (send *robot* :fullbody-inverse-kinematics
 	  (list
 	   (make-coords :pos (float-vector 700 -100 h))
@@ -476,7 +476,16 @@
 	  :debug-view :no-message
 	  )
     (send *irtviewer* :draw-objects)
-    (when real (model2real-safe :time 10000)))
+    (warn "wait for sending this pose to real pose~%")
+    (my-wait)
+    (when real (model2real-safe :time 10000))
+    )
+
+  (send *atlas* :reset-pose)
+  (send *irtviewer* :draw-objects)
+  (warn "wait for sending this pose to real pose~%")
+  (my-wait)
+  (when real (model2real-safe :time 10000))
   )
 
 
