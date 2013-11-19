@@ -33,9 +33,18 @@
   (make-coords
    :rot
    (copy-object
-    #2f((0.321394 -0.116978 -0.939693)
-	(-0.883022 0.321394 -0.34202)
-	(0.34202 0.939693 9.445569e-16)))))
+    #2f((0.34202 -1.414503e-07 -0.939693)
+	(-0.939692 2.591651e-07 -0.34202)
+	(-2.643809e-07 1.0 9.436896e-16)))))
+;    #2f((0.327076 0.048235 -0.943767)
+;	(-0.898632 0.324861 -0.29483)
+;	(0.292372 0.944531 0.149599)))))
+;    #2f((0.327076 -0.099997 -0.939693)
+;	(-0.898632 0.27474 -0.34202)
+;	(0.292372 0.956305 9.324139e-16)))))
+;    #2f((0.321394 -0.116978 -0.939693)
+;	(-0.883022 0.321394 -0.34202)
+;	(0.34202 0.939693 9.445569e-16)))))
 (defvar *left-hand-offset*
   (mirror-coords *right-hand-offset*))
 
@@ -51,7 +60,7 @@
   )
 
 (defun keyboard-coords-fix
-  nil
+  (&key (mode :rpy))
   (setq *viewer-update* t)
   (sys:thread #'viewer-update)
   (while t
@@ -84,8 +93,20 @@
 	     (setq deg (if (zerop (length in)) 5
 			 (read-from-string in)))
 	     (numberp deg))
-	(send *rhand-arrow* :rotate (deg2rad deg) sym)
-	(send *viewer* :draw-objects))))
+	(case mode
+	      (:rpy
+	       (send *rhand-arrow* :rotate (deg2rad deg) sym)
+	       (send *viewer* :draw-objects))
+	      (:move
+	       (send *rhand-arrow* :translate
+		     (scale deg
+			    (cdr (assoc sym
+					(list
+					 (cons :x #F(1 0 0))
+					 (cons :y #F(0 1 0))
+					 (cons :z #F(0 0 1))))))
+		     :world)
+	       (send *viewer* :draw-objects))))))
     ;;
     ))
 
@@ -122,6 +143,20 @@
   (send *viewer* :draw-objects)
   )
 
+(defun gen-yaml-rotation
+  (&key
+   (arm :rarm))
+  (let* ((a (hand-end-coords :hand-key arm))
+	 (b (send *robot* arm :end-coords))
+	 (c
+	  (rotation-angle
+	   (m* (transpose (send a :worldrot))
+	       (send b :worldrot)))))
+    (concatenate
+     float-vector
+     (cadr c)
+     (list (* -1 (rad2deg (car c)))))))
+
 (defmethod robot-model
   (:set-end-coords
    (&key
@@ -150,8 +185,7 @@
      (list rarm-end-coords larm-end-coords))))
 
 (move-atlas-test)
-(send *robot* :set-end-coords)
-
+;(send *robot* :set-end-coords)
 #|
 
 (send *robot*
@@ -169,9 +203,49 @@
 	   (send *robot* :link-list
 		 (send *robot* k :end-coords :parent)))
        '(:rarm :larm))
-      :rotation-axis (list nil nil)
-      :translation-axis (list t t)
+      :rotation-axis (list t t)
+      :translation-axis (list nil nil)
       :debug-view :no-message)
+
+(send-all (send *robot* :joint-list) :max-joint-velocity 1.0)
+(send *robot* :reset-pose)
+(send *robot* :newcoords (make-coords))
+(send *robot*
+      :fullbody-inverse-kinematics
+      (mapcar
+       #'(lambda (k)
+	   (let ((c (send *robot* k :end-coords :copy-worldcoords)))
+	     (cond
+	      ((find k '(:rarm :larm))
+	       (make-coords
+		:pos (v+ (send c :worldpos)
+			 #F(400 0 500))))
+	      (t c))))
+       '(:rarm :larm :rleg :lleg))
+      :move-target
+      (mapcar
+       #'(lambda (k)
+	   (send *robot* k :end-coords))
+       '(:rarm :larm :rleg :lleg))
+      :link-list
+      (mapcar
+       #'(lambda (k)
+	   (send *robot* :link-list
+		 (send *robot* k :end-coords :parent)))
+       '(:rarm :larm :rleg :lleg))
+      :root-link-virtual-joint-weight
+      #F(0.01 0.0 0.1 0.001 0.001 0.0)
+      :additional-weight-list
+      (mapcar
+       #'(lambda (k gain)
+	   (list (send *robot* :torso k :child-link)
+		 gain))
+       (list :waist-r :waist-p :waist-y)
+       (list 1e-3 1e-3 1e-3))
+      :rotation-axis (list t t t t)
+      :translation-axis (list :y :y t t)
+      :debug-view :no-message)
+
 
 (send *robot*
       :fullbody-inverse-kinematics
