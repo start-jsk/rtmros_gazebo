@@ -124,35 +124,6 @@
    (map cons #'* rot-filter
 	(car (rpy-angle (send coords :worldrot))))))
 
-;; hand end-coords
-(defvar *right-hand-offset*
-  (make-coords
-   :rot
-   (copy-object
-    #2f((0.321394 -0.116978 -0.939693)
-	(-0.883022 0.321394 -0.34202)
-	(0.34202 0.939693 9.445569e-16)))))
-(defvar *left-hand-offset*
-  (mirror-coords *right-hand-offset*))
-
-(defun hand-end-coords
-  (&key
-   (hand-key :rarm)
-   (hand-offset
-    (case hand-key
-	  (:rarm *right-hand-offset*)
-	  (:larm *left-hand-offset*))))
-  (make-coords
-   :pos
-   (v+ (send hand-offset :worldpos)
-       (send (send *robot* hand-key :end-coords :worldcoords)
-	     :worldpos))
-   :rot
-   (m*
-    (send (send *robot* hand-key :end-coords :worldcoords)
-	  :worldrot)
-    (send hand-offset :worldrot))))
-
 (defun fix-centroid-object
   (&optional
    (centroid (send *robot* :centroid))
@@ -170,6 +141,7 @@
 			    (subseq centroid 0 2)
 			    (list (+ 10 (aref leg-h 2)))))))
   )
+
 
 (defun fix-gun-coords
   nil
@@ -194,8 +166,8 @@
 (defmethod robot-model
   (:set-end-coords
    (&key
-    (rhand-coords (hand-end-coords :hand-key :rarm))
-    (lhand-coords (hand-end-coords :hand-key :larm)))
+    (rhand-coords (send self :rarm :end-coords :copy-worldcoords))
+    (lhand-coords (send self :larm :end-coords :copy-worldcoords)))
    (let* ((now-rhand (send self :rarm :end-coords))
 	  (now-lhand (send self :larm :end-coords))
 	  (rroot (send now-rhand :parent))
@@ -218,8 +190,6 @@
      (setq *left-hand-offset* (make-coords))
      (list rarm-end-coords larm-end-coords))))
 
-(send *robot* :set-end-coords)
-
 (cond
  ((not (and (boundp '*gun-coords*) *gun-coords*))
   (setq *gun-coords*
@@ -230,7 +200,7 @@
 		 :name :lcoords
 		 :coords
 		 (make-coords
-		  :pos #F(0 80 -100)
+		  :pos #F(0 10 -100)
 		  :rpy '(0 0 0))
 		 :parent root))
 	       (rcoords
@@ -239,7 +209,7 @@
 		 :name :rcoords
 		 :coords
 		 (make-coords
-		  :pos #F(0 -100 80)
+		  :pos #F(0 -100 10)
 		  :rpy '(0 0 -1.57))
 		 :parent root)))
 	  (send root :set-color #F(1 0 0))
@@ -302,19 +272,23 @@
 (defun init-grasp-pose
   nil
   (send *robot* :angle-vector
-	(float-vector 30.2942 14.5437 19.8382 83.7327 59.5451 23.0702 -72.3031 -87.9407 172.319 -99.3999 93.7892 50.9956 60.4444 -24.5719 94.5786 113.802 -7.9603 -80.5369 7.93411 -33.2496 -0.00524 114.234 5.71181 -80.8654 -5.738 -33.3534 -0.002034 0.0))
+	(float-vector 30.2914 14.5512 19.832 82.6847 57.502 16.9294 -75.707 -86.2673 162.803 -101.47 94.6749 50.8246 60.5665 -23.4032 94.9548 114.013 -7.16839 -80.8545 7.72476 -33.9763 0.646874 113.767 6.43725 -80.8649 -5.88093 -33.7164 0.452182 41.0989))
+;	(float-vector 30.2942 14.5437 19.8382 83.7327 59.5451 23.0702 -72.3031 -87.9407 172.319 -99.3999 93.7892 50.9956 60.4444 -24.5719 94.5786 113.802 -7.9603 -80.5369 7.93411 -33.2496 -0.00524 114.234 5.71181 -80.8654 -5.738 -33.3534 -0.002034 0.0))
   (send *robot* :newcoords
 	(make-coords
-	 :pos (float-vector -219.358 -10.1211 -111.377)
-	 :rot (copy-object
-	       #2f((1.0 -5.742127e-05 -0.000283)
-		   (5.729671e-05 1.0 -0.00044)
-		   (0.000283 0.00044 1.0)))))
+	 :pos (float-vector -213.994 -3.235 -108.462)
+	 :rpy '(-0.009 0.014 -0.01)))
+;	(make-coords
+;	 :pos (float-vector -219.358 -10.1211 -111.377)
+;	 :rot (copy-object
+;	       #2f((1.0 -5.742127e-05 -0.000283)
+;		   (5.729671e-05 1.0 -0.00044)
+;		   (0.000283 0.00044 1.0)))))
   (setq *fix-leg-coords*
 	(mapcar
 	 #'(lambda (k)
 	     (send *robot* k :end-coords :copy-worldcoords))
-	 '(:rleg :lleg)))  
+	 '(:rleg :lleg)))
   (fix-gun-coords)
   )
 
@@ -672,6 +646,44 @@
     (setq ret (ik-main :rotate? :x)))
   (if (not (vectorp ret))
       (send waist-joint :joint-angle prev-waist-angle)))
+
+(defun base-fix
+  (&key
+   (base-id 0)
+   (base-rpy
+    (car (send *robot* :rpy-angle)))
+   (prev-base-rpy base-rpy)
+   (move-step
+    (let ((index -1))
+      (mapcar
+       #'(lambda (hoge)
+	   (if (eq (incf index) base-id)
+	       (deg2rad 1) 0))
+       (make-list 3))))
+   (cnt 10)
+   (ret #F())
+   buf)
+  (while (and (vectorp ret)
+	      (> (abs (nth base-id base-rpy))
+		 (nth base-id move-step))
+	      (plusp (decf cnt)))
+    (setq prev-base-rpy base-rpy)
+    (setq base-rpy
+	  (mapcar
+	   #'(lambda (rpy step)
+	       (* (if (> rpy 0) 1 -1)
+		  (- (abs rpy) step)))
+	   base-rpy move-step))
+    (send *robot* :newcoords
+	  (make-coords
+	   :pos (copy-object (send *robot* :worldpos))
+	   :rpy (copy-object base-rpy)))
+    (setq ret (ik-main :rotate? :x)))
+  (if (not (vectorp ret))
+      (send *robot* :newcoords
+	    (make-coords
+	     :pos (copy-object (send *robot* :worldpos))
+	     :rpy (copy-object prev-base-rpy)))))
 
 (ros::roseus "ik_server")
 (setq *tf* (instance ros::transform-listener :init))
