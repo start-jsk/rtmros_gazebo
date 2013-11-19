@@ -254,7 +254,6 @@
   (send *triangle* :set-color #F(0 1 0))
   (send *triangle* :rotate (deg2rad 90) :y)
   (send *triangle* :translate #F(600 -200 600) :world)
-  
 ;(send *triangle* :translate #F(100 0 0) :world)
   (gl::transparent *triangle* 0.3)
 ;  (load "triangle.l")
@@ -468,7 +467,7 @@
     (send *viewer* :draw-objects)
     ))
 
-(send (send *robot* :utorso_lk) :make-pqpmodel :fat 5)
+(send (send *robot* :utorso_lk) :make-pqpmodel :fat 10)
 (defvar *success-state-collection* nil)
 (defun ik-main
   (&key
@@ -487,11 +486,12 @@
 	   (copy-object (send *robot* :angle-vector)))
      (cons :worldcoords
 	   (copy-object (send *robot* :worldcoords)))))
+   (target-hand '(:rarm :larm))
    (move-target
     (mapcar
      #'(lambda (k)
 	 (send *robot* k :end-coords))
-     '(:rarm :larm :rleg :lleg)))
+     target-hand))
    (link-list
     (mapcar
      #'(lambda (k)
@@ -499,7 +499,7 @@
 	       (send *robot* k :end-coords :parent)
 	       (if (find k nil);'(:rarm :larm))
 		   (send *robot* k :root-link))))
-     '(:rarm :larm :rleg :lleg)))
+     target-hand))
    (target-centroid-pos
     (scale
      0.5
@@ -545,7 +545,7 @@
 	     (/ (aref foot-dist 1) 2.0))))))
    (initial-av (copy-seq (send *robot* :angle-vector)))
    (initial-coords (copy-object (send *robot* :worldcoords)))
-   (debug-view nil)
+   (debug-view :no-message)
    (stop 50)
    collision?
    (collision-pair
@@ -894,6 +894,7 @@
    (real? nil)
    (data (reverse *success-state-collection*))
    (inital-sleep (if real? 10000 100))
+   (cnt -1)
    d)
   ;;
   (cond
@@ -912,7 +913,7 @@
   ;;   (model2real :sleep-time inital-sleep :wait t)))
   ;;
   (do-until-key
-   (print 'hoge)
+   (print (incf cnt))
    (if (null data) (return-from nil t))
    (setq d (car data))
    (setq data (cdr data))

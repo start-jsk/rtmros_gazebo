@@ -15,6 +15,9 @@
   (send *sandia_hand_right* :move-to (send *atlas* :links :r_hand :copy-worldcoords))
   (send *atlas* :links :r_hand :assoc *sandia_hand_right*)
   (setf (get *atlas* :rhand-model) *sandia_hand_right*)
+  ;; small limit
+  (send *atlas* :lleg :crotch-r :min-angle -5)
+  (send *atlas* :rleg :crotch-r :max-angle 5)
   ;; update bodies
   (let ((atbd (*atlas* . bodies)))
     (setq atbd (append atbd (send *sandia_hand_left* :bodies)))
