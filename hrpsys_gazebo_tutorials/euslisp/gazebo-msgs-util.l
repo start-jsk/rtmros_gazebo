@@ -228,7 +228,8 @@ topic
 ;; euslisp utility
 ;;
 (defun read-xml-from-file (path)
-  (let ((rpath (ros::resolve-ros-path path))
+  (let ((rpath (if (substringp "://" path)
+                   (ros::resolve-ros-path path) path))
         (newline (coerce (list 10) string))
         str)
     (when rpath
