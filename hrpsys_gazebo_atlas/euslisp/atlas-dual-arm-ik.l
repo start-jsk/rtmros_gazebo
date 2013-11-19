@@ -249,14 +249,15 @@
 
 (cond
  ((not (and (boundp '*triangle*) *triangle*))
-  ;; (defvar *triangle*
-  ;;   (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
-  ;; (send *triangle* :set-color #F(0 1 0))
-  ;; (send *triangle* :rotate (deg2rad 90) :y)
-  ;; (send *triangle* :translate #F(600 -200 600) :world)
-  ;; (gl::transparent *triangle* 0.3)
-  (load "triangle.l")
-  (send *triangle* :translate #F(-100 0 200) :world)))
+  (setq *triangle*
+    (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
+  (send *triangle* :set-color #F(0 1 0))
+  (send *triangle* :rotate (deg2rad 90) :y)
+  (send *triangle* :translate #F(600 -200 600) :world)
+  (gl::transparent *triangle* 0.3)
+;  (load "triangle.l")
+;  (send *triangle* :translate #F(-100 0 200) :world)
+  ))
 
 (objects
  (list *gun-coords* *robot*
@@ -272,12 +273,20 @@
 (defun init-grasp-pose
   nil
   (send *robot* :angle-vector
-	(float-vector 30.2914 14.5512 19.832 82.6847 57.502 16.9294 -75.707 -86.2673 162.803 -101.47 94.6749 50.8246 60.5665 -23.4032 94.9548 114.013 -7.16839 -80.8545 7.72476 -33.9763 0.646874 113.767 6.43725 -80.8649 -5.88093 -33.7164 0.452182 41.0989))
+	(float-vector 0.666105 0.453636 0.169232 89.9685 105.481 -2.2947 -81.9084 -11.3984 140.62 -71.4656 122.04 50.1474 82.4132 -21.7127 105.881 117.167 -10.602 -54.342 15.0 -54.8502 23.8069 116.511 11.6134 -53.0905 -16.4626 -55.8006 -32.5296 65.4853))
+;	(float-vector 26.7629 4.57067 19.5455 80.5325 94.6333 -5.135 -59.8389 -54.5193 130.226 -80.9536 108.013 66.5278 72.6201 -31.1291 103.478 109.713 -19.3623 -70.8337 19.583 -41.9359 -0.451053 112.13 14.8006 -71.7101 -15.0 -43.3939 -2.2247 51.8388))
+;	(float-vector 30.2914 14.5512 19.832 82.6847 57.502 16.9294 -75.707 -86.2673 162.803 -101.47 94.6749 50.8246 60.5665 -23.4032 94.9548 114.013 -7.16839 -80.8545 7.72476 -33.9763 0.646874 113.767 6.43725 -80.8649 -5.88093 -33.7164 0.452182 41.0989))
 ;	(float-vector 30.2942 14.5437 19.8382 83.7327 59.5451 23.0702 -72.3031 -87.9407 172.319 -99.3999 93.7892 50.9956 60.4444 -24.5719 94.5786 113.802 -7.9603 -80.5369 7.93411 -33.2496 -0.00524 114.234 5.71181 -80.8654 -5.738 -33.3534 -0.002034 0.0))
   (send *robot* :newcoords
 	(make-coords
-	 :pos (float-vector -213.994 -3.235 -108.462)
-	 :rpy '(-0.009 0.014 -0.01)))
+	 :pos (float-vector 1.773 -48.58 -124.121)
+	 :rpy '(0.079 -0.154 -0.009)))
+;	(make-coords
+;	 :pos (float-vector -130.206 -122.709 -96.739)
+;	 :rpy '(0.026 0.05 -0.003)))
+;	(make-coords
+;	 :pos (float-vector -213.994 -3.235 -108.462)
+;	 :rpy '(-0.009 0.014 -0.01)))
 ;	(make-coords
 ;	 :pos (float-vector -219.358 -10.1211 -111.377)
 ;	 :rot (copy-object
@@ -293,6 +302,11 @@
   )
 
 (send-all (send *robot* :joint-list) :max-joint-velocity 1.0)
+(send *robot* :lleg :crotch-r :min-angle -5)
+;(send *robot* :lleg :crotch-r :joint-angle 15)
+(send *robot* :rleg :crotch-r :max-angle 5)
+;(send *robot* :rleg :crotch-r :joint-angle -15)
+
 (init-grasp-pose)
 (defvar *fix-leg-coords*
   (mapcar
@@ -449,6 +463,7 @@
     (if init-grasp? (init-grasp-pose))
     (if solve-ik? (ik-main :rotate? :x))
     (fix-gun-coords)
+    (send *viewer* :draw-objects)
     ))
 
 (defvar *success-state-collection* nil)
@@ -526,6 +541,7 @@
 	  (+ (/ (aref foot-convex 1) 2.0)
 	     (/ (aref foot-dist 1) 2.0))))))
    (debug-view nil)
+   (stop 10)
    )
   (let (target-coords ret)
     (cond
@@ -564,7 +580,7 @@
 	   :target-centroid-pos target-centroid-pos
 	   :cog-gain 0.1
 	   :additional-weight-list additional-weight-list
-	   :stop 10
+	   :stop stop
 	   :thre (make-list 4 :initial-element 5)
 	   :rthre (make-list 4 :initial-element (deg2rad 3))
 	   :centroid-thre centroid-thre
@@ -588,7 +604,8 @@
 			 (send *robot* :angle-vector))) 100)
 	    (setq interpolate-time 4000)))
 	  (model2real :time interpolate-time :wait t)
-	  (unix::usleep (round (* 500 1000)))
+	  (unix::usleep (round (* 1000 1000)))
+	  ;(read-line)
 	  )))
       (send *gun-coords*
 	    :newcoords
@@ -678,7 +695,9 @@
 	  (make-coords
 	   :pos (copy-object (send *robot* :worldpos))
 	   :rpy (copy-object base-rpy)))
-    (setq ret (ik-main :rotate? :x)))
+    (send *viewer* :draw-objects)
+    (read-line)
+    (setq ret (ik-main :rotate? :x :debug-view :no-message)))
   (if (not (vectorp ret))
       (send *robot* :newcoords
 	    (make-coords
@@ -732,6 +751,13 @@
      (while *mouse-mode*
        (ros::sleep)
        (ros::spin-once))
+     ;;
+     (cond
+      ((and real-feedback?
+	    (boundp '*ri*) *ri*)
+       (leg-coords-fix-from-real
+	:init-grasp? nil)))
+     ;;
      (waist-fix :waist-key :waist-r :cnt 10)
      (waist-fix :waist-key :waist-p :cnt 10)
      (waist-fix :waist-key :waist-y :cnt 10)
@@ -760,7 +786,6 @@
 		      (normalize-vector rpy)))
      (setq ret (ik-main
 		:real? real?
-		:real-feedback? real-feedback?
 		:move move :rpy rpy
 		:rotate? :x))
      (cond
@@ -831,11 +856,12 @@
 ;; export ROS_MASTER_URI=http://10.10.72.112:11311
 ;; export ROS_IP=10.10.72.109 && export ROS_HOSTNAME=$ROS_IP
 ;; load "ssc-20131118.l"
+;; load "ssc-20131119.l"
 (defun demo-collection-play
   (&key
    (real? nil)
    (data (reverse *success-state-collection*))
-   (inital-sleep (if real? 10000 100))
+   (inital-sleep (if real? 10000 1000))
    d)
   ;;
   (cond
@@ -854,6 +880,7 @@
   ;;   (model2real :sleep-time inital-sleep :wait t)))
   ;;
   (do-until-key
+   (print 'hoge)
    (if (null data) (return-from nil t))
    (setq d (car data))
    (setq data (cdr data))
@@ -866,12 +893,26 @@
     (real?
      (model2real :sleep-time inital-sleep :wait t))
     (t (unix:usleep (round (* inital-sleep 1e+3)))))
-   (setq inital-sleep 100))
+   (setq inital-sleep 1000))
   )
 
 ;(demo-mouse-controller)
 
+;;
+
+
+
 #|
+
+(init-grasp-pose)
+(send (car *fix-leg-coords*) :translate #F(0 100 0) :world)
+(ik-main)
+
+(send (car *fix-leg-coords*) :translate #F(0 100 0) :world)
+(mapcar
+ #'(lambda (c deg)
+     (send c :rotate (deg2rad deg) :z))
+ *fix-leg-coords* '(-30 30))
 
 (atlas-set-servo-gain-by-torque-limit 10 :torso)
 
@@ -908,5 +949,23 @@
  (mapcar
   #'(lambda (p) (demo-pos-controller :pos p :real? t :real-feedback? t))
   (triangle-pos-list))
+
+
+rossetatlas
+roseus atlas-dual-arm-ik.l
+
+(require "atlas-interface.l")
+(atlas-init-ex)
+(objects
+ (list *robot* *centroid-object*
+       *gun-coords* *triangle*))
+
+;; servo 
+
+(init-grasp-pose)
+(model2real :time 10000)
+
+(load "ssc-20131119.l")
+(demo-collection-play)
 
 |#
