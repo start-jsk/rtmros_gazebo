@@ -3,8 +3,8 @@ digraph atlas_tilt_laser {
    node[shape="ellipse"]
    "/multisense_sl/laser/scan" [shape="box"]
    "/multisense_sl/joint_states" [shape="box"]
-   "/laser/fill_cloud2_raw" [shape="box"]
-   "/laser/fill_cloud2_filtered" [shape="box"]
+   "/laser/full_cloud2_raw" [shape="box"]
+   "/laser/full_cloud2_filtered" [shape="box"]
    "/laser/tilt_cloud_filtered" [shape="box"]
    "/empty_cloud" [shape="box"]
    "/laser/moveit_input_cloud2" [shape="box"]
@@ -20,10 +20,10 @@ digraph atlas_tilt_laser {
    "/multisense_sl/laser/scan" -> "laser_scan_assembler_node" [label="LaserScan"]
 
    "/multisense_sl/joint_states" -> "atlas_laser_snapshotter" [label="JointState"]
-   "atlas_laser_snapshotter" -> "/laser/fill_cloud2_raw" [label="PointCloud2"]
+   "atlas_laser_snapshotter" -> "/laser/full_cloud2_raw" [label="PointCloud2"]
 
-   "/laser/fill_cloud2_raw" -> "robot_shadow_self_filter" [label="PointCloud2"]
-   "robot_shadow_self_filter" -> "/laser/fill_cloud2_filtered"  [label="PointCloud2"]
+   "/laser/full_cloud2_raw" -> "robot_shadow_self_filter" [label="PointCloud2"]
+   "robot_shadow_self_filter" -> "/laser/full_cloud2_filtered"  [label="PointCloud2"]
 
    "/multisense_sl/laser/scan" -> "atlas_scan_to_cloud"  [label="LaserScan"]
    "atlas_scan_to_cloud" -> "/laser/tilt_cloud_filtered" [label="PointCloud2"]
@@ -36,7 +36,7 @@ digraph atlas_tilt_laser {
 
    "/laser/moveit_input_cloud2" -> " " [label="to moveit"]
 
-   "/laser/fill_cloud2_filtered" -> "" [label="to environment perception"]
+   "/laser/full_cloud2_filtered" -> "" [label="to environment perception"]
 
    "/atlas_laser_mux/select" -> "atlas_laser_mux" [label="srv: MuxSelect" arrowhead=box]
 
