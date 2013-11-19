@@ -478,10 +478,10 @@ int read_force_sensor(int id, double *forces)
 int read_gyro_sensor(int id, double *rates)
 {
   CHECK_GYRO_SENSOR_ID(id);
-  if (id >= js.Imus.size()) {
-    return E_ID;
-  }
   if(init_sub_flag){
+    if (id >= js.Imus.size()) {
+      return E_ID;
+    }
 #if 0
     Eigen::Quaternion<double> q(js.Imus[id].orientation.w,
                                 js.Imus[id].orientation.x,
@@ -506,18 +506,20 @@ int read_gyro_sensor(int id, double *rates)
 int read_accelerometer(int id, double *accels)
 {
   CHECK_ACCELEROMETER_ID(id);
-  if (id >= js.Imus.size()) {
-    return E_ID;
-  }
+
   if(init_sub_flag){
+    if (id >= js.Imus.size()) {
+      return E_ID;
+    }
     accels[0] = js.Imus[id].linear_acceleration.x + accel_offset[id][0];
     accels[1] = js.Imus[id].linear_acceleration.y + accel_offset[id][1];
     accels[2] = js.Imus[id].linear_acceleration.z + accel_offset[id][2];
   } else {
     // tempolary values when sensor is not ready.
-    accels[0] = accels[1] = accels[2] = 0.0;
+    //accels[0] = accels[1] = accels[2] = 0.0;
+    accels[0] = accels[1] = 0.0;
+    accels[2] = -9.8;
   }
-  //fprintf(stderr, "accels[%ld]: %f %f %f\n", frame, accels[0], accels[1], accels[2]);
   return TRUE;
 }
 
@@ -607,7 +609,7 @@ int write_dio(unsigned short buf)
 static void setJointStates(const RobotState::ConstPtr &_js) {
   ROS_DEBUG("[iob] subscribe RobotState");
   js = *_js;
-  init_sub_flag = TRUE;
+  init_sub_flag = true;
   //if (iob_synchronized) {
   //ROS_WARN("iob subscribed wrong topic ...");
   //}
@@ -832,16 +834,21 @@ int open_iob(void)
       init_sub_flag = true;
     } else {
       std::cerr << "[iob] block until subscribing first robot_state";
+      ros::Time start_tm = ros::Time::now();
       ros::Rate rr(100);
       ros::spinOnce();
       while (!init_sub_flag) {
+        if ((ros::Time::now() - start_tm).toSec() > 5.0) {
+          std::cerr << "[iob] timeout for waiting robot_state";
+          break;
+        }
         std::cerr << ".";
         rr.sleep();
         ros::spinOnce();
       }
     }
 
-    std::cerr << "[iob] Open IOB / finish " << std::endl;
+    std::cerr << std::endl << "[iob] Open IOB / finish " << std::endl;
 
     return TRUE;
 }
