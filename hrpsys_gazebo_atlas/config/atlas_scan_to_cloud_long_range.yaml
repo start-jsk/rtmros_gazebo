@@ -13,9 +13,9 @@ scan_filter_chain:
  - name: through
    type: laser_filters/LaserScanRangeFilter
    params: 
-## for manipulation
-     lower_threshold: 0.3
-     upper_threshold: 2.8
+# for localization
+     lower_threshold: 0.5
+     upper_threshold: 14.5
 ## comment out for gazebo
  - name: intent
    type: laser_filters/LaserScanIntensityFilter
