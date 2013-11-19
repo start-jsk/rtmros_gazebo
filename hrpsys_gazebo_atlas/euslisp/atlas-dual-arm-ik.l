@@ -254,6 +254,7 @@
   (send *triangle* :set-color #F(0 1 0))
   (send *triangle* :rotate (deg2rad 90) :y)
   (send *triangle* :translate #F(600 -200 600) :world)
+  ;(send *triangle* :translate #F(100 0 0) :world)
   (gl::transparent *triangle* 0.3)
 ;  (load "triangle.l")
 ;  (send *triangle* :translate #F(-100 0 200) :world)
@@ -541,7 +542,19 @@
 	  (+ (/ (aref foot-convex 1) 2.0)
 	     (/ (aref foot-dist 1) 2.0))))))
    (debug-view nil)
-   (stop 10)
+   (stop 50)
+   collision?
+   (collision-pair
+    (mapcar
+     #'(lambda (l) (list l (send *robot* :utorso_lk)))
+     (remove-if
+      #'(lambda (l)
+	  (or (eq (send l :parent)
+		  (send *robot* :utorso_lk))
+	      (eq (send (send l :parent) :parent)
+		  (send *robot* :utorso_lk))))
+      (append (send *robot* :rarm :links)
+	      (send *robot* :larm :links)))))
    )
   (let (target-coords ret)
     (cond
@@ -584,17 +597,29 @@
 	   :thre (make-list 4 :initial-element 5)
 	   :rthre (make-list 4 :initial-element (deg2rad 3))
 	   :centroid-thre centroid-thre
+	   ;;
+	   :collision-avoidance-link-pair collision-pair
 	   ;:root-link-virtual-joint-weight
 	   ;#F(0.1 0.1 1 0.1 0.1 0.1)
 	   ;:min #F(-1000 -1000 -1000 -200 -200 -200)
 	   ;:max #F(1000 1000 1000 200 200 200)
+	   :avoid-collision-distance 10
+	   :avoid-collision-null-gain 0.1
+	   :avoid-collision-joint-gain 0.1
+	   ;;
 	   :dump-command nil
 	   :debug-view debug-view
 	   :warnp nil))
     ;;
     (fix-centroid-object)
+    (setq collision?
+	  (send *robot* :self-collision-check :pairs
+		(mapcar #'(lambda (ll) (cons (car ll) (cadr ll)))
+			collision-pair)))
+    (format t "[collision check] ~A~%" collision?)
+    ;;
     (cond
-     ((vectorp ret)
+     ((and (not collision?) (vectorp ret))
       (send *irtviewer* :draw-objects)
       (cond
        ((and real? (boundp '*ri*) *ri*)
@@ -749,6 +774,7 @@
      (if (< (decf cnt) 0) (return-from nil nil))
      (ros::spin-once)
      (while *mouse-mode*
+       (x::window-main-one)
        (ros::sleep)
        (ros::spin-once))
      ;;
@@ -861,7 +887,7 @@
   (&key
    (real? nil)
    (data (reverse *success-state-collection*))
-   (inital-sleep (if real? 10000 1000))
+   (inital-sleep (if real? 10000 100))
    d)
   ;;
   (cond
@@ -893,8 +919,10 @@
     (real?
      (model2real :sleep-time inital-sleep :wait t))
     (t (unix:usleep (round (* inital-sleep 1e+3)))))
-   (setq inital-sleep 1000))
+   (setq inital-sleep 100))
   )
+
+
 
 ;(demo-mouse-controller)
 
