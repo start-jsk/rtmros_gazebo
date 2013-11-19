@@ -9,7 +9,7 @@
 
 (ros::roseus "atlas_eus_ik")
 
-(defun setup-hku-end-coords ()
+(defun setup-end-coords ()
   ;; right
   (let ((end-coords (make-coords)) 
         (arm :rarm)
@@ -81,7 +81,7 @@
 
 ;; initialization
 (setq *atlas* (atlas-with-hand))
-(setup-hku-end-coords)
+(setup-end-coords)
 (objects (list *atlas*))
 
 (setq *tf* (instance ros::transform-listener :init))
