@@ -254,7 +254,8 @@
   (send *triangle* :set-color #F(0 1 0))
   (send *triangle* :rotate (deg2rad 90) :y)
   (send *triangle* :translate #F(600 -200 600) :world)
-  ;(send *triangle* :translate #F(100 0 0) :world)
+  
+;(send *triangle* :translate #F(100 0 0) :world)
   (gl::transparent *triangle* 0.3)
 ;  (load "triangle.l")
 ;  (send *triangle* :translate #F(-100 0 200) :world)
@@ -467,6 +468,7 @@
     (send *viewer* :draw-objects)
     ))
 
+(send (send *robot* :utorso_lk) :make-pqpmodel :fat 5)
 (defvar *success-state-collection* nil)
 (defun ik-main
   (&key
@@ -541,6 +543,8 @@
        (* margin
 	  (+ (/ (aref foot-convex 1) 2.0)
 	     (/ (aref foot-dist 1) 2.0))))))
+   (initial-av (copy-seq (send *robot* :angle-vector)))
+   (initial-coords (copy-object (send *robot* :worldcoords)))
    (debug-view nil)
    (stop 50)
    collision?
@@ -663,6 +667,8 @@
       )
      (t
       (format t "[ik-main] fail!!~%")
+      (send *robot* :angle-vector initial-av)
+      (send *robot* :newcoords initial-coords)
       (print ret)
       (send *gun-coords* :newcoords coords-org)))
     ret
