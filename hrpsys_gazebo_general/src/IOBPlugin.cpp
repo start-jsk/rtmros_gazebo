@@ -370,15 +370,30 @@ void IOBPlugin::DeferredLoad() {
   IOBCommandSo.transport_hints = ros::TransportHints().reliable().tcpNoDelay(true);
   this->subIOBCommand = this->rosNode->subscribe(IOBCommandSo);
 
+  { // reset_joint_reference service
+    ros::AdvertiseServiceOptions IOBRefServO =
+      ros::AdvertiseServiceOptions::create<std_srvs::Empty>
+      (this->robot_name + "/reset_joint_reference", boost::bind(&IOBPlugin::serviceRefCallback, this, _1, _2),
+       ros::VoidPtr(), &this->rosQueue);
+    this->jointrefServ = this->rosNode->advertiseService(IOBRefServO);
+  }
+
   if (this->use_synchronized_command) {
     // ros service
     ROS_INFO("use synchronized command");
+
     ros::AdvertiseServiceOptions IOBServO =
       ros::AdvertiseServiceOptions::create<hrpsys_gazebo_msgs::SyncCommand>
-      (this->robot_name + "/iob_command",  boost::bind(&IOBPlugin::serviceCallback, this, _1, _2),
+      (this->robot_name + "/iob_command", boost::bind(&IOBPlugin::serviceCallback, this, _1, _2),
        ros::VoidPtr(), &this->srvQueue);
     this->controlServ = this->rosNode->advertiseService(IOBServO);
-
+#if 0
+    ros::AdvertiseServiceOptions IOBTickServO =
+      ros::AdvertiseServiceOptions::create<std_srvs::Empty>
+      (this->robot_name + "/tick_synchronized_command",
+       boost::bind(&IOBPlugin::serviceRefCallback, this, _1, _2), ros::VoidPtr(), &this->srvQueue);
+    this->tickServ = this->rosNode->advertiseService(IOBTickServO);
+#endif
     // ros callback queue for processing subscription
     this->callbackQueeuThread_srv =
       boost::thread(boost::bind(&IOBPlugin::SrvQueueThread, this));
@@ -507,6 +522,31 @@ bool IOBPlugin::serviceCallback(hrpsys_gazebo_msgs::SyncCommandRequest &req,
     return_service_cond_.wait(lock);
     res.robot_state = this->robotState;
   }
+  return true;
+}
+
+bool IOBPlugin::serviceRefCallback(std_srvs::EmptyRequest &req,
+                                   std_srvs::EmptyResponse &res)
+{
+  // set reference to actual
+  JointCommand jc;
+  jc.position.resize(this->joints.size());
+  jc.velocity.resize(this->joints.size());
+  jc.effort.resize(this->joints.size());
+
+  for (unsigned int i = 0; i < this->joints.size(); ++i) {
+    jc.position[i] = this->joints[i]->GetAngle(0).Radian();
+    jc.velocity[i] = 0;
+    jc.effort[i] = 0;
+  }
+  for (unsigned i = 0; i < this->errorTerms.size(); ++i) {
+    this->errorTerms[i].q_p = 0;
+    this->errorTerms[i].d_q_p_dt = 0;
+    this->errorTerms[i].k_i_q_i = 0;
+    this->errorTerms[i].qd_p = 0;
+  }
+  this->SetJointCommand_impl(jc);
+
   return true;
 }
 

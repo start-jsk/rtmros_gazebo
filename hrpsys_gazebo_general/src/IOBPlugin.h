@@ -13,6 +13,7 @@
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/WrenchStamped.h>
 #include <std_msgs/String.h>
+#include <std_srvs/Empty.h>
 
 #include <boost/thread.hpp>
 #include <boost/thread/condition.hpp>
@@ -30,7 +31,6 @@
 #include <gazebo/sensors/ContactSensor.hh>
 #include <gazebo/sensors/ImuSensor.hh>
 #include <gazebo/sensors/Sensor.hh>
-
 
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/JointState.h>
@@ -73,10 +73,8 @@ namespace gazebo
 
     bool serviceCallback(hrpsys_gazebo_msgs::SyncCommandRequest &req,
                          hrpsys_gazebo_msgs::SyncCommandResponse &res);
-#if 0
-    bool serviceCallbackd(std_srvs::EmptyRequest &req,
-                          std_srvs::EmptyResponse &res);
-#endif
+    bool serviceRefCallback(std_srvs::EmptyRequest &req,
+                            std_srvs::EmptyResponse &res);
 
     struct force_sensor_info {
       physics::JointPtr joint;
@@ -111,6 +109,7 @@ namespace gazebo
     ros::Publisher pubRobotState;
     PubQueue<RobotState>::Ptr pubRobotStateQueue;
 
+    ros::ServiceServer jointrefServ;
     ros::ServiceServer controlServ;
 
     JointCommand jointCommand;
