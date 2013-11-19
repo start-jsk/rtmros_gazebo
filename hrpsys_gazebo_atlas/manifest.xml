@@ -30,7 +30,7 @@
   <!-- screenpoint -->
   <depend package="image_view2" />
   <depend package="jsk_pcl_ros" />
-  <depend package="resized_imagetransport" />
+  <depend package="resized_image_transport" />
 
   <!-- octomap -->
   <!-- depend package="octomap_server" /--> <!-- comment out at groovy -->
