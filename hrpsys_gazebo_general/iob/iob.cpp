@@ -1117,3 +1117,9 @@ int length_digital_output(void)
 {
   return 0;
 }
+
+int read_digital_output(char *doutput)
+{
+  return 0;
+}
+
