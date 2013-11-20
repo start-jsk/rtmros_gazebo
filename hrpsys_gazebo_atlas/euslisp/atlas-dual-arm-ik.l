@@ -164,55 +164,14 @@
       #'(lambda (n) (v. n v))
       (list #F(1 0 0) #F(0 1 0) #F(0 0 1))))))
 
-(defun gen-foot-convex
-  nil
-  (let* ((margin 1.0)
-	 (foot-center
-	  (mapcar
-	   #'(lambda (k)
-	       (send
-		(send *robot* k :end-coords :parent)
-		:centroid))
-	   '(:rleg :lleg)))
-	 (foot-param
-	  (mapcar
-	   #'(lambda (k)
-	       (apply
-		#'vmax
-		(mapcar
-		 #'(lambda (f)
-		     (map float-vector #'abs
-			  (transform
-			   (transpose
-			    (send *robot* k :end-coords :worldrot))
-			   (map float-vector
-				#'*
-				#F(1 1 0)
-				(apply #'v- (send f :vertices))))))
-		 (flatten
-		  (send-all
-		   (send (send *robot* k :end-coords :parent) :faces)
-		   :edges)))))
-	   '(:rleg :lleg)))
-	 (foot-corner
-	  (mapcar
-	   #'(lambda (k center filter param)
-	       (v+ center
-		   (transform
-		    (send *robot* k :end-coords :worldrot)
-		    (scale 0.5
-			   (map float-vector
-				#'*
-				filter param)))))
-	   '(:rleg :rleg :lleg :lleg)
-	   (list (car foot-center)(car foot-center)
-		 (cadr foot-center) (cadr foot-center))
-	   (list #F(2 -1 0) #F(-1 -1 0) #F(-1 1 0) #F(2 1 0))
-	   (list (car foot-param) (car foot-param)
-		 (cadr foot-param) (cadr foot-param))
-	   ))
-	 )
-    foot-corner))
+(quickhull
+ (flatten
+  (mapcar
+   #'(lambda (k)
+       (send-all
+	(send (send *robot* k :end-coords :parent) :faces)
+	:vertices))
+   '(:rleg :lleg))))
 
 (defun check-centroid-with-convex
   (diff
@@ -284,7 +243,9 @@
 		 :coords
 		 (make-coords
 		  :pos #F(0 10 -100)
+		  ;:pos #F(0 100 10)
 		  :rpy '(0 0 0))
+		  ;:rpy '(0 0 1.57))
 		 :parent root))
 	       (rcoords
 		(make-cascoords
@@ -407,7 +368,28 @@
 (cond
  ((not (and (boundp '*foot-convex*) *foot-convex*))
   (defvar *foot-convex*
-    (make-prism (gen-foot-convex) 5))
+    (make-prism
+     (quickhull
+      (mapcar
+       #'(lambda (v)
+	   (concatenate float-vector
+			(subseq v 0 2)
+			(list
+			 (+
+			  -10
+			  (aref
+			   (send *robot* :rleg :end-coords :worldpos)
+			   2)))))
+       (flatten
+	(mapcar
+	 #'(lambda (k)
+	     (send-all
+	      (send
+	       (send *robot* k :end-coords :parent)
+	       :faces)
+	      :vertices))
+	 '(:rleg :lleg)))))
+     5))
   (send *foot-convex* :set-color #F(0 0 1))
   (gl::transparent *foot-convex* 0.3)))
 
@@ -672,21 +654,26 @@
    (stop 50)
    collision?
    (collision-pair
-    (mapcar
-     #'(lambda (l) (list l (send *robot* :utorso_lk)))
-     (remove-if
+    (apply
+     #'append
+     (mapcar
       #'(lambda (l)
-	  (or (eq (send l :parent)
-		  (send *robot* :utorso_lk))
-	      (eq (send (send l :parent) :parent)
-		  (send *robot* :utorso_lk))))
-      (apply
-       #'append
-       (mapcar
-	#'(lambda (k) (send *robot* k :links))
-	(remove-if
-	 #'(lambda (k) (find k '(:rleg :lleg)))
-	 target-limb))))))
+	  (list (list l (send *robot* :utorso_lk))
+		(list l (send *robot* :r_uleg_lk))
+		(list l (send *robot* :l_uleg_lk))))
+      (remove-if
+       #'(lambda (l)
+	   (or (eq (send l :parent)
+		   (send *robot* :utorso_lk))
+	       (eq (send (send l :parent) :parent)
+		   (send *robot* :utorso_lk))))
+       (apply
+	#'append
+	(mapcar
+	 #'(lambda (k) (send *robot* k :links))
+	 (remove-if
+	  #'(lambda (k) (find k '(:rleg :lleg)))
+	  target-limb)))))))
    )
   (let (target-coords ret)
     (cond
@@ -815,13 +802,16 @@
    (waist-key :waist-r)
    (waist-joint (send *robot* :torso waist-key))
    (waist-angle (send waist-joint :joint-angle))
+   (angle-target 0)
    (prev-waist-angle waist-angle)
    (move-step 1)
    (cnt 10)
    (ret #F()))
   (while (and (vectorp ret)
-	      (> (abs waist-angle) move-step)
+	      (> (abs (- waist-angle angle-target))
+		 move-step)
 	      (plusp (decf cnt)))
+    (x::window-main-one)
     (setq prev-waist-angle waist-angle)
     (setq waist-angle
 	  (* (if (> waist-angle 0) 1 -1)
@@ -830,6 +820,38 @@
     (setq ret (ik-main :rotate? :x)))
   (if (not (vectorp ret))
       (send waist-joint :joint-angle prev-waist-angle)))
+
+(defun hand-even-fix
+  (&key
+   (rpy-id 2)
+   (rpy-target 0)
+   (cnt 10)
+   (rpy-step (deg2rad 3))
+   )
+  (let* (now-rpy
+	 now-target
+	 ret)
+    (do-until-key
+     (x::window-main-one)
+     (setq now-rpy
+	   (car (send *gun-coords* :rpy-angle)))
+     (setq now-target (nth rpy-id now-rpy))
+     (if (< (abs (- now-target rpy-target)) rpy-step)
+	 (return-from nil nil))
+     (if (< (decf cnt) 0) (return-from nil nil))
+     (setq index -1)
+     (setq
+      ret
+      (ik-main :rpy
+	       (mapcar
+		#'(lambda (rpy)
+		    (cond
+		     ((not (eq (incf index) rpy-id)) 0)
+		     ((< (- rpy-target now-target) 0)
+		      (* -1 rpy-step))
+		     (t rpy-step)))
+		now-rpy)))
+     (if (not ret) (return-from nil nil)))))
 
 (defun base-fix
   (&key
@@ -929,6 +951,7 @@
      (waist-fix :waist-key :waist-r :cnt 3)
      (waist-fix :waist-key :waist-p :cnt 3)
      (waist-fix :waist-key :waist-y :cnt 3)
+     ;(hand-even-fix :cnt 1)
      (dotimes (i 2) (ik-main :rotate? :x))
      (setq move
 	   (v- pos (send *gun-coords* :worldpos)))
@@ -963,20 +986,20 @@
        (setq ret (ik-main
 		  :real? real?
 		  :real-feedback? real-feedback?
-		  :rotate? :x
+		  ;:rotate? :x
 		  :move
 		  (progn
 		    (setq buf (random-vector 50.0))
 		    (v- buf
 			(scale (v. buf (triangle-n))
 			       (triangle-n))))
-		  ;; :rpy
-		  ;; (progn
-		  ;;   (setq buf (random-vector 0.2))
-		  ;;   (v-
-		  ;;    buf
-		  ;;    (scale (v. buf (reverse (triangle-n)))
-		  ;; 	    (reverse (triangle-n)))))
+		  :rpy
+		  (progn
+		    (setq buf (random-vector 0.2))
+		    (v-
+		     buf
+		     (scale (v. buf (reverse (triangle-n)))
+		  	    (reverse (triangle-n)))))
 		  )))
       ;; (t
       ;;  (setq ret (ik-main
@@ -1147,6 +1170,9 @@ roseus atlas-dual-arm-ik.l
 (model2real :time 10000)
 
 (load "ssc-20131119.l")
+(demo-collection-play)
+
+(load "ssc-dual-20131120-2.l")
 (demo-collection-play)
 
 |#
