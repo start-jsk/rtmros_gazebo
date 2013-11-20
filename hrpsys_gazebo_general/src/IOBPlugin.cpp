@@ -36,6 +36,13 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   this->use_synchronized_command = false;
   if (_sdf->HasElement("synchronized_command")) {
     this->use_synchronized_command = _sdf->Get<bool>("synchronized_command");
+    std::cerr << ";; use synchronized command" << std::endl;
+  }
+
+  this->use_velocity_feedback = false;
+  if (_sdf->HasElement("velocity_feedback")) {
+    this->use_velocity_feedback = _sdf->Get<bool>("velocity_feedback");
+    std::cerr << ";; use velocity feedback" << std::endl;
   }
   // initialize ros
   if (!ros::isInitialized()) {
@@ -70,6 +77,16 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
           ROS_WARN("override use_synchronized_command at %d by %d",
                    this->use_synchronized_command, ret);
         }
+      }
+    }
+    {
+      std::string pname = this->controller_name + "/use_velocity_feedback";
+      if (this->rosNode->hasParam(pname)) {
+        bool ret;
+        this->rosNode->getParam(pname, ret);
+        this->use_velocity_feedback = ret;
+        ROS_WARN("override use_veolcity_feedback at %d by %d",
+                 this->use_velocity_feedback, ret);
       }
     }
     XmlRpc::XmlRpcValue param_val;
@@ -338,6 +355,12 @@ void IOBPlugin::LoadPIDGainsFromParameter() {
     }
     if (!this->rosNode->getParam(vp_str, vp_val)) {
       ROS_WARN("IOBPlugin: couldn't find a VP param for %s", joint_ns.c_str());
+    }
+
+    double pv_val;
+    std::string pv_str = std::string(joint_ns)+"p_v";
+    if (!this->rosNode->getParam(pv_str, pv_val)) {
+      ROS_WARN("IOBPlugin: couldn't find a P_V param for %s", joint_ns.c_str());
     }
 
     // store these directly on altasState, more efficient for pub later
