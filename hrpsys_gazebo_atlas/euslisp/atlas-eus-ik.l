@@ -25,7 +25,6 @@
            (send (send *atlas* :r_hand_lk) :copy-worldcoords)))
            ;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
       (send new-end-coords :transform end-coords :local)
-      (send new-end-coords :draw-on :flush t)
       (let ((trans (send (send *atlas* arm :end-coords :copy-worldcoords)
                          :transformation new-end-coords)))
         (send (send *atlas* arm :end-coords) :transform trans))
@@ -60,6 +59,13 @@
     (send *atlas* :reset-pose)
     (send *atlas* :newcoords (make-coords)) ;force to move pelvis origin
     (let ((goal (send req :ik_request :pose_stamped)))
+      ;; check that goal is malformed or not
+      (let ((q (float-vector (send req :ik_request :pose_stamped :pose :orientation :w)
+                             (send req :ik_request :pose_stamped :pose :orientation :x)
+                             (send req :ik_request :pose_stamped :pose :orientation :y)
+                             (send req :ik_request :pose_stamped :pose :orientation :z))))
+        (if (not (eps= (norm q) 1.0))
+            (return nil)))
       (let ((goal-in-world (send *tf* :transform-pose "/pelvis" goal)))
         (let ((args (if (or (string= (send req :ik_request :group_name) "larm_torso")
                             (string= (send req :ik_request :group_name) "lhand_torso")
