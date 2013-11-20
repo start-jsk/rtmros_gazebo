@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
-#include "hrpsys/io/iob.h"
+#include "iob.h"
 
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
