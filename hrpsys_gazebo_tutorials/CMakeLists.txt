@@ -34,6 +34,7 @@ generate_gazebo_urdf_file(SampleRobot)
 generate_gazebo_urdf_file(HRP2JSK)
 generate_gazebo_urdf_file(HRP2JSKNTS)
 generate_gazebo_urdf_file(STARO)
+generate_gazebo_urdf_file(HRP4C)
 
 add_custom_target(all_robots_compile ALL DEPENDS ${compile_robots})
 
