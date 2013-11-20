@@ -18,6 +18,7 @@
 #
 Header header
 
+## parameter for effort feedback control
 float64[] position
 float64[] velocity
 float64[] effort
@@ -29,5 +30,16 @@ float32[] kp_velocity
 
 float32[] i_effort_min
 float32[] i_effort_max
+
+#
+# joint_velocity =
+#  kpv_position * (position - measured_position)
+#  kpv_velocity * (velocity - measured_velocity)
+#
+## parameter for velocity feedback control
+float32[] kpv_position
+#float32[] kiv_position ??
+#float32[] kdv_position ??
+float32[] kpv_velocity
 
 uint8 desired_controller_period_ms # max allowed controller update period in milli-seconds simulation time for controller synchronization.  See SynchronizationStatistics.msg for tracking synchronization status.

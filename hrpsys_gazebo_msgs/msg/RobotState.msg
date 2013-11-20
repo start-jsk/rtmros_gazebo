@@ -12,6 +12,9 @@ float32[] kp_velocity
 float32[] i_effort_min
 float32[] i_effort_max
 
+float32[] kpv_position
+float32[] kpv_velocity
+
 NamedImu[] Imus
 
 NamedWrench[] sensors
