@@ -74,8 +74,19 @@
                         (list :link-list (send *atlas* :link-list (send (send *atlas* arm :end-coords) :parent))))))
         ;;(let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :rotation-axis t))) ;default it uses torso
         ;;(let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :use-torso t :rotation-axis nil))) ;default it uses torso
-        (let ((ik-ret (send* *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :use-torso t
-                            :rotation-axis t args))) ;default it uses torso
+        (let ((ik-ret
+	       (send* *atlas* arm
+		      :inverse-kinematics goal-in-world
+		      :debug-view :no-message
+		      :use-torso t
+		      :additional-weight-list
+		      (mapcar
+		       #'(lambda (k gain)
+			   (list (send *robot* :torso k :child-link)
+				 gain))
+		       (list :waist-r :waist-p :waist-y)
+		       (list 1e-3 1e-3 1e-2))
+		      :rotation-axis t args))) ;default it uses torso
           (if ik-ret
               (progn
                 (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
