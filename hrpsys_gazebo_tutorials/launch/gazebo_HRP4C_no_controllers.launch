@@ -11,5 +11,7 @@
     <arg name="ROBOT_TYPE"  value="HRP4C" />
     <arg name="SPAWN_MODEL" value="true" />
     <arg name="LOOPBACK"    value="$(arg LOOPBACK)" />
+
+    <arg name="MODEL_TRANSLATE_Z" value="0.8" />
   </include>
 </launch>
