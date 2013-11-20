@@ -253,7 +253,7 @@
     (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
   (send *triangle* :set-color #F(0 1 0))
   (send *triangle* :rotate (deg2rad 90) :y)
-  (send *triangle* :translate #F(600 -200 600) :world)
+  (send *triangle* :translate #F(600 -200 650) :world)
 ;(send *triangle* :translate #F(100 0 0) :world)
   (gl::transparent *triangle* 0.3)
 ;  (load "triangle.l")
@@ -303,9 +303,9 @@
   )
 
 (send-all (send *robot* :joint-list) :max-joint-velocity 1.0)
-(send *robot* :lleg :crotch-r :min-angle -5)
+;(send *robot* :lleg :crotch-r :min-angle -5)
 ;(send *robot* :lleg :crotch-r :joint-angle 15)
-(send *robot* :rleg :crotch-r :max-angle 5)
+;(send *robot* :rleg :crotch-r :max-angle 5)
 ;(send *robot* :rleg :crotch-r :joint-angle -15)
 
 (init-grasp-pose)
@@ -487,11 +487,12 @@
      (cons :worldcoords
 	   (copy-object (send *robot* :worldcoords)))))
    (target-hand '(:rarm :larm))
+   (left-support? t)
    (move-target
     (mapcar
      #'(lambda (k)
 	 (send *robot* k :end-coords))
-     target-hand))
+     '(:rarm :larm :rleg :lleg)))
    (link-list
     (mapcar
      #'(lambda (k)
@@ -499,7 +500,7 @@
 	       (send *robot* k :end-coords :parent)
 	       (if (find k nil);'(:rarm :larm))
 		   (send *robot* k :root-link))))
-     target-hand))
+     '(:rarm :larm :rleg :lleg)))
    (target-centroid-pos
     (scale
      0.5
@@ -515,7 +516,7 @@
 	 (list (send *robot* :torso k :child-link)
 	       gain))
      (list :waist-r :waist-p :waist-y)
-     (list 1e-3 1e-3 1e-3)))
+     (list 1e-3 1e-3 1e-2)))
    (centroid-thre
     (let ((margin 1.0)
 	  (foot-convex
@@ -585,6 +586,7 @@
 		 (car (send *robot* :rarm :end-coords
 			    :descendants)))
 	   *fix-leg-coords*))
+    ;;
     (setq
      ret
      (send *robot*
@@ -592,8 +594,8 @@
 	   target-coords
 	   :move-target move-target
 	   :link-list link-list
-	   :rotation-axis (list rotate? t t t)
-	   :translation-axis (list translate? t t t)
+	   :rotation-axis (list rotate? left-support? t t)
+	   :translation-axis (list translate? left-support? t t)
 	   :target-centroid-pos target-centroid-pos
 	   :cog-gain 0.1
 	   :additional-weight-list additional-weight-list
@@ -603,27 +605,28 @@
 	   :centroid-thre centroid-thre
 	   ;;
 	   :collision-avoidance-link-pair collision-pair
-	   ;:root-link-virtual-joint-weight
-	   ;#F(0.1 0.1 1 0.1 0.1 0.1)
+	   :root-link-virtual-joint-weight
+	   #F(0.1 1.5 1 0.1 0.1 0.1)
 	   ;:min #F(-1000 -1000 -1000 -200 -200 -200)
 	   ;:max #F(1000 1000 1000 200 200 200)
 	   :avoid-collision-distance 10
-	   :avoid-collision-null-gain 0.1
-	   :avoid-collision-joint-gain 0.1
+	   :avoid-collision-null-gain 0.3
+	   :avoid-collision-joint-gain 0.3
 	   ;;
 	   :dump-command nil
 	   :debug-view debug-view
 	   :warnp nil))
     ;;
-    (fix-centroid-object)
     (setq collision?
 	  (send *robot* :self-collision-check :pairs
-		(mapcar #'(lambda (ll) (cons (car ll) (cadr ll)))
-			collision-pair)))
+		(mapcar
+		 #'(lambda (ll) (cons (car ll) (cadr ll)))
+		 collision-pair)))
     (format t "[collision check] ~A~%" collision?)
     ;;
     (cond
      ((and (not collision?) (vectorp ret))
+      (fix-centroid-object)
       (send *irtviewer* :draw-objects)
       (cond
        ((and real? (boundp '*ri*) *ri*)
@@ -669,8 +672,9 @@
       (format t "[ik-main] fail!!~%")
       (send *robot* :angle-vector initial-av)
       (send *robot* :newcoords initial-coords)
-      (print ret)
-      (send *gun-coords* :newcoords coords-org)))
+      (send *gun-coords* :newcoords coords-org)
+      (send *viewer* :draw-objects)
+      (print ret)))
     ret
     ))
 
@@ -790,9 +794,10 @@
        (leg-coords-fix-from-real
 	:init-grasp? nil)))
      ;;
-     (waist-fix :waist-key :waist-r :cnt 10)
-     (waist-fix :waist-key :waist-p :cnt 10)
-     (waist-fix :waist-key :waist-y :cnt 10)
+     (waist-fix :waist-key :waist-r :cnt 3)
+     (waist-fix :waist-key :waist-p :cnt 3)
+     (waist-fix :waist-key :waist-y :cnt 3)
+     (dotimes (i 2) (ik-main :rotate? :x))
      (setq move
 	   (v- pos (send *gun-coords* :worldpos)))
      (setq rpy
@@ -942,8 +947,8 @@
 (init-grasp-pose)
 (send (car *fix-leg-coords*) :translate #F(0 100 0) :world)
 (ik-main)
-
 (send (car *fix-leg-coords*) :translate #F(0 100 0) :world)
+
 (mapcar
  #'(lambda (c deg)
      (send c :rotate (deg2rad deg) :z))
