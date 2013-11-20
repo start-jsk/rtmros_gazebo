@@ -16,14 +16,14 @@
         ;;(palm-link :right_palm_lk)
         (palm-link :right_palm_left_camera_optical_frame_lk)
         (axis (float-vector 0 0 1))
-        (rad 3.8))
+        (rad 2.23))
         ;;(rad 1.57))
     ;;(rad 0))
     (send end-coords :rotate rad axis)
     (send end-coords :translate (float-vector 12.5 -225 4.5) :world)
     (let ((new-end-coords
            (send (send *atlas* :r_hand_lk) :copy-worldcoords)))
-           ;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
+      ;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
       (send new-end-coords :transform end-coords :local)
       (let ((trans (send (send *atlas* arm :end-coords :copy-worldcoords)
                          :transformation new-end-coords)))
@@ -35,12 +35,12 @@
         ;;(palm-link :right_palm_lk)
         (palm-link :left_palm_left_camera_optical_frame_lk)
         (axis (float-vector 0 0 1))
-        (rad -1.57))
-        ;;(rad 0))
+        (rad 0.91))
     (send end-coords :rotate rad axis)
     (send end-coords :translate (float-vector 12.5 225 4.5) :world)
     (let ((new-end-coords
-           (send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
+           (send (send *atlas* :l_hand_lk) :copy-worldcoords)))
+           ;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
       (send new-end-coords :transform end-coords :local)
       (let ((trans (send (send *atlas* arm :end-coords) :transformation
                    new-end-coords)))
@@ -66,6 +66,7 @@
                              (send req :ik_request :pose_stamped :pose :orientation :z))))
         (if (not (eps= (norm q) 1.0))
             (return nil)))
+      (print (send goal :header :frame_id))
       (let ((goal-in-world (send *tf* :transform-pose "/pelvis" goal)))
         (let ((args (if (or (string= (send req :ik_request :group_name) "larm_torso")
                             (string= (send req :ik_request :group_name) "lhand_torso")
@@ -74,19 +75,20 @@
                         (list :link-list (send *atlas* :link-list (send (send *atlas* arm :end-coords) :parent))))))
         ;;(let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :rotation-axis t))) ;default it uses torso
         ;;(let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :use-torso t :rotation-axis nil))) ;default it uses torso
-        (let ((ik-ret
-	       (send* *atlas* arm
-		      :inverse-kinematics goal-in-world
-		      :debug-view :no-message
-		      :use-torso t
-		      :additional-weight-list
-		      (mapcar
-		       #'(lambda (k gain)
-			   (list (send *robot* :torso k :child-link)
-				 gain))
-		       (list :waist-r :waist-p :waist-y)
-		       (list 1e-3 1e-3 1e-2))
-		      :rotation-axis t args))) ;default it uses torso
+          (let ((ik-ret
+                 (send* *atlas* arm
+                        :inverse-kinematics goal-in-world
+                        :debug-view :no-message
+                        :warnp nil
+                        :use-torso t
+                        :additional-weight-list
+                        (mapcar
+                         #'(lambda (k gain)
+                             (list (send *atlas* :torso k :child-link)
+                                   gain))
+                         (list :waist-r :waist-p :waist-y)
+                         (list 1e-3 1e-3 1e-2))
+                        :rotation-axis t args))) ;default it uses torso
           (if ik-ret
               (progn
                 (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
@@ -111,7 +113,6 @@
 (while (ros::ok)
   (x::window-main-one)
   (ros::spin-once))
-
 
 #|
 ;; client sample
