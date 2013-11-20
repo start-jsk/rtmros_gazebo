@@ -1,0 +1,125 @@
+hrpsys_gazebo_configuration:
+  robotname: HRP4C
+  joint_id_list: [0, 1, 2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 28, 29, 30, 31, 32, 33, 36, 37, 38, 39, 40, 41]
+  joints:
+    - R_HIP_Y
+    - R_HIP_R
+    - R_HIP_P
+    - R_KNEE_P
+    - R_ANKLE_P
+    - R_ANKLE_R
+    - L_HIP_Y
+    - L_HIP_R
+    - L_HIP_P
+    - L_KNEE_P
+    - L_ANKLE_P
+    - L_ANKLE_R
+    - CHEST_P
+    - CHEST_R
+    - CHEST_Y
+    - NECK_Y
+    - NECK_R
+    - NECK_P
+    - R_SHOULDER_P
+    - R_SHOULDER_R
+    - R_SHOULDER_Y
+    - R_ELBOW_P
+    - R_WRIST_Y
+    - R_WRIST_R
+    - L_SHOULDER_P
+    - L_SHOULDER_R
+    - L_SHOULDER_Y
+    - L_ELBOW_P
+    - L_WRIST_Y
+    - L_WRIST_R
+  gains:
+    R_HIP_Y:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_HIP_R:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_HIP_P:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_KNEE_P:     {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_ANKLE_P:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_ANKLE_R:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_HIP_Y:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_HIP_R:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_HIP_P:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_KNEE_P:     {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_ANKLE_P:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_ANKLE_R:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    CHEST_P:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    CHEST_R:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    CHEST_Y:      {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    NECK_Y:       {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    NECK_R:       {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    NECK_P:       {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_SHOULDER_P: {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_SHOULDER_R: {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_SHOULDER_Y: {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_ELBOW_P:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_WRIST_Y:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    R_WRIST_R:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_SHOULDER_P: {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_SHOULDER_R: {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_SHOULDER_Y: {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_ELBOW_P:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_WRIST_Y:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+    L_WRIST_R:    {p:  400.0, d:   0.8, i: 0.0, i_clamp: 0.0}
+#   force_torque_sensors:
+#     - rfsensor
+#     - lfsensor
+#     - rhsensor
+#     - lhsensor
+#   force_torque_sensors_config:
+# ## TODO: add translation and rotation
+#     lfsensor: {joint_name: 'LLEG_JOINT5', frame_id: 'LLEG_LINK5', translation: [0, 0, -0.105], rotation: [1, 0, 0, 0]}
+#     rfsensor: {joint_name: 'RLEG_JOINT5', frame_id: 'RLEG_LINK5', translation: [0, 0, -0.105], rotation: [1, 0, 0, 0]}
+#     lhsensor: {joint_name: 'LARM_JOINT6', frame_id: 'LARM_LINK6', translation: [0, 0, -0.0775], rotation: [1, 0, 0, 0]}
+#     rhsensor: {joint_name: 'RARM_JOINT6', frame_id: 'RARM_LINK6', translation: [0, 0, -0.0775], rotation: [1, 0, 0, 0]}
+#   imu_sensors:
+#     - imu_sensor0
+#   imu_sensors_config:
+# ## TODO: add translation and rotation
+#     imu_sensor0: {ros_name: 'waist_imu', link_name: 'CHEST_LINK1', frame_id: 'CHEST_LINK1'}
+
+# hrpsys_joints on dae
+# name: R_HIP_Y, jointId: 0, type: rotate
+# name: R_HIP_R, jointId: 1, type: rotate
+# name: R_HIP_P, jointId: 2, type: rotate
+# name: R_KNEE_P, jointId: 3, type: rotate
+# name: R_ANKLE_P, jointId: 4, type: rotate
+# name: R_ANKLE_R, jointId: 5, type: rotate
+# name: L_HIP_Y, jointId: 7, type: rotate
+# name: L_HIP_R, jointId: 8, type: rotate
+# name: L_HIP_P, jointId: 9, type: rotate
+# name: L_KNEE_P, jointId: 10, type: rotate
+# name: L_ANKLE_P, jointId: 11, type: rotate
+# name: L_ANKLE_R, jointId: 12, type: rotate
+# name: CHEST_P, jointId: 14, type: rotate
+# name: CHEST_R, jointId: 15, type: rotate
+# name: CHEST_Y, jointId: 16, type: rotate
+# name: NECK_Y, jointId: 17, type: rotate
+# name: NECK_R, jointId: 18, type: rotate
+# name: NECK_P, jointId: 19, type: rotate
+# name: EYEBROW_P, jointId: 20, type: rotate
+# name: EYELID_P, jointId: 21, type: rotate
+# name: EYE_P, jointId: 23, type: rotate
+# name: EYE_Y, jointId: 22, type: rotate
+# name: MOUTH_P, jointId: 24, type: rotate
+# name: LOWERLIP_P, jointId: 26, type: rotate
+# name: UPPERLIP_P, jointId: 25, type: rotate
+# name: CHEEK_P, jointId: 27, type: rotate
+# name: R_SHOULDER_P, jointId: 28, type: rotate
+# name: R_SHOULDER_R, jointId: 29, type: rotate
+# name: R_SHOULDER_Y, jointId: 30, type: rotate
+# name: R_ELBOW_P, jointId: 31, type: rotate
+# name: R_WRIST_Y, jointId: 32, type: rotate
+# name: R_WRIST_R, jointId: 33, type: rotate
+# name: R_HAND_J0, jointId: 34, type: rotate
+# name: R_HAND_J1, jointId: 35, type: rotate
+# name: L_SHOULDER_P, jointId: 36, type: rotate
+# name: L_SHOULDER_R, jointId: 37, type: rotate
+# name: L_SHOULDER_Y, jointId: 38, type: rotate
+# name: L_ELBOW_P, jointId: 39, type: rotate
+# name: L_WRIST_Y, jointId: 40, type: rotate
+# name: L_WRIST_R, jointId: 41, type: rotate
+# name: L_HAND_J0, jointId: 42, type: rotate
+# name: L_HAND_J1, jointId: 43, type: rotate
