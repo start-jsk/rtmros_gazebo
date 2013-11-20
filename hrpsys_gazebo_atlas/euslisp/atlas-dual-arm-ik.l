@@ -302,6 +302,21 @@
   (fix-gun-coords)
   )
 
+(defun init-grasp-pose-single-hand
+  nil
+  (let ((buf
+	 (send-all
+	  (progn
+	    (send *robot* :reset-manip-pose)
+	    (send-all (send *robot* :larm :links) :joint))
+	  :joint-angle)))
+    (init-grasp-pose)
+    (mapcar
+     #'(lambda (j av) (send j :joint-angle av))
+     (send-all (send *robot* :larm :links) :joint)
+     buf))
+  )
+
 (send-all (send *robot* :joint-list) :max-joint-velocity 1.0)
 ;(send *robot* :lleg :crotch-r :min-angle -5)
 ;(send *robot* :lleg :crotch-r :joint-angle 15)
@@ -467,7 +482,7 @@
     (send *viewer* :draw-objects)
     ))
 
-(send (send *robot* :utorso_lk) :make-pqpmodel :fat 10)
+(send (send *robot* :utorso_lk) :make-pqpmodel :fat 30)
 (defvar *success-state-collection* nil)
 (defun ik-main
   (&key
@@ -486,13 +501,13 @@
 	   (copy-object (send *robot* :angle-vector)))
      (cons :worldcoords
 	   (copy-object (send *robot* :worldcoords)))))
-   (target-hand '(:rarm :larm))
+   (target-limb '(:rarm :rleg :lleg))
    (left-support? t)
    (move-target
     (mapcar
      #'(lambda (k)
 	 (send *robot* k :end-coords))
-     '(:rarm :larm :rleg :lleg)))
+     target-limb))
    (link-list
     (mapcar
      #'(lambda (k)
@@ -500,7 +515,7 @@
 	       (send *robot* k :end-coords :parent)
 	       (if (find k nil);'(:rarm :larm))
 		   (send *robot* k :root-link))))
-     '(:rarm :larm :rleg :lleg)))
+     target-limb))
    (target-centroid-pos
     (scale
      0.5
@@ -544,6 +559,24 @@
        (* margin
 	  (+ (/ (aref foot-convex 1) 2.0)
 	     (/ (aref foot-dist 1) 2.0))))))
+   ;;
+   (rotation-axis
+    (mapcar
+     #'(lambda (k)
+	 (case k
+	       (:rarm rotate?)
+	       (:larm left-support?)
+	       (t t)))
+     target-limb))
+   (translation-axis
+    (mapcar
+     #'(lambda (k)
+	 (case k
+	       (:rarm translate?)
+	       (:larm left-support?)
+	       (t t)))
+     target-limb))
+   ;;
    (initial-av (copy-seq (send *robot* :angle-vector)))
    (initial-coords (copy-object (send *robot* :worldcoords)))
    (debug-view :no-message)
@@ -558,8 +591,13 @@
 		  (send *robot* :utorso_lk))
 	      (eq (send (send l :parent) :parent)
 		  (send *robot* :utorso_lk))))
-      (append (send *robot* :rarm :links)
-	      (send *robot* :larm :links)))))
+      (apply
+       #'append
+       (mapcar
+	#'(lambda (k) (send *robot* k :links))
+	(remove-if
+	 #'(lambda (k) (find k '(:rleg :lleg)))
+	 target-limb))))))
    )
   (let (target-coords ret)
     (cond
@@ -581,11 +619,15 @@
 ;		 (caar (send *gun-coords* :rpy-angle)))
 		rpy)))
     (setq target-coords
-	  (append
-	   (list (send *gun-coords* :worldcoords)
-		 (car (send *robot* :rarm :end-coords
-			    :descendants)))
-	   *fix-leg-coords*))
+	  (mapcar
+	   #'(lambda (k)
+	       (case k
+		     (:rarm (send *gun-coords* :worldcoords))
+		     (:larm (car (send *robot* :rarm :end-coords
+				       :descendants)))
+		     (:rleg (car *fix-leg-coords*))
+		     (:lleg (cadr *fix-leg-coords*))))
+	   target-limb))
     ;;
     (setq
      ret
@@ -594,8 +636,8 @@
 	   target-coords
 	   :move-target move-target
 	   :link-list link-list
-	   :rotation-axis (list rotate? left-support? t t)
-	   :translation-axis (list translate? left-support? t t)
+	   :rotation-axis rotation-axis
+	   :translation-axis translation-axis
 	   :target-centroid-pos target-centroid-pos
 	   :cog-gain 0.1
 	   :additional-weight-list additional-weight-list
@@ -674,7 +716,8 @@
       (send *robot* :newcoords initial-coords)
       (send *gun-coords* :newcoords coords-org)
       (send *viewer* :draw-objects)
-      (print ret)))
+      (print ret)
+      (setq ret nil)))
     ret
     ))
 
@@ -829,7 +872,6 @@
       ((vectorp ret))
       (t ;(evenp (random 2))
        (setq ret (ik-main
-		  ;:debug-view :no-message
 		  :real? real?
 		  :real-feedback? real-feedback?
 		  :rotate? :x
@@ -990,6 +1032,7 @@
   #'(lambda (p) (demo-pos-controller :pos p :real? t :real-feedback? t))
   (triangle-pos-list))
 
+;; procedure
 
 rossetatlas
 roseus atlas-dual-arm-ik.l
@@ -1000,7 +1043,7 @@ roseus atlas-dual-arm-ik.l
  (list *robot* *centroid-object*
        *gun-coords* *triangle*))
 
-;; servo 
+;; servo
 
 (init-grasp-pose)
 (model2real :time 10000)
