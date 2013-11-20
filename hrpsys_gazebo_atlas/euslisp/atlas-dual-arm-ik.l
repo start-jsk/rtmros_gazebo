@@ -14,8 +14,9 @@
 	  (send self :difference-cog-position target-centroid-pos centroid-offset-func)))
      (cond
       ((numberp centroid-thre) (> centroid-thre (norm cdiff)))
-      ((functionp centroid-thre) (funcall cdiff))
-      ((vectorp centroid-thre) (v< (map float-vector #'abs cdiff) centroid-thre)))))
+      ((functionp centroid-thre) (funcall centroid-thre cdiff))
+      ((vectorp centroid-thre)
+       (v< (map float-vector #'abs cdiff) centroid-thre)))))
   )
 
 (defmethod euscollada-robot
@@ -163,6 +164,88 @@
       #'(lambda (n) (v. n v))
       (list #F(1 0 0) #F(0 1 0) #F(0 0 1))))))
 
+(defun gen-foot-convex
+  nil
+  (let* ((margin 1.0)
+	 (foot-center
+	  (mapcar
+	   #'(lambda (k)
+	       (send
+		(send *robot* k :end-coords :parent)
+		:centroid))
+	   '(:rleg :lleg)))
+	 (foot-param
+	  (mapcar
+	   #'(lambda (k)
+	       (apply
+		#'vmax
+		(mapcar
+		 #'(lambda (f)
+		     (map float-vector #'abs
+			  (transform
+			   (transpose
+			    (send *robot* k :end-coords :worldrot))
+			   (map float-vector
+				#'*
+				#F(1 1 0)
+				(apply #'v- (send f :vertices))))))
+		 (flatten
+		  (send-all
+		   (send (send *robot* k :end-coords :parent) :faces)
+		   :edges)))))
+	   '(:rleg :lleg)))
+	 (foot-corner
+	  (mapcar
+	   #'(lambda (k center filter param)
+	       (v+ center
+		   (transform
+		    (send *robot* k :end-coords :worldrot)
+		    (scale 0.5
+			   (map float-vector
+				#'*
+				filter param)))))
+	   '(:rleg :rleg :lleg :lleg)
+	   (list (car foot-center)(car foot-center)
+		 (cadr foot-center) (cadr foot-center))
+	   (list #F(2 -1 0) #F(-1 -1 0) #F(-1 1 0) #F(2 1 0))
+	   (list (car foot-param) (car foot-param)
+		 (cadr foot-param) (cadr foot-param))
+	   ))
+	 )
+    foot-corner))
+
+(defun check-centroid-with-convex
+  (diff
+   &optional
+   (convex (convex-pos-list))
+   (center
+    (scale
+     0.5
+     (apply
+      #'v+
+      (mapcar
+       #'(lambda (k)
+	   (send *robot* k :end-coords :worldpos))
+       '(:rleg :lleg))))))
+  (let* ((diff (concatenate float-vector diff (list 0)))
+	 (target (v+ diff center))
+	 (t-vec (mapcar
+		 #'(lambda (v) (v- target v))
+		 convex))
+	 (rotate
+	  (mapcar
+	   #'(lambda (v1 v2) (v* v1 v2))
+	   t-vec (append (cdr t-vec) (list (car t-vec)))))
+	 )
+    (eq
+     1
+     (length
+      (union
+       nil
+       (mapcar
+	#'(lambda (v) (minusp (aref v 2)))
+	rotate))))))
+
 (defmethod robot-model
   (:set-end-coords
    (&key
@@ -260,10 +343,6 @@
 ;  (send *triangle* :translate #F(-100 0 200) :world)
   ))
 
-(objects
- (list *gun-coords* *robot*
-       *centroid-object* *triangle*))
-
 ;;;;;;;; setup ;;;;;;;;;;;
 
 ;;;;;;;; controller ;;;;;;;;;
@@ -324,13 +403,24 @@
 ;(send *robot* :rleg :crotch-r :joint-angle -15)
 
 (init-grasp-pose)
+
+(cond
+ ((not (and (boundp '*foot-convex*) *foot-convex*))
+  (defvar *foot-convex*
+    (make-prism (gen-foot-convex) 5))
+  (send *foot-convex* :set-color #F(0 0 1))
+  (gl::transparent *foot-convex* 0.3)))
+
 (defvar *fix-leg-coords*
   (mapcar
    #'(lambda (k)
        (send *robot* k :end-coords
 	     :copy-worldcoords))
    '(:rleg :lleg)))
-(send *viewer* :draw-objects)
+
+(objects
+ (list *gun-coords* *robot* *foot-convex*
+       *centroid-object* *triangle*))
 
 (defun str-subscriber
   (msg)
@@ -501,7 +591,7 @@
 	   (copy-object (send *robot* :angle-vector)))
      (cons :worldcoords
 	   (copy-object (send *robot* :worldcoords)))))
-   (target-limb '(:rarm :rleg :lleg))
+   (target-limb '(:rarm :larm :rleg :lleg))
    (left-support? t)
    (move-target
     (mapcar
@@ -532,33 +622,33 @@
 	       gain))
      (list :waist-r :waist-p :waist-y)
      (list 1e-3 1e-3 1e-2)))
-   (centroid-thre
-    (let ((margin 1.0)
-	  (foot-convex
-	   (apply
-	    #'vmax
-	    (mapcar
-	     #'(lambda (f)
-		 (map float-vector #'abs (apply #'v- (send f :vertices))))
-	     (flatten
-	      (send-all
-	       (send (send *robot* :rleg :end-coords :parent)
-		     :faces)
-	       :edges)))))
-	  (foot-dist
-	   (map float-vector
-		#'abs
-		(apply #'v-
-		       (mapcar
-			#'(lambda (k)
-			    (send *robot* k :end-coords
-				  :worldpos))
-			'(:rleg :lleg))))))
-      (float-vector
-       (* margin (/ (aref foot-convex 0) 2.0))
-       (* margin
-	  (+ (/ (aref foot-convex 1) 2.0)
-	     (/ (aref foot-dist 1) 2.0))))))
+   ;; (centroid-thre
+   ;;  (let ((margin 1.0)
+   ;; 	  (foot-convex
+   ;; 	   (apply
+   ;; 	    #'vmax
+   ;; 	    (mapcar
+   ;; 	     #'(lambda (f)
+   ;; 		 (map float-vector #'abs (apply #'v- (send f :vertices))))
+   ;; 	     (flatten
+   ;; 	      (send-all
+   ;; 	       (send (send *robot* :rleg :end-coords :parent)
+   ;; 		     :faces)
+   ;; 	       :edges)))))
+   ;; 	  (foot-dist
+   ;; 	   (map float-vector
+   ;; 		#'abs
+   ;; 		(apply #'v-
+   ;; 		       (mapcar
+   ;; 			#'(lambda (k)
+   ;; 			    (send *robot* k :end-coords
+   ;; 				  :worldpos))
+   ;; 			'(:rleg :lleg))))))
+   ;;    (float-vector
+   ;;     (* margin (/ (aref foot-convex 0) 2.0))
+   ;;     (* margin
+   ;; 	  (+ (/ (aref foot-convex 1) 2.0)
+   ;; 	     (/ (aref foot-dist 1) 2.0))))))
    ;;
    (rotation-axis
     (mapcar
@@ -644,11 +734,11 @@
 	   :stop stop
 	   :thre (make-list 4 :initial-element 5)
 	   :rthre (make-list 4 :initial-element (deg2rad 3))
-	   :centroid-thre centroid-thre
+	   :centroid-thre #'check-centroid-with-convex
 	   ;;
 	   :collision-avoidance-link-pair collision-pair
 	   :root-link-virtual-joint-weight
-	   #F(0.1 1.5 1 0.1 0.1 0.1)
+	   #F(0.1 1.5 1 0.1 0.1 0.5)
 	   ;:min #F(-1000 -1000 -1000 -200 -200 -200)
 	   ;:max #F(1000 1000 1000 200 200 200)
 	   :avoid-collision-distance 10
@@ -911,6 +1001,17 @@
     :vertices)
    nil))
 
+(defun convex-pos-list
+  nil
+  (union
+   (send
+    (find-if
+     #'(lambda (f)
+	 (find :bottom (send f :id)))
+     (send *foot-convex* :faces))
+    :vertices)
+   nil))
+
 (defun triangle-n
   (&optional
    (vlist
@@ -975,7 +1076,6 @@
     (t (unix:usleep (round (* inital-sleep 1e+3)))))
    (setq inital-sleep 100))
   )
-
 
 
 ;(demo-mouse-controller)
