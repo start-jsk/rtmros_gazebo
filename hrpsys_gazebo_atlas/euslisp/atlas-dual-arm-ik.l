@@ -418,9 +418,12 @@
 	     :copy-worldcoords))
    '(:rleg :lleg)))
 
-(objects
- (list *gun-coords* *robot* *foot-convex*
-       *centroid-object* *triangle*))
+(defun my-objects
+  nil
+  (objects
+   (list *gun-coords* *robot* *foot-convex*
+	 *centroid-object* *triangle*)))
+(my-objects)
 
 (defun str-subscriber
   (msg)
@@ -531,9 +534,7 @@
 	(send *triangle* :set-color #F(0 1 0))
 	(gl::transparent *triangle* 0.3)
 	;;
-	(objects
-	 (list *gun-coords* *robot*
-	       *centroid-object* *triangle*))
+	(my-objects)
 	(mapcar
 	 #'(lambda (p) (demo-pos-controller :pos p))
 	 (triangle-pos-list))
@@ -551,9 +552,7 @@
      ((not (and (boundp '*ri*) *ri*))
       (require "atlas-interface.l")
       (atlas-init-ex)
-      (objects
-       (list *robot* *centroid-object*
-	     *gun-coords* *triangle*))
+      (my-objects)
       (send *ri* :start-auto-balancer)
       (set-user)
       ))
@@ -1037,6 +1036,7 @@
 ;; export ROS_IP=10.10.72.109 && export ROS_HOSTNAME=$ROS_IP
 ;; load "ssc-20131118.l"
 ;; load "ssc-20131119.l"
+;; load "ssc-20131119-3.l"
 (defun demo-collection-play
   (&key
    (real? nil)
@@ -1049,9 +1049,7 @@
    ((and real? (not (and (boundp '*ri*) *ri*)))
     (require "atlas-interface.l")
     (atlas-init-ex)
-    (objects
-     (list *robot* *centroid-object*
-	   *gun-coords* *triangle*))
+    (my-objects)
     (send *ri* :start-auto-balancer)
     (set-user)
     ))
