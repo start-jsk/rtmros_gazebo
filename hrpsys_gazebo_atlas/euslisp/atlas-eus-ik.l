@@ -1,6 +1,7 @@
 #!/usr/bin/env roseus
 
 (ros::load-ros-manifest "hrpsys_gazebo_atlas")
+(ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "moveit_msgs")
 (require :rtm-ros-robotics-interface "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 
@@ -48,6 +49,8 @@
       ))
   )
 
+;(defun setup-end-coords nil nil)
+
 (defun ik-service-cb (req)
   (let ((res (send req :response))
         (arm (if (or (string= (send req :ik_request :group_name) "larm")
@@ -78,6 +81,7 @@
           (let ((ik-ret
                  (send* *atlas* arm
                         :inverse-kinematics goal-in-world
+			:stop 1000
                         :debug-view :no-message
                         :warnp nil
                         :use-torso t
@@ -87,9 +91,10 @@
                              (list (send *atlas* :torso k :child-link)
                                    gain))
                          (list :waist-r :waist-p :waist-y)
-                         (list 1e-3 1e-3 1e-2))
+			 ;(list 1e-3 1e-3 1e-3))
+                         (list 1e-10 1e-7 1e-5))
                         :rotation-axis t args))) ;default it uses torso
-          (if ik-ret
+	    (if ik-ret
               (progn
                 (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
                 (send res :solution :joint_state :name (send-all (send *atlas* :joint-list) :name))
@@ -103,6 +108,7 @@
 
 ;; initialization
 (setq *atlas* (atlas-with-hand))
+(send-all (send *atlas* :joint-list) :max-joint-velocity 0.1)
 (setup-end-coords)
 (objects (list *atlas*))
 
@@ -110,9 +116,10 @@
 
 
 (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
-(while (ros::ok)
-  (x::window-main-one)
-  (ros::spin-once))
+(do-until-key
+ (if (not (ros::ok)) (return-from nil nil))
+ (x::window-main-one)
+ (ros::spin-once))
 
 #|
 ;; client sample
