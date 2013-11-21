@@ -1,8 +1,8 @@
 <launch>
   <node pkg="hrpsys_gazebo_atlas"
 	type="atlas-eus-ik.l"
-	name="atlas_eus_ik" />
+	name="atlas_eus_ik" output="screen"/>
   <node pkg="hrpsys_gazebo_atlas"
 	type="atlas-eus-ik-client.l"
-	name="atlas_eus_ik_client" />
+	name="atlas_eus_ik_client" output="screen"/>
 </launch>
