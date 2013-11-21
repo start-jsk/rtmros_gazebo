@@ -81,6 +81,8 @@
            :stop 200
            :debug-view :no-message
            :warnp nil
+           :thre 5
+           :rthre (deg2rad 5)
            :additional-weight-list
            (mapcar
             #'(lambda (k gain)
@@ -95,6 +97,8 @@
 
 (defun normal-ik (arm goal-in-world)
   (send *atlas* arm :inverse-kinematics goal-in-world :stop 200
+        :thre 5
+        :rthre (deg2rad 5)
         :debug-view :no-message :warnp nil))
 
 (defun ik-service-cb (req)
