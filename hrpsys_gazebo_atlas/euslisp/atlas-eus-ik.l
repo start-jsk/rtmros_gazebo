@@ -21,7 +21,7 @@
         ;;(rad 1.57))
     ;;(rad 0))
     (send end-coords :rotate rad axis)
-    (send end-coords :translate (float-vector 12.5 -225 4.5) :world)
+    (send end-coords :translate (float-vector 30 -225 45) :world)
     (let ((new-end-coords
            (send (send *atlas* :r_hand_lk) :copy-worldcoords)))
       ;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
@@ -38,7 +38,7 @@
         (axis (float-vector 0 0 1))
         (rad 0.91))
     (send end-coords :rotate rad axis)
-    (send end-coords :translate (float-vector 12.5 225 4.5) :world)
+    (send end-coords :translate (float-vector 30 225 45) :world)
     (let ((new-end-coords
            (send (send *atlas* :l_hand_lk) :copy-worldcoords)))
            ;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
@@ -71,35 +71,69 @@
         :debug-view :no-message
         :warnp t
         :centroid-thre 100
-        :thre '(5 1 1)
-        :rotation-axis '(t t t)))
+        :thre '(1 1 1)
+        :rotation-paxis '(t t t)))
+
+;; (defun torso-ik (arm goal-in-world)
+;;   (let ((link-list (send *atlas* :link-list (send (send *atlas* arm :end-coords) :parent))))
+;;     (send *atlas* arm
+;;            :inverse-kinematics goapppl-in-world
+;;            :stop 200
+;;            :debug-view :no-message
+;;            :warnp nil
+;;            :thre 1
+;;            :rthre (deg2rad 1)
+;;            :additional-weight-list
+;;            (mapcar
+;;             #'(lambda (k gain)
+;;                 (list (send *atlas* :torso k :child-link)
+;;                       gain))
+;;             (list :waist-r :waist-p :waist-y)
+;;                                         ;(list 1e-3 1e-3 1e-3))
+;;             (list 1e-10 1e-6 1e-5))
+;;            :link-list link-list
+;;            :rotation-axis t))) ;default it uses torso
 
 (defun torso-ik (arm goal-in-world)
-  (let ((link-list (send *atlas* :link-list (send (send *atlas* arm :end-coords) :parent))))
-    (send *atlas* arm
-           :inverse-kinematics goal-in-world
-           :stop 200
-           :debug-view :no-message
-           :warnp nil
-           :thre 5
-           :rthre (deg2rad 5)
-           :additional-weight-list
+  (send *atlas* :fullbody-inverse-kinematics
+        (list goal-in-world
+              (copy-object (send *atlas* :rleg :end-coords :worldcoords))
+              (copy-object (send *atlas* :lleg :end-coords :worldcoords)))
+        :move-target (mapcar
+                      #'(lambda (k) (send *atlas* k :end-coords))
+                      (list arm :rleg :lleg))
+        :additional-weight-list
            (mapcar
             #'(lambda (k gain)
                 (list (send *atlas* :torso k :child-link)
                       gain))
             (list :waist-r :waist-p :waist-y)
                                         ;(list 1e-3 1e-3 1e-3))
-            (list 1e-10 1e-6 1e-5))
-           :link-list link-list
-           :rotation-axis t))) ;default it uses torso
+            (list 1e-3 1e-3 1e-3))
+        :root-link-virtual-joint-weight
+        (float-vector 0 0 0 0 0 0)
+        :min (float-vector 0 0 0 0 0 0)
+        :max (float-vector 0 0 0 0 0 0)
+        :link-list (mapcar
+                    #'(lambda (k)
+                        (send *atlas* :link-list
+                              (send (send *atlas* k :end-coords) :parent)))
+                    (list arm :rleg :lleg))
+        :debug-view :no-message
+        :warnp t
+        :centroid-thre 100
+        :thre '(1 1 1)
+        :rotation-paxis '(t t t)))
 
 
 (defun normal-ik (arm goal-in-world)
   (send *atlas* arm :inverse-kinematics goal-in-world :stop 200
-        :thre 5
-        :rthre (deg2rad 5)
+        :thre 1
+        :rthre (deg2rad 1)
         :debug-view :no-message :warnp nil))
+
+
+
 
 (defun ik-service-cb (req)
   (let ((res (send req :response))
@@ -189,7 +223,7 @@
 
 ;; initialization
 (setq *atlas* (atlas-with-hand))
-;;(send-all (send *atlas* :joint-list) :max-joint-velocity 1.0)
+(send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
 (setup-end-coords)
 (objects (list *atlas*))
 
