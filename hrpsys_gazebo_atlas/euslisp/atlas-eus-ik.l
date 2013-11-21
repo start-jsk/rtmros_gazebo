@@ -51,15 +51,80 @@
 
 ;(defun setup-end-coords nil nil)
 
+(defun fullbody-ik (arm goal-in-world)
+  (send *atlas* :fullbody-inverse-kinematics
+        (list goal-in-world
+              (copy-object (send *atlas* :rleg :end-coords :worldcoords))
+              (copy-object (send *atlas* :lleg :end-coords :worldcoords)))
+        :move-target (mapcar
+                      #'(lambda (k) (send *atlas* k :end-coords))
+                      (list arm :rleg :lleg))
+        :root-link-virtual-joint-weight
+        (float-vector 0.01 0.01 1 0.01 0.01 0.01)
+        :min (float-vector -1000 -1000 -1000 -200 -200 -200)
+        :max (float-vector 1000 1000 1000 200 200 200)
+        :link-list (mapcar
+                    #'(lambda (k)
+                        (send *atlas* :link-list
+                              (send (send *atlas* k :end-coords) :parent)))
+                    (list arm :rleg :lleg))
+        :debug-view :no-message
+        :warnp t
+        :centroid-thre 100
+        :thre '(5 1 1)
+        :rotation-axis '(t t t)))
+
+(defun torso-ik (arm goal-in-world)
+  (let ((link-list (send *atlas* :link-list (send (send *atlas* arm :end-coords) :parent))))
+    (send *atlas* arm
+           :inverse-kinematics goal-in-world
+           :stop 200
+           :debug-view :no-message
+           :warnp nil
+           :additional-weight-list
+           (mapcar
+            #'(lambda (k gain)
+                (list (send *atlas* :torso k :child-link)
+                      gain))
+            (list :waist-r :waist-p :waist-y)
+                                        ;(list 1e-3 1e-3 1e-3))
+            (list 1e-10 1e-6 1e-5))
+           :link-list link-list
+           :rotation-axis t))) ;default it uses torso
+
+
+(defun normal-ik (arm goal-in-world)
+  (send *atlas* arm :inverse-kinematics goal-in-world :stop 200
+        :debug-view :no-message :warnp nil))
+
 (defun ik-service-cb (req)
   (let ((res (send req :response))
-        (arm (if (or (string= (send req :ik_request :group_name) "larm")
-                     (string= (send req :ik_request :group_name) "larm_torso")
-                     (string= (send req :ik_request :group_name) "lhand")
-                     (string= (send req :ik_request :group_name) "lhand_torso"))
+        (arm (if (or (string= (subseq (send req :ik_request :group_name) 0 4) "larm")
+                     (string= (subseq (send req :ik_request :group_name) 0 4) "lhand"))
                  :larm
-               :rarm)))
-    (send *atlas* :reset-pose)
+               :rarm))
+        (torsop (or (string= (send req :ik_request :group_name) "larm_torso")
+                    (string= (send req :ik_request :group_name) "rarm_torso")))
+        (fullbodyp (or (string= (send req :ik_request :group_name) "larm_fullbody")
+                       (string= (send req :ik_request :group_name) "rarm_fullbody"))))
+    ;; taking joint state into account
+    (if (and (send req :ik_request :robot_state)
+               (send req :ik_request :robot_state :joint_state)
+               (send req :ik_request :robot_state :joint_state :name)
+               (send req :ik_request :robot_state :joint_state :position)
+               (= (length (send req :ik_request :robot_state :joint_state :name))
+                  (length (send req :ik_request :robot_state :joint_state :position))))
+        (progn
+          (dotimes (i (length (send req :ik_request :robot_state :joint_state :name)))
+            (let ((joint-name (elt (send req :ik_request :robot_state :joint_state :name) i)))
+              (let ((j (find joint-name (send *atlas* :joint-list) :test #'string= :key #'(lambda (x) (send x :name)))))
+                (if j
+                    (send j :joint-angle (rad2deg (elt (send req :ik_request :robot_state :joint_state :position) i)))
+                  (warn "we cannot find ~A~%" joint-name)
+                  )))))
+      (send *atlas* :reset-manip-pose)
+      )
+    (send *viewer* :draw-objects)
     (send *atlas* :newcoords (make-coords)) ;force to move pelvis origin
     (let ((goal (send req :ik_request :pose_stamped)))
       ;; check that goal is malformed or not
@@ -69,32 +134,15 @@
                              (send req :ik_request :pose_stamped :pose :orientation :z))))
         (if (not (eps= (norm q) 1.0))
             (return nil)))
-      (print (send goal :header :frame_id))
       (let ((goal-in-world (send *tf* :transform-pose "/pelvis" goal)))
-        (let ((args (if (or (string= (send req :ik_request :group_name) "larm_torso")
-                            (string= (send req :ik_request :group_name) "lhand_torso")
-                            (string= (send req :ik_request :group_name) "rarm_torso")
-                            (string= (send req :ik_request :group_name) "rhand_torso"))
-                        (list :link-list (send *atlas* :link-list (send (send *atlas* arm :end-coords) :parent))))))
-        ;;(let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :rotation-axis t))) ;default it uses torso
-        ;;(let ((ik-ret (send *atlas* arm :inverse-kinematics goal-in-world :debug-view :no-messages :use-torso t :rotation-axis nil))) ;default it uses torso
-          (let ((ik-ret
-                 (send* *atlas* arm
-                        :inverse-kinematics goal-in-world
-			:stop 1000
-                        :debug-view :no-message
-                        :warnp nil
-                        :use-torso t
-                        :additional-weight-list
-                        (mapcar
-                         #'(lambda (k gain)
-                             (list (send *atlas* :torso k :child-link)
-                                   gain))
-                         (list :waist-r :waist-p :waist-y)
-			 ;(list 1e-3 1e-3 1e-3))
-                         (list 1e-10 1e-7 1e-5))
-                        :rotation-axis t args))) ;default it uses torso
-	    (if ik-ret
+        (let ((ik-ret (cond
+                       (fullbodyp
+                        (fullbody-ik arm goal-in-world))
+                       (torsop
+                        (torso-ik arm goal-in-world))
+                       (t
+                        (normal-ik arm goal-in-world)))))
+          (if ik-ret
               (progn
                 (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
                 (send res :solution :joint_state :name (send-all (send *atlas* :joint-list) :name))
@@ -103,12 +151,41 @@
                 )
             (progn
               (send res :error_code :val moveit_msgs::MoveItErrorCodes::*FAILURE*)))
-          res))))))
+          res)))))
 
+;; use transpose
+;; (defmethod cascaded-link
+;;   (:calc-inverse-jacobian
+;;     (jacobi &rest args
+;;             &key
+;;             ((:manipulability-limit ml) 0.1)
+;;             ((:manipulability-gain mg) 0.001)
+;;             weight debug-view
+;;             ret wmat tmat umat umat2 mat-tmp
+;;             mat-tmp-rc tmp-mrr tmp-mrr2
+;;             &allow-other-keys)
+;;     (let (jacobi# m m2 (k 0))
+;;       ;; m : manipulability
+;;       (setq m (manipulability jacobi tmp-mrr tmat))
+;;       (if (< m ml) (setq k (* mg (expt (- 1.0 (/ m  ml)) 2))))
+;;       (when (and debug-view (not (memq :no-message debug-view)))
+;;         (warn "k     :~7,3f (manipulability:~7,3f, gain:~7,3f, limit:~7,3f, len:~d)
+;; ~%" k m mg ml (cadr (array-dimensions jacobi))))
+      
+;;       ;; calc weighted SR-inverse
+;;       ;; (setq jacobi# (sr-inverse jacobi k weight
+;;       ;;                           ret wmat tmat umat umat2 mat-tmp
+;;       ;;                           mat-tmp-rc tmp-mrr tmp-mrr2
+;;       ;;                           ))
+;;       ;; jacobi#
+;;       ;;(dotimes (i (array-dimension jacobi 1))
+;;       ;;(setf (aref wmat i i) (aref weight-vector i)))
+;;       ;;(transpose (m* wmat jacobi))
+;;       (transpose jacobi))))
 
 ;; initialization
 (setq *atlas* (atlas-with-hand))
-(send-all (send *atlas* :joint-list) :max-joint-velocity 0.1)
+;;(send-all (send *atlas* :joint-list) :max-joint-velocity 1.0)
 (setup-end-coords)
 (objects (list *atlas*))
 
