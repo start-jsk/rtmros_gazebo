@@ -1,6 +1,9 @@
 #!/usr/bin/env roseus
 
 (ros::load-ros-manifest "hrpsys_gazebo_atlas")
+(ros::load-ros-manifest "sandia_hand_msgs")
+(ros::load-ros-manifest "humanoid_nav_msgs")
+(ros::load-ros-manifest "atlas_msgs")
 (ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "moveit_msgs")
 (require :rtm-ros-robotics-interface "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
