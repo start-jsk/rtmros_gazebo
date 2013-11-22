@@ -1,6 +1,6 @@
 
 (defun atlas-calibration-pose (&optional (n 1))
-  (send *atlas* :reset-pose)
+  ;;(send *atlas* :reset-pose)
   (send *atlas* :head :neck-p :joint-angle 25)
   (case n
     (1 (send *atlas* :larm :angle-vector #f(30.0 90.0 0.0 -80.0 15.0 0.0)) ;; reset-pose
