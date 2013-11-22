@@ -1,6 +1,6 @@
 <launch>
   <arg name="FIXED_FRAME" default="/map" />
-
+  <arg name="USE_ASSEMBLER_FILTER" default="true" />
   <!-- laser assembler for recognizing environment -->
   <node pkg="laser_assembler" type="laser_scan_assembler"
         name="laser_scan_assembler_node"
@@ -8,7 +8,7 @@
     <remap from="scan" to="/multisense_sl/laser/scan"/>
     <remap from="cloud_filtered" to="/tilt_scan_shadow2_filtered"/>
     <param name="fixed_frame" type="string" value="$(arg FIXED_FRAME)"/>
-    <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/atlas_laser_filter.yaml" />
+    <rosparam command="load" file="$(find hrpsys_gazebo_atlas)/config/atlas_laser_filter.yaml" if="$(arg USE_ASSEMBLER_FILTER)"/>
   </node>
   <node pkg="hrpsys_gazebo_atlas" type="atlas_laser_snapshotter"
         name="atlas_laser_snapshotter"

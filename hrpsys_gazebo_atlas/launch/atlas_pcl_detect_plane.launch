@@ -85,10 +85,10 @@
 
       <!-- Finally extract the points corresponding to the object indices -->
       <node pkg="nodelet" type="nodelet" name="extract_nonground_indices" args="load pcl/ExtractIndices /$(arg ground_pcl_manager)" output="screen" respawn="true">
-        <remap from="~input"   to="extract_ground_indices/output" />
-        <remap from="~indices" to="extract_nonground_points/output" />
+        <remap from="~input"   to="ground_points_filter/output" />
+        <remap from="~indices" to="ground_segmentation/inliers" />
         <rosparam>
-          negative: false
+          negative: true
           max_queue_size: 20
         </rosparam>
       </node>
