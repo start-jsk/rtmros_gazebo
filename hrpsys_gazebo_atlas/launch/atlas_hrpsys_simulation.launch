@@ -4,9 +4,9 @@
 
   <!-- hrpsys -->
   <include file="$(find hrpsys_tools)/launch/hrpsys.launch">
-    <arg name="PROJECT_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas.xml" />
-    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas.dae" />
-    <arg name="CONF_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas.conf" />
+    <arg name="PROJECT_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas_v3.xml" />
+    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas_v3.dae" />
+    <arg name="CONF_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas_v3.conf" />
     <arg name="SIMULATOR_NAME" value="atlas(Robot)0" />
     <arg name="KILL_SERVERS" default="$(arg KILL_SERVERS)" />
   </include>
