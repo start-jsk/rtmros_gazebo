@@ -449,7 +449,7 @@
   (send *robot* :reset-pose)
   (send *robot* :newcoords (make-coords))
   (send *irtviewer* :draw-objects)
-  (when real (model2real-safe :time 10000))
+  (when real (model2real-safe :time 8000))
 
   (dolist (h (list -300 -500 -700 -500 -300))
     (send *robot* :fullbody-inverse-kinematics
@@ -476,16 +476,12 @@
 	  :debug-view :no-message
 	  )
     (send *irtviewer* :draw-objects)
-    (warn "wait for sending this pose to real pose~%")
-    (my-wait)
-    (when real (model2real-safe :time 10000))
+    (when real (model2real-safe :time 8000))
     )
 
   (send *atlas* :reset-pose)
   (send *irtviewer* :draw-objects)
-  (warn "wait for sending this pose to real pose~%")
-  (my-wait)
-  (when real (model2real-safe :time 10000))
+  (when real (model2real-safe :time 8000))
   )
 
 
