@@ -294,10 +294,10 @@
 (cond
  ((not (and (boundp '*triangle*) *triangle*))
   (setq *triangle*
-    (make-prism (list #F(0 0 0) #F(600 0 0) #F(0 600 0)) 5))
+	(make-prism (list #F(0 0 0) #F(300 0 0) #F(0 600 0)) 5))
   (send *triangle* :set-color #F(0 1 0))
-  (send *triangle* :rotate (deg2rad 90) :y)
-  (send *triangle* :translate #F(600 -200 650) :world)
+  (send *triangle* :rotate (deg2rad -90) :y)
+  (send *triangle* :translate #F(600 -200 0) :world)
 ;(send *triangle* :translate #F(100 0 0) :world)
   (gl::transparent *triangle* 0.3)
 ;  (load "triangle.l")
@@ -314,14 +314,18 @@
 (defun init-grasp-pose
   nil
   (send *robot* :angle-vector
-	(float-vector 0.666105 0.453636 0.169232 89.9685 105.481 -2.2947 -81.9084 -11.3984 140.62 -71.4656 122.04 50.1474 82.4132 -21.7127 105.881 117.167 -10.602 -54.342 15.0 -54.8502 23.8069 116.511 11.6134 -53.0905 -16.4626 -55.8006 -32.5296 65.4853))
+	(float-vector 0.654838 0.452977 0.172618 89.3478 105.077 -2.46122 -83.9327 -11.5136 142.089 -72.6276 122.634 49.3751 80.8572 -20.8708 105.304 113.835 -18.6064 -57.1283 22.4818 -48.086 22.8553 116.472 12.8538 -54.2963 -18.1375 -54.7431 -32.0816 65.5024))
+	;(float-vector 0.666105 0.453636 0.169232 89.9685 105.481 -2.2947 -81.9084 -11.3984 140.62 -71.4656 122.04 50.1474 82.4132 -21.7127 105.881 117.167 -10.602 -54.342 15.0 -54.8502 23.8069 116.511 11.6134 -53.0905 -16.4626 -55.8006 -32.5296 65.4853))
 ;	(float-vector 26.7629 4.57067 19.5455 80.5325 94.6333 -5.135 -59.8389 -54.5193 130.226 -80.9536 108.013 66.5278 72.6201 -31.1291 103.478 109.713 -19.3623 -70.8337 19.583 -41.9359 -0.451053 112.13 14.8006 -71.7101 -15.0 -43.3939 -2.2247 51.8388))
 ;	(float-vector 30.2914 14.5512 19.832 82.6847 57.502 16.9294 -75.707 -86.2673 162.803 -101.47 94.6749 50.8246 60.5665 -23.4032 94.9548 114.013 -7.16839 -80.8545 7.72476 -33.9763 0.646874 113.767 6.43725 -80.8649 -5.88093 -33.7164 0.452182 41.0989))
 ;	(float-vector 30.2942 14.5437 19.8382 83.7327 59.5451 23.0702 -72.3031 -87.9407 172.319 -99.3999 93.7892 50.9956 60.4444 -24.5719 94.5786 113.802 -7.9603 -80.5369 7.93411 -33.2496 -0.00524 114.234 5.71181 -80.8654 -5.738 -33.3534 -0.002034 0.0))
   (send *robot* :newcoords
 	(make-coords
-	 :pos (float-vector 1.773 -48.58 -124.121)
-	 :rpy '(0.079 -0.154 -0.009)))
+	 :pos (float-vector 0.497 -34.902 -124.554)
+	 :rpy '(0.073 -0.155 0.001)))
+;	(make-coords
+;	 :pos (float-vector 1.773 -48.58 -124.121)
+;	 :rpy '(0.079 -0.154 -0.009)))
 ;	(make-coords
 ;	 :pos (float-vector -130.206 -122.709 -96.739)
 ;	 :rpy '(0.026 0.05 -0.003)))
@@ -339,6 +343,24 @@
 	 #'(lambda (k)
 	     (send *robot* k :end-coords :copy-worldcoords))
 	 '(:rleg :lleg)))
+  ;;
+  (send *triangle* :translate
+	(float-vector
+	 0 0
+	 (+
+	  (aref (send (car *fix-leg-coords*) :worldpos) 2)
+	  (-
+	   910
+	   (apply
+	    #'min
+	    (mapcar
+	     #'(lambda (v) (aref v 2))
+	     (flatten
+	      (send-all
+	       (send *triangle* :faces)
+	       :vertices)))))))
+	:world)
+  ;;
   (fix-gun-coords)
   )
 
@@ -357,7 +379,7 @@
      buf))
   )
 
-(send-all (send *robot* :joint-list) :max-joint-velocity 1.0)
+(send-all (send *robot* :joint-list) :max-joint-velocity 0.3)
 ;(send *robot* :lleg :crotch-r :min-angle -5)
 ;(send *robot* :lleg :crotch-r :joint-angle 15)
 ;(send *robot* :rleg :crotch-r :max-angle 5)
@@ -602,7 +624,7 @@
 	 (list (send *robot* :torso k :child-link)
 	       gain))
      (list :waist-r :waist-p :waist-y)
-     (list 1e-3 1e-3 1e-2)))
+     (list 1e-3 1e-2 1e-2)))
    ;; (centroid-thre
    ;;  (let ((margin 1.0)
    ;; 	  (foot-convex
@@ -724,7 +746,7 @@
 	   ;;
 	   :collision-avoidance-link-pair collision-pair
 	   :root-link-virtual-joint-weight
-	   #F(0.1 1.5 1 0.1 0.1 0.5)
+	   #F(0.1 1.5 1 0.08 0.08 0.08)
 	   ;:min #F(-1000 -1000 -1000 -200 -200 -200)
 	   ;:max #F(1000 1000 1000 200 200 200)
 	   :avoid-collision-distance 10
@@ -928,12 +950,13 @@
    (n (triangle-n))
    (real? nil)
    (real-feedback? nil)
+   (cnt 1000)
+   (return? nil)
    )
-  (let (ret
-	move
-	rpy
-	buf
-	(cnt 1000))
+  (if return?
+      (setq return?
+	    (length *success-state-collection*)))
+  (let (ret move rpy buf tmp)
     (do-until-key
      (if (< (decf cnt) 0) (return-from nil nil))
      (ros::spin-once)
@@ -976,14 +999,14 @@
 	    (normalize-vector move)))
      (setq rpy (scale (min 0.15 (norm rpy))
 		      (normalize-vector rpy)))
-     (setq ret (ik-main
+     (setq tmp (ik-main
 		:real? real?
 		:move move :rpy rpy
 		:rotate? :x))
      (cond
-      ((vectorp ret))
+      ((vectorp tmp))
       (t ;(evenp (random 2))
-       (setq ret (ik-main
+       (setq tmp (ik-main
 		  :real? real?
 		  :real-feedback? real-feedback?
 		  ;:rotate? :x
@@ -1010,7 +1033,14 @@
       ;; 		   (- (random 2.0) 1.0))
       ;; 		  :rotate? :x)))
       )
-     (x::window-main-one))))
+     (x::window-main-one)))
+  (if return?
+      (subseq *success-state-collection*
+	      0
+	      (- (length *success-state-collection*)
+		 return?))
+    t)
+  )
 
 (defun triangle-pos-list
   nil
@@ -1143,7 +1173,7 @@
 (do-until-key
  (mapcar
   #'(lambda (p) (demo-pos-controller :pos p))
-  (triangle-pos-list))
+  (reverse (triangle-pos-list)))
  )
 
 (mm)
@@ -1174,5 +1204,15 @@ roseus atlas-dual-arm-ik.l
 
 (load "ssc-dual-20131120-2.l")
 (demo-collection-play)
+
+(send *ri* :angle-vector-sequence
+      (mapcar
+       #'(lambda (data)
+	   (cdr (assoc :angle-vector data)))
+       (reverse *success-state-collection*))
+      (cons 10000
+	    (make-list
+	     (- (length *success-state-collection*) 1)
+	     :initial-element 500)))
 
 |#
