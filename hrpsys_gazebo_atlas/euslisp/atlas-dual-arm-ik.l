@@ -1128,7 +1128,6 @@
    (setq inital-sleep 100))
   )
 
-
 ;(demo-mouse-controller)
 
 ;;
@@ -1155,9 +1154,7 @@
   (cond
    ((not (and (boundp '*ri*) *ri*))
     (atlas-init-ex)
-    (objects
-     (list *robot* *centroid-object*
-	   *gun-coords* *triangle*))))
+    (my-objects)))
   (stand-up)
   (real2model)
   (model2real :wait t)
@@ -1196,11 +1193,25 @@ roseus atlas-dual-arm-ik.l
 
 ;; servo
 
+(init-grasp-pose-single-hand)
+(model2real :time 10000)
+(load "ssc-single-20131120.l")
+(demo-collection-play)
+
 (init-grasp-pose)
 (model2real :time 10000)
-
-(load "ssc-20131119.l")
+(load "ssc-dual-20131120-2.l")
 (demo-collection-play)
+
+;; (send *ri* :angle-vector-sequence
+;;      (mapcar
+;;       #'(lambda (data) (cdr (assoc :angle-vector data)))
+;;       (reverse *success-state-collection*))
+;;      (cons 10000
+;;	    (cdr
+;;	     (mapcar
+;;	      #'(lambda (hoge) 500)
+;;	      *success-state-collection*))))
 
 (load "ssc-dual-20131120-2.l")
 (demo-collection-play)
@@ -1216,3 +1227,5 @@ roseus atlas-dual-arm-ik.l
 	     :initial-element 500)))
 
 |#
+
+
