@@ -1,6 +1,7 @@
 <launch>
   <arg name="USE_SNAPSHOT" default="true" />
   <arg name="USE_THROTTLE" default="true" />
+  <arg name="USE_MJPEGSERVER" default="true" />
 
   <arg name="THROTTLE_RATE" default="1.4" />
   <arg name="THROTTLE_RESIZE_RATE" default="0.25" />
@@ -9,6 +10,7 @@
   <arg name="THROTTLE_PERIOD" default="0.1" />
   <arg name="SNAPSHOT_RESIZE_RATE" default="0.25" />
   <arg name="SNAPSHOT_IMAGE_TYPE" default="image_rect" />
+  <arg name="MJPEGSERVER_PORT" default="8181"/>
 
 
   <group if="$(arg USE_THROTTLE)" >
@@ -79,4 +81,11 @@
       <param name="use_snapshot" value="true" />
     </node>
   </group>
+
+  <group if="$(arg USE_MJPEGSERVER)" >
+    <node pkg="mjpeg_server" type="mjpeg_server" name="mjpeg_server">
+      <param name="port" value="$(arg MJPEGSERVER_PORT)"/>
+    </node>
+  </group>
+
 </launch>
