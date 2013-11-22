@@ -10,8 +10,8 @@
 	(set-reset-pose t)
 	(servo-gain
 	 (list (cons :legs 3.0)
-	       (cons :torso 2.0)
-	       (cons :arms 4.0)
+	       (cons :torso 2.0) ;; 1.0
+	       (cons :arms 4.0) ;; 1.0
 	       (cons :head 5.0))))
   (if real
       (unless (boundp '*atlas-init-called*)
@@ -638,10 +638,18 @@
 
 
 
-(defun init-for-drill
+(defun init-for-drill-holl
   ()
   (atlas-init-ex)
-  (send *ri* :teleport-to (make-coords :pos #f(-6500 -15000 1000) :rpy (list pi/2 0 0)))
+  (send *ri* :teleport-to (make-coords :pos #f(-6500 -14000 1000) :rpy (list pi/2 0 0)))
+  (warn "set \"servo on\" on drcsim.")
+  (y-or-n-p)
+  (set-user))
+
+(defun init-for-drill-grasp
+  ()
+  (atlas-init-ex)
+  (send *ri* :teleport-to (make-coords :pos #f(-10500 -15000 1000) :rpy (list pi 0 0)))
   (warn "set \"servo on\" on drcsim.")
   (y-or-n-p)
   (set-user))
