@@ -24,7 +24,7 @@
         ;;(rad 1.57))
     ;;(rad 0))
     (send end-coords :rotate rad axis)
-    (send end-coords :translate (float-vector 30 -225 45) :world)
+    (send end-coords :translate (float-vector 30 -250 45) :world)
     (let ((new-end-coords
            (send (send *atlas* :r_hand_lk) :copy-worldcoords)))
       ;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
@@ -41,7 +41,7 @@
         (axis (float-vector 0 0 1))
         (rad 0.91))
     (send end-coords :rotate rad axis)
-    (send end-coords :translate (float-vector 30 225 45) :world)
+    (send end-coords :translate (float-vector 30 250 45) :world)
     (let ((new-end-coords
            (send (send *atlas* :l_hand_lk) :copy-worldcoords)))
            ;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
