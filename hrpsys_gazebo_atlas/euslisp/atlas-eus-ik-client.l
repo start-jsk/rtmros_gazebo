@@ -40,7 +40,8 @@
                        :frame_id "/pelvis")
                  :pose (instance geometry_msgs::Pose :init
                      :position (instance geometry_msgs::Point :init
-                                         :x (+ 0.4 (- (random D) (/ D 2.0)))
+                                         :x (+ 0.6 (- (random D) (/ D 2.0)))
+                                         ;;:x (+ 0.4 (- (random D) (/ D 2.0)))
                                          :y (- (random (* D 2)) (/ (* 2 D) 2.0))
                                          :z (+ 0.3 (- (random D) (/ D 2.0))))
                      :orientation
