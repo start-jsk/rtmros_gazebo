@@ -183,6 +183,8 @@
 	   (copy-object (send *robot* :worldcoords)))))
    (target-limb '(:rarm :larm :rleg :lleg))
    (target-coords (make-list (length target-limb)))
+   (thre (make-list 4 :initial-element 5))
+   (rthre (make-list 4 :initial-element (deg2rad 3)))
    (left-support? t)
    (move-target
     (mapcar
@@ -262,7 +264,7 @@
    (initial-coords (copy-object (send *robot* :worldcoords)))
    (debug-view :no-message)
    (stop 50)
-   collision?
+   (collision? t)
    (collision-pair
     (apply
      #'append
@@ -308,8 +310,8 @@
 	   :cog-gain 0.1
 	   :additional-weight-list additional-weight-list
 	   :stop stop
-	   :thre (make-list 4 :initial-element 5)
-	   :rthre (make-list 4 :initial-element (deg2rad 3))
+	   :thre thre
+	   :rthre rthre
 	   :centroid-thre #'check-centroid-with-convex
 	   ;;
 	   :collision-avoidance-link-pair collision-pair
@@ -325,11 +327,12 @@
 	   :debug-view debug-view
 	   :warnp nil))
     ;;
-    (setq collision?
-	  (send *robot* :self-collision-check :pairs
-		(mapcar
-		 #'(lambda (ll) (cons (car ll) (cadr ll)))
-		 collision-pair)))
+    (when collision?
+      (setq collision?
+	    (send *robot* :self-collision-check :pairs
+		  (mapcar
+		   #'(lambda (ll) (cons (car ll) (cadr ll)))
+		   collision-pair))))
     (format t "[collision check] ~A~%" collision?)
     ;;
     (cond
