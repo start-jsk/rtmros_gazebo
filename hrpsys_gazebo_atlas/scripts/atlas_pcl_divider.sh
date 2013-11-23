@@ -7,7 +7,10 @@ divide_num=10
 filter_min="0.00"
 filter_size="1.00"
 output_file="`rospack find hrpsys_gazebo_atlas`/launch/atlas_pcl_divider.launch"
+output_caller_file="`rospack find hrpsys_gazebo_atlas`/scripts/pcl_divider_periodic_caller.sh"
+caller_wait_sec=0.5
 
+# generate atlas_pcl_divider.launch
 cat << _EOT_ > $output_file
 <launch>
   <node pkg="nodelet" type="nodelet" name="pcl_divider_nodelet_manager" args="manager"
@@ -57,3 +60,32 @@ cat << _EOT_ >> $output_file
 _EOT_
 
 echo "generated atlas_pcl_divider.launch"
+
+# generate pcl_divider_periodic_caller.sh
+
+cat << "_EOF_" > $output_caller_file
+#!/bin/sh
+while :
+do
+    i=0
+_EOF_
+
+cat << _EOF_ >> $output_caller_file
+    divide_num=${divide_num}
+_EOF_
+
+cat << "_EOF_" >> $output_caller_file
+    while [ $i -ne $divide_num ]
+    do
+	i=`expr $i + 1`
+	rosservice call /pcl_divider_nodelet/topic_buffer_server/update "/pcl_divider_nodelet/voxelgrid${i}/output"
+_EOF_
+
+cat << _EOF_ >> $output_caller_file
+	sleep ${caller_wait_sec}
+    done
+done
+_EOF_
+
+chmod +x $output_caller_file
+echo "generated pcl_divider_periodic_caller.sh"
