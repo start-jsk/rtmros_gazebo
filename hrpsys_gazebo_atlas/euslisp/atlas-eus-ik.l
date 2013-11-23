@@ -112,7 +112,8 @@
                       gain))
             (list :waist-r :waist-p :waist-y)
                                         ;(list 1e-3 1e-3 1e-3))
-            (list 1e-3 1e-3 1e-3))
+	    (list 0.1 0.1 0.1))
+            ;;(list 1e-3 1e-3 1e-3))
         :root-link-virtual-joint-weight
         (float-vector 0 0 0 0 0 0)
         :min (float-vector 0 0 0 0 0 0)
