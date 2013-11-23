@@ -9,9 +9,11 @@
 (require :rtm-ros-robotics-interface "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-fullbody-ik.l")
 
 
 (ros::roseus "atlas_eus_ik")
+
 
 (defun setup-end-coords ()
   ;; right
@@ -75,7 +77,15 @@
         :warnp t
         :centroid-thre 100
         :thre '(1 1 1)
-        :rotation-paxis '(t t t)))
+        :rotation-axis '(t t t)))
+
+(defun fullbody-ik-with-collision (arm goal-in-world)
+  (fullbody-ik-main
+   :target-limb (list arm :lleg :rleg)
+   :target-coords (list goal-in-world nil nil)
+   :collision? t
+   :thre '(1 1 1)
+   :rotation-axis '(t t t)))
 
 ;; (defun torso-ik (arm goal-in-world)
 ;;   (let ((link-list (send *atlas* :link-list (send (send *atlas* arm :end-coords) :parent))))
@@ -127,7 +137,7 @@
         :warnp t
         :centroid-thre 100
         :thre '(1 1 1)
-        :rotation-paxis '(t t t)))
+        :rotation-axis '(t t t)))
 
 
 (defun normal-ik (arm goal-in-world)
@@ -179,7 +189,9 @@
       (let ((goal-in-world (send *tf* :transform-pose "/pelvis" goal)))
         (let ((ik-ret (cond
                        (fullbodyp
-                        (fullbody-ik arm goal-in-world))
+                        ;; (fullbody-ik arm goal-in-world)
+                        (fullbody-ik-with-collision arm goal-in-world)
+			)
                        (torsop
                         (torso-ik arm goal-in-world))
                        (t
@@ -233,6 +245,8 @@
 
 (setq *tf* (instance ros::transform-listener :init))
 
+(setq *robot* *atlas*)
+(init-fullbody-ik-main)
 
 (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
 (do-until-key
