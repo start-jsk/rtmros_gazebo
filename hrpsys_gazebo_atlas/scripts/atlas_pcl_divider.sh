@@ -15,6 +15,8 @@ cat << _EOT_ > $output_file
   <group ns="pcl_divider_nodelet">
 _EOT_
 
+
+
 filter_limit_max=$filter_min
 i=0
 
@@ -23,6 +25,7 @@ do
     i=`expr $i + 1`
     filter_limit_min=$filter_limit_max
     filter_limit_max=`echo "scale=3; $filter_limit_min+$filter_size" | bc`
+    topic_buffer_args="${topic_buffer_args} voxelgrid${i}/output"
     cat << _EOT_ >> $output_file
       <node pkg="nodelet" type="nodelet"
           name="voxelgrid${i}"
@@ -40,6 +43,13 @@ do
     </node>
 _EOT_
 done
+cat << _EOT_ >> $output_file
+    <node pkg="jsk_topic_tools" type="topic_buffer_server"
+        name="topic_buffer_server"
+        args="${topic_buffer_args}"
+        output="screen"/>
+_EOT_
+
 
 cat << _EOT_ >> $output_file
   </group>
