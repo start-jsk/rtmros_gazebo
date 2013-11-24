@@ -1,0 +1,9 @@
+<launch>
+  <node pkg="roseus" type="roseus"
+	name="joint_state_decompresser"
+	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"
+	output="screen"/>
+  <node pkg="jsk_topic_tools" type="topic_buffer_client"
+        name="topic_buffer_server"
+        output="screen"/>
+</launch>
