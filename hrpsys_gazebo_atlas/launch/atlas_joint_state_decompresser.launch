@@ -1,9 +1,24 @@
 <launch>
+
+  <param name="robot_description"
+         command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/>
+
   <node pkg="roseus" type="roseus"
 	name="joint_state_decompresser"
 	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"
 	output="screen"/>
+
   <node pkg="jsk_topic_tools" type="topic_buffer_client"
-        name="topic_buffer_server"
-        output="screen"/>
+        name="joint_state_buffer_client"
+        output="screen">
+    <remap from="/list" to="/topic_buffer_server/list"/>
+  </node>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="decompressed_robot_state_publisher"
+	output="screen">
+    <param name="publish_frequency" type="double" value="100.0" />
+    <remap from="/tf" to="/tf_dummy"/>
+    <remap from="/joint_states" to="/atlas/joint_states_decompressed"/>
+  </node>
+
 </launch>

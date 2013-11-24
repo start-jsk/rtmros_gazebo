@@ -3,7 +3,7 @@
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
 
 (setq js-decompressed-topic-name "/atlas/joint_states_decompressed")
-(setq js-compressed-topic-name "/atlas/joint_states_compressed")
+(setq js-compressed-topic-name "/atlas/joint_states_compressed_buffered")
 
 
 (defun get-joint-name (joint-index)
@@ -28,6 +28,7 @@
     (send js-decompressed :name joint-names)
     (send js-decompressed :position (coerce joint-angles float-vector))
     (ros::publish js-decompressed-topic-name js-decompressed)
+    (format t "published ~A~%" js-decompressed-topic-name)
     )
   )
 
