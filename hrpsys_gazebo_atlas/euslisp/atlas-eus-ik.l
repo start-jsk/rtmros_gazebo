@@ -84,6 +84,7 @@
    :target-limb (list arm :lleg :rleg)
    :target-coords (list goal-in-world nil nil)
    :collision? t
+   :centroid-thre 100
    :thre '(1 1 1)
    :rotation-axis '(t t t)))
 
@@ -136,8 +137,29 @@
         :debug-view :no-message
         :warnp t
         :centroid-thre 100
-        :thre '(1 1 1)
+        :thre '(5 5 1)
         :rotation-axis '(t t t)))
+
+(defun torso-ik-with-collision (arm goal-in-world)
+  (fullbody-ik-main
+   :target-limb (list arm :lleg :rleg)
+   :target-coords (list goal-in-world nil nil)
+   :additional-weight-list
+   (mapcar
+    #'(lambda (k gain)
+	(list (send *atlas* :torso k :child-link)
+	      gain))
+    (list :waist-r :waist-p :waist-y)
+    (list 0.1 0.1 0.1))
+   ;;(list 1e-3 1e-3 1e-3))
+   :root-link-virtual-joint-weight
+   (float-vector 0 0 0 0 0 0)
+   :min-vec (float-vector 0 0 0 0 0 0)
+   :max-vec (float-vector 0 0 0 0 0 0)
+   :collision? t
+   :centroid-thre 200
+   :thre '(5 5 1)
+   :rotation-axis '(t t t)))
 
 
 (defun normal-ik (arm goal-in-world)
@@ -193,7 +215,8 @@
                         (fullbody-ik-with-collision arm goal-in-world)
 			)
                        (torsop
-                        (torso-ik arm goal-in-world))
+                        ;;(torso-ik arm goal-in-world))
+                        (torso-ik-with-collision arm goal-in-world))
                        (t
                         (normal-ik arm goal-in-world)))))
           (if ik-ret
@@ -247,6 +270,7 @@
 
 (setq *robot* *atlas*)
 (init-fullbody-ik-main)
+(make-foot-convex)
 
 (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
 (do-until-key
