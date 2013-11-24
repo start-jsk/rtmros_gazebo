@@ -5,6 +5,7 @@
 (setq js-compressed-topic-name "/atlas/joint_states_compressed")
 
 
+
 (defun get-joint-index (joint-name)
   (cdr (assoc joint-name joint-index-list :key #'car :test #'string=))
 )
@@ -18,33 +19,33 @@
     (dotimes (i (length (send msg :name)))
       (setq joint-index (get-joint-index (elt (send msg :name) i)))
       (when joint-index
-	(push joint-index joint-indexes)
-	(push (elt (send msg :position) i) joint-angles)
+	(setf (elt js-compressed-list joint-index) (elt (send msg :position) i))
+	;;(push joint-index joint-indexes)
+	;;(push (elt (send msg :position) i) joint-angles)
 	)
       )
-    (send js-compressed :index (coerce joint-indexes string))
-    (send js-compressed :position (coerce joint-angles float-vector))
+    ;;(send js-compressed :index (coerce joint-indexes string))
+    (send js-compressed :index ros-atlas-joint-index)
+    ;;(send js-compressed :position (coerce joint-angles float-vector))
+    (send js-compressed :position (coerce js-compressed-list float-vector))
     (ros::publish js-compressed-topic-name js-compressed)
-    (print "published")
+    (ros::ros-info "joint_states_compressed was published~%")
     )
   )
 
 (defun main
   ()
   (joint-index-init)
+  (setq js-compressed-list (make-list (length atlas-joint-name-list) :initial-element 0))
   (ros::subscribe js-topic-name
 		  sensor_msgs::JointState #'compress-callback)
   (ros::advertise js-compressed-topic-name hrpsys_gazebo_atlas::JointStateCompressed 1)
 
   (ros::rate 10)
   (do-until-key
-   (print "loop")
    (ros::spin-once)
    (ros::sleep)
    (unless (ros::ok) (return)))
   )
 
 (main)
-
-
-

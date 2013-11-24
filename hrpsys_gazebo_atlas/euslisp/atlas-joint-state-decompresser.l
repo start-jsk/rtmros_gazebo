@@ -27,6 +27,8 @@
       )
     (send js-decompressed :name joint-names)
     (send js-decompressed :position (coerce joint-angles float-vector))
+    (send js-decompressed :velocity (make-sequence 'float-vector (length joint-names) :initial-element 0))
+    (send js-decompressed :effort (make-sequence 'float-vector (length joint-names) :initial-element 0))
     (ros::publish js-decompressed-topic-name js-decompressed)
     (format t "published ~A~%" js-decompressed-topic-name)
     )
