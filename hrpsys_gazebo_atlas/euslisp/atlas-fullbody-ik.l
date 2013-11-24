@@ -2,33 +2,31 @@
 
 (defun make-foot-convex
   ()
-  (cond
-   ((not (and (boundp '*foot-convex*) *foot-convex*))
-    (defvar *foot-convex*
-      (make-prism
-       (quickhull
-	(mapcar
-	 #'(lambda (v)
-	     (concatenate float-vector
-			  (subseq v 0 2)
-			  (list
-			   (+
-			    -10
-			    (aref
-			     (send *robot* :rleg :end-coords :worldpos)
-			     2)))))
-	 (flatten
+  (setq *foot-convex*
+	(make-prism
+	 (quickhull
 	  (mapcar
-	   #'(lambda (k)
-	       (send-all
-		(send
-		 (send *robot* k :end-coords :parent)
-		 :faces)
-		:vertices))
-	   '(:rleg :lleg)))))
-       5))
-    (send *foot-convex* :set-color #F(0 0 1))
-    (gl::transparent *foot-convex* 0.3))))
+	   #'(lambda (v)
+	       (concatenate float-vector
+			    (subseq v 0 2)
+			    (list
+			     (+
+			      -10
+			      (aref
+			       (send *robot* :rleg :end-coords :worldpos)
+			       2)))))
+	   (flatten
+	    (mapcar
+	     #'(lambda (k)
+		 (send-all
+		  (send
+		   (send *robot* k :end-coords :parent)
+		   :faces)
+		  :vertices))
+	     '(:rleg :lleg)))))
+	 5))
+  (send *foot-convex* :set-color #F(0 0 1))
+  (gl::transparent *foot-convex* 0.3))
 
 (defun make-centroid-object
   ()
@@ -215,34 +213,12 @@
 	       gain))
      (list :waist-r :waist-p :waist-y)
      (list 1e-3 1e-2 1e-2)))
-   ;; (centroid-thre
-   ;;  (let ((margin 1.0)
-   ;; 	  (foot-convex
-   ;; 	   (apply
-   ;; 	    #'vmax
-   ;; 	    (mapcar
-   ;; 	     #'(lambda (f)
-   ;; 		 (map float-vector #'abs (apply #'v- (send f :vertices))))
-   ;; 	     (flatten
-   ;; 	      (send-all
-   ;; 	       (send (send *robot* :rleg :end-coords :parent)
-   ;; 		     :faces)
-   ;; 	       :edges)))))
-   ;; 	  (foot-dist
-   ;; 	   (map float-vector
-   ;; 		#'abs
-   ;; 		(apply #'v-
-   ;; 		       (mapcar
-   ;; 			#'(lambda (k)
-   ;; 			    (send *robot* k :end-coords
-   ;; 				  :worldpos))
-   ;; 			'(:rleg :lleg))))))
-   ;;    (float-vector
-   ;;     (* margin (/ (aref foot-convex 0) 2.0))
-   ;;     (* margin
-   ;; 	  (+ (/ (aref foot-convex 1) 2.0)
-   ;; 	     (/ (aref foot-dist 1) 2.0))))))
-   ;;
+   (root-link-virtual-joint-weight
+    #F(0.1 1.5 1 0.08 0.08 0.08))
+    ;;(float-vector 0.01 0.01 1 0.01 0.01 0.01))
+   (min-vec #F(-1000 -1000 -1000 -200 -200 -200))
+   (max-vec #F(1000 1000 1000 200 200 200))
+   (centroid-thre #'check-centroid-with-convex)
    (rotation-axis
     (mapcar
      #'(lambda (k)
@@ -312,13 +288,13 @@
 	   :stop stop
 	   :thre thre
 	   :rthre rthre
-	   :centroid-thre #'check-centroid-with-convex
+	   :centroid-thre centroid-thre
 	   ;;
 	   :collision-avoidance-link-pair collision-pair
 	   :root-link-virtual-joint-weight
-	   #F(0.1 1.5 1 0.08 0.08 0.08)
-					;:min #F(-1000 -1000 -1000 -200 -200 -200)
-					;:max #F(1000 1000 1000 200 200 200)
+	   root-link-virtual-joint-weight
+	   :min min-vec
+	   :max max-vec
 	   :avoid-collision-distance 10
 	   :avoid-collision-null-gain 0.3
 	   :avoid-collision-joint-gain 0.3
@@ -385,7 +361,7 @@
   ()
   (send (send *robot* :utorso_lk) :make-pqpmodel :fat 30)
   (defvar *success-state-collection* nil)
-  (make-foot-convex)
+  ;; (make-foot-convex)
   (make-centroid-object))
 
 
