@@ -1,10 +1,20 @@
 <launch>
+  <!-- for atlas -->
   <node pkg="roseus" type="roseus"
-	name="joint_state_compresser"
+	name="atlas_joint_state_compresser"
 	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-compresser.l"
-	output="screen"/>
+	output="screen">
+  </node>
+
+  <!-- for multisense_sl -->
+  <node pkg="roseus" type="roseus"
+	name="multisense_sl_joint_state_compresser"
+	args="$(find hrpsys_gazebo_atlas)/euslisp/multisense-sl-joint-state-compresser.l"
+	output="screen">
+  </node>
+
   <node pkg="jsk_topic_tools" type="topic_buffer_server"
         name="joint_state_buffer_server"
-        args="/atlas/joint_states_compressed"
+        args="/atlas/joint_states_compressed /multisense_sl/joint_states_compressed"
         output="screen"/>
 </launch>

@@ -1,4 +1,6 @@
 <launch>
+  <arg name="ocs_tf" default="/tf_dummy"/>
+  <arg name="tf_frequency" default="10.0"/>
 
   <param name="robot_description"
          command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/>
@@ -8,17 +10,49 @@
 	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"
 	output="screen"/>
 
+  <node pkg="roseus" type="roseus"
+	name="joint_state_decompresser"
+	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"
+	output="screen">
+    <remap from="/atlas/joint_states_compressed_buffered" to="/multisense_sl/joint_states_compressed_buffered"/>
+  </node>
+
   <node pkg="jsk_topic_tools" type="topic_buffer_client"
         name="joint_state_buffer_client"
         output="screen">
-    <remap from="/list" to="/topic_buffer_server/list"/>
+    <remap from="/list" to="/joint_state_buffer_server/list"/>
   </node>
 
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="decompressed_robot_state_publisher"
+  <node pkg="robot_state_publisher" type="state_publisher" name="decompressed_robot_state_publisher"
 	output="screen">
-    <param name="publish_frequency" type="double" value="100.0" />
-    <remap from="/tf" to="/tf_dummy"/>
+    <param name="publish_frequency" type="double" value="$(arg tf_frequency)" />
+    <remap from="/tf" to="$(arg ocs_tf)"/>
     <remap from="/joint_states" to="/atlas/joint_states_decompressed"/>
   </node>
 
+<!--
+  <node pkg="robot_state_publisher" type="state_publisher" name="decompressed_multisense_sl_robot_state_publisher"
+	output="screen">
+    <param name="publish_frequency" type="double" value="$(arg tf_frequency)" />
+    <remap from="/tf" to="$(arg ocs_tf)"/>
+    <remap from="/joint_states" to="/multisense_sl/joint_states_decompressed"/>
+  </node>
+-->
+
+
+  <!--
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="decompressed_r_hand_robot_state_publisher"
+	output="screen">
+    <param name="publish_frequency" type="double" value="$(arg tf_frequency)" />
+    <remap from="/tf" to="$(arg ocs_tf)"/>
+    <remap from="/joint_states" to="/sandia_hands/r_hand/joint_states_decompressed"/>
+  </node>
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="decompressed_l_hand_robot_state_publisher"
+	output="screen">
+    <param name="publish_frequency" type="double" value="$(arg tf_frequency)" />
+    <remap from="/tf" to="$(arg ocs_tf)"/>
+    <remap from="/joint_states" to="/sandia_hands/r_hand/joint_states_decompressed"/>
+  </node>
+  -->
 </launch>
