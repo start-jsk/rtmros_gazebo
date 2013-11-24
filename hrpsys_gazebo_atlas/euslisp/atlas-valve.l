@@ -28,6 +28,9 @@
   (setq *robot* *atlas*)
   (init-fullbody-ik-main)
 
+  (init-valve-pose)
+  (make-foot-convex)
+
   (objects (list *atlas* *valve* *foot-convex* *centroid-object*))
   )
 
@@ -67,8 +70,14 @@
     (send (send *valve* :valve-joint) :joint-angle (- (/ valve-rotate-angle 2)))
     (dotimes (i div-num)
 
-      (fullbody-ik-main :target-limb (list :rarm :larm :rleg :lleg) :target-coords (append (mapcar #'(lambda (hname) (send *valve* hname)) (list :valve-handle0 :valve-handle1)) (list nil nil)) :rotation-axis (list :y :y t t))
-      (send (send *valve* :valve-joint) :joint-angle (/ valve-rotate-angle div-num) :relative t)
+      (fullbody-ik-main
+       :target-limb
+       (list :rarm :larm :rleg :lleg)
+       :target-coords
+       (append (mapcar #'(lambda (hname) (send *valve* hname)) (list :valve-handle0 :valve-handle1)) (list nil nil))
+       :rotation-axis (list :y :y t t))
+      (send (send *valve* :valve-joint)
+	    :joint-angle (/ valve-rotate-angle div-num) :relative t)
       (x::window-main-one))))
 
 (defun try-valve
