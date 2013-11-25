@@ -5,7 +5,7 @@ input_frame="/pelvis"
 leaf_size="0.2"
 divide_num=10
 filter_min="0.00"
-filter_size="1.00"
+filter_size="0.5"
 output_file="`rospack find hrpsys_gazebo_atlas`/launch/atlas_pcl_divider.launch"
 output_caller_file="`rospack find hrpsys_gazebo_atlas`/scripts/pcl_divider_periodic_caller.sh"
 caller_wait_sec=0.5
@@ -42,6 +42,7 @@ do
         filter_limit_max: ${filter_limit_max}
         filter_limit_negative: ${filter_limit_negative}
         input_frame: "${input_frame}"
+        output_frame: "${input_frame}"
         leaf_size: ${leaf_size}
       </rosparam>
     </node>
