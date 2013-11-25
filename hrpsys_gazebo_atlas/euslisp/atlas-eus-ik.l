@@ -266,6 +266,8 @@
 (setup-end-coords)
 (objects (list *atlas*))
 (send *irtviewer* :change-background #f(0.7 0.3 0.3))
+(send *irtviewer* :title "IK server")
+(send *irtviewer* :draw-objects)
 
 (setq *tf* (instance ros::transform-listener :init))
 
@@ -274,9 +276,11 @@
 (make-foot-convex)
 
 (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
+(ros::rate 10)
 (do-until-key
  (if (not (ros::ok)) (return-from nil nil))
  (x::window-main-one)
+ (ros::sleep)
  (ros::spin-once))
 
 #|
