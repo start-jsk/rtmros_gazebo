@@ -1,0 +1,6 @@
+<launch>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys.launch">
+    <env name="HRPSYS_GAZEBO_ATLAS_COMMAND_TOPIC_NAME" value="/atlas/atlas_command_hrpsys" />
+  </include>
+</launch>
+
