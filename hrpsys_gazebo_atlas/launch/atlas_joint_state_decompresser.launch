@@ -9,7 +9,7 @@
 	name="atlas_joint_state_decompresser"
 	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"
 	output="screen"/>
-
+  
   <node pkg="roseus" type="roseus"
 	name="multisense_sl_joint_state_decompresser"
 	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"

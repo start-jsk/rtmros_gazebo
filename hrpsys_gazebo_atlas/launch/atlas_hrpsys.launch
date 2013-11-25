@@ -9,6 +9,8 @@
   <arg name="USE_WEB" default="false" />
   <arg name="USE_INTERACTIVE" default="true" />
 
+  <arg name="USE_LOW_BANDWIDTH" default="true" />
+
   <!-- obsolated -->
   <arg name="USE_HAND"  default="false" />
   <arg name="USE_BDI_ACTION" default="false" />
@@ -56,7 +58,13 @@
   <include if="$(arg USE_WEB)"
 	   file="$(find hrpsys_gazebo_atlas)/launch/atlas_web.launch" />
 
+
+  <!-- compress point cloud and joint states -->
+  <include if="$(arg USE_LOW_BANDWIDTH)"
+	   file="$(find hrpsys_gazebo_atlas)/launch/atlas_low_bandwidth_ocs.launch"/>
+
   <!-- interactive joint marker and rviz -->
   <include if="$(arg USE_INTERACTIVE)"
 	   file="$(find jsk_interactive_marker)/launch/atlas_joint_marker.launch" />
+
 </launch>
