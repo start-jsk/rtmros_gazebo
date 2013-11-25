@@ -8,6 +8,7 @@
 (defun atlas-init-ex
   (&key (real t)
 	(set-reset-pose t)
+	(view t)
 	(servo-gain
 	 (list (cons :legs 3.0)
 	       (cons :torso 2.0) ;; 1.0
@@ -35,7 +36,7 @@
      servo-gain)
     (set-hand-kp 10.0))
   (setq *robot* *atlas*)
-  (objects (list *atlas*))
+  (when view (objects (list *atlas*)))
   t)
 
 (defun bar-init ()
