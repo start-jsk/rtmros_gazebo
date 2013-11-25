@@ -1,0 +1,9 @@
+<launch>
+  <!-- for joint state -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_joint_state_decompresser.launch"/>
+  <!--
+  <node name="sensor_tf_imu" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /imu_link /imu_joint 100" >
+    <remap from="/tf" to="/tf_dummy"/>
+  </node>
+  -->
+</launch>

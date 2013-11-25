@@ -6,12 +6,12 @@
          command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/>
 
   <node pkg="roseus" type="roseus"
-	name="joint_state_decompresser"
+	name="atlas_joint_state_decompresser"
 	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"
 	output="screen"/>
 
   <node pkg="roseus" type="roseus"
-	name="joint_state_decompresser"
+	name="multisense_sl_joint_state_decompresser"
 	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"
 	output="screen">
     <remap from="/atlas/joint_states_compressed_buffered" to="/multisense_sl/joint_states_compressed_buffered"/>
