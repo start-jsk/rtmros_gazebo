@@ -4,10 +4,10 @@
   <arg name="USE_MJPEGSERVER" default="true" />
 
   <arg name="THROTTLE_RATE" default="1.4" />
-  <arg name="THROTTLE_RESIZE_RATE" default="0.25" />
+  <arg name="THROTTLE_RESIZE_RATE" default="0.1" />
   <arg name="THROTTLE_IMAGE_TYPE" default="image_rect" />
   <arg name="THROTTLE_USE_MESSAGES" default="true" />
-  <arg name="THROTTLE_PERIOD" default="0.1" />
+  <arg name="THROTTLE_PERIOD" default="1" />
   <arg name="SNAPSHOT_RESIZE_RATE" default="0.25" />
   <arg name="SNAPSHOT_IMAGE_TYPE" default="image_rect" />
   <arg name="MJPEGSERVER_PORT" default="8181"/>
