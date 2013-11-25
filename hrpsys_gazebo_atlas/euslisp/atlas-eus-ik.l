@@ -265,6 +265,7 @@
 (send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
 (setup-end-coords)
 (objects (list *atlas*))
+(send *irtviewer* :change-background #f(0.7 0.3 0.3))
 
 (setq *tf* (instance ros::transform-listener :init))
 
