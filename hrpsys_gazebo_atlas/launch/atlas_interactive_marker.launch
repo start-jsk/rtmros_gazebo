@@ -1,0 +1,11 @@
+<launch>
+  <!-- joint marker -->
+  <include file="$(find jsk_interactive_marker)/launch/atlas_joint_marker.launch" />
+
+  <!-- hand marker -->
+  <include file="$(find jsk_interactive_marker)/launch/atlas_interactive_marker_practical.launch" />
+
+  <node pkg="roseus" type="roseus" name="eus_interactive_marker" args="$(find jsk_interactive)/euslisp/atlas-im-main.l"/>
+
+  <node pkg="rviz" type="rviz" name="rviz_for_atlas_interactive_marker" args="-d $(find jsk_interactive_marker)/launch/interactive_marker.rviz"/>
+</launch>
