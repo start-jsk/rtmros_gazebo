@@ -7,7 +7,8 @@
   <arg name="USE_IMAGE_TRANSPORT" default="false" />
   <arg name="USE_OCTOMAP" default="false" />
   <arg name="USE_WEB" default="false" />
-  <arg name="USE_INTERACTIVE" default="true" />
+  <arg name="USE_INTERACTIVE_JOINT" default="true" />
+  <arg name="USE_INTERACTIVE_ENDCOORDS" default="true" />
 
   <arg name="USE_LOW_BANDWIDTH" default="true" />
 
@@ -64,7 +65,9 @@
 	   file="$(find hrpsys_gazebo_atlas)/launch/atlas_low_bandwidth_ocs.launch"/>
 
   <!-- interactive joint marker and rviz -->
-  <include if="$(arg USE_INTERACTIVE)"
-	   file="$(find hrpsys_gazebo_atlas)/launch/atlas_interactive_marker.launch" />
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_interactive_marker.launch">
+    <arg name="USE_INTERACTIVE_JOINT" value="$(arg USE_INTERACTIVE_JOINT)"/>
+    <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
+  </include>
 
 </launch>
