@@ -4,6 +4,7 @@
 (load "package://hrpsys_gazebo_atlas/euslisp/sandia-hand-interface.l")
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-utils.l")
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-walk.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-impedance-calib.l")
 
 (ros::load-ros-manifest "hrpsys_gazebo_atlas")
 
