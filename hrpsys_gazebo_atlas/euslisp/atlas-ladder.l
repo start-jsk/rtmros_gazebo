@@ -24,7 +24,7 @@
 	 :rpy '(3.14 0 0)
 	 :pos
 	 (float-vector
-	  0 -50
+	  0 0
 	  (aref (v- (send *robot* :worldpos)
 		    (send *robot* :rleg :end-coords :worldpos)) 2)))))
 
@@ -45,7 +45,7 @@
 		   (v+ now
 		       (map float-vector
 			    #'*
-			    #F(0 1 0)
+			    #F(0 1.2 0)
 			    (send *robot* k :end-coords :worldpos)))
 		   :rot
 		   (copy-object (send *robot* k :end-coords :worldrot))))
@@ -59,19 +59,21 @@
    (fix-key (case move-key
 		  (:rleg :lleg)
 		  (:lleg :rleg)))
-   (move #F(0 0 0)))
+   (target-limb '(:rleg :lleg))
+   (move #F(0 0 0))
+   )
   (case move-key
-	(:rleg
-	 (send *robot* :rarm :elbow-p :joint-angle 0)
-	 (send *robot* :larm :elbow-p :joint-angle 0);123)
-	 )
-	(:lleg
-	 (send *robot* :rarm :elbow-p :joint-angle 0);-123)
-	 (send *robot* :larm :elbow-p :joint-angle 0)
-	 ))
+  	(:rleg
+  	 (send *robot* :rarm :elbow-p :joint-angle 0)
+  	 (send *robot* :larm :elbow-p :joint-angle 0);123)
+  	 )
+  	(:lleg
+  	 (send *robot* :rarm :elbow-p :joint-angle 0);-123)
+  	 (send *robot* :larm :elbow-p :joint-angle 0)
+  	 ))
   (let* ((mt (mapcar
 	      #'(lambda (k) (send *robot* k :end-coords))
-	      '(:rleg :lleg)))
+	      target-limb))
 	 (ll (mapcar
 	      #'(lambda (m) (send *robot* :link-list (send m :parent)))
 	      mt))
@@ -85,18 +87,44 @@
 		 (send buf :translate move :world))
 		(t t))
 	       buf)
-	   mt '(:rleg :lleg))
+	   mt target-limb)
 	  :move-target mt
 	  :link-list ll
 	  :debug-view :no-message
 	  :min #F(-1000 -1000 -1000 -200 -200 -200)
 	  :max #F(1000 1000 1000 200 200 200)
+	  ;:translation-axis (list nil nil t t)
+	  ;:rotation-axis (list nil nil t t)
+	  :thre (make-list (length target-limb)
+			   :initial-element 3)
+	  :rthre (make-list (length target-limb)
+			    :initial-element (deg2rad 3))
+	  :centroid-offset-func
+	  #'(lambda nil
+	      (x::window-main-one)
+	      (send *robot* :centroid))
 	  :target-centroid-pos
-	  (v+ #F(30 0 0) (send *robot* fix-key :end-coords :worldpos))
-	  :obstacles (list (send *ladder* :link_lk))
+	  (v+ #F(30 0 0)
+	      (if (eq move-key :both)
+		  (scale 0.5
+			 (v+
+			  (send *robot* :rleg :end-coords :worldpos)
+			  (send *robot* :lleg :end-coords :worldpos)))
+		(send *robot* fix-key :end-coords :worldpos)))
+	  ;; :obstacles (list (send *ladder* :link_lk))
+	  ;; :collision-avoidance-link-pair
+	  ;; (apply
+	  ;;  #'append
+	  ;;  (mapcar
+	  ;;   #'(lambda (k)
+	  ;; 	(mapcar
+	  ;; 	 #'(lambda (l)
+	  ;; 	     (list l (send *ladder* :link_lk)))
+	  ;; 	 (send *robot* k :links)))
+	  ;;   '(:rarm :larm)))
 	  :root-link-virtual-joint-weight
 	  #f(0.1 0.1 0.1 0.1 0.5 0.0)
-	  :stop 300
+	  :stop 500
 	  )
     ))
 
@@ -130,17 +158,40 @@
 	     (send now-c :worldpos)))
   )
 
+(send *robot* :rleg :knee-p :min-angle 10)
+(send *robot* :lleg :knee-p :min-angle 10)
+(defun demo-static-climb-ladder
+  (&key
+   (cnt 9))
+  (init-pose)
+  (do-until-key
+   (if (minusp (decf cnt)) (return-from nil t))
+   (if
+       (not
+	(and
+	 (static-leg-move :move-key :both)
+	 (static-leg-move :move-key :rleg)
+	 (static-leg-move :move-key :rleg :move #F(0 0 100))
+	 (static-leg-move :move-key :rleg :move #F(0 0 100))
+	 (static-leg-move :move-key :rleg :move #F(0 0 100))
+	 (static-leg-move :move-key :rleg :move #F(0 0 70))
+	 (static-leg-move :move-key :rleg :move #F(100 0 0))
+	 (static-leg-move :move-key :rleg :move #F(100 0 0))
+	 (on-ladder :move-key :rleg)
+	 (static-leg-move :move-key :both)
+	 (static-leg-move :move-key :lleg)
+	 (static-leg-move :move-key :lleg :move #F(0 0 100))
+	 (static-leg-move :move-key :lleg :move #F(0 0 100))
+	 (static-leg-move :move-key :lleg :move #F(0 0 100))
+	 (static-leg-move :move-key :lleg :move #F(0 0 70))
+	 (static-leg-move :move-key :lleg :move #F(100 0 0))
+	 (static-leg-move :move-key :lleg :move #F(100 0 0))
+	 (on-ladder :move-key :lleg))
+	)
+       (return-from nil nil)))
+  )
+
+
 
 #|
 
-(mapcar
- #'(lambda (k)
-     (send *robot* k :inverse-kinematics
-	   (make-coords :pos #F(-10000 0 0))
-	   :move-target (send *robot* k :end-coords)
-	   :translation-axis :x
-	   :rotation-axis nil
-	   :debug-view :no-message
-	   :revert-if-fail nil)
-     )
- '(:rarm :larm))
