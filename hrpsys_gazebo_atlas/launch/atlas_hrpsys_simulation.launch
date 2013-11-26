@@ -2,15 +2,19 @@
   <arg name="KILL_SERVERS" default="false" />
   <param name="use_sim_time" value="true" />
 
+  <arg name="ROBOT_NAME" default="atlas_v3" />
+
   <!-- hrpsys -->
   <include file="$(find hrpsys_tools)/launch/hrpsys.launch">
-    <arg name="PROJECT_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas_v3.xml" />
-    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas_v3.dae" />
-    <arg name="CONF_FILE" value="$(find hrpsys_gazebo_atlas)/models/atlas_v3.conf" />
+    <arg name="PROJECT_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).xml" />
+    <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
+    <arg name="CONF_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).conf" />
     <arg name="SIMULATOR_NAME" value="atlas(Robot)0" />
     <arg name="KILL_SERVERS" default="$(arg KILL_SERVERS)" />
   </include>
 
   <!-- ROS bridge -->
-  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch"/>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
+    <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
+  </include>
 </launch>
