@@ -2,8 +2,8 @@
   <arg name="ocs_tf" default="/tf_dummy"/>
   <arg name="tf_frequency" default="10.0"/>
 
-  <param name="robot_description"
-         command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/>
+  <!-- <param name="robot_description" -->
+  <!--        command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/> -->
 
   <node pkg="roseus" type="roseus"
 	name="atlas_joint_state_decompresser"
