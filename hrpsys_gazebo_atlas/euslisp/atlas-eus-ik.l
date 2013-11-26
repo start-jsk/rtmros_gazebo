@@ -260,28 +260,29 @@
 ;;       ;;(transpose (m* wmat jacobi))
 ;;       (transpose jacobi))))
 
-;; initialization
-(setq *atlas* (atlas-with-hand))
-(send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
-(setup-end-coords)
-(objects (list *atlas*))
-(send *irtviewer* :change-background #f(0.7 0.3 0.3))
-(send *irtviewer* :title "IK server")
-(send *irtviewer* :draw-objects)
+(unless (boundp '*do-not-start-ik-server*)
+  ;; initialization
+  (setq *atlas* (atlas-with-hand))
+  (send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
+  (setup-end-coords)
+  (objects (list *atlas*))
+  (send *irtviewer* :change-background #f(0.7 0.3 0.3))
+  (send *irtviewer* :title "IK server")
+  (send *irtviewer* :draw-objects)
 
-(setq *tf* (instance ros::transform-listener :init))
+  (setq *tf* (instance ros::transform-listener :init))
 
-(setq *robot* *atlas*)
-(init-fullbody-ik-main)
-(make-foot-convex)
+  (setq *robot* *atlas*)
+  (init-fullbody-ik-main)
+  (make-foot-convex)
 
-(ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
-(ros::rate 10)
-(do-until-key
- (if (not (ros::ok)) (return-from nil nil))
- (x::window-main-one)
- (ros::sleep)
- (ros::spin-once))
+  (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
+  (ros::rate 10)
+  (do-until-key
+   (if (not (ros::ok)) (return-from nil nil))
+   (x::window-main-one)
+   (ros::sleep)
+   (ros::spin-once))) 
 
 #|
 ;; client sample
