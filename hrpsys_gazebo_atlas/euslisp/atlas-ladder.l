@@ -13,6 +13,10 @@
   (send *robot* :reset-manip-pose)
   (send *robot* :larm :shoulder-r :joint-angle 90)
   (send *robot* :rarm :shoulder-r :joint-angle -90)
+  ;;
+  (send *robot* :rarm :elbow-p :joint-angle 0)
+  (send *robot* :larm :elbow-p :joint-angle 0)
+  ;;
   (send *sandia_hand_left* :grasp-pose)
   (send *sandia_hand_right* :grasp-pose)
   (send *robot* :newcoords
@@ -20,7 +24,7 @@
 	 :rpy '(3.14 0 0)
 	 :pos
 	 (float-vector
-	  0 0
+	  0 -50
 	  (aref (v- (send *robot* :worldpos)
 		    (send *robot* :rleg :end-coords :worldpos)) 2)))))
 
@@ -56,6 +60,15 @@
 		  (:rleg :lleg)
 		  (:lleg :rleg)))
    (move #F(0 0 0)))
+  (case move-key
+	(:rleg
+	 (send *robot* :rarm :elbow-p :joint-angle 0)
+	 (send *robot* :larm :elbow-p :joint-angle 0);123)
+	 )
+	(:lleg
+	 (send *robot* :rarm :elbow-p :joint-angle 0);-123)
+	 (send *robot* :larm :elbow-p :joint-angle 0)
+	 ))
   (let* ((mt (mapcar
 	      #'(lambda (k) (send *robot* k :end-coords))
 	      '(:rleg :lleg)))
@@ -76,8 +89,14 @@
 	  :move-target mt
 	  :link-list ll
 	  :debug-view :no-message
+	  :min #F(-1000 -1000 -1000 -200 -200 -200)
+	  :max #F(1000 1000 1000 200 200 200)
 	  :target-centroid-pos
 	  (v+ #F(30 0 0) (send *robot* fix-key :end-coords :worldpos))
+	  :obstacles (list (send *ladder* :link_lk))
+	  :root-link-virtual-joint-weight
+	  #f(0.1 0.1 0.1 0.1 0.5 0.0)
+	  :stop 300
 	  )
     ))
 
