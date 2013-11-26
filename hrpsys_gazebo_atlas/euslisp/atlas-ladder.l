@@ -25,15 +25,19 @@
 	 :pos
 	 (float-vector
 	  0 0
-	  (aref (v- (send *robot* :worldpos)
-		    (send *robot* :rleg :end-coords :worldpos)) 2)))))
+	  (+
+	   0
+	   (aref
+	    (v- (send *robot* :worldpos)
+		(send *robot* :rleg :end-coords :worldpos))
+	    2))))))
 
 (init-pose)
 (objects (list *ladder* *robot*))
 
 (setq *foot-print*
       (let ((now (float-vector 0 0 0))
-	    (step (float-vector (/ 300 (tan (deg2rad 60))) 0 300))
+	    (step (float-vector (/ 305 (tan (deg2rad 60))) 0 305))
 	    (cnt 9))
 	(mapcar
 	 #'(lambda (hoge)
@@ -104,7 +108,7 @@
 	      (x::window-main-one)
 	      (send *robot* :centroid))
 	  :target-centroid-pos
-	  (v+ #F(30 0 0)
+	  (v+ #F(50 0 0)
 	      (if (eq move-key :both)
 		  (scale 0.5
 			 (v+
@@ -154,8 +158,10 @@
 	     (send b :difference-rotation now-c)))))))
   (static-leg-move
    :move-key move-key
-   :move (v- (send (car target-c) :worldpos)
-	     (send now-c :worldpos)))
+   :move (v+
+	  #F(0 0 0)
+	  (v- (send (car target-c) :worldpos)
+	      (send now-c :worldpos))))
   )
 
 (send *robot* :rleg :knee-p :min-angle 10)
@@ -174,18 +180,32 @@
 	 (static-leg-move :move-key :rleg :move #F(0 0 100))
 	 (static-leg-move :move-key :rleg :move #F(0 0 100))
 	 (static-leg-move :move-key :rleg :move #F(0 0 100))
-	 (static-leg-move :move-key :rleg :move #F(0 0 70))
+	 (static-leg-move :move-key :rleg :move #F(0 0 50))
+	 (or
+	  t
+	  (not (eq cnt 0))
+	  (static-leg-move :move-key :rleg :move #F(0 0 30)))
 	 (static-leg-move :move-key :rleg :move #F(100 0 0))
 	 (static-leg-move :move-key :rleg :move #F(100 0 0))
+	 (or
+	  (not (eq cnt 0))
+	  (static-leg-move :move-key :rleg :move #F(50 0 0)))
 	 (on-ladder :move-key :rleg)
 	 (static-leg-move :move-key :both)
 	 (static-leg-move :move-key :lleg)
 	 (static-leg-move :move-key :lleg :move #F(0 0 100))
 	 (static-leg-move :move-key :lleg :move #F(0 0 100))
 	 (static-leg-move :move-key :lleg :move #F(0 0 100))
-	 (static-leg-move :move-key :lleg :move #F(0 0 70))
+	 (static-leg-move :move-key :lleg :move #F(0 0 50))
+	 (or
+	  t
+	  (not (eq cnt 0))
+	  (static-leg-move :move-key :lleg :move #F(0 0 30)))
 	 (static-leg-move :move-key :lleg :move #F(100 0 0))
 	 (static-leg-move :move-key :lleg :move #F(100 0 0))
+	 (or
+	  (not (eq cnt 0))
+	  (static-leg-move :move-key :lleg :move #F(50 0 0)))
 	 (on-ladder :move-key :lleg))
 	)
        (return-from nil nil)))
