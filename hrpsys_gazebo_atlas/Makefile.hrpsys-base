@@ -22,3 +22,11 @@ installed:
 	(cd idl && make && make install ) && \
 	(cd lib && make && make install ) && \
 	(cd rtc/RobotHardware && make && make install )
+
+icon:
+	@for file in *.in; do \
+            out=`basename $$file .in`; \
+            echo "-- Create $$out"; \
+	    sed s#@PROJECT_SOURCE_DIR@#`pwd`#g $$file > $$out;\
+            chmod a+x $$out; \
+	done   

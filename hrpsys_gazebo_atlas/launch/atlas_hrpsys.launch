@@ -12,6 +12,13 @@
 
   <arg name="USE_LOW_BANDWIDTH" default="true" />
 
+  <!-- when we use lower controller -->
+  <arg name="USE_CONTROLLER" default="false" />
+  <group if="$(arg USE_CONTROLLER)" >
+    <env name="HRPSYS_GAZEBO_ATLAS_COMMAND_TOPIC_NAME" value="/atlas/atlas_command_hrpsys" />
+    <include file="$(find hrpsys_gazebo_atlas)/launch/atlas-ik.launch" />
+  </group>
+
   <!-- obsolated -->
   <arg name="USE_HAND"  default="false" />
   <arg name="USE_BDI_ACTION" default="false" />
