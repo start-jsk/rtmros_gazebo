@@ -5,6 +5,6 @@ Type=Application
 Terminal=false
 Icon[ja_JP]=@PROJECT_SOURCE_DIR@/hrpsys_gazebo_atlas.png
 Name[ja_JP]=Atlas HRPSYS/ROS Demo
-Exec=xterm -sb -rightbar -sl 99999 +s -title 'Atlas Hrpsys Terminal' -e 'PS1=dummy source ~/.bashrc; pkill -KILL omniNames; `rospack find hrpsys_ros_bridge`/scripts/rtmlaunch hrpsys_gazebo_atlas atlas_hrpsys.launch USE_CONTROLLER:=true'
+Exec=xterm -sb -rightbar -sl 99999 +s -hold -title 'Atlas Hrpsys Terminal' -e 'PS1=dummy source ~/.bashrc; pkill -KILL omniNames; `rospack find hrpsys_ros_bridge`/scripts/rtmlaunch hrpsys_gazebo_atlas atlas_hrpsys.launch USE_CONTROLLER:=true'
 Name=Atlas_HRPSYS_ROS_Demo
 Icon=@PROJECT_SOURCE_DIR@/hrpsys_gazebo_atlas.png
