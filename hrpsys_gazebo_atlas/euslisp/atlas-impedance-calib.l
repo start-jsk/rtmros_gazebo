@@ -13,6 +13,7 @@
             limbs)
     (unix:system (format nil "rm -f /tmp/atlas-force-moment-offset.l"))
     (forceCalib-for-limbs *atlas*
+			  :base-time 2000
                           :fname (format nil "/tmp/atlas-force-moment-offset.l")
                           :poses calib-poses)))
 
