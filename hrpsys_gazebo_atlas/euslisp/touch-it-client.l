@@ -14,7 +14,7 @@
 ;;                              :init :logger "ros" :level "DEBUG"))
 
 
-(defun touch-it-client (&optional (order (float-vector 10 10 10)))
+(defun touch-it-client (&optional (order (scale 0.001 (float-vector 479.364 -800.006 378.368))))
   (let (goal res)
     ;; set request
     (if (not (boundp '*c*))
@@ -24,9 +24,13 @@
     (send *c* :wait-for-server)
     (warning-message 2 "[touch_it_client] finish waiting for server ~%")
     (setq goal (instance move_base_msgs::MoveBaseActionGoal :init))
+    (send goal :goal :target_pose :header :frame_id "/pelvis")
+    (send goal :goal :target_pose :header :stamp (ros::time 0.0))
     (send goal :goal :target_pose :pose :position :x (elt order 0))
     (send goal :goal :target_pose :pose :position :y (elt order 1))
     (send goal :goal :target_pose :pose :position :z (elt order 2))
+    (send goal :goal :target_pose :pose :orientation :w 1.0)
+    (send goal :goal :target_pose :header :seq 3)
 
     ;; send request
     (warning-message 2 "[touch_it_client] send goal to server ~%")
@@ -39,12 +43,6 @@
     ;; check the result
     (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
     (setq res (send *c* :get-state))
-    ;;;; debug
-    ;; (pprint res)
-    ;; (pprint (send *c* :methods))
-    ;; (pprint (send (send *c* :get-result) :slots))
-    ;; (pprint (send (send *c* :get-result) :plist))
-    ;; (pprint (send (send *c* :get-result) :methods))
     (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
     res))
 
@@ -52,14 +50,18 @@
 (warning-message 1 "~%")
 (warning-message 1 "[touch_it_client] touch_it_action_client_node started !~%")
 
-(let ((count 0))
-  (do-until-key
-   (warning-message 4 "[touch_it_client] loop: ~A/~A~%" count 1000)
-   (incf count)
-   (when (> count 1000)
-     (exit 0))
-   (setq res (touch-it-client))
-   (warning-message 1 "[touch_it_client] result: %s%" res))
-  (exit 0)
-  )
+(setq res (touch-it-client))
+(warning-message 1 "[touch_it_client] result: ~a~%" res)
+(exit 0)
+
+;; (let ((count 0))
+;;   (do-until-key
+;;    (warning-message 4 "[touch_it_client] loop: ~A/~A~%" count 1000)
+;;    (incf count)
+;;    (when (> count 1000)
+;;      (exit 0))
+;;    (setq res (touch-it-client))
+;;    (warning-message 1 "[touch_it_client] result: ~a~%" res))
+;;   (exit 0)
+;;   )
 
