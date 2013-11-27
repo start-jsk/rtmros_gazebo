@@ -7,11 +7,11 @@
   <arg name="USE_IMAGE_TRANSPORT" default="false" />
   <arg name="USE_OCTOMAP" default="false" />
   <arg name="USE_WEB" default="false" />
-  <arg name="USE_INTERACTIVE_JOINT" default="true" />
-  <arg name="USE_INTERACTIVE_ENDCOORDS" default="true" />
+  <arg name="USE_INTERACTIVE_JOINT" default="false" />
+  <arg name="USE_INTERACTIVE_ENDCOORDS" default="false" />
 
   <arg name="USE_LOW_BANDWIDTH" default="true" />
-
+  
   <!-- when we use lower controller -->
   <arg name="USE_CONTROLLER" default="false" />
   <group if="$(arg USE_CONTROLLER)" >
