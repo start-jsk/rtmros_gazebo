@@ -1,6 +1,7 @@
-(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+(require "package://hrpsys_gazebo_atlas/models/drc_ladder.l")
+(require "euslib/demo/s-noda/util/spline.l")
 
-(load "package://hrpsys_gazebo_atlas/models/drc_ladder.l")
 (setq *ladder* (drc-ladder))
 (atlas-init-ex :real nil)
 (setq *robot* *atlas*)
@@ -163,30 +164,37 @@
 	  )
     ))
 
+(defun nearest-land-coords
+  (&key
+   (move-key :rleg)
+   (now-c (send *robot* move-key :end-coords :copy-worldcoords))
+   )
+  (sort
+   (mapcar
+    (case move-key
+	  (:rleg #'car)
+	  (:lleg #'cadr))
+    *foot-print*)
+   #'(lambda (a b)
+       (< (norm2
+	   (concatenate
+	    float-vector
+	    (scale 1e-3 (send a :difference-position now-c))
+	    (send a :difference-rotation now-c)))
+	  (norm2
+	   (concatenate
+	    float-vector
+	    (scale 1e-3 (send b :difference-position now-c))
+	    (send b :difference-rotation now-c)))))))
+
 (defun on-ladder
   (&key
    (move-key :rleg)
    (now-c (send *robot* move-key :end-coords :copy-worldcoords))
-   target-c)
-  (setq
-   target-c
-   (sort
-    (mapcar
-     (case move-key
-	   (:rleg #'car)
-	   (:lleg #'cadr))
-     *foot-print*)
-    #'(lambda (a b)
-	(< (norm2
-	    (concatenate
-	     float-vector
-	     (scale 1e-3 (send a :difference-position now-c))
-	     (send a :difference-rotation now-c)))
-	   (norm2
-	    (concatenate
-	     float-vector
-	     (scale 1e-3 (send b :difference-position now-c))
-	     (send b :difference-rotation now-c)))))))
+   (target-c
+    (nearest-land-coords
+     :move-key move-key
+     :now-c now-c)))
   (static-leg-move
    :move-key move-key
    :move (v+
@@ -244,7 +252,147 @@
        (return-from nil nil)))
   )
 
+(defun leg-orbit
+  (&key
+   (time-list (list 0 0.7 1.0))
+   (target-limb :rleg)
+   (start-coords
+    (copy-object (send *robot* target-limb :end-coords :worldcoords)))
+   (end-coords
+    (find-if
+     #'(lambda (c)
+	 (and
+	  (>
+	   (norm (v- (send c :worldpos)
+		     (send start-coords :worldpos)))
+	   100)
+	  (plusp
+	   (aref
+	    (v- (send c :worldpos)
+		(send start-coords :worldpos))
+	    2))))
+     (nearest-land-coords :move-key target-limb)))
+   (margin 100)
+   (p-list
+    (list
+     (send start-coords :worldpos)
+     (let ((s (send start-coords :worldpos))
+	   (e (send end-coords :worldpos)))
+       (concatenate
+	float-vector
+	(subseq (scale 0.5 (v+ s e)) 0 2)
+	(list (+ (aref (vmax s e) 2) margin))))
+     (v+ (float-vector 0 0 30)
+	 (send end-coords :worldpos))
+     ))
+   (dp-list
+    (list #F(0 0 0) nil #F(0 0 0)))
+   (ddp-list
+    (list #F(0 0 0) nil #F(0 0 0)))
+   (time-step 0.05)
+   (spline-coeff-func 'solve-spline)
+   (debug? t)
+   (n nil))
+  (let*
+      ((coeff
+	(apply
+	 spline-coeff-func
+	 (append
+	  (list :time-list time-list)
+	  (list
+	   :p
+	   (mapcar
+	    (function
+	     (lambda (v)
+	       (cond
+		((vectorp v) (list (cons :vector v))))))
+	    p-list))
+	  (list
+	   :dp
+	   (mapcar
+	    (function
+	     (lambda (v)
+	       (cond
+		((vectorp v) (list (cons :vector v))))))
+	    dp-list))
+	  (list
+	   :ddp
+	   (mapcar
+	    (function
+	     (lambda (v)
+	       (cond
+		((vectorp v) (list (cons :vector v))))))
+	    ddp-list))
+	  (if n (list :n n))
+	  (list
+	   :d
+	   (length
+	    (find-if
+	     #'vectorp
+	     (append p-list dp-list ddp-list)))))))
+       (timer (car time-list))
+       (end-time (car (last time-list)))
+       ret
+       sphere
+       obj)
+    (while
+	(<= timer end-time)
+      (push (calc-spline coeff timer) ret)
+      (setq timer (+ timer time-step)))
+    (cond
+     (debug?
+      (dolist (pos ret)
+	(setq sphere (make-sphere 10))
+	(send sphere :set-color #F(0 1 0))
+	(send sphere :newcoords (make-coords :pos pos))
+	(push sphere obj))
+      (send *irtviewer* :objects
+	    (append
+	     (list *ladder* *robot*)
+	     ;(send *irtviewer* :objects)
+	     (flatten obj)))
+      (send *viewer* :draw-objects)
+      ))
+    (reverse ret)))
 
+(defun track-orbit
+  (&key
+   (target-limb :rleg)
+   (orbit (leg-orbit :target-limb target-limb))
+   ret pos buf
+   )
+  (do-until-key
+   (setq pos (car orbit))
+   (setq orbit (cdr orbit))
+   (if (null orbit) (return-from nil (reverse ret)))
+   (setq
+    buf
+    (static-leg-move
+     :move-key target-limb
+     :move (v- pos (send *robot* target-limb :end-coords :worldpos))))
+   (if (not (vectorp buf)) (return-from nil nil))
+   (push
+    (list (cons :angle-vector (copy-object (send *robot* :angle-vector)))
+	  (cons :worldcoords (copy-object (send *robot* :worldcoords))))
+    ret))
+  (reverse ret))
+
+(defun demo-static-climb-ladder2
+  (&key
+   (cnt 9))
+  (init-pose)
+  (do-until-key
+   (if (minusp (decf cnt)) (return-from nil t))
+   (static-leg-move :move-key :both)
+   (static-leg-move :move-key :rleg)
+   (track-orbit :target-limb :rleg)
+   (on-ladder :move-key :rleg)
+   (static-leg-move :move-key :both)
+   (static-leg-move :move-key :lleg)
+   (track-orbit :target-limb :lleg)
+   (on-ladder :move-key :lleg)
+   )
+  )
 
 #|
 
