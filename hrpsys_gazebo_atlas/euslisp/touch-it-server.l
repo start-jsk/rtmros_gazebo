@@ -115,7 +115,7 @@
 	     (t
 	      (send *atlas* arm :inverse-kinematics c :stop 100
 		    :thre 2
-		    :rthre (deg2rad 5)at
+		    :rthre (deg2rad 5)
 		    :rotation-axis :z
 		    :revert-if-fail t))
 	     )
