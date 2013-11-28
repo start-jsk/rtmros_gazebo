@@ -9,3 +9,4 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas-ik.launch" />
 </launch>
 
+
