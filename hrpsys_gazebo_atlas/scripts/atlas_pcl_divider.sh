@@ -1,4 +1,5 @@
 #!/bin/sh
+z_filter_limit_max="2.00"
 filter_field_name="x"
 filter_limit_negative="false"
 input_frame="/pelvis"
@@ -17,6 +18,22 @@ cat << _EOT_ > $output_file
   <node pkg="nodelet" type="nodelet" name="pcl_divider_nodelet_manager" args="manager"
         output="screen" alaunch-prefix="xterm -e gdb --args" />
   <group ns="pcl_divider_nodelet">
+      <node pkg="nodelet" type="nodelet"
+          name="voxelgrid_filterz"
+          args="load pcl/VoxelGrid /pcl_divider_nodelet_manager"
+          output="screen" clear_params="true">
+      <remap from="~input" to="/laser/full_cloud2_filtered" />
+      <rosparam>
+        filter_field_name: "z"
+        filter_limit_min: -5.00
+        filter_limit_max: ${z_filter_limit_max}
+        filter_limit_negative: false
+        input_frame: "${input_frame}"
+        output_frame: "${input_frame}"
+        leaf_size: ${leaf_size}
+      </rosparam>
+    </node>
+
 _EOT_
 
 
@@ -33,9 +50,9 @@ do
     cat << _EOT_ >> $output_file
       <node pkg="nodelet" type="nodelet"
           name="voxelgrid${i}"
-          args="load pcl/VoxelGrid /pcl_divider_nodelet_manager"
+          args="load pcl/PassThrough /pcl_divider_nodelet_manager"
           output="screen" clear_params="true">
-      <remap from="~input" to="/laser/full_cloud2_filtered" />
+      <remap from="~input" to="/pcl_divider_nodelet/voxelgrid_filterz/output" />
       <rosparam>
         filter_field_name: "${filter_field_name}"
         filter_limit_min: ${filter_limit_min}
@@ -43,7 +60,6 @@ do
         filter_limit_negative: ${filter_limit_negative}
         input_frame: "${input_frame}"
         output_frame: "${input_frame}"
-        leaf_size: ${leaf_size}
       </rosparam>
     </node>
 _EOT_
