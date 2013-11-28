@@ -92,8 +92,9 @@
   (ros::rate 500)
 
   (setq *tf* (instance ros::transform-listener :init))
-  (atlas-init-ex :real nil)
-  (send *atlas* :reset-manip-pose)
+  ;;(atlas-init-ex :real nil)
+  (atlas-init-ex :set-reset-pose nil)
+  ;;(send *atlas* :reset-manip-pose)
 
   (init-touch-it-without-server)
 
@@ -108,9 +109,9 @@
   (warning-message 1 "~%")
   (warning-message 1 "[touch_it] touch_it_action_node started !~%")
 
-  (do-until-key
-   (x::window-main-one)
-   (send *s* :worker)
-   (ros::spin-once)
-   (ros::sleep))
+  (while t
+    (x::window-main-one)
+    (send *s* :worker)
+    (ros::spin-once)
+    (ros::sleep))
   )

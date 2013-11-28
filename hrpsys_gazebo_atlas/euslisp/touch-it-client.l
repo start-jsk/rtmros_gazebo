@@ -50,7 +50,8 @@
 (warning-message 1 "~%")
 (warning-message 1 "[touch_it_client] touch_it_action_client_node started !~%")
 
-(setq res (touch-it-client))
+(setq res (touch-it-client (scale 0.001 (float-vector 479.364 -800.006 378.368))))
+(setq res (touch-it-client (scale 0.001 (float-vector 479.364 0 378.368))))
 (warning-message 1 "[touch_it_client] result: ~a~%" res)
 (exit 0)
 
