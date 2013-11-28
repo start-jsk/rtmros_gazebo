@@ -86,38 +86,60 @@
 	 (make-list cnt))))
 (send-all (flatten *foot-print*) :draw-on :flush t)
 
+(setq *hand-print*
+      (let ((now #F(-690.0 430.0 0.0))
+	    (step (float-vector (/ 305 (tan (deg2rad 60))) 0 305))
+	    (rot (make-coords))
+	    (cnt 9))
+	(send rot :rotate (deg2rad 90) :z)
+	(send rot :rotate (deg2rad 30) :x)
+	(send rot :rotate (deg2rad 90) :z)
+	(mapcar
+	 #'(lambda (hoge)
+	     (setq now (v+ now step))
+	     (make-coords
+	      :pos now
+	      :rot (copy-object (send rot :worldrot))))
+	 (make-list cnt))))
+(send-all (flatten *hand-print*) :draw-on :flush t)
+
 (defun static-leg-move
   (&key
    (move-key :rleg)
    (fix-key (case move-key
 		  (:rleg :lleg)
-		  (:lleg :rleg)))
+		  (:lleg :rleg)
+		  (t :both)))
    (target-limb '(:rleg :lleg))
    (move #F(0 0 0))
+   ;;
+   (mt (mapcar
+	#'(lambda (k) (send *robot* k :end-coords))
+	target-limb))
+   (ll (mapcar
+	#'(lambda (m) (send *robot* :link-list (send m :parent)))
+	mt))
+   (target-coords nil)
    )
-  (case move-key
-  	(:rleg
-  	 (send *robot* :rarm :elbow-p :joint-angle 0)
-  	 (send *robot* :larm :elbow-p :joint-angle 0);123)
-  	 )
-  	(:lleg
-  	 (send *robot* :rarm :elbow-p :joint-angle 0);-123)
-  	 (send *robot* :larm :elbow-p :joint-angle 0)
-  	 ))
-  (let* ((mt (mapcar
-	      #'(lambda (k) (send *robot* k :end-coords))
-	      target-limb))
-	 (ll (mapcar
-	      #'(lambda (m) (send *robot* :link-list (send m :parent)))
-	      mt))
-	 buf)
+  ;; (case move-key
+  ;; 	(:rleg
+  ;; 	 (send *robot* :rarm :elbow-p :joint-angle 0)
+  ;; 	 (send *robot* :larm :elbow-p :joint-angle 0);123)
+  ;; 	 )
+  ;; 	(:lleg
+  ;; 	 (send *robot* :rarm :elbow-p :joint-angle 0);-123)
+  ;; 	 (send *robot* :larm :elbow-p :joint-angle 0)
+  ;; 	 ))
+  (let* (buf)
     (send *robot* :fullbody-inverse-kinematics
 	  (mapcar
 	   #'(lambda (mt k)
 	       (setq buf (send mt :copy-worldcoords))
 	       (cond
 		((eq k move-key)
-		 (send buf :translate move :world))
+		 (if target-coords
+		     (send buf :newcoords target-coords)
+		   (send buf :translate move :world)))
 		(t t))
 	       buf)
 	   mt target-limb)
@@ -126,8 +148,10 @@
 	  :debug-view :no-message
 	  :min #F(-1000 -1000 -1000 -200 -200 -200)
 	  :max #F(1000 1000 1000 200 200 200)
-	  ;:translation-axis (list nil nil t t)
-	  ;:rotation-axis (list nil nil t t)
+	  :translation-axis
+	  (make-list (length target-limb) :initial-element t)
+	  :rotation-axis
+	  (make-list (length target-limb) :initial-element t)
 	  :thre (make-list (length target-limb)
 			   :initial-element 3)
 	  :rthre (make-list (length target-limb)
@@ -139,9 +163,9 @@
 	  :target-centroid-pos
 	  (v+ (case move-key
 		    (:rleg #F(50 0 0))
-		    (:lleg #F(0 0 0))
-		    (:both #F(0 0 0)))
-	      (if (eq move-key :both)
+		    (:lleg #F(25 0 0))
+		    (t #F(0 0 0)))
+	      (if (eq fix-key :both)
 		  (scale 0.5
 			 (v+
 			  (send *robot* :rleg :end-coords :worldpos)
@@ -168,13 +192,17 @@
   (&key
    (move-key :rleg)
    (now-c (send *robot* move-key :end-coords :copy-worldcoords))
+   (candidates
+    (if (find move-key '(:rleg :lleg))
+	*foot-print* *hand-print*))
    )
   (sort
    (mapcar
     (case move-key
 	  (:rleg #'car)
-	  (:lleg #'cadr))
-    *foot-print*)
+	  (:lleg #'cadr)
+	  (t #'identity))
+    candidates)
    #'(lambda (a b)
        (< (norm2
 	   (concatenate
@@ -191,18 +219,29 @@
   (&key
    (move-key :rleg)
    (now-c (send *robot* move-key :end-coords :copy-worldcoords))
+   (candidates
+    (if (find move-key '(:rleg :lleg)) *foot-print* *hand-print*))
+   (target-limb '(:rleg :lleg))
+   (find-func #'identity)
    (target-c
-    (nearest-land-coords
-     :move-key move-key
-     :now-c now-c)))
+    (find-if
+     find-func
+     (nearest-land-coords
+      :candidates candidates
+      :move-key move-key
+      :now-c now-c))))
   (static-leg-move
+   :target-limb target-limb
    :move-key move-key
    :move (v+
 	  (case move-key
 		(:rleg #F(30 0 0))
-		(:lleg #F(-10 0 0)))
-	  (v- (send (car target-c) :worldpos)
-	      (send now-c :worldpos))))
+		(:lleg #F(-10 0 0))
+		(t #F(0 0 0)))
+	  (v- (send target-c :worldpos)
+	      (send now-c :worldpos)))
+   :target-coords
+   (if (find move-key '(:rarm :larm)) target-c))
   )
 
 (send *robot* :rleg :knee-p :min-angle 10)
@@ -252,12 +291,14 @@
        (return-from nil nil)))
   )
 
+;; spline orbit
+
 (defun leg-orbit
   (&key
    (time-list (list 0 0.7 1.0))
-   (target-limb :rleg)
+   (move-key :rleg)
    (start-coords
-    (copy-object (send *robot* target-limb :end-coords :worldcoords)))
+    (copy-object (send *robot* move-key :end-coords :worldcoords)))
    (end-coords
     (find-if
      #'(lambda (c)
@@ -271,7 +312,7 @@
 	    (v- (send c :worldpos)
 		(send start-coords :worldpos))
 	    2))))
-     (nearest-land-coords :move-key target-limb)))
+     (nearest-land-coords :move-key move-key)))
    (margin 100)
    (p-list
     (list
@@ -280,13 +321,13 @@
 	   (e (send end-coords :worldpos)))
        (concatenate
 	float-vector
-	(subseq (scale 0.5 (v+ s e)) 0 2)
+	(subseq (v+ (scale 0.3 s) (scale 0.7 e)) 0 2)
 	(list (+ (aref (vmax s e) 2) margin))))
      (v+ (float-vector 0 0 30)
 	 (send end-coords :worldpos))
      ))
    (dp-list
-    (list #F(0 0 0) nil #F(0 0 0)))
+    (list #F(0 0 0) nil #F(0 0 -1)))
    (ddp-list
     (list #F(0 0 0) nil #F(0 0 0)))
    (time-step 0.05)
@@ -357,8 +398,9 @@
 
 (defun track-orbit
   (&key
-   (target-limb :rleg)
-   (orbit (leg-orbit :target-limb target-limb))
+   (move-key :rleg)
+   (target-limb '(:rleg :lleg))
+   (orbit (leg-orbit :move-key move-key))
    ret pos buf
    )
   (do-until-key
@@ -368,8 +410,9 @@
    (setq
     buf
     (static-leg-move
-     :move-key target-limb
-     :move (v- pos (send *robot* target-limb :end-coords :worldpos))))
+     :move-key move-key
+     :target-limb target-limb
+     :move (v- pos (send *robot* move-key :end-coords :worldpos))))
    (if (not (vectorp buf)) (return-from nil nil))
    (push
     (list (cons :angle-vector (copy-object (send *robot* :angle-vector)))
@@ -377,7 +420,7 @@
     ret))
   (reverse ret))
 
-(defun demo-static-climb-ladder2
+(defun demo-spline-climb-ladder
   (&key
    (cnt 9))
   (init-pose)
@@ -385,14 +428,61 @@
    (if (minusp (decf cnt)) (return-from nil t))
    (static-leg-move :move-key :both)
    (static-leg-move :move-key :rleg)
-   (track-orbit :target-limb :rleg)
+   (track-orbit :move-key :rleg)
    (on-ladder :move-key :rleg)
    (static-leg-move :move-key :both)
    (static-leg-move :move-key :lleg)
-   (track-orbit :target-limb :lleg)
+   (track-orbit :move-key :lleg)
    (on-ladder :move-key :lleg)
    )
   )
 
-#|
+;; with hand
 
+(defun demo-hand-climb-ladder
+  (&key
+   (cnt 9))
+  (init-pose)
+  (mapcar
+   #'(lambda (j av) (send j :joint-angle av))
+   (send *robot* :rarm :joint-list)
+   '(-122.721 100.575 -5.69718 89.8952 19.1718 87.8511))
+  (mapcar
+   #'(lambda (j av) (send j :joint-angle av))
+   (send *robot* :larm :joint-list)
+   '(122.718 100.538 5.72497 -89.8946 19.1693 87.8309))
+  ;;
+  (on-ladder :move-key :rarm
+	     :target-limb '(:rarm :rleg :lleg))
+  (do-until-key
+   (if (minusp (decf cnt)) (return-from nil t))
+   (static-leg-move :move-key :both
+		    :target-limb '(:rarm :rleg :lleg))
+   (static-leg-move :move-key :rleg
+		    :target-limb '(:rarm :rleg :lleg))
+   (track-orbit :move-key :rleg
+		:target-limb '(:rarm :rleg :lleg))
+   (on-ladder :move-key :rleg
+	      :target-limb '(:rarm :rleg :lleg))
+   (static-leg-move :move-key :both
+		    :target-limb '(:rarm :rleg :lleg))
+   (on-ladder :move-key :rarm
+	      :find-func
+	      #'(lambda (v)
+		  (let ((diff (v- (send v :worldpos)
+				  (send *robot* :rarm :end-coords :worldpos))))
+		    (and (> (norm diff) 100)
+			 (> (aref diff 2) 2))))
+	      :target-limb '(:rarm :rleg :lleg))
+   (static-leg-move :move-key :lleg
+		    :target-limb '(:rarm :rleg :lleg))
+   (track-orbit :move-key :lleg
+		:target-limb '(:rarm :rleg :lleg))
+   (on-ladder :move-key :lleg
+	      :target-limb '(:rarm :rleg :lleg))
+   )
+  )
+
+
+
+#|
