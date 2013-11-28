@@ -805,8 +805,17 @@ int open_iob(void)
     }
     jointcommands.desired_controller_period_ms = static_cast<unsigned int>(g_period_ns * 1e-6);
     //
-    //pub_joint_commands_ = rosnode->advertise<osrf_msgs::JointCommands>("/atlas/joint_commands", 1, true);
-    pub_joint_commands_ = rosnode->advertise <atlas_msgs::AtlasCommand> ("/atlas/atlas_command", 1, true);
+    char *ret = getenv("HRPSYS_GAZEBO_ATLAS_COMMAND_TOPIC_NAME");
+    std::string command_topic_name;
+    if (ret != NULL) {
+        command_topic_name.assign(ret);
+    } else {
+        command_topic_name = "/atlas/atlas_command";
+    }
+    ROS_INFO_STREAM( "[iob] HRPSYS_GAZEBO_ATLAS_COMMAND_TOPIC_NAME : " << command_topic_name);
+    // pub_joint_commands_ = rosnode->advertise<osrf_msgs::JointCommands>("/atlas/joint_commands", 1, true);
+    // pub_joint_commands_ = rosnode->advertise <atlas_msgs::AtlasCommand> ("/atlas/atlas_command", 1, true);
+    pub_joint_commands_ = rosnode->advertise <atlas_msgs::AtlasCommand> (command_topic_name, 1, true);
 
     // subscribe
     // ros topic subscribtions
