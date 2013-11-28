@@ -32,7 +32,7 @@
 	 (seq (send goal :goal :target_pose :header :seq))
 	 (vec (scale 1000.0 (float-vector (send pos :x) (send pos :y) (send pos :z))))
 	 (goal-coords (make-coords :pos vec))
-	 (tc (send *tf* :transform-pose "/pelvis" pose-stamped))
+	 tc
 	 (ik-type (case seq
 		    (0 :larm)
 		    (1 :larm-torso)
@@ -40,13 +40,22 @@
 		    (3 :rarm)
 		    (4 :rarm-torso)
 		    (5 :rarm-fullbody)))
+	 touch-flag
 	 arm
 	 msg)
 
     (x::window-main-one)
 
-    ;; recieve arguments
     (warning-message 4 "[touch_it] callback function was called !~%")
+
+    ;; recieve arguments
+    (warning-message 4 "[touch_it] original pose timestamp is ~a!~%"
+		     (send goal :goal :target_pose :header :stamp))
+    (send goal :goal :target_pose :header :stamp (ros::time 0)) ;; This is a bug.
+    (warning-message 4 "[touch_it] overwrite pose timestamp is ~a!~%"
+		     (send goal :goal :target_pose :header :stamp))
+    (setq tc (send *tf* :transform-pose "/pelvis" pose-stamped))
+
     (warning-message 1 "[touch_it] goal pose is ~a !~%" pose)
     (warning-message 1 "[touch_it] pos = (~a, ~a, ~a)~%"
 		     (send pos :x) (send pos :y) (send pos :z))
@@ -66,7 +75,7 @@
 
     ;; control
     (warning-message 1 "[touch_it] tc is ~a !~%" tc)
-    (touch-it-control tc :arm arm :ik-type ik-type)
+    (setq touch-flag (touch-it-control tc :arm arm :ik-type ik-type))
 
     ;; set result
     (setq msg (send server :result))
@@ -78,9 +87,11 @@
     ;; Cancelled: Aboarted
     ;; NotReached: Lost
     (send server :set-succeeded msg)
+    ;; (cond (touch-flag (send server :set-succeeded msg))
+    ;; 	  (t (send server :set-lost msg)))
     ;; (send server :set-aborted msg)
-    ;; (send server :set-rejected)
-    ;; (send server :set-lost)
+    ;; (send server :set-rejected msg)
+    ;; (send server :set-lost msg)
     ))
 
 
@@ -93,10 +104,11 @@
 
   (setq *tf* (instance ros::transform-listener :init))
   ;;(atlas-init-ex :real nil)
-  (atlas-init-ex :set-reset-pose nil)
+  ;;(atlas-init-ex :set-reset-pose nil)
   ;;(send *atlas* :reset-manip-pose)
 
   (init-touch-it-without-server)
+  ;; (init-touch-it-without-server :real nil)
 
   (send *irtviewer* :draw-objects)
   (send *atlas* :newcoords (make-coords))
