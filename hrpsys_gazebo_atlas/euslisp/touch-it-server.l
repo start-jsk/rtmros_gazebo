@@ -1,5 +1,6 @@
 #!/usr/bin/env roseus
 
+
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "move_base_msgs")
 ;; (ros::load-ros-manifest "actionlib_tutorials")
@@ -7,6 +8,8 @@
 ;;(setq sys::*gc-hook* #'(lambda (a b) (format t ";; gc ~A ~A~%" a b)))
 
 (ros::roseus "touch_it_action_node")
+
+(load "package://hrpsys_gazebo_atlas/euslisp/touch-it-util.l")
 
 
 (defmethod ros::simple-action-server
@@ -56,8 +59,8 @@
 
     ;; get initial position
     (if (and (boundp '*ri*) *ri*) (real2model))
-      ;;(send *atlas* :reset-pose))
-      ;;(send *atlas* :reset-manip-pose))
+    ;;(send *atlas* :reset-pose))
+    ;;(send *atlas* :reset-manip-pose))
     (send *irtviewer* :draw-objects)
     (send* tc :rpy (car (rpy-angle (send (send *atlas* arm :end-coords) :worldrot))))
 
@@ -80,60 +83,6 @@
     ;; (send server :set-lost)
     ))
 
-(defun touch-it-control
-  (tc &key (arm :rarm) (ik-type arm))
-
-  ;; calculate target
-  (let ((div 30)
-	(i 0))
-    (do-until-key
-     ;; check count
-     (when (> i div)
-       (return))
-     ;; check the force sensor value
-     (let* (f)
-       (setq f 
-	     (if (and (boundp '*ri*) *ri*)
-		 (send *ri* :state :absolute-force-sensor arm)
-	       0))
-       (warning-message 2 "[touch_it] ~a force = ~a # touchitforce~%" arm f)
-       (when nil
-	 (return)))
-
-     ;; set target coords
-     (let* ((r (/ (+ i 1.0) div))
-	    (c (midcoords r
-			  (send (send *atlas* arm :end-coords) :worldcoords)
-			  tc)))
-
-       ;; solve ik
-       (warning-message 1 "[touch_it] calculating pose <~a = ~a/~a> !~%" r i div)
-       (cond ((substringp "fullbody" (string ik-type))
-	      (fullbody-ik-with-collision arm c))
-	     ((substringp "torso" (string ik-type))
-	      (torso-ik-with-collision arm c))
-	     (t
-	      (send *atlas* arm :inverse-kinematics c :stop 100
-		    :thre 2
-		    :rthre (deg2rad 5)
-		    :rotation-axis :z
-		    :revert-if-fail t))
-	     )
-
-       ;; send angle
-       (if (and (boundp '*ri*) *ri*)
-	   (progn
-	     (model2real :time 2000 :wait t))
-;;	     (send *ri* :angle-vector (send *atlas* :angle-vector) 2000)
-;;	     (unix:sleep 1))
-	 (progn
-	   (unix:usleep (* 20 1000))))
-       (send *irtviewer* :draw-objects)
-       )
-     (incf i)
-     ))
-  )
-
 
 (unless (boundp '*do-not-start-touch-it*)
   (setq *s* (instance ros::simple-action-server :init
@@ -142,12 +91,12 @@
 
   (ros::rate 500)
 
-  (setq *do-not-start-ik-server* t)
-  (load "package://hrpsys_gazebo_atlas/euslisp/atlas-eus-ik.l")
   (setq *tf* (instance ros::transform-listener :init))
   (atlas-init-ex :real nil)
   (send *atlas* :reset-manip-pose)
-  (setup-end-coords)
+
+  (init-touch-it-without-server)
+
   (send *irtviewer* :draw-objects)
   (send *atlas* :newcoords (make-coords))
 
