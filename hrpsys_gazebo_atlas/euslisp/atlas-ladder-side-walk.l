@@ -1,6 +1,5 @@
 (require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 (require "package://hrpsys_gazebo_atlas/models/drc_ladder.l")
-(require "euslib/demo/s-noda/util/spline.l")
 
 (setq *ladder* (drc-ladder))
 (atlas-init-ex :real nil)
@@ -59,6 +58,12 @@
 
 (init-pose)
 (objects (list *ladder* *robot*))
+(cond
+ ((boundp '*irtviewer*)
+  (send *irtviewer* :change-background #f(1 1 1)))
+ ((boundp '*pickview*)
+  (send *viewer* :viewsurface :bg-color #F(1 1 1))))
+(send *viewer* :draw-objects)
 
 (setq *foot-print*
       (let ((now (float-vector 0 0 0))
@@ -90,7 +95,7 @@
       (let ((now #F(-690.0 430.0 0.0))
 	    (step (float-vector (/ 305 (tan (deg2rad 60))) 0 305))
 	    (rot (make-coords))
-	    (cnt 9))
+	    (cnt 30))
 	(send rot :rotate (deg2rad 90) :z)
 	(send rot :rotate (deg2rad 30) :x)
 	(send rot :rotate (deg2rad 90) :z)
@@ -334,6 +339,7 @@
    (spline-coeff-func 'solve-spline)
    (debug? t)
    (n nil))
+  (require "euslib/demo/s-noda/util/spline.l")
   (let*
       ((coeff
 	(apply
@@ -396,6 +402,14 @@
       ))
     (reverse ret)))
 
+(defun simple-robot-state
+  (&optional tag)
+  (list (cons :tag tag)
+	(cons :angle-vector
+	      (copy-object (send *robot* :angle-vector)))
+	(cons :worldcoords
+	      (copy-object (send *robot* :worldcoords)))))
+
 (defun track-orbit
   (&key
    (move-key :rleg)
@@ -414,34 +428,50 @@
      :target-limb target-limb
      :move (v- pos (send *robot* move-key :end-coords :worldpos))))
    (if (not (vectorp buf)) (return-from nil nil))
-   (push
-    (list (cons :angle-vector (copy-object (send *robot* :angle-vector)))
-	  (cons :worldcoords (copy-object (send *robot* :worldcoords))))
-    ret))
-  (reverse ret))
+   (push (simple-robot-state :track-orbit) ret))
+  ret)
 
 (defun demo-spline-climb-ladder
   (&key
-   (cnt 9))
+   (cnt 9)
+   ret)
   (init-pose)
+  (push (simple-robot-state :init) ret)
   (do-until-key
    (if (minusp (decf cnt)) (return-from nil t))
    (static-leg-move :move-key :both)
+   (push (simple-robot-state :balance) ret)
    (static-leg-move :move-key :rleg)
-   (track-orbit :move-key :rleg)
+   (push (simple-robot-state :lean) ret)
+   (setq
+    ret
+    (append
+     (track-orbit :move-key :rleg)
+     ret))
    (on-ladder :move-key :rleg)
+   (push (simple-robot-state :land) ret)
    (static-leg-move :move-key :both)
+   (push (simple-robot-state :balance) ret)
    (static-leg-move :move-key :lleg)
-   (track-orbit :move-key :lleg)
+   (push (simple-robot-state :lean) ret)
+   (setq
+    ret
+    (append
+     (track-orbit :move-key :lleg)
+     ret))
    (on-ladder :move-key :lleg)
+   (push (simple-robot-state :lean) ret)
    )
+  ret
   )
 
 ;; with hand
 
 (defun demo-hand-climb-ladder
   (&key
-   (cnt 9))
+   (cnt 3)
+   ret)
+  ;;
   (init-pose)
   (mapcar
    #'(lambda (j av) (send j :joint-angle av))
@@ -451,21 +481,37 @@
    #'(lambda (j av) (send j :joint-angle av))
    (send *robot* :larm :joint-list)
    '(122.718 100.538 5.72497 -89.8946 19.1693 87.8309))
+  (push (simple-robot-state :init) ret)
   ;;
   (on-ladder :move-key :rarm
 	     :target-limb '(:rarm :rleg :lleg))
+  (push (simple-robot-state :grasp) ret)
+  ;;
   (do-until-key
    (if (minusp (decf cnt)) (return-from nil t))
    (static-leg-move :move-key :both
 		    :target-limb '(:rarm :rleg :lleg))
+   (push (simple-robot-state :balance) ret)
+   ;;
    (static-leg-move :move-key :rleg
 		    :target-limb '(:rarm :rleg :lleg))
-   (track-orbit :move-key :rleg
-		:target-limb '(:rarm :rleg :lleg))
+   (push (simple-robot-state :lean) ret)
+   ;;
+   (setq
+    ret
+    (append
+     (track-orbit :move-key :rleg
+		  :target-limb '(:rarm :rleg :lleg))
+     ret))
+   ;;
    (on-ladder :move-key :rleg
 	      :target-limb '(:rarm :rleg :lleg))
+   (push (simple-robot-state :land) ret)
+   ;;
    (static-leg-move :move-key :both
 		    :target-limb '(:rarm :rleg :lleg))
+   (push (simple-robot-state :balance) ret)
+   ;;
    (on-ladder :move-key :rarm
 	      :find-func
 	      #'(lambda (v)
@@ -474,15 +520,59 @@
 		    (and (> (norm diff) 100)
 			 (> (aref diff 2) 2))))
 	      :target-limb '(:rarm :rleg :lleg))
+   (push (simple-robot-state :grasp) ret)
+   ;;
    (static-leg-move :move-key :lleg
 		    :target-limb '(:rarm :rleg :lleg))
-   (track-orbit :move-key :lleg
-		:target-limb '(:rarm :rleg :lleg))
+   (push (simple-robot-state :lean) ret)
+   ;;
+   (setq
+    ret
+    (append
+     (track-orbit :move-key :lleg
+		  :target-limb '(:rarm :rleg :lleg))
+     ret))
+   ;;
    (on-ladder :move-key :lleg
 	      :target-limb '(:rarm :rleg :lleg))
+   (push (simple-robot-state :land) ret)
    )
+  ret
   )
+
+(defun simple-rsd-play
+  (rsd
+   &key
+   (time-list
+    (list (cons :init 500)
+	  (cons :grasp 500)
+	  (cons :balance 500)
+	  (cons :lean 500)
+	  (cons :track-orbit 50)
+	  (cons :land 50)
+	  (cons :default 100))))
+  (mapcar
+   #'(lambda (rsd)
+       (send *robot* :angle-vector
+	     (cdr (assoc :angle-vector rsd)))
+       (send *robot* :newcoords
+	     (cdr (assoc :worldcoords rsd)))
+       (send *viewer* :draw-objects)
+       (x::window-main-one)
+       (unix:usleep
+	(round (* 1000
+		  (or (cdr (assoc
+			    (cdr (assoc :tag rsd))
+			    time-list))
+		      (cdr (assoc
+			    :default
+			    time-list)))))))
+   (reverse rsd)))
 
 
 
 #|
+
+(dump-loadable-structure "climb-with-hand-20131128.l" *rsd*)
+(load "climb-with-hand-20131128.l")
+(do-until-key (simple-rsd-play *rsd*))
