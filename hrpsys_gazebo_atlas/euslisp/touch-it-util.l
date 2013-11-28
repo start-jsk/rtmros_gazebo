@@ -20,10 +20,11 @@
   ()
   (send *atlas* :reset-manip-pose)
   (send *atlas* :rarm :move-end-rot 90 :x :local)
+  (send *atlas* :rarm :move-end-pos #f(0 0 150) :world :rotation-axis :z :revert-if-fail t)
   (send *irtviewer* :draw-objects)
   (model2real :time 3000 :wait t)
   (my-wait)
-  (touch-it-control (send (send (send *atlas* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 300))))
+  (touch-it-control (send (send (send *atlas* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 -300) :world)))
 
 
 (defun move-lateral-with-touch-it
@@ -42,7 +43,8 @@
   ;; calculate target
   (let ((div 30)
 	(i 0)
-	(touch-flag t))
+	(touch-flag t)
+	(f-orig (send *ri* :state :absolute-force-vector arm)))
     (block :touch-it-loop
       (do-until-key
        ;; check count
@@ -50,12 +52,20 @@
 	 (setq touch-flag nil)
 	 (return-from :touch-it-loop nil))
        ;; check the force sensor value
-       (let* (f)
+       (let* (f
+	      f-conv
+	      dir
+	      val
+	      (thre 30))
 	 (if (and (boundp '*ri*) *ri*)
-	     (setq f (send *ri* :state :absolute-force-vector arm))
-	   (setq f 0))
+	     (setq f (v- (send *ri* :state :absolute-force-vector arm) f-orig))
+	   (setq f (float-vector 0 0 0)))
+	 (setq f-conv (float-vector (elt f 0) (- (elt f 1)) (- (elt f 2))))
+	 (setq dir (normalize-vector (v- (send tc :worldpos) (send (send *atlas* arm :end-coords) :worldpos))))
+	 (setq val (abs (v. f-conv dir)))
 	 (warning-message 2 "[touch_it] ~a force = ~a # touchitforce~%" arm f)
-	 (when nil
+	 (warning-message 2 "[touch_it] ~a dir = ~a  val = ~a  thre = ~a # touchitforce~%" arm dir val thre)
+	 (when (> val thre)
 	   (return-from :touch-it-loop nil)))
 
        ;; set target coords
@@ -81,9 +91,9 @@
 	 ;; send angle
 	 (if (and (boundp '*ri*) *ri*)
 	     (progn
-	       ;;(model2real :time 2000 :wait t))
-	       (send *ri* :angle-vector (send *atlas* :angle-vector) 2000)
-	       (unix:usleep (* 1500 1000)))
+	       (model2real :time 2000 :wait t))
+	   ;;(send *ri* :angle-vector (send *atlas* :angle-vector) 2000)
+	   ;;(unix:usleep (* 1500 1000)))
 	   (progn
 	     (unix:usleep (* 20 1000))))
 	 (send *irtviewer* :draw-objects)
