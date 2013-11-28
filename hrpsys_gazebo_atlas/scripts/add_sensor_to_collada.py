@@ -65,14 +65,23 @@ def add_sensor (doc, name, parent_link, sensor_type, translate = None, rotate = 
     tmp.setAttribute('link', 'kmodel0/%s'%parent_link)
     if translate == None:
         tl = doc.createElement('translate')
-        tl.appendChild(doc.createTextNode('0 0 0'))
+        if name == "lhsensor":
+            tl.appendChild(doc.createTextNode('0 0.12 0'))
+        elif name == "rhsensor":
+            tl.appendChild(doc.createTextNode('0 -0.12 0'))
+        else:
+            tl.appendChild(doc.createTextNode('0 0 0'))
     else:
         tl = doc.createElement('translate')
         tl.appendChild(doc.createTextNode(translate))
 
     if rotate == None:
         ro = doc.createElement('rotate')
-        ro.appendChild(doc.createTextNode('1 0 0 0'))
+        #ro.appendChild(doc.createTextNode('1 0 0 0'))
+        if name == "lhsensor" or name == "rhsensor":
+            ro.appendChild(doc.createTextNode('0 0 1 180'))
+        else:
+            ro.appendChild(doc.createTextNode('1 0 0 0'))
     else:
         ro = doc.createElement('rotate')
         ro.appendChild(doc.createTextNode(rotate))
