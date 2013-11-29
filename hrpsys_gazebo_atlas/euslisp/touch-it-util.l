@@ -56,7 +56,7 @@
 	      f-conv
 	      dir
 	      val
-	      (thre 30))
+	      (thre 20))
 	 (if (and (boundp '*ri*) *ri*)
 	     (setq f (v- (send *ri* :state :absolute-force-vector arm) f-orig))
 	   (setq f (float-vector 0 0 0)))
