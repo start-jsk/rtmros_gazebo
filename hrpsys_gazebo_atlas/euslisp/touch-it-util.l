@@ -36,8 +36,12 @@
   (my-wait)
   (touch-it-control (send (send (send *atlas* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 300)))) 
 
-
 (defun touch-it-control
+  (tc &key (arm :rarm) (ik-type arm))
+  (touch-it-control-proc tc :arm arm :ik-type ik-type)
+  )
+
+(defun touch-it-control-proc
   (tc &key (arm :rarm) (ik-type arm))
 
   ;; calculate target
