@@ -26,23 +26,23 @@
 
 (defun touch-it-action-cb (server goal)
   (let* ((pose-stamped (send goal :goal :target_pose))
-	 (pose (send pose-stamped :pose))
-	 (pos (send pose :position))
-	 (ori (send pose :orientation))
-	 (seq (send goal :goal :target_pose :header :seq))
-	 (vec (scale 1000.0 (float-vector (send pos :x) (send pos :y) (send pos :z))))
-	 (goal-coords (make-coords :pos vec))
-	 tc
-	 (ik-type (case seq
-		    (0 :larm)
-		    (1 :larm-torso)
-		    (2 :larm-fullbody)
-		    (3 :rarm)
-		    (4 :rarm-torso)
-		    (5 :rarm-fullbody)))
-	 touch-flag
-	 arm
-	 msg)
+   (pose (send pose-stamped :pose))
+   (pos (send pose :position))
+   (ori (send pose :orientation))
+   (seq (send goal :goal :target_pose :header :seq))
+   (vec (scale 1000.0 (float-vector (send pos :x) (send pos :y) (send pos :z))))
+   (goal-coords (make-coords :pos vec))
+   tc
+   (ik-type (case seq
+        (0 :larm)
+        (1 :larm-torso)
+        (2 :larm-fullbody)
+        (3 :rarm)
+        (4 :rarm-torso)
+        (5 :rarm-fullbody)))
+   touch-flag
+   arm
+   msg)
 
     (x::window-main-one)
 
@@ -50,21 +50,21 @@
 
     ;; recieve arguments
     (warning-message 4 "[touch_it] original pose timestamp is ~a!~%"
-		     (send goal :goal :target_pose :header :stamp))
+         (send goal :goal :target_pose :header :stamp))
     (send goal :goal :target_pose :header :stamp (ros::time 0)) ;; This is a bug.
     (warning-message 4 "[touch_it] overwrite pose timestamp is ~a!~%"
-		     (send goal :goal :target_pose :header :stamp))
+         (send goal :goal :target_pose :header :stamp))
     (setq tc (send *tf* :transform-pose "/pelvis" pose-stamped))
 
     (warning-message 1 "[touch_it] goal pose is ~a !~%" pose)
     (warning-message 1 "[touch_it] pos = (~a, ~a, ~a)~%"
-		     (send pos :x) (send pos :y) (send pos :z))
+         (send pos :x) (send pos :y) (send pos :z))
     (warning-message 1 "[touch_it] ori = (~a, ~a, ~a, ~a)~%"
-		     (send ori :w) (send ori :x) (send ori :y) (send ori :z))
+         (send ori :w) (send ori :x) (send ori :y) (send ori :z))
     (warning-message 1 "[touch_it] sequence is ~a !~%" seq)
 
     (cond ((substringp "larm" (string ik-type)) (setq arm :larm))
-	  ((substringp "rarm" (string ik-type)) (setq arm :rarm)))
+    ((substringp "rarm" (string ik-type)) (setq arm :rarm)))
 
     ;; get initial position
     (if (and (boundp '*ri*) *ri*) (real2model))
@@ -88,7 +88,7 @@
     ;; NotReached: Lost
     (send server :set-succeeded msg)
     ;; (cond (touch-flag (send server :set-succeeded msg))
-    ;; 	  (t (send server :set-lost msg)))
+    ;;      (t (send server :set-lost msg)))
     ;; (send server :set-aborted msg)
     ;; (send server :set-rejected msg)
     ;; (send server :set-lost msg)
@@ -97,8 +97,8 @@
 
 (unless (boundp '*do-not-start-touch-it*)
   (setq *s* (instance ros::simple-action-server :init
-		      "/touchit/act/exec" move_base_msgs::MoveBaseAction
-		      :execute-cb 'touch-it-action-cb))
+          "/touchit/act/exec" move_base_msgs::MoveBaseAction
+          :execute-cb 'touch-it-action-cb))
 
   (ros::rate 500)
 
