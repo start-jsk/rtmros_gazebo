@@ -38,6 +38,10 @@
 
     ;; wait
     (warning-message 2 "[touch_it_client] start waiting for result~%")
+
+    (warning-message 2 "[touch_it_client] waitin 20 sec~%")
+    (unix:sleep 20)
+    (send *c* :cancel-all-goals)
     (send *c* :wait-for-result)
 
     ;; check the result

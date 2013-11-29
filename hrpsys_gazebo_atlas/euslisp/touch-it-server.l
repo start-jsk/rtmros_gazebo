@@ -29,6 +29,12 @@
 (setq *touch-it-force-reference* nil)
 (setq *touch-it-iteration-count* 0)
 
+(defun touch-it-preempt-cb (server goal)
+  ;; does not support distinghushing between goal, cancel everything always
+  (setq *touch-it-goal-new-p* t)
+  (Send server :set-preempted)
+  )
+
 (defun touch-it-action-cb (server goal)
   (let* ((pose-stamped (send goal :goal :target_pose))
          (pose (send pose-stamped :pose))
@@ -126,7 +132,8 @@
 (unless (boundp '*do-not-start-touch-it*)
   (setq *s* (instance ros::simple-action-server :init
                       "/touchit/act/exec" move_base_msgs::MoveBaseAction
-                      :execute-cb 'touch-it-action-cb))
+                      :execute-cb 'touch-it-action-cb
+                      :preempt-cb 'touch-it-preempt-cb))
 
   (ros::rate 500)
 
