@@ -24,6 +24,11 @@
     (setq status actionlib_msgs::GoalStatus::*lost*)
     (send self :publish-result msg text)))
 
+;; global variables to store IK status
+(setq *touch-it-goal-new-p* t)
+(setq *touch-it-force-reference* nil)
+(setq *touch-it-iteration-count* 0)
+
 (defun touch-it-action-cb (server goal)
   (let* ((pose-stamped (send goal :goal :target_pose))
          (pose (send pose-stamped :pose))
@@ -66,8 +71,9 @@
     (cond ((substringp "larm" (string ik-type)) (setq arm :larm))
           ((substringp "rarm" (string ik-type)) (setq arm :rarm)))
 
-    ;; get initial position
-    (if (and (boundp '*ri*) *ri*) (real2model))
+    ;; get initial position only if the goal is new
+    (if *touch-it-goal-new-p*
+        (if (and (boundp '*ri*) *ri*) (real2model)))
     ;;(send *atlas* :reset-pose))
     ;;(send *atlas* :reset-manip-pose))
     (send *irtviewer* :draw-objects)
@@ -75,8 +81,18 @@
 
     ;; control
     (warning-message 1 "[touch_it] tc is ~a !~%" tc)
-    (setq touch-flag (touch-it-control tc :arm arm :ik-type ik-type))
 
+    ;; initialize global variables if needed
+    (when *touch-it-goal-new-p*
+      (setq *touch-it-goal-new-p* nil)
+      (setq *touch-it-force-reference* (send *ri* :state :absolute-force-vector arm))
+      (setq *touch-it-iteration-count* 0)
+      )
+    
+    (setq touch-flag (touch-it-control-proc tc :arm arm :ik-type ik-type
+                                       :f-orig *touch-it-force-reference*
+                                       :i *touch-it-iteration-count*))
+    (incf *touch-it-iteration-count*)
     ;; set result
     (setq msg (send server :result))
 
@@ -86,7 +102,19 @@
     ;; IKfound: Rejected
     ;; Cancelled: Aboarted
     ;; NotReached: Lost
-    (send server :set-succeeded msg)
+    (cond ((eq touch-flag :continue)
+           (warning-message 1 "[touch_it] continues to solve ik~%")
+           )
+          ((eq touch-flag :arrived-at-goal)
+           (warning-message 1 "[touch_it] IK finished~%")
+           (send server :set-succeeded msg)
+           (setq *touch-it-goal-new-p* t)
+           )
+          ((eq touch-flag :touched)
+           (warning-message 1 "[touch_it] touched!~%")
+           (send server :set-succeeded msg)
+           (setq *touch-it-goal-new-p* t)
+           ))
     ;; (cond (touch-flag (send server :set-succeeded msg))
     ;;      (t (send server :set-lost msg)))
     ;; (send server :set-aborted msg)
