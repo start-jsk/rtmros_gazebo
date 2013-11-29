@@ -38,23 +38,46 @@
 
 (defun touch-it-control
   (tc &key (arm :rarm) (ik-type arm))
-  (touch-it-control-proc tc :arm arm :ik-type ik-type)
+  (let ((i 0)
+        (f-orig (send *ri* :state :absolute-force-vector arm)))
+        
+    (do-until-key
+     (let ((touch-it-status
+            (touch-it-control-proc tc :arm arm :ik-type ik-type :i i :f-orig f-orig)))
+       (print touch-it-status)
+       (incf i)
+       (cond
+        ((eq touch-it-status :arrived-at-goal)
+         (return-from nil nil))
+        ((eq touch-it-status :continue)
+        )
+        ((eq touch-it-status :touched)
+         (return-from nil t))
+        ))
+     ))
+  (when (and (boundp '*ri*) *ri*)
+    (real2model)
+    (model2real :time 500))
   )
 
+;; return value:
+;;     :arrived-at-goal
+;;     :continue
+;;     :touched
+;;     
 (defun touch-it-control-proc
-  (tc &key (arm :rarm) (ik-type arm))
-
+  (tc &key (arm :rarm) (ik-type arm) (i 0) (f-orig nil))
   ;; calculate target
   (let ((div 30)
-        (i 0)
-        (touch-flag t)
-        (f-orig (send *ri* :state :absolute-force-vector arm)))
+        (touch-flag :continue))
     (block :touch-it-loop
-      (do-until-key
-       ;; check count
+;;      (do-until-key
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; check count
        (when (> i div)
-         (setq touch-flag nil)
+         (setq touch-flag :arrived-at-goal)
          (return-from :touch-it-loop nil))
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
        ;; check the force sensor value
        (let* (f
               f-conv
@@ -65,14 +88,17 @@
              (setq f (v- (send *ri* :state :absolute-force-vector arm) f-orig))
            (setq f (float-vector 0 0 0)))
          (setq f-conv (float-vector (elt f 0) (- (elt f 1)) (- (elt f 2))))
-         (setq dir (normalize-vector (v- (send tc :worldpos) (send (send *atlas* arm :end-coords) :worldpos))))
+         (setq dir (normalize-vector
+                    (v- (send tc :worldpos)
+                        (send (send *atlas* arm :end-coords) :worldpos))))
          (setq val (abs (v. f-conv dir)))
          (warning-message 2 "[touch_it] ~a force = ~a # touchitforce~%" arm f)
          (warning-message 2 "[touch_it] ~a dir = ~a  val = ~a  thre = ~a # touchitforce~%" arm dir val thre)
          (when (> val thre)
+           (setq touch-flag :touched)
            (return-from :touch-it-loop nil)))
-
-       ;; set target coords
+       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+       ;; solve ik and move the robot
        (let* ((r (/ (+ i 1.0) div))
               (c (midcoords r
                             (send (send *atlas* arm :end-coords) :worldcoords)
@@ -91,7 +117,6 @@
                       :rotation-axis :z
                       :revert-if-fail t))
                )
-
          ;; send angle
          (if (and (boundp '*ri*) *ri*)
              (progn
@@ -102,13 +127,13 @@
              (unix:usleep (* 20 1000))))
          (send *irtviewer* :draw-objects)
          )
-       (incf i))
-      (read-line)
-      )
+       ;;(incf i)
+       
+;;       )                                ;do-until-key
+      ;;(read-line)
+      )                                 ;touch-it-loop
 
-    (when (and (boundp '*ri*) *ri*)
-      (real2model)
-      (model2real :time 500))
+    
     (send *irtviewer* :draw-objects)
     touch-flag
     ))
