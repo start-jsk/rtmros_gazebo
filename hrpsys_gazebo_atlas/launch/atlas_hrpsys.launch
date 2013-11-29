@@ -76,5 +76,4 @@
     <arg name="USE_INTERACTIVE_JOINT" value="$(arg USE_INTERACTIVE_JOINT)"/>
     <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
   </include>
-
 </launch>

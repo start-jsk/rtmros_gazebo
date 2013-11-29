@@ -1,0 +1,15 @@
+<launch>
+  <arg name="USE_INTERACTIVE_JOINT" default="true" />
+  <arg name="USE_INTERACTIVE_ENDCOORDS" default="true" />
+
+  <!-- joint marker -->
+  <group if="$(arg USE_INTERACTIVE_JOINT)">
+    <node pkg="roseus" type="roseus" name="eus_joint" args="$(find jsk_interactive)/euslisp/joint_marker_control/atlas-joint.l"/>
+  </group>
+
+  <!-- hand marker -->
+  <group if="$(arg USE_INTERACTIVE_ENDCOORDS)" >
+    <node pkg="roseus" type="roseus" name="eus_interactive_marker" args="$(find jsk_interactive)/euslisp/atlas-im-main.l"/>
+  </group>
+
+</launch>

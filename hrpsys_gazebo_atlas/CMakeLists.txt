@@ -147,6 +147,7 @@ endif()
 
 include_directories(${roseus_PACKAGE_PATH}/build/devel/include)
 rosbuild_add_executable(hand_controller src/hand_controller.cpp)
+rosbuild_add_executable(specific_transform_publisher src/specific_transform_publisher.cpp)
 
 ## test code
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/test/.gen_testcode

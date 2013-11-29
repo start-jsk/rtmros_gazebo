@@ -1,4 +1,6 @@
 <launch>
+  <arg name="USE_INTERACTIVE_JOINT" default="false" />
+  <arg name="USE_INTERACTIVE_ENDCOORDS" default="false" />
   <!-- for point cloud -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_divider.launch"/>
   <node pkg="hrpsys_gazebo_atlas" type="pcl_divider_periodic_caller.sh"
@@ -12,4 +14,10 @@
 	name="joint_state_compresser_periodic_callser"
 	output="screen">
   </node>
+
+  <!-- interactive joint marker and rviz -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_interactive_marker_fc.launch">
+    <arg name="USE_INTERACTIVE_JOINT" value="$(arg USE_INTERACTIVE_JOINT)"/>
+    <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
+  </include>
 </launch>

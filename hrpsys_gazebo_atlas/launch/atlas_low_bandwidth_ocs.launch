@@ -1,9 +1,31 @@
 <launch>
+  <arg name="OCS_TF" default="/tf_ocs"/>
+  <arg name="USE_INTERACTIVE_JOINT" default="false" />
+  <arg name="USE_INTERACTIVE_ENDCOORDS" default="false" />
+  <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description_ocs" />
+
+  <param name="$(arg ROBOT_DESCRIPTION_OCS)"
+         command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/>
+
   <!-- for joint state -->
-  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_joint_state_decompresser.launch"/>
-  <!--
-  <node name="sensor_tf_imu" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /imu_link /imu_joint 100" >
-    <remap from="/tf" to="/tf_dummy"/>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_joint_state_decompresser.launch">
+    <arg name="OCS_TF" value="$(arg OCS_TF)"/>
+    <arg name="ROBOT_DESCRIPTION_OCS" value="$(arg ROBOT_DESCRIPTION_OCS)"/>
+  </include>
+  
+  <!-- interactive joint marker and rviz -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_interactive_marker_ocs.launch">
+    <arg name="USE_INTERACTIVE_JOINT" value="$(arg USE_INTERACTIVE_JOINT)"/>
+    <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
+    <arg name="OCS_TF" value="$(arg OCS_TF)"/>
+    <arg name="ROBOT_DESCRIPTION_OCS" value="$(arg ROBOT_DESCRIPTION_OCS)"/>
+  </include>
+
+  <!-- publish transform from map to pelvis -->
+  <node pkg="hrpsys_gazebo_atlas" type="specific_transform_publisher" name="tf_publisher_from_map_to_pelvis"
+	output="screen">
+    <param name="parent_frame" type="string" value="map"/>
+    <param name="child_frame" type="string" value="pelvis"/>
+    <param name="loop_hz" type="double" value="0.3"/>
   </node>
-  -->
 </launch>
