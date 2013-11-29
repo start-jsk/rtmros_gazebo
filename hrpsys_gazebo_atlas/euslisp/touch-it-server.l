@@ -110,6 +110,7 @@
     ;; NotReached: Lost
     (cond ((eq touch-flag :continue)
            (warning-message 1 "[touch_it] continues to solve ik~%")
+           ;; not sending goal yet, we will solve IK on the next iteratoin (:worker method calls :execution-cb)
            )
           ((eq touch-flag :arrived-at-goal)
            (warning-message 1 "[touch_it] IK finished~%")
