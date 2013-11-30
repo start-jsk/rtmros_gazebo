@@ -3,21 +3,34 @@
   <arg name="USE_INTERACTIVE_JOINT" default="true" />
   <arg name="USE_INTERACTIVE_ENDCOORDS" default="true" />
   <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description_ocs" />
+  <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
 
   <!-- joint marker -->
   <group if="$(arg USE_INTERACTIVE_JOINT)">
     <remap from="/tf" to="$(arg OCS_TF)"/>
+    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_ocs/set_dynamic_tf"/>
+    <remap from="/delete_tf" to="/dynamic_tf_publisher_ocs/delete_tf"/>
+    <remap from="/dissoc_tf" to="/dynamic_tf_publisher_ocs/dissoc_tf"/>
+    <remap from="/assoc_tf" to="/dynamic_tf_publisher_ocs/assoc_tf"/>
+
     <node pkg="rviz" type="rviz" name="rviz_for_atlas" args="-d $(find jsk_interactive_marker)/launch/atlas_joint_marker.rviz" respawn="true">
       <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION_OCS)"/>
     </node>
     <include file="$(find jsk_interactive_marker)/launch/urdf_model_markers.launch">
+      <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
       <arg name="models" value="$(find jsk_interactive_marker)/launch/models/atlas-real.yaml"/>
+
+
     </include>
   </group>
 
   <!-- hand marker -->
   <group if="$(arg USE_INTERACTIVE_ENDCOORDS)" >
     <remap from="/tf" to="$(arg OCS_TF)"/>
+    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_ocs/set_dynamic_tf"/>
+    <remap from="/delete_tf" to="/dynamic_tf_publisher_ocs/delete_tf"/>
+    <remap from="/dissoc_tf" to="/dynamic_tf_publisher_ocs/dissoc_tf"/>
+    <remap from="/assoc_tf" to="/dynamic_tf_publisher_ocs/assoc_tf"/>
     <include file="$(find jsk_interactive_marker)/launch/atlas_interactive_marker_practical.launch" >
     </include>
     <node pkg="rviz" type="rviz" name="rviz_for_atlas_interactive_marker" args="-d $(find jsk_interactive_marker)/launch/interactive_marker.rviz" respawn="true">

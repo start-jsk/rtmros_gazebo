@@ -44,7 +44,6 @@
 
   (ros::rate 10)
   (do-until-key
-   (print "loop")
    (ros::spin-once)
    (ros::sleep)
    (unless (ros::ok) (return)))

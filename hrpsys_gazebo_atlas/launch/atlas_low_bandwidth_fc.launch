@@ -20,4 +20,13 @@
     <arg name="USE_INTERACTIVE_JOINT" value="$(arg USE_INTERACTIVE_JOINT)"/>
     <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
   </include>
+
+  <!-- publish transform from map to pelvis -->
+  <node pkg="hrpsys_gazebo_atlas" type="specific_transform_publisher" name="specific_tf_publisher_from_map_to_pelvis"
+	output="screen">
+    <param name="parent_frame" type="string" value="map"/>
+    <param name="child_frame" type="string" value="pelvis"/>
+    <param name="loop_hz" type="double" value="0.3"/>
+  </node>
+
 </launch>

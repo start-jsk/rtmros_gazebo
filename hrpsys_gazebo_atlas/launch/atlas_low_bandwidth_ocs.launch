@@ -17,15 +17,24 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_interactive_marker_ocs.launch">
     <arg name="USE_INTERACTIVE_JOINT" value="$(arg USE_INTERACTIVE_JOINT)"/>
     <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
+    <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" value="false"/>
     <arg name="OCS_TF" value="$(arg OCS_TF)"/>
     <arg name="ROBOT_DESCRIPTION_OCS" value="$(arg ROBOT_DESCRIPTION_OCS)"/>
   </include>
-
-  <!-- publish transform from map to pelvis -->
-  <node pkg="hrpsys_gazebo_atlas" type="specific_transform_publisher" name="tf_publisher_from_map_to_pelvis"
+  
+  <!-- publish specific tf ( map to pelvis ) -->
+  <node pkg="hrpsys_gazebo_atlas" type="specific_transform_subscriber" name="specific_tf_subscriber"
 	output="screen">
-    <param name="parent_frame" type="string" value="map"/>
-    <param name="child_frame" type="string" value="pelvis"/>
-    <param name="loop_hz" type="double" value="0.3"/>
+    <remap from="/tf" to="$(arg OCS_TF)"/>
   </node>
+
+  <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_ocs" output="screen">
+    <remap from="/tf" to="$(arg OCS_TF)"/>
+    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_ocs/set_dynamic_tf"/>
+    <remap from="/delete_tf" to="/dynamic_tf_publisher_ocs/delete_tf"/>
+    <remap from="/dissoc_tf" to="/dynamic_tf_publisher_ocs/dissoc_tf"/>
+    <remap from="/assoc_tf" to="/dynamic_tf_publisher_ocs/assoc_tf"/>
+  </node>
+
+
 </launch>
