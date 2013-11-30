@@ -20,8 +20,8 @@
   (&key
    (target-limb :larm)
    (group_name
-    '("larm" "larm_torso" "larm_fullbody"
-      "rarm" "rarm_torso" "rarm_fullbody"))
+    (caddr '("larm" "larm_torso" "larm_fullbody"
+	     "rarm" "rarm_torso" "rarm_fullbody")))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
    (initial-coords (send *robot* target-limb :end-coords :copy-worldcoords))
@@ -40,11 +40,13 @@
 	       (send *robot* :worldrot))
 	      (send target-coords :worldrot))))
    )
+  (print target-coords-from-pelvis)
   (let* ((c target-coords-from-pelvis)
 	 (p (send c :worldpos))
 	 (q (matrix2quaternion (send c :worldrot)))
 	 res)
     (send req :ik_request :group_name group_name)
+    (print (send req :ik_request :group_name))
     (if *prev-js*
 	(send req :ik_request :robot_state :joint_state *prev-js*))
     (send req :ik_request
@@ -52,21 +54,21 @@
 	  (instance geometry_msgs::PoseStamped :init
 		    :header (instance std_msgs::Header :init
 				      :stamp (ros::time 0.0)
-				      :frame_id "/pelvis"))
-	  :pose
-	  (instance geometry_msgs::Pose :init
-		    :position
-		    (instance geometry_msgs::Point :init
-			      :x (aref (send c :worldpos) 0)
-			      :y (aref (send c :worldpos) 1)
-			      :z (aref (send c :worldpos) 2))
-		    :orientation
-		    (instance geometry_msgs::Quaternion :init
-			      :x (elt q 1)
-			      :y (elt q 2)
-			      :z (elt q 3)
-			      :w (elt q 0)))
-	  )
+				      :frame_id "/pelvis")
+		    :pose
+		    (instance geometry_msgs::Pose :init
+			      :position
+			      (instance geometry_msgs::Point :init
+					:x (elt p 0)
+					:y (elt p 1)
+					:z (elt p 2))
+			      :orientation
+			      (instance geometry_msgs::Quaternion :init
+					:x (elt q 1)
+					:y (elt q 2)
+					:z (elt q 3)
+					:w (elt q 0)))
+		    ))
     (setq res (ros::service-call "/atlas_eus_ik" req))
     (if (= (send res :error_code :val)
 	   moveit_msgs::MoveItErrorCodes::*SUCCESS*)
