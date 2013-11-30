@@ -16,8 +16,6 @@
     <arg name="ROBOT_DESCRIPTION_OCS" value="$(arg ROBOT_DESCRIPTION_OCS)"/>
   </include>
 
-  <!-- start hrpsys_atlas_dashboard -->
-  <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" />
 
   <!-- start send tf -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_send_tf_ocs.launch"/>
