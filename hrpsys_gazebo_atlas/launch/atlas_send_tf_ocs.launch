@@ -1,0 +1,21 @@
+<launch>
+  <arg name="OCS_TF" default="/tf_ocs"/>
+  <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description_ocs" />
+
+  <param name="$(arg ROBOT_DESCRIPTION_OCS)"
+         command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/>
+
+  <!-- for joint state -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_joint_state_decompresser.launch">
+    <arg name="OCS_TF" value="$(arg OCS_TF)"/>
+    <arg name="ROBOT_DESCRIPTION_OCS" value="$(arg ROBOT_DESCRIPTION_OCS)"/>
+  </include>
+
+  <!-- publish specific tf ( map to pelvis ) -->
+  <node pkg="jsk_topic_tools" type="specific_transform_subscriber" name="specific_tf_subscriber"
+	output="screen">
+    <remap from="/tf" to="$(arg OCS_TF)"/>
+    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_ocs/set_dynamic_tf"/>
+  </node>
+
+</launch>

@@ -8,12 +8,6 @@
 	output="screen">
   </node>
 
-  <!-- for joint state -->
-  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_joint_state_compresser.launch"/>
-  <node pkg="hrpsys_gazebo_atlas" type="joint_state_compresser_periodic_caller.sh"
-	name="joint_state_compresser_periodic_callser"
-	output="screen">
-  </node>
 
   <!-- interactive joint marker and rviz -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_interactive_marker_fc.launch">
@@ -21,12 +15,6 @@
     <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
   </include>
 
-  <!-- publish transform from map to pelvis -->
-  <node pkg="jsk_topic_tools" type="specific_transform_publisher" name="specific_tf_publisher_from_map_to_pelvis"
-	output="screen">
-    <param name="parent_frame" type="string" value="map"/>
-    <param name="child_frame" type="string" value="pelvis"/>
-    <param name="loop_hz" type="double" value="0.3"/>
-  </node>
-
+  <!-- send joint_state and map->pelvis to ocs -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_send_tf_fc.launch"/>
 </launch>
