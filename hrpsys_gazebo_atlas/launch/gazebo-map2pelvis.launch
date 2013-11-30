@@ -1,0 +1,4 @@
+<launch>
+<node pkg="tf" type="static_transform_publisher" name="map_world"
+ args="0 0 0.900 0 0 0 /map /pelvis 40" />
+</launch>
