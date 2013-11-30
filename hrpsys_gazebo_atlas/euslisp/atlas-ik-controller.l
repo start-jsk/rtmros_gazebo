@@ -97,7 +97,13 @@
 		     #'rad2deg
 		     (send res :solution :joint_state :position)))
 	  (send *viewer* :draw-objects)
-	  (send *robot* :angle-vector)
+	  (mapcar
+	   #'(lambda (k c)
+	       (send *robot* k :inverse-kinematics
+		     c
+		     :move-target (send *robot* k :end-coords)
+		     ))
+	   '(:rleg :lleg) *fix-limb-coords*)
 	  ;;
 	  (if (or
 	       (null *success-state-collection*)
@@ -116,6 +122,7 @@
 				   (send *robot* :worldcoords))))
 		      *success-state-collection*)
 		     0 500)))
+	  (send *robot* :angle-vector)
 	  )
       (print "failed!")
       )))
@@ -140,6 +147,11 @@
 	(send *robot* :link-list
 	      (send *robot* :lleg :end-coords :parent))
 	:debug-view nil)
+  (setq *fix-limb-coords*
+	(mapcar
+	 #'(lambda (k)
+	     (send *robot* k :end-coords :copy-worldcoords))
+	 '(:rleg :lleg)))
   (if (and (boundp '*viewer*) *viewer*)
       (send *viewer* :draw-objects))
   )
@@ -260,16 +272,24 @@
 	   (coerce
 	    (subseq (send msg :axes) 3 6)
 	    float-vector)))))
-    (setq move
-	  (map float-vector
-	       #'*
-	       move move-filter))
-    (setq rpy
-	  (map float-vector
-	       #'*
-	       rpy rpy-filter))
-    (call-ik-server :move-coords
-		    (make-coords :pos move :rpy rpy))))
+    (cond
+     ((< (norm
+	  (concatenate
+	   float-vector
+	   (scale 1e-3 move)
+	   rpy)) 0.01)
+      (format t "skip ~A ~A~%" move rpy))
+     (t
+      (setq move
+	    (map float-vector
+		 #'*
+		 move move-filter))
+      (setq rpy
+	    (map float-vector
+		 #'*
+		 rpy rpy-filter))
+      (call-ik-server :move-coords
+		      (make-coords :pos move :rpy rpy))))))
 
 (defun ros::tf-point->tf-pose (point)
   (let ((pose (instance geometry_msgs::PoseStamped :init
@@ -632,6 +652,7 @@
 
 (defvar *mouse-mode* nil)
 (defvar *success-state-collection* nil)
+(defvar *fix-limb-coords* nil)
 
 (defvar *prev-js*
   (instance sensor_msgs::jointstate
