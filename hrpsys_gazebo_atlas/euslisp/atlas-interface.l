@@ -74,7 +74,37 @@
      (setq walk-seq 0)
      (send self :set-recommended-walk-params)
      (setq vel-x-ratio 1.0 vel-y-ratio 1.0 vel-th-ratio 15.0)
+
+     ;; additional filtered force sensor
+     (ros::subscribe "rhand_filtered_wrench_handframe"
+                     geometry_msgs::WrenchStamped
+                     #'send self :rtmros-force-sensor-callback
+                     :filtered-rhsensor :groupname groupname)
+     (ros::subscribe "lhand_filtered_wrench_handframe"
+                     geometry_msgs::WrenchStamped
+                     #'send self :rtmros-force-sensor-callback
+                     :filtered-lhsensor :groupname groupname)
      ))
+  (:filtered-force-vector
+   (&optional (limb))
+   (send self :tmp-force-moment-vector :force limb "filtered"))
+  (:filtered-moment-vector
+   (&optional (limb))
+   (send self :tmp-force-moment-vector :moment limb "filtered"))
+  (:filtered-absolute-force-vector
+   (&optional (limb))
+   (if limb
+       (send (send robot :force-sensor limb) :rotate-vector (send self :filtered-force-vector limb))
+     (mapcar #'(lambda (fs force)
+                 (send fs :rotate-vector force))
+             (send robot :force-sensors) (send self :filtered-force-vector))))
+  (:filtered-absolute-moment-vector
+   (&optional (limb))
+   (if limb
+       (send (send robot :force-sensor limb) :rotate-vector (send self :filtered-moment-vector limb))
+     (mapcar #'(lambda (fs moment)
+                 (if moment (send fs :rotate-vector moment)))
+             (send robot :force-sensors) (send self :filtered-moment-vector))))
   ;;
   ;; controller setting
   (:larm-controller ()
