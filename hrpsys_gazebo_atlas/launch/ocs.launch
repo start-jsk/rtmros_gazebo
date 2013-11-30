@@ -1,11 +1,13 @@
 <launch>
   <!-- for narrow band -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_low_bandwidth_ocs.launch">
+    <arg name="USE_CONTROLLER" value="false"/>
     <arg name="USE_INTERACTIVE_JOINT" value="true"/>
     <arg name="USE_INTERACTIVE_ENDCOORDS" value="true"/>
   </include>
-  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_ik.launch">
-  </include>
   <include file="$(find atlas_prog)/launch/xbox_footstep.launch">
   </include>
+  <!-- start hrpsys_atlas_dashboard -->
+  <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" />
+
 </launch>
