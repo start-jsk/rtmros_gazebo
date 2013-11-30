@@ -1,5 +1,6 @@
 <launch>
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys.launch">
+    <arg name="USE_IMAGE_TRANSPORT" value="true" />
     <arg name="USE_CONTROLLER" value="true" />
     <arg name="USE_VIEW" value="false" />
   </include>
