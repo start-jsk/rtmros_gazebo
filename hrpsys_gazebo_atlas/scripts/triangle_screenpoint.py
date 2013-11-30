@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import math
+import os
+import subprocess
 
 import roslib
 import rospy
@@ -129,7 +131,8 @@ def main():
   g_rviz_marker_pub = rospy.Publisher("/triangle_marker", Marker)
   g_image_marker_pub = rospy.Publisher("/multisense_sl/camera/left/image_marker",
                                        ImageMarker2)
-  
+  gui_process = subprocess.Popen([os.path.join(os.path.dirname(__file__), 
+                                               "triangle_gui.py")])
   rospy.Subscriber("/pointcloud_screenpoint_nodelet/output_point", PointStamped, 
                    pointCB)
   cancel = rospy.Service("~cancel", Empty, cancelCB)
