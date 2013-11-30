@@ -110,6 +110,27 @@
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
+(defun update-interactive-marker
+  ()
+  (let ((joint-angles nil)
+	(joint-names nil)
+	(joint-list (send *atlas* :joint-list))
+	(joint-state-msg
+	 (instance sensor_msgs::JointState :init
+		   :header (instance std_msgs::header :init
+				     :stamp (ros::time-now)))))
+    (dotimes (x (length joint-list))
+      (push (deg2rad (send (elt joint-list x) :joint-angle)) joint-angles)
+      (push (send (elt joint-list x) :name) joint-names)
+      )
+    (send joint-state-msg :position joint-angles)
+    (send joint-state-msg :name joint-names)
+
+    (ros::publish (format nil "~A/atlas/reset_joint_states" *im-nodename*)
+		  joint-state-msg)
+    )
+  )
+
 ;;;;;;;; controller ;;;;;;;;;
 
 ;(require "package://eus_nlopt/euslisp/nlopt-ik-overwrite.l")
@@ -648,6 +669,12 @@
 		hrpsys_gazebo_atlas::trianglepoints
 		#'trianglepoints-subscriber
 		1)
+
+
+(setq *im-nodename* "atlas-ik-visualizer")
+;;Update Interactive Marker
+(ros::advertise (format nil "~A/atlas/reset_joint_states" *im-nodename*)
+		sensor_msgs::JointState)
 
 (defun demo-mouse-controller
   nil
