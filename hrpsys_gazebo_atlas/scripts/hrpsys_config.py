@@ -32,6 +32,10 @@ class ATLASHrpsysConfigurator(HrpsysConfigurator):
         #
         connectPorts(self.st.port("q"), self.el.port("qRef"))
 
+    def setupLogger(self):
+        HrpsysConfigurator.setupLogger(self)
+        self.connectLoggerPort(self.rh, 'q', 'command')
+
 #    # delete co
 #    def getRTCList(self):
 #        return [self.rh, self.seq, self.sh, self.tf, self.kf, self.vs, self.ic, self.abc, self.st, self.el, self.log]
