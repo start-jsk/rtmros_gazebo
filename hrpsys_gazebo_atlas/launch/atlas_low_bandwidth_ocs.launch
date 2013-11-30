@@ -21,7 +21,10 @@
     <arg name="OCS_TF" value="$(arg OCS_TF)"/>
     <arg name="ROBOT_DESCRIPTION_OCS" value="$(arg ROBOT_DESCRIPTION_OCS)"/>
   </include>
-  
+
+  <!-- start hrpsys_atlas_dashboard -->
+  <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" >
+
   <!-- publish specific tf ( map to pelvis ) -->
   <node pkg="hrpsys_gazebo_atlas" type="specific_transform_subscriber" name="specific_tf_subscriber"
 	output="screen">
