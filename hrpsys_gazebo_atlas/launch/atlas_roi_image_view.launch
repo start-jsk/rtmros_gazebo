@@ -1,0 +1,14 @@
+<launch>
+  <node pkg="image_view2" type="image_view2"
+        name="org_image_view" >
+    <remap from="image" to="multisense_sl/camera/left/image_rect_color" />
+    <param name="autosize" value="true" />
+  </node>
+
+  <!-- ROI view -->
+  <node pkg="image_view" type="image_view"
+        name="roi_image_view" >
+    <remap from="image" to="roi_camera_output/image_raw" />
+    <param name="autosize" value="true" />
+  </node>
+</launch>
