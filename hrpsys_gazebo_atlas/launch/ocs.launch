@@ -1,7 +1,6 @@
 <launch>
   <!-- for narrow band -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_low_bandwidth_ocs.launch">
-    <arg name="USE_CONTROLLER" value="false"/>
     <arg name="USE_INTERACTIVE_JOINT" value="true"/>
     <arg name="USE_INTERACTIVE_ENDCOORDS" value="true"/>
   </include>
