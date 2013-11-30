@@ -96,7 +96,7 @@
    (if limb
        (send (send robot :force-sensor limb) :rotate-vector (send self :filtered-force-vector limb))
      (mapcar #'(lambda (fs force)
-                 (send fs :rotate-vector force))
+                 (if force (send fs :rotate-vector force)))
              (send robot :force-sensors) (send self :filtered-force-vector))))
   (:filtered-absolute-moment-vector
    (&optional (limb))
