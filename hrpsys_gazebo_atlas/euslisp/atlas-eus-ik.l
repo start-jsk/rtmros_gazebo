@@ -17,7 +17,7 @@
 (defun setup-end-coords ()
   (unless (boundp '*setup-end-coords-for-hku-flag*)
     ;; right
-    (let ((end-coords (make-coords)) 
+    (let ((end-coords (make-coords))
 	  (arm :rarm)
 	  ;;(palm-link :right_palm_lk)
 	  (palm-link :right_palm_left_camera_optical_frame_lk)
@@ -36,7 +36,7 @@
 	  (send (send *atlas* arm :end-coords) :transform trans))
 	))
     ;; left
-    (let ((end-coords (make-coords)) 
+    (let ((end-coords (make-coords))
 	  (arm :larm)
 	  ;;(palm-link :right_palm_lk)
 	  (palm-link :left_palm_left_camera_optical_frame_lk)
@@ -56,39 +56,47 @@
   (setq *setup-end-coords-for-hku-flag* t)
   )
 
-(defun fullbody-ik-with-collision (arm goal-in-world)
-  (fullbody-ik-main
-   :target-limb (list arm :lleg :rleg)
-   :target-coords (list goal-in-world nil nil)
-   :collision? t
-   ;:centroid-thre 100
-   :thre '(1 1 1)
-   :stop 100
-   :rotation-axis '(t t t)))
+(defun fullbody-ik-with-collision (arm goal-in-world &rest args)
+  (apply
+   #'fullbody-ik-main
+   (append
+    (list
+     :target-limb (list arm :lleg :rleg)
+     :target-coords (list goal-in-world nil nil)
+     :collision? t
+					;:centroid-thre 100
+     :thre '(1 1 1)
+     :stop 100
+     :rotation-axis '(t t t))
+    args)))
 
-(defun torso-ik-with-collision (arm goal-in-world)
-  (fullbody-ik-main
-   :target-limb (list arm :lleg :rleg)
-   :target-coords (list goal-in-world nil nil)
-   :additional-weight-list
-   (mapcar
-    #'(lambda (k gain)
-	(list (send *atlas* :torso k :child-link)
-	      gain))
-    (list :waist-r :waist-p :waist-y)
-    (list 0.1 0.1 0.1))
-   ;;(list 1e-3 1e-3 1e-3))
-   :root-link-virtual-joint-weight
-   (float-vector 0 0 0 0 0 0)
-   :min-vec (float-vector 0 0 0 0 0 0)
-   :max-vec (float-vector 0 0 0 0 0 0)
-   :collision? t
-   ;:centroid-thre 200
-   :thre '(1 1 1)
-   :stop 100
-   :rotation-axis '(t t t)))
+(defun torso-ik-with-collision (arm goal-in-world &rest args)
+  (apply
+   #'fullbody-ik-main
+   (append
+    (list
+     :target-limb (list arm :lleg :rleg)
+     :target-coords (list goal-in-world nil nil)
+     :additional-weight-list
+     (mapcar
+      #'(lambda (k gain)
+	  (list (send *atlas* :torso k :child-link)
+		gain))
+      (list :waist-r :waist-p :waist-y)
+      (list 0.1 0.1 0.1))
+     ;;(list 1e-3 1e-3 1e-3))
+     :root-link-virtual-joint-weight
+     (float-vector 0 0 0 0 0 0)
+     :min-vec (float-vector 0 0 0 0 0 0)
+     :max-vec (float-vector 0 0 0 0 0 0)
+     :collision? t
+					;:centroid-thre 200
+     :thre '(1 1 1)
+     :stop 100
+     :rotation-axis '(t t t))
+    args)))
 
-(defun normal-ik-with-collision (arm goal-in-world)
+(defun normal-ik-with-collision (arm goal-in-world &rest args)
   (let* ((w
 	  (send-all (send *atlas* :joint-list)
 		    :max-joint-velocity))
@@ -96,34 +104,44 @@
 	  (send-all (send *robot* :joint-list)
 		    :max-joint-velocity 0.2))
 	 (ret
-	  (fullbody-ik-main
-	   :target-limb (list arm :lleg :rleg)
-	   :target-coords (list goal-in-world nil nil)
-	   :additional-weight-list
+	  (apply
+	   #'fullbody-ik-main
 	   (append
-	    (mapcar
-	     #'(lambda (k gain)
-		 (list (send *atlas* :torso k :child-link)
-		       gain))
-	     (list :waist-r :waist-p :waist-y)
-	     (list 0.0 0.0 0.0))
-	    (mapcar
-	     #'(lambda (k gain)
-		 (list (send *atlas* arm k :child-link)
-		       gain))
-	     '(:shoulder-r :shoulder-y)
-	     '(1e-10 1e-1)))
-	   ;;(list 1e-3 1e-3 1e-3))
-	   :root-link-virtual-joint-weight
-	   (float-vector 0 0 0 0 0 0)
-	   :min-vec (float-vector 0 0 0 0 0 0)
-	   :max-vec (float-vector 0 0 0 0 0 0)
-	   :collision? t
-	   :centroid-thre nil
-	   :stop 150
-	   :thre '(1 1 1)
-	   :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 1))
-	   :rotation-axis '(t t t))))
+	    (list
+	     :target-limb (list arm :lleg :rleg)
+	     :target-coords (list goal-in-world nil nil)
+	     :additional-weight-list
+	     (append
+	      (mapcar
+	       #'(lambda (k gain)
+		   (list (send *atlas* :torso k :child-link)
+			 gain))
+	       (list :waist-r :waist-p :waist-y)
+	       (make-list 3 :initial-element 0))
+	      (mapcar
+	       #'(lambda (k gain)
+		   (list (send *atlas* arm k :child-link)
+			 gain))
+	       '(:shoulder-r :shoulder-y :elbow-p)
+	       '(1e-4 1e-1 1e+10)))
+	     ;; :additional-nspace-list
+	     ;; (mapcar
+	     ;;  #'(lambda (k)
+	     ;; 	(list (send *atlas* arm k :child-link)
+	     ;; 	      #'(lambda nil (- (random 1.0) 2.0))))
+	     ;;  '(:elbow-p))
+	     ;;(list 1e-3 1e-3 1e-3))
+	     :root-link-virtual-joint-weight
+	     (coerce (make-list 6 :initial-element 0) float-vector)
+	     :min-vec (float-vector 0 0 0 0 0 0)
+	     :max-vec (float-vector 0 0 0 0 0 0)
+	     :collision? t
+	     :centroid-thre nil
+	     :stop 100
+	     :thre '(1 1 1)
+	     :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 1))
+	     :rotation-axis '(t t t))
+	    args))))
     (mapcar
      #'(lambda (j g) (send j :max-joint-velocity g))
      (send *atlas* :joint-list) w)
@@ -138,14 +156,20 @@
         (torsop (or (string= (send req :ik_request :group_name) "larm_torso")
                     (string= (send req :ik_request :group_name) "rarm_torso")))
         (fullbodyp (or (string= (send req :ik_request :group_name) "larm_fullbody")
-                       (string= (send req :ik_request :group_name) "rarm_fullbody"))))
+                       (string= (send req :ik_request :group_name) "rarm_fullbody")))
+	(opt (apply
+	      #'append
+	      (mapcar
+	       #'(lambda (dd) (list (car dd) (cdr dd)))
+	       (send (send req :ik_request) :plist)))))
+    (print opt)
     ;; taking joint state into account
     (if (and (send req :ik_request :robot_state)
-               (send req :ik_request :robot_state :joint_state)
-               (send req :ik_request :robot_state :joint_state :name)
-               (send req :ik_request :robot_state :joint_state :position)
-               (= (length (send req :ik_request :robot_state :joint_state :name))
-                  (length (send req :ik_request :robot_state :joint_state :position))))
+	     (send req :ik_request :robot_state :joint_state)
+	     (send req :ik_request :robot_state :joint_state :name)
+	     (send req :ik_request :robot_state :joint_state :position)
+	     (= (length (send req :ik_request :robot_state :joint_state :name))
+		(length (send req :ik_request :robot_state :joint_state :position))))
         (progn
           (dotimes (i (length (send req :ik_request :robot_state :joint_state :name)))
             (let ((joint-name (elt (send req :ik_request :robot_state :joint_state :name) i)))
@@ -157,7 +181,8 @@
       (send *atlas* :reset-manip-pose)
       )
     (send *viewer* :draw-objects)
-    (send *atlas* :newcoords (make-coords)) ;force to move pelvis origin
+    (send *robot* :fix-leg-to-coords (make-coords) :both)
+    ;(send *atlas* :newcoords (make-coords)) ;force to move pelvis origin
     (let ((goal (send req :ik_request :pose_stamped)))
       ;; check that goal is malformed or not
       (let ((q (float-vector (send req :ik_request :pose_stamped :pose :orientation :w)
@@ -166,15 +191,33 @@
                              (send req :ik_request :pose_stamped :pose :orientation :z))))
         (if (not (eps= (norm q) 1.0))
             (return nil)))
-      (let ((goal-in-world (send *tf* :transform-pose "/pelvis" goal)))
+      (let* ((goal-in-pelvis (send *tf* :transform-pose "/pelvis" goal))
+	     (goal-in-world
+	      (make-coords
+	       :pos (v+ (send *robot* :worldpos)
+			(send goal-in-pelvis :worldpos))
+	       :rot (m* (send *robot* :worldrot)
+			(send goal-in-pelvis :worldrot)))))
         (let ((ik-ret (cond
                        (fullbodyp
-                        (fullbody-ik-with-collision arm goal-in-world)
+                        (apply
+			 #'fullbody-ik-with-collision
+			 (append
+			  (list arm goal-in-world)
+			  opt))
 			)
                        (torsop
-                        (torso-ik-with-collision arm goal-in-world))
+                        (apply
+			 #'torso-ik-with-collision
+			 (append
+			  (list arm goal-in-world)
+			  opt)))
                        (t
-                        (normal-ik-with-collision arm goal-in-world)))))
+                        (apply
+			 #'normal-ik-with-collision
+			 (append
+			  (list arm goal-in-world)
+			  opt))))))
           (if ik-ret
               (progn
                 (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
@@ -189,8 +232,9 @@
 (unless (boundp '*do-not-start-ik-server*)
   ;; initialization
   (setq *atlas* (atlas-with-hand))
-  (send *atlas* :newcoords (make-coords))
+  ;(send *atlas* :newcoords (make-coords))
   (send *atlas* :reset-manip-pose)
+  (send *atlas* :fix-leg-to-coords (make-coords) :both)
   (setq *robot* *atlas*)
   (send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
   (setup-end-coords)
