@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
       pub_.publish(tf_msg);
       }catch(tf::TransformException ex){
-	ROS_INFO_STREAM("missing transform");
+	ROS_INFO_STREAM("missing transform: " << parent_frame << " to " << child_frame);
       }
 
       ros::spinOnce();

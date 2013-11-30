@@ -26,6 +26,7 @@
   <node pkg="hrpsys_gazebo_atlas" type="specific_transform_subscriber" name="specific_tf_subscriber"
 	output="screen">
     <remap from="/tf" to="$(arg OCS_TF)"/>
+    <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_ocs/set_dynamic_tf"/>
   </node>
 
   <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_ocs" output="screen">
