@@ -100,12 +100,19 @@
 	   :target-limb (list arm :lleg :rleg)
 	   :target-coords (list goal-in-world nil nil)
 	   :additional-weight-list
-	   (mapcar
-	    #'(lambda (k gain)
-		(list (send *atlas* :torso k :child-link)
-		      gain))
-	    (list :waist-r :waist-p :waist-y)
-	    (list 0.0 0.0 0.0))
+	   (append
+	    (mapcar
+	     #'(lambda (k gain)
+		 (list (send *atlas* :torso k :child-link)
+		       gain))
+	     (list :waist-r :waist-p :waist-y)
+	     (list 0.0 0.0 0.0))
+	    (mapcar
+	     #'(lambda (k gain)
+		 (list (send *atlas* arm k :child-link)
+		       gain))
+	     '(:shoulder-r :shoulder-y)
+	     '(1e-10 1e-1)))
 	   ;;(list 1e-3 1e-3 1e-3))
 	   :root-link-virtual-joint-weight
 	   (float-vector 0 0 0 0 0 0)
