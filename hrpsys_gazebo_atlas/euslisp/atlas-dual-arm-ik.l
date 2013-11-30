@@ -7,10 +7,40 @@
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
+(defun update-objects
+  nil
+  (setq *fix-leg-coords*
+	(mapcar
+	 #'(lambda (k)
+	     (send *robot* k :end-coords :copy-worldcoords))
+	 '(:rleg :lleg)))
+  ;;
+  (send *triangle* :translate
+	(float-vector
+	 0 0
+	 (+
+	  (aref (send (car *fix-leg-coords*) :worldpos) 2)
+	  (-
+	   910
+	   (apply
+	    #'min
+	    (mapcar
+	     #'(lambda (v) (aref v 2))
+	     (flatten
+	      (send-all
+	       (send *triangle* :faces)
+	       :vertices)))))))
+	:world)
+  (make-foot-convex)
+  ;;
+  (fix-gun-coords)
+  (my-objects))
+
 ;; initial pose
 (defun init-pose
-  nil
-  (send *robot* :reset-pose)
+  (&optional
+   (av (float-vector 0.0 0.0 0.0 30.0 90.0 0.0 -80.0 15.0 0.0 -30.0 90.0 0.0 80.0 15.0 0.0 30.0 0.0 -20.0 0.0 -10.0 0.0 30.0 0.0 -20.0 0.0 -10.0 0.0 0.0)))
+  (send *robot* :angle-vector av)
   (send *robot* :newcoords (make-coords))
   (send *robot* :rleg
 	:inverse-kinematics
@@ -28,16 +58,7 @@
 	:debug-view nil)
   (if (and (boundp '*viewer*) *viewer*)
       (send *viewer* :draw-objects))
-  (make-foot-convex)
-  ;;
-  (fix-gun-coords)
-  (setq *fix-leg-coords*
-	(mapcar
-	 #'(lambda (k)
-	     (send *robot* k :end-coords
-		   :copy-worldcoords))
-	 '(:rleg :lleg)))
-  (my-objects)
+  (update-objects)
   )
 
 (defun fix-gun-coords
@@ -86,8 +107,6 @@
      (setq *right-hand-offset* (make-coords))
      (setq *left-hand-offset* (make-coords))
      (list rarm-end-coords larm-end-coords))))
-
-
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
@@ -187,6 +206,11 @@
 	 (remove-if
 	  #'(lambda (k) (find k '(:rleg :lleg)))
 	  target-limb)))))))
+   ;;
+   (additional-nspace-list nil)
+;    (list
+;     (list (send (send *robot* :rarm :wrist-p) :child-link)
+;	   -0.1)))
    )
   (let (target-coords ret)
     (cond
@@ -237,12 +261,14 @@
 	   ;;
 	   :collision-avoidance-link-pair collision-pair
 	   :root-link-virtual-joint-weight
-	   #F(0.1 1.5 1 0.08 0.08 0.08)
+	   ;#F(0.1 1.5 1 0.08 0.08 0.08)
+	   (float-vector 1e-3 1e-3 0.1 1e-3 1e-3 1e-3)
 	   ;:min #F(-1000 -1000 -1000 -200 -200 -200)
 	   ;:max #F(1000 1000 1000 200 200 200)
 	   :avoid-collision-distance 10
 	   :avoid-collision-null-gain 0.3
 	   :avoid-collision-joint-gain 0.3
+	   :additional-nspace-list additional-nspace-list
 	   ;;
 	   :dump-command nil
 	   :debug-view debug-view
@@ -337,39 +363,7 @@
 ;	       #2f((1.0 -5.742127e-05 -0.000283)
 ;		   (5.729671e-05 1.0 -0.00044)
 ;		   (0.000283 0.00044 1.0)))))
-  (setq *fix-leg-coords*
-	(mapcar
-	 #'(lambda (k)
-	     (send *robot* k :end-coords :copy-worldcoords))
-	 '(:rleg :lleg)))
-  ;;
-  (send *triangle* :translate
-	(float-vector
-	 0 0
-	 (+
-	  (aref (send (car *fix-leg-coords*) :worldpos) 2)
-	  (-
-	   910
-	   (apply
-	    #'min
-	    (mapcar
-	     #'(lambda (v) (aref v 2))
-	     (flatten
-	      (send-all
-	       (send *triangle* :faces)
-	       :vertices)))))))
-	:world)
-  ;;
-  (make-foot-convex)
-  ;;
-  (fix-gun-coords)
-  (setq *fix-leg-coords*
-	(mapcar
-	 #'(lambda (k)
-	     (send *robot* k :end-coords
-		   :copy-worldcoords))
-	 '(:rleg :lleg)))
-  (my-objects)
+  (update-objects)
   )
 
 (defun init-grasp-pose-single-hand
@@ -862,12 +856,12 @@
 		 :name :rcoords
 		 :coords
 		 (make-coords
-		  :pos #F(0 0 0)
+		  :pos #F(-100 0 0)
 		  :rpy '(0 1.57 0))
 		  ;:pos #F(0 -100 10)
 		  ;:rpy '(0 0 -1.57))
 		 :parent root)))
-	  (send root :translate #F(600 0 200))
+	  ;(send root :translate #F(700 -300 200))
 	  (send *robot*
 		:newcoords
 		(make-coords
@@ -926,7 +920,7 @@
 	(make-prism (list #F(0 0 0) #F(300 0 0) #F(0 600 0)) 5))
   (send *triangle* :set-color #F(0 1 0))
   (send *triangle* :rotate (deg2rad -90) :y)
-  (send *triangle* :translate #F(600 -200 0) :world)
+  (send *triangle* :translate #F(600 -500 0) :world)
 ;(send *triangle* :translate #F(100 0 0) :world)
   (gl::transparent *triangle* 0.3)
 ;  (load "triangle.l")
@@ -936,13 +930,14 @@
 (if (not (and (boundp '*centroid-object*) *centroid-object*))
     (init-fullbody-ik-main))
 
-(init-grasp-pose)
+;(init-grasp-pose)
+(init-pose)
 (my-objects)
 ;(demo-mouse-controller)
 
 ;;
 
-
+(send *robot* :rarm :wrist-p :max-angle 10)
 
 #|
 
@@ -1035,6 +1030,63 @@ roseus atlas-dual-arm-ik.l
 	    (make-list
 	     (- (length *success-state-collection*) 1)
 	     :initial-element 500)))
+
+
+(let* ((target-limb '(:rleg :lleg))
+       (move-target
+	(mapcar
+	 #'(lambda (k)
+	     (send *robot* k :end-coords))
+	 target-limb))
+       (link-list
+	(mapcar
+	 #'(lambda (mt)
+	     (send *robot* :link-list
+		   (send mt :parent)))
+	 move-target))
+       (target-coords
+	(mapcar
+	 #'(lambda (mt k)
+	     (case k
+		   (:torso
+		    (send (send mt :copy-worldcoords)
+			  :translate
+			  #F(0 0 50)
+			  :world))
+		   (t
+		    (send mt :copy-worldcoords))))
+	 move-target target-limb))
+       (translation-axis
+	(mapcar
+	 #'(lambda (k)
+	     (case k
+		   (:torso :z)
+		   (t t)))
+	 target-limb))
+       (rotation-axis
+	(mapcar
+	 #'(lambda (k)
+	     (case k
+		   (:torso nil)
+		   (t t)))
+	 target-limb))
+       )
+  (send *robot*
+	:translate
+	#F(0 0 300)
+	:world)
+  (send *robot*
+	:fullbody-inverse-kinematics
+	target-coords
+	:move-target move-target
+	:link-list link-list
+	:translation-axis translation-axis
+	:max #F(1000 1000 1000 200 200 200)
+	:root-link-virtual-joint-weight
+	#F(0 0 1 0 0 0)
+	:rotation-axis rotation-axis
+	:debug-view :no-message)
+  )
 
 |#
 
