@@ -243,9 +243,10 @@
   (make-foot-convex)
   (make-centroid-object)
   (objects (list *atlas* *foot-convex* *centroid-object*))
-  (send *irtviewer* :change-background #f(1.0 0.9 0.9))
-  (send *irtviewer* :title "IK server")
-  (send *irtviewer* :draw-objects)
+  (when (boundp '*irtviewer*)
+    (send *irtviewer* :change-background #f(1.0 0.9 0.9))
+    (send *irtviewer* :title "IK server")
+    (send *irtviewer* :draw-objects))
 
   (setq *tf* (instance ros::transform-listener :init))
 
@@ -256,7 +257,8 @@
   (ros::rate 10)
   (do-until-key
    (if (not (ros::ok)) (return-from nil nil))
-   (x::window-main-one)
+   (unless (or (null x::*display*) (= x::*display* 0))
+     (x::window-main-one))
    (ros::sleep)
    (ros::spin-once)))
 
