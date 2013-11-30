@@ -8,7 +8,7 @@
     <arg name="COLLADA_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
 
     <arg name="SIMULATOR_NAME" value="RobotHardware0" if="$(arg USE_ROBOTHARDWARE)"/>
-    <arg name="SIMULATOR_NAME" value="$(arg ROBOT_NAME)(Robot)0" unless="$(arg USE_ROBOTHARDWARE)"/>
+    <arg name="SIMULATOR_NAME" value="atlas(Robot)0" unless="$(arg USE_ROBOTHARDWARE)"/>
     <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" if="$(arg USE_ROBOTHARDWARE)"/>
     <arg name="INSTALL_ROBOT_DESCRIPTION" value="true" unless="$(arg USE_ROBOTHARDWARE)"/>
 

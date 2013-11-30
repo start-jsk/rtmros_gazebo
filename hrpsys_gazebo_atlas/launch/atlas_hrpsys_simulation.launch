@@ -13,6 +13,9 @@
     <arg name="KILL_SERVERS" default="$(arg KILL_SERVERS)" />
   </include>
 
+  <rosparam command="load"
+            file="$(find hrpsys_gazebo_atlas)/config/atlas_v3_controller_config.yaml" />
+  
   <!-- ROS bridge -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
     <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
