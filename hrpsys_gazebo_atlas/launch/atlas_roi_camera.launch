@@ -21,9 +21,28 @@
   <node pkg="roseus_tutorials" type="roi-reconfigure-call.l"
         name="roi_reconfigure_call" output="screen" >
     <!--remap from="roi_crop_decimate/set_parameters" to="" /-->
+    <!--
     <remap from="/image_rect_color/screenrectangle"
            to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)/screenrectangle" />
     <remap from="/image_rect_color/screenpoint"
            to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)/screenpoint" />
+    -->
+    <remap from="/image_rect_color/screenrectangle"
+           to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)_buffered/screenrectangle" />
+    <remap from="/image_rect_color/screenpoint"
+           to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)_buffered/screenpoint" />
+  </node>
+
+  <node pkg="jsk_topic_tools" type="topic_buffer_server"
+        name="roi_topic_buffer_server"
+        args=" /multisense_sl/camera/left/image_rect_color /roi_camera_output/image_raw"
+        output="screen"/>
+
+  <node pkg="jsk_topic_tools" type="topic_buffer_client"
+        name="roi_topic_buffer_client"
+        output="screen" >
+    <param name="fixed_rate" value="0.1" />
+    <param name="latched" value="true" />
+    <remap from="/list" to="/roi_topic_buffer_server/list"/>
   </node>
 </launch>

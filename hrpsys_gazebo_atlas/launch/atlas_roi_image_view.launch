@@ -1,14 +1,16 @@
 <launch>
   <node pkg="image_view2" type="image_view2"
         name="org_image_view" >
-    <remap from="image" to="multisense_sl/camera/left/image_rect_color" />
+    <remap from="image" to="multisense_sl/camera/left/image_rect_color_buffered" />
     <param name="autosize" value="true" />
   </node>
 
   <!-- ROI view -->
   <node pkg="image_view" type="image_view"
         name="roi_image_view" >
-    <remap from="image" to="roi_camera_output/image_raw" />
+    <remap from="image" to="roi_camera_output/image_raw_buffered" />
     <param name="autosize" value="true" />
   </node>
+  <!-- rosservice call /roi_topic_buffer_server/update "/roi_camera_output/image_raw" -->
+  <!-- rosservice call /roi_topic_buffer_server/update "/multisense_sl/camera/left/image_rect_color" -->
 </launch>
