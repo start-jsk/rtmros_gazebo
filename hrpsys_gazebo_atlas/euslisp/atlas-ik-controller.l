@@ -4,6 +4,8 @@
 (require "atlas-model.l")
 (require "atlas-fullbody-ik.l")
 ;(require "models/arrow-object.l")
+(load "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
+
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
@@ -130,6 +132,27 @@
 		  joint-state-msg)
     )
   )
+
+(defun publish-js-compressed
+  ()
+  (let ((js-compressed (instance hrpsys_gazebo_atlas::JointStateCompressed :init))
+	joint-indexes joint-angles
+	(joint-list (send *atlas* :joint-list))
+	)
+    (send js-compressed :header (instance std_msgs::header :init :stamp (ros::time-now)))
+
+    (dolist (j joint-list)
+      (push (get-joint-index (send j :name)) joint-indexes)
+      (push (send j :joint-angle) joint-angles)
+      )
+    (send js-compressed :index (coerce joint-indexes string))
+    (send js-compressed :position (coerce joint-angles float-vector))
+
+    (ros::publish *fc-eus-nodename* js-compressed)
+    (ros::ros-info "joint states compressed was published~%")
+    )
+  )
+
 
 ;;;;;;;; controller ;;;;;;;;;
 
@@ -672,9 +695,17 @@
 
 
 (setq *im-nodename* "atlas-ik-visualizer")
+(setq *fc-eus-nodename* "atlas-ik-fc-eus")
 ;;Update Interactive Marker
 (ros::advertise (format nil "~A/atlas/reset_joint_states" *im-nodename*)
 		sensor_msgs::JointState)
+
+(ros::advertise *fc-eus-nodename* hrpsys_gazebo_atlas::JointStateCompressed 1)
+
+;;initialize joint-index-list
+;;it is used to convert joint-name -> index
+(joint-index-init)
+
 
 (defun demo-mouse-controller
   nil

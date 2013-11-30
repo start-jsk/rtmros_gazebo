@@ -45,3 +45,7 @@
     (setq i (+ i 1))
     )
 )
+
+(defun get-joint-index (joint-name)
+  (cdr (assoc joint-name joint-index-list :key #'car :test #'string=))
+)
