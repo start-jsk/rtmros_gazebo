@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+
+__doc__ = """
+Hrpsys_Dashboard
+GUI for the hrpsys robots."""
+
+import roslib
+roslib.load_manifest('hrpsys_ros_bridge')
+
+from hrpsys_ros_bridge.hrpsys_dashboard import *
+
+WXVER = '2.8'
+import wxversion
+if wxversion.checkInstalled(WXVER):
+  wxversion.select(WXVER)
+else:
+  print >> sys.stderr, "This application requires wxPython version %s"%(WXVER)
+  sys.exit(1)
+
+import wx
+
+class HrpsysAtlasFrame(HrpsysFrame):
+    def setup_extra_layout(self):
+        sizer = self.GetSizer()
+        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "Pose"), wx.HORIZONTAL)
+        sizer.Add(static_sizer, 0)
+
+        # Poses        
+        self._pose_button = StatusControl(self, wx.ID_ANY, self._icons_path, "breakerbase", True)
+        self._pose_button.SetToolTip(wx.ToolTip("Preset Poses"))
+        static_sizer.Add(self._pose_button, 0)
+        self._pose_button.Bind(wx.EVT_LEFT_DOWN, self.on_pose_clicked)
+
+    def on_pose_clicked(self, evt):
+        menu = wx.Menu()
+        menu.Bind(wx.EVT_MENU, self.on_manip_pose,   menu.Append(wx.ID_ANY, "Manip Pose"))
+        menu.Bind(wx.EVT_MENU, self.on_reset_pose,  menu.Append(wx.ID_ANY, "Reset Pose"))
+        self._pose_button.toggle(True)
+        self.PopupMenu(menu)
+        self._pose_button.toggle(False)
+
+    def on_manip_pose(self, evt):
+        print "manip"
+        dial = wx.MessageBox('Are you sure to move to Manip Pose?', 'Info', wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
+        if dial == wx.OK :
+            print "go manip"
+        else:
+            print "do nothing"
+            
+        
+    def on_reset_pose(self, evt):
+        print "reset"
+        
+    def on_motors_clicked(self, evt):
+        menu = wx.Menu()
+        menu.Bind(wx.EVT_MENU, self.on_servo_on,   menu.Append(wx.ID_ANY, "Servo On"))
+        menu.Bind(wx.EVT_MENU, self.on_servo_off,  menu.Append(wx.ID_ANY, "Servo Off"))
+        menu.Bind(wx.EVT_MENU, self.on_space_mode, menu.Append(wx.ID_ANY, "---------"))
+        menu.Bind(wx.EVT_MENU, self.on_freeze_mode,menu.Append(wx.ID_ANY, "Freeze"))
+        menu.Bind(wx.EVT_MENU, self.on_user_mode,  menu.Append(wx.ID_ANY, "User"))
+        menu.Bind(wx.EVT_MENU, self.on_prep_mode,  menu.Append(wx.ID_ANY, "Prep"))
+        menu.Bind(wx.EVT_MENU, self.on_stand_mode, menu.Append(wx.ID_ANY, "Stand"))
+        menu.Bind(wx.EVT_MENU, self.on_walk_mode,  menu.Append(wx.ID_ANY, "Walk"))
+        menu.Bind(wx.EVT_MENU, self.on_step_mode,  menu.Append(wx.ID_ANY, "Step"))
+        menu.Bind(wx.EVT_MENU, self.on_manip_mode, menu.Append(wx.ID_ANY, "Manip"))
+        self._motors_button.toggle(True)
+        self.PopupMenu(menu)
+        self._motors_button.toggle(False)
+
+    def on_servo_on(self, evt):
+        print "servo on"
+        return None
+    def on_servo_off(self, evt):
+        print "servo off"
+        return None
+    def on_space_mode(self, evt):
+        print "---"
+        return None
+    def on_freeze_mode(self, evt):
+        print "freeze"
+        return None
+    def on_user_mode(self, evt):
+        print "user"
+        return None
+    def on_prep_mode(self, evt):
+        print "user"
+        return None
+    def on_stand_mode(self, evt):
+        print "stand"
+        return None
+    def on_walk_mode(self, evt):
+        print "walk"
+        return None
+    def on_step_mode(self, evt):
+        print "step"
+        return None
+    def on_manip_mode(self, evt):
+        print "step"
+        return None
+        
+        
+
+
+if __name__ == '__main__':
+  app = wx.App()
+  frame = HrpsysAtlasFrame(None, title='Hrpsys Atlas Dashboard')
+  frame.Show()
+  app.MainLoop()
+
+
+
