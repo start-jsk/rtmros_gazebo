@@ -1,0 +1,11 @@
+<launch>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsy.launch">
+    <arg name="USE_CONTROLLER" value="true" />
+    <arg name="USE_VIEW" value="false" />
+  </include>
+  <!-- for narrow band -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_low_bandwidth_fc.launch">
+    <arg name="USE_INTERACTIVE_JOINT" value="true"/>
+    <arg name="USE_INTERACTIVE_ENDCOORDS" value="true"/>
+  </include>
+</launch>
