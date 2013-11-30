@@ -569,10 +569,9 @@
 			    time-list)))))))
    (reverse rsd)))
 
-
-
 #|
 
 (dump-loadable-structure "climb-with-hand-20131128.l" *rsd*)
 (load "climb-with-hand-20131128.l")
+(load "climb-20131128.l")
 (do-until-key (simple-rsd-play *rsd*))
