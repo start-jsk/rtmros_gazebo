@@ -26,7 +26,7 @@
   <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" >
 
   <!-- publish specific tf ( map to pelvis ) -->
-  <node pkg="hrpsys_gazebo_atlas" type="specific_transform_subscriber" name="specific_tf_subscriber"
+  <node pkg="jsk_topic_tools" type="specific_transform_subscriber" name="specific_tf_subscriber"
 	output="screen">
     <remap from="/tf" to="$(arg OCS_TF)"/>
     <remap from="/set_dynamic_tf" to="/dynamic_tf_publisher_ocs/set_dynamic_tf"/>
