@@ -3,7 +3,7 @@
 #include <tf/transform_listener.h>
 #include <tf/transform_broadcaster.h>
 #include <iostream>
-#include <hrpsys_gazebo_atlas/specific_transform_subscriber.h>
+#include "specific_transform_subscriber.h"
 #include <dynamic_tf_publisher/SetDynamicTF.h>
 
 void CallSetDynamicTf(std::string parent_frame_id, std::string frame_id, geometry_msgs::Transform transform){
