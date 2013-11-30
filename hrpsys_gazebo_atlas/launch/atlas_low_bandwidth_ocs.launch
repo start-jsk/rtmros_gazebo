@@ -23,7 +23,7 @@
   </include>
 
   <!-- start hrpsys_atlas_dashboard -->
-  <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" >
+  <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" />
 
   <!-- publish specific tf ( map to pelvis ) -->
   <node pkg="jsk_topic_tools" type="specific_transform_subscriber" name="specific_tf_subscriber"
@@ -38,6 +38,6 @@
     <remap from="/delete_tf" to="/dynamic_tf_publisher_ocs/delete_tf"/>
     <remap from="/dissoc_tf" to="/dynamic_tf_publisher_ocs/dissoc_tf"/>
     <remap from="/assoc_tf" to="/dynamic_tf_publisher_ocs/assoc_tf"/>
-    <param name="~use_cache" type="bool" value="false"/>
+    <param name="use_cache" type="bool" value="false"/>
   </node>
 </launch>
