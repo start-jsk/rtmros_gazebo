@@ -1,13 +1,82 @@
-;#-:jsk  (jsk)
-;#-:rbrain-basic (rbrain)
+#!/usr/bin/env roseus
+
+(ros::load-ros-manifest "roseus")
+(ros::load-ros-manifest "move_base_msgs")
+
+(ros::load-ros-manifest "hrpsys_gazebo_atlas")
+(ros::load-ros-manifest "arm_navigation_msgs")
+(ros::load-ros-manifest "moveit_msgs")
+
+(ros::roseus "atlas-ik-controller")
 
 (require "atlas-model.l")
 (require "atlas-fullbody-ik.l")
-;(require "models/arrow-object.l")
-(load "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
-
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
 
 ;;;;;;;; setup ;;;;;;;;;;;
+
+(defvar *prev-js* nil)
+(defun ik-server
+  (&key
+   (target-limb :larm)
+   (group_name
+    '("larm" "larm_torso" "larm_fullbody"
+      "rarm" "rarm_torso" "rarm_fullbody"))
+   (req (instance moveit_msgs::GetPositionIKRequest :init))
+   (move-coords (make-coords))
+   (initial-coords (send *robot* target-limb :end-coords :copy-worldcoords))
+   (target-coords
+    (make-coords
+     :pos (v+ (send initial-coords :worldpos)
+	      (send move-coords :worldpos))
+     :rot (m* (send initial-coords :worldrot)
+	      (send move-coords :worldrot)
+	      )))
+   (target-coords-from-pelvis
+    (make-coords
+     :pos (v- (send target-coords :worldpos)
+	      (send *robot* :worldpos))
+     :rot (m* (transpose
+	       (send *robot* :worldrot))
+	      (send target-coords :worldrot))))
+   )
+  (let* ((c target-coords-from-pelvis)
+	 (p (send c :worldpos))
+	 (q (matrix2quaternion (send c :worldrot)))
+	 res)
+    (send req :ik_request :group_name group_name)
+    (if *prev-js*
+	(send req :ik_request :robot_state :joint_state *prev-js*))
+    (send req :ik_request
+	  :pose_stamped
+	  (instance geometry_msgs::PoseStamped :init
+		    :header (instance std_msgs::Header :init
+				      :stamp (ros::time 0.0)
+				      :frame_id "/pelvis"))
+	  :pose
+	  (instance geometry_msgs::Pose :init
+		    :position
+		    (instance geometry_msgs::Point :init
+			      :x (aref (send c :worldpos) 0)
+			      :y (aref (send c :worldpos) 1)
+			      :z (aref (send c :worldpos) 2))
+		    :orientation
+		    (instance geometry_msgs::Quaternion :init
+			      :x (elt q 1)
+			      :y (elt q 2)
+			      :z (elt q 3)
+			      :w (elt q 0)))
+	  )
+    (setq res (ros::service-call "/atlas_eus_ik" req))
+    (if (= (send res :error_code :val)
+	   moveit_msgs::MoveItErrorCodes::*SUCCESS*)
+	(progn
+	  (print "successed!")
+	  (setq *prev-js* (send res :solution :joint_state))
+	  (print (send res :solution :joint_state :position))
+	  )
+      (print "failed!")
+      )))
 
 (defun update-objects
   nil
@@ -694,8 +763,8 @@
 		1)
 
 
-(setq *im-nodename* "atlas-ik-visualizer")
-(setq *fc-eus-nodename* "atlas-ik-fc-eus")
+(setq *im-nodename* "atlas_ik_visualizer")
+(setq *fc-eus-nodename* "atlas_ik_fc_eus")
 ;;Update Interactive Marker
 (ros::advertise (format nil "~A/atlas/reset_joint_states" *im-nodename*)
 		sensor_msgs::JointState)
@@ -1006,159 +1075,5 @@
 (send *robot* :rleg :knee-p :min-angle 10)
 (send *robot* :lleg :knee-p :min-angle 10)
 
-;;
-
-
-
-#|
-
-(init-grasp-pose)
-(send (car *fix-leg-coords*) :translate #F(0 100 0) :world)
-(fullbody-ik-main)
-(send (car *fix-leg-coords*) :translate #F(0 100 0) :world)
-
-(mapcar
- #'(lambda (c deg)
-     (send c :rotate (deg2rad deg) :z))
- *fix-leg-coords* '(-30 30))
-
-(atlas-set-servo-gain-by-torque-limit 10 :torso)
-
-(defun mm
-  nil
-  (require "atlas-interface.l")
-  (cond
-   ((not (and (boundp '*ri*) *ri*))
-    (atlas-init-ex)
-    (my-objects)))
-  (stand-up)
-  (real2model)
-  (model2real :wait t)
-  (send *ri* :start-auto-balancer)
-  (set-user))
-
-(ros::rate 10)
-(do-until-key
- (ros::spin-once)
- (ros::sleep)
- )
-
-(do-until-key
- (mapcar
-  #'(lambda (p) (demo-pos-controller :pos p))
-  (reverse (triangle-pos-list)))
- )
-
-(mm)
-(init-grasp-pose)
-(model2real :wait t)
- (mapcar
-  #'(lambda (p) (demo-pos-controller :pos p :real? t :real-feedback? t))
-  (triangle-pos-list))
-
-;; procedure
-
-rossetatlas
-roseus atlas-dual-arm-ik.l
-
-(require "atlas-interface.l")
-(atlas-init-ex)
-(objects
- (list *robot* *centroid-object*
-       *gun-coords* *triangle*))
-
-;; servo
-
-(init-grasp-pose-single-hand)
-(model2real :time 10000)
-(load "ssc-single-20131120.l")
-(demo-collection-play)
-
-(init-grasp-pose)
-(model2real :time 10000)
-(load "ssc-dual-20131120-2.l")
-(demo-collection-play)
-
-;; (send *ri* :angle-vector-sequence
-;;      (mapcar
-;;       #'(lambda (data) (cdr (assoc :angle-vector data)))
-;;       (reverse *success-state-collection*))
-;;      (cons 10000
-;;	    (cdr
-;;	     (mapcar
-;;	      #'(lambda (hoge) 500)
-;;	      *success-state-collection*))))
-
-(load "ssc-dual-20131120-2.l")
-(demo-collection-play)
-
-(send *ri* :angle-vector-sequence
-      (mapcar
-       #'(lambda (data)
-	   (cdr (assoc :angle-vector data)))
-       (reverse *success-state-collection*))
-      (cons 10000
-	    (make-list
-	     (- (length *success-state-collection*) 1)
-	     :initial-element 500)))
-
-
-(let* ((target-limb '(:rleg :lleg))
-       (move-target
-	(mapcar
-	 #'(lambda (k)
-	     (send *robot* k :end-coords))
-	 target-limb))
-       (link-list
-	(mapcar
-	 #'(lambda (mt)
-	     (send *robot* :link-list
-		   (send mt :parent)))
-	 move-target))
-       (target-coords
-	(mapcar
-	 #'(lambda (mt k)
-	     (case k
-		   (:torso
-		    (send (send mt :copy-worldcoords)
-			  :translate
-			  #F(0 0 50)
-			  :world))
-		   (t
-		    (send mt :copy-worldcoords))))
-	 move-target target-limb))
-       (translation-axis
-	(mapcar
-	 #'(lambda (k)
-	     (case k
-		   (:torso :z)
-		   (t t)))
-	 target-limb))
-       (rotation-axis
-	(mapcar
-	 #'(lambda (k)
-	     (case k
-		   (:torso nil)
-		   (t t)))
-	 target-limb))
-       )
-  (send *robot*
-	:translate
-	#F(0 0 300)
-	:world)
-  (send *robot*
-	:fullbody-inverse-kinematics
-	target-coords
-	:move-target move-target
-	:link-list link-list
-	:translation-axis translation-axis
-	:max #F(1000 1000 1000 200 200 200)
-	:root-link-virtual-joint-weight
-	#F(0 0 1 0 0 0)
-	:rotation-axis rotation-axis
-	:debug-view :no-message)
-  )
-
-|#
 
 
