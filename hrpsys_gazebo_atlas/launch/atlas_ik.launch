@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="hrpsys_gazebo_atlas"
+	type="atlas-eus-ik.l"
+	name="atlas_eus_ik" output="screen"/>
+</launch>
