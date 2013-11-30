@@ -35,7 +35,6 @@
     <remap from="/delete_tf" to="/dynamic_tf_publisher_ocs/delete_tf"/>
     <remap from="/dissoc_tf" to="/dynamic_tf_publisher_ocs/dissoc_tf"/>
     <remap from="/assoc_tf" to="/dynamic_tf_publisher_ocs/assoc_tf"/>
+    <param name="~use_cache" type="bool" value="false"/>
   </node>
-
-
 </launch>
