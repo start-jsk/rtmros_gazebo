@@ -29,6 +29,7 @@ class HrpsysAtlasFrame(HrpsysFrame):
         self._pose_button = StatusControl(self, wx.ID_ANY, self._icons_path, "breakerbase", True)
         self._pose_button.SetToolTip(wx.ToolTip("Preset Poses"))
         static_sizer.Add(self._pose_button, 0)
+        self._pose_button.set_ok()
         self._pose_button.Bind(wx.EVT_LEFT_DOWN, self.on_pose_clicked)
 
     def on_pose_clicked(self, evt):
@@ -67,34 +68,38 @@ class HrpsysAtlasFrame(HrpsysFrame):
         self.PopupMenu(menu)
         self._motors_button.toggle(False)
 
-    def on_servo_on(self, evt):
-        print "servo on"
-        return None
-    def on_servo_off(self, evt):
-        print "servo off"
-        return None
+    def go_actual(self):
+        actual = rospy.ServiceProxy("/StateHolderServiceROSBridge/goActual", OpenHRP_StateHolderService_goActual )
+        actual(OpenHRP_StateHolderService_goActualRequest())
+
     def on_space_mode(self, evt):
-        print "---"
         return None
     def on_freeze_mode(self, evt):
+        self.go_actual()
         print "freeze"
         return None
     def on_user_mode(self, evt):
+        self.go_actual()
         print "user"
         return None
     def on_prep_mode(self, evt):
+        self.go_actual()
         print "user"
         return None
     def on_stand_mode(self, evt):
+        self.go_actual()
         print "stand"
         return None
     def on_walk_mode(self, evt):
+        self.go_actual()
         print "walk"
         return None
     def on_step_mode(self, evt):
+        self.go_actual()
         print "step"
         return None
     def on_manip_mode(self, evt):
+        self.go_actual()
         print "step"
         return None
         
@@ -103,7 +108,7 @@ class HrpsysAtlasFrame(HrpsysFrame):
 
 if __name__ == '__main__':
   app = wx.App()
-  frame = HrpsysAtlasFrame(None, title='Hrpsys Atlas Dashboard')
+  frame = HrpsysAtlasFrame(None, title='Hrpsys Atlas Dashboard', use_diagnostics=False, use_rosout=False, use_battery=False)
   frame.Show()
   app.MainLoop()
 
