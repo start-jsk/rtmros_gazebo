@@ -167,7 +167,9 @@
       (t (send self :angle-vector))))))
 
 (defun fullbody-ik-main
-  (&key
+  (&rest
+   args
+   &key
    (real? nil)
    (real-feedback? nil)
    (rotate? t)
@@ -262,6 +264,7 @@
 	 (remove-if
 	  #'(lambda (k) (find k '(:rleg :lleg)))
 	  target-limb)))))))
+   &allow-other-keys
    )
   (let (ret)
     (cond
@@ -275,33 +278,40 @@
     ;;
     (setq
      ret
-     (send *robot*
-	   :fullbody-inverse-kinematics-with-error
-	   target-coords
-	   :move-target move-target
-	   :link-list link-list
-	   :rotation-axis rotation-axis
-	   :translation-axis translation-axis
-	   :target-centroid-pos target-centroid-pos
-	   :cog-gain 0.1
-	   :additional-weight-list additional-weight-list
-	   :stop stop
-	   :thre thre
-	   :rthre rthre
-	   :centroid-thre centroid-thre
-	   ;;
-	   :collision-avoidance-link-pair collision-pair
-	   :root-link-virtual-joint-weight
-	   root-link-virtual-joint-weight
-	   :min min-vec
-	   :max max-vec
-	   :avoid-collision-distance 10
-	   :avoid-collision-null-gain 0.3
-	   :avoid-collision-joint-gain 0.3
-	   ;;
-	   :dump-command nil
-	   :debug-view debug-view
-	   :warnp nil))
+     (send* *robot*
+	    :fullbody-inverse-kinematics-with-error
+	    (append
+	     (list
+	      target-coords
+	      :move-target move-target
+	      :link-list link-list
+	      :rotation-axis rotation-axis
+	      :translation-axis translation-axis
+	      :target-centroid-pos target-centroid-pos
+	      :centroid-offset-func
+	      #'(lambda nil
+		  (x::window-main-one)
+		  (send *robot* :centroid))
+	      :cog-gain 0.1
+	      :additional-weight-list additional-weight-list
+	      :stop stop
+	      :thre thre
+	      :rthre rthre
+	      :centroid-thre centroid-thre
+	      ;;
+	      :collision-avoidance-link-pair collision-pair
+	      :root-link-virtual-joint-weight
+	      root-link-virtual-joint-weight
+	      :min min-vec
+	      :max max-vec
+	      :avoid-collision-distance 10
+	      :avoid-collision-null-gain 0.3
+	      :avoid-collision-joint-gain 0.3
+	      ;;
+	      :dump-command nil
+	      :debug-view debug-view
+	      :warnp nil)
+	     args)))
     ;;
     (when collision?
       (setq collision?
@@ -355,7 +365,6 @@
       (setq ret nil)))
     ret
     ))
-
 
 (defun init-fullbody-ik-main
   ()
