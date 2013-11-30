@@ -28,6 +28,16 @@
 	:debug-view nil)
   (if (and (boundp '*viewer*) *viewer*)
       (send *viewer* :draw-objects))
+  (make-foot-convex)
+  ;;
+  (fix-gun-coords)
+  (setq *fix-leg-coords*
+	(mapcar
+	 #'(lambda (k)
+	     (send *robot* k :end-coords
+		   :copy-worldcoords))
+	 '(:rleg :lleg)))
+  (my-objects)
   )
 
 (defun fix-gun-coords
@@ -103,7 +113,7 @@
 	   (copy-object (send *robot* :angle-vector)))
      (cons :worldcoords
 	   (copy-object (send *robot* :worldcoords)))))
-   (target-limb '(:rarm :larm :rleg :lleg))
+   (target-limb '(:rarm :rleg :lleg))
    (left-support? t)
    (move-target
     (mapcar
@@ -852,31 +862,48 @@
 		 :name :rcoords
 		 :coords
 		 (make-coords
-		  :pos #F(0 -100 10)
-		  :rpy '(0 0 -1.57))
+		  :pos #F(0 0 0)
+		  :rpy '(0 1.57 0))
+		  ;:pos #F(0 -100 10)
+		  ;:rpy '(0 0 -1.57))
 		 :parent root)))
+	  (send root :translate #F(600 0 200))
+	  (send *robot*
+		:newcoords
+		(make-coords
+		 :rot
+		 (m*
+		  (send rcoords :worldrot)
+		  (transpose
+		   (send *robot* :rarm
+			 :end-coords :worldrot))
+		  )))
+	  (send *robot* :translate
+		(v- (send rcoords :worldpos)
+		    (send *robot* :rarm :end-coords :worldpos))
+		:world)
+	  ;; (send *robot*
+	  ;; 	:fullbody-inverse-kinematics
+	  ;; 	(list (send rcoords :worldcoords))
+	  ;; 	:link-list
+	  ;; 	(list
+	  ;; 	 (send *robot* :link-list
+	  ;; 	       (send *robot* :rarm :end-coords :parent)))
+	  ;; 	:move-target
+	  ;; 	(list (send *robot* :rarm :end-coords))
+	  ;; 	:target-centroid-pos nil
+	  ;; 	:debug-view :no-message)
 	  (send root :set-color #F(1 0 0))
 	  root))
-  (init-pose)
-  (send *gun-coords* :translate #F(500 0 200))
-  (send *robot*
-	:rarm
-	:inverse-kinematics
-	(send (car (send *gun-coords* :descendants))
-	      :worldcoords)
-	:link-list
-	(send *robot* :link-list
-	      (send *robot* :rarm :end-coords :parent))
-	:debug-view :no-message)
   (send *robot* :set-end-coords
-	:rhand-coords
-	(send *gun-coords* :worldcoords))
+  	:rhand-coords
+  	(send *gun-coords* :worldcoords))
   (send (send *robot* :rarm :end-coords)
-	:assoc
-	(cadr (send *gun-coords* :descendants)))
+  	:assoc
+  	(cadr (send *gun-coords* :descendants)))
   (send *sandia_hand_left* :grasp-pose)
   (send *sandia_hand_right* :grasp-pose)
-  (init-pose)))
+  ))
 
 (send-all (send *robot* :joint-list) :max-joint-velocity 0.3)
 ;(send *robot* :lleg :crotch-r :min-angle -5)
