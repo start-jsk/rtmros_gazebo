@@ -16,7 +16,7 @@
 ;;;;;;;; setup ;;;;;;;;;;;
 
 (defvar *prev-js* nil)
-(defun ik-server
+(defun call-ik-server
   (&key
    (target-limb :larm)
    (group_name
@@ -42,7 +42,7 @@
    )
   (print target-coords-from-pelvis)
   (let* ((c target-coords-from-pelvis)
-	 (p (send c :worldpos))
+	 (p (scale 1e-3 (send c :worldpos)))
 	 (q (matrix2quaternion (send c :worldrot)))
 	 res)
     (send req :ik_request :group_name group_name)
