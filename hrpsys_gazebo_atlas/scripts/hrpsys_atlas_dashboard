@@ -21,36 +21,37 @@ import wx
 
 class HrpsysAtlasFrame(HrpsysFrame):
     def setup_extra_layout(self):
-        sizer = self.GetSizer()
-        static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "Pose"), wx.HORIZONTAL)
-        sizer.Add(static_sizer, 0)
+      return True
+        # sizer = self.GetSizer()
+        # static_sizer = wx.StaticBoxSizer(wx.StaticBox(self, wx.ID_ANY, "Pose"), wx.HORIZONTAL)
+        # sizer.Add(static_sizer, 0)
 
-        # Poses        
-        self._pose_button = StatusControl(self, wx.ID_ANY, self._icons_path, "breakerbase", True)
-        self._pose_button.SetToolTip(wx.ToolTip("Preset Poses"))
-        static_sizer.Add(self._pose_button, 0)
-        self._pose_button.set_ok()
-        self._pose_button.Bind(wx.EVT_LEFT_DOWN, self.on_pose_clicked)
+        # # Poses        
+        # self._pose_button = StatusControl(self, wx.ID_ANY, self._icons_path, "breakerbase", True)
+        # self._pose_button.SetToolTip(wx.ToolTip("Preset Poses"))
+        # static_sizer.Add(self._pose_button, 0)
+        # self._pose_button.set_ok()
+        # self._pose_button.Bind(wx.EVT_LEFT_DOWN, self.on_pose_clicked)
 
-    def on_pose_clicked(self, evt):
-        menu = wx.Menu()
-        menu.Bind(wx.EVT_MENU, self.on_manip_pose,   menu.Append(wx.ID_ANY, "Manip Pose"))
-        menu.Bind(wx.EVT_MENU, self.on_reset_pose,  menu.Append(wx.ID_ANY, "Reset Pose"))
-        self._pose_button.toggle(True)
-        self.PopupMenu(menu)
-        self._pose_button.toggle(False)
+    # def on_pose_clicked(self, evt):
+    #     menu = wx.Menu()
+    #     menu.Bind(wx.EVT_MENU, self.on_manip_pose,   menu.Append(wx.ID_ANY, "Manip Pose"))
+    #     menu.Bind(wx.EVT_MENU, self.on_reset_pose,  menu.Append(wx.ID_ANY, "Reset Pose"))
+    #     self._pose_button.toggle(True)
+    #     self.PopupMenu(menu)
+    #     self._pose_button.toggle(False)
 
-    def on_manip_pose(self, evt):
-        print "manip"
-        dial = wx.MessageBox('Are you sure to move to Manip Pose?', 'Info', wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
-        if dial == wx.OK :
-            print "go manip"
-        else:
-            print "do nothing"
+    # def on_manip_pose(self, evt):
+    #     print "manip"
+    #     dial = wx.MessageBox('Are you sure to move to Manip Pose?', 'Info', wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
+    #     if dial == wx.OK :
+    #         print "go manip"
+    #     else:
+    #         print "do nothing"
             
         
-    def on_reset_pose(self, evt):
-        print "reset"
+    # def on_reset_pose(self, evt):
+    #     print "reset"
         
     def on_motors_clicked(self, evt):
         menu = wx.Menu()
