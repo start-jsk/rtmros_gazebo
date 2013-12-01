@@ -499,7 +499,19 @@
        )
       )
     coords
-    )
+    (make-coords
+     :pos
+     (v+ (send coords :worldpos)
+	 (v- (send *robot* :worldpos)
+	     (send (send *robot* :r_foot_lk :worldcoords) :worldpos)))
+     :rot
+     (m*
+      (transpose (send coords :worldrot))
+      (m*
+       (transpose
+	(send (send *robot* :r_foot_lk :worldcoords) :worldrot))
+       (send *robot* :worldrot)))
+     ))
   )
 
 (defun set-marker-pose
