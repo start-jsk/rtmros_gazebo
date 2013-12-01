@@ -17,9 +17,6 @@
 (require "models/arrow-object.l")
 (require "package://roseus/euslisp/actionlib.l")
 
-(require "atlas-.l")
-
-
 ;;;;;;;; setup ;;;;;;;;;;;
 
 (defun call-ik-server
@@ -144,47 +141,6 @@
   )
 
 ;;;;;;;; setup ;;;;;;;;;;;
-
-(defun update-interactive-marker
-  ()
-  (let ((joint-angles nil)
-	(joint-names nil)
-	(joint-list (send *atlas* :joint-list))
-	(joint-state-msg
-	 (instance sensor_msgs::JointState :init
-		   :header (instance std_msgs::header :init
-				     :stamp (ros::time-now)))))
-    (dotimes (x (length joint-list))
-      (push (deg2rad (send (elt joint-list x) :joint-angle)) joint-angles)
-      (push (send (elt joint-list x) :name) joint-names)
-      )
-    (send joint-state-msg :position joint-angles)
-    (send joint-state-msg :name joint-names)
-    ;;
-    (ros::publish (format nil "~A/atlas/reset_joint_states" *im-nodename*)
-		  joint-state-msg)
-    )
-  )
-
-(defun publish-js-compressed
-  ()
-  (let ((js-compressed (instance hrpsys_gazebo_atlas::JointStateCompressed :init))
-	joint-indexes joint-angles
-	(joint-list (send *atlas* :joint-list))
-	)
-    (send js-compressed :header (instance std_msgs::header :init :stamp (ros::time-now)))
-    ;;
-    (dolist (j joint-list)
-      (push (get-joint-index (send j :name)) joint-indexes)
-      (push (send j :joint-angle) joint-angles)
-      )
-    (send js-compressed :index (coerce joint-indexes string))
-    (send js-compressed :position (coerce joint-angles float-vector))
-    ;;
-    (ros::publish *fc-eus-nodename* js-compressed)
-    (ros::ros-info "joint states compressed was published~%")
-    )
-  )
 
 ;;;;;;;; controller ;;;;;;;;;
 
@@ -394,20 +350,18 @@
 ;;Interactive Marker Callback
 (defun move-callback
   ( msg )
-  (let ((menu (send msg :menu))
+    (let ((menu (send msg :menu))
 	(type (send msg :type)))
     (cond
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
       (send self :set-origin)
       (send self :set-hand-marker-pose))
-
      ;;reset target coords
      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
       (send target-coords :move-to old-coords :world)
       (send self :set-marker-pose-robot (send target-coords :worldcoords))
       (send self :set-hand-marker-pose)
       )
-     
      ;;set origin to hand
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
       (print "set origin to rhand")
@@ -417,7 +371,6 @@
       (print "set origin to lhand")
       (send self :set-origin-to-hand :larm)
       (send self :set-hand-marker-pose))
-     
      ;;change ik-rotation-axis
      ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_T*)
       (print "set ik-rotation-axis t")
@@ -427,7 +380,6 @@
       (print "set ik-rotation-axis nil")
       (setq ik-rotation-axis nil)
       )
-
      ;;change use-torso
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_T*)
       (print "use torso t")
@@ -439,33 +391,30 @@
       (setq use-torso nil)
       (setq use-fullbody nil)
       )
-
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_FULLBODY*)
       (print "use torso nil")
       (setq use-fullbody t)
       )
-
      #|
      ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
       (send self :pose-move))
-
+     ;;
      ((eq menu jsk_interactive_marker::MarkerMenu::*PLAN_EXECUTE*)
       (send self :pose-move))
-
+     ;;
      ((eq menu jsk_interactive_marker::MarkerMenu::*PLAN*)
       (send self :pose-move :move nil))
-
+     ;;
      ((eq menu jsk_interactive_marker::MarkerMenu::*EXECUTE*)
       (send self :planned-move)
       )
-
+     ;;
      ((eq menu jsk_interactive_marker::MarkerMenu::*CANCEL_PLAN*)
       (setq planned-angle-vector nil)
       (send robot :angle-vector (send ri :state :potentio-vector))
       (send self :publish-joint-states)
       )
      |#
-
      ;;changeControllArm
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_RARM*)
       (print "move rarm")
@@ -482,7 +431,6 @@
       (setq moving-arm :arms)
       (send self :set-hand-marker-pose)
       )
-     
      ;;change constraint
      #|
      ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE_CONSTRAINT_T*)
@@ -499,9 +447,8 @@
      )
     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
     )
-  (publish-arrow-tf)
-
-  )
+    (publish-arrow-tf)
+    )
 
 ;;called when marker is moved
 (defun pose-callback
@@ -510,7 +457,8 @@
  (let* ((pose (send msg :pose))
 	(cds (ros::tf-pose-stamped->coords pose))
 	)
-   (send target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
+   (send target-coords :move-to
+	 (send *robot* :worldcoords) :world)
    (send target-coords :transform cds)
    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
    ;;(send self :set-hand-marker-pose)
@@ -520,13 +468,16 @@
 
 (defun publish-arrow-tf
   ()
-  (send *tfb* :send-transform (send (send self :get-base-coords) :transformation target-coords :local)
+  (send *tfb* :send-transform
+	(send (send *robot* :worldcoords) :transformation
+	      target-coords :local)
 	base-frame "/im_target_coords_arrow")
-
-   (send *tfb* :send-transform (send (send self :get-base-coords) :transformation origin-coords :local)
-	 base-frame "/im_origin_coords_arrow")
-   )
-
+  ;;
+  (send *tfb* :send-transform
+	(send (send *robot* :worldcoords) :transformation
+	      origin-coords :local)
+	base-frame "/im_origin_coords_arrow")
+  )
 
 (setq target-coords (instance arrow-object :init))
 (send target-coords :translate #f(500 0 0)) ;; initial pose
@@ -534,10 +485,9 @@
 (send origin-coords :translate #f(500 0 0))
 (setq old-coords (send target-coords :copy-worldcoords))
 
-
-
-
-
+;;initialize joint-index-list
+;;it is used to convert joint-name -> index
+(joint-index-init)
 
 (ros::roseus "ik_server")
 (setq *tf* (instance ros::transform-listener :init))
@@ -554,7 +504,6 @@
 		sensor_msgs::Joy
 		#'spacenav-subscriber
 		1)
-
 
 (setq *server-nodename* "/jsk_interactive_marker_manipulation")
 
@@ -573,19 +522,10 @@
 
 
 (setq *im-nodename* "atlas_ik_visualizer")
-(setq *fc-eus-nodename* "atlas_ik_fc_eus")
 ;;Update Interactive Marker
 (ros::advertise
  (format nil "~A/atlas/reset_joint_states" *im-nodename*)
  sensor_msgs::JointState)
-
-(ros::advertise *fc-eus-nodename*
-		hrpsys_gazebo_atlas::JointStateCompressed 1)
-
-;;initialize joint-index-list
-;;it is used to convert joint-name -> index
-(joint-index-init)
-
 
 (defun demo-mouse-controller
   nil
