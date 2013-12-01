@@ -274,7 +274,9 @@
        :init-grasp? nil
        :solve-ik? nil)))
     (setq target-coords
-	  (mapcar #'(lambda (c m) (if c c (send m :copy-worldcoords))) target-coords move-target))
+	  (mapcar
+	   #'(lambda (c m) (if c c (send m :copy-worldcoords)))
+	   target-coords move-target))
     ;;
     (setq
      ret

@@ -12,15 +12,20 @@
 (require "atlas-model.l")
 (require "atlas-fullbody-ik.l")
 (require "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
+(require "models/arrow-object.l")
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
 (defun call-ik-server
   (&key
-   (target-limb :larm)
+   (target-limb *move-limb*)
    (group_name
-    (caddr '("larm" "larm_torso" "larm_fullbody"
-	     "rarm" "rarm_torso" "rarm_fullbody")))
+    (nth
+     (case target-limb
+	   (:larm 2)
+	   (:rarm 5))
+     '("larm" "larm_torso" "larm_fullbody"
+       "rarm" "rarm_torso" "rarm_fullbody")))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
    (initial-coords
@@ -45,6 +50,7 @@
 		(copy-seq (send *robot* :angle-vector)))
 	  (cons :worldcoords
 		(copy-object (send *robot* :worldcoords)))))
+   (log-stream t)
    &allow-other-keys
    )
   (let* ((c target-coords-from-pelvis)
@@ -52,7 +58,6 @@
 	 (q (matrix2quaternion (send c :worldrot)))
 	 res)
     (send req :ik_request :group_name group_name)
-    (print (send req :ik_request :group_name))
     ;;
     (send *prev-js*
 	  :header
@@ -90,20 +95,15 @@
     (if (= (send res :error_code :val)
 	   moveit_msgs::MoveItErrorCodes::*SUCCESS*)
 	(progn
-	  (print "successed!")
+	  (format log-stream "successed!~%")
 	  (setq *prev-js* (send res :solution :joint_state))
 	  (send *robot* :angle-vector
 		(map float-vector
 		     #'rad2deg
 		     (send res :solution :joint_state :position)))
+	  (send *robot* :fix-leg-to-coords
+		(make-coords) :both)
 	  (send *viewer* :draw-objects)
-	  (mapcar
-	   #'(lambda (k c)
-	       (send *robot* k :inverse-kinematics
-		     c
-		     :move-target (send *robot* k :end-coords)
-		     ))
-	   '(:rleg :lleg) *fix-limb-coords*)
 	  ;;
 	  (if (or
 	       (null *success-state-collection*)
@@ -124,34 +124,15 @@
 		     0 500)))
 	  (send *robot* :angle-vector)
 	  )
-      (print "failed!")
+      (format log-stream "failed!~%")
       )))
 
 ;; initial pose
 (defun init-pose
-  (&optional
-   (av (float-vector 0.0 0.0 0.0 30.0 90.0 0.0 -80.0 15.0 0.0 -30.0 90.0 0.0 80.0 15.0 0.0 30.0 0.0 -20.0 0.0 -10.0 0.0 30.0 0.0 -20.0 0.0 -10.0 0.0 0.0)))
-  (send *robot* :angle-vector av)
-  (send *robot* :newcoords (make-coords))
-  (send *robot* :rleg
-	:inverse-kinematics
-	(make-coords :pos #F(0 -150 -700))
-	:link-list
-	(send *robot* :link-list
-	      (send *robot* :rleg :end-coords :parent))
-	:debug-view nil)
-  (send *robot* :lleg
-	:inverse-kinematics
-	(make-coords :pos #F(0 +150 -700))
-	:link-list
-	(send *robot* :link-list
-	      (send *robot* :lleg :end-coords :parent))
-	:debug-view nil)
-  (setq *fix-limb-coords*
-	(mapcar
-	 #'(lambda (k)
-	     (send *robot* k :end-coords :copy-worldcoords))
-	 '(:rleg :lleg)))
+  nil
+  (send *robot* :reset-manip-pose)
+  ;(send *robot* :newcoords (make-coords))
+  (send *robot* :fix-leg-to-coords (make-coords) :both)
   (if (and (boundp '*viewer*) *viewer*)
       (send *viewer* :draw-objects))
   )
@@ -223,8 +204,9 @@
 			"#f"
 			(subseq command 1))))
 		 (t #F(0 0 0)))))
-    (call-ik-server :move-coords
-		    (make-coords :pos move))))
+    (call-ik-server
+     :move-coords
+     (make-coords :pos move))))
 
 (defun spacenav-subscriber
   (msg
@@ -288,8 +270,9 @@
 	    (map float-vector
 		 #'*
 		 rpy rpy-filter))
-      (call-ik-server :move-coords
-		      (make-coords :pos move :rpy rpy))))))
+      (call-ik-server
+       :move-coords
+       (make-coords :pos move :rpy rpy))))))
 
 (defun ros::tf-point->tf-pose (point)
   (let ((pose (instance geometry_msgs::PoseStamped :init
@@ -301,29 +284,6 @@
     (send pose :pose :position :z (send point :point :z))
     (send pose :pose :orientation :w 1.0)
     pose))
-
-(defun trianglepoints-subscriber
-  (msg)
-  (let ((apose (ros::tf-point->tf-pose (send msg :a)))
-        (bpose (ros::tf-point->tf-pose (send msg :b)))
-        (cpose (ros::tf-point->tf-pose (send msg :c))))
-    (let ((acoords (send *tf* :transform-pose "/pelvis" apose))
-          (bcoords (send *tf* :transform-pose "/pelvis" bpose))
-          (ccoords (send *tf* :transform-pose "/pelvis" cpose)))
-      (let ((a (send acoords :worldpos))
-            (b (send bcoords :worldpos))
-            (c (send ccoords :worldpos)))
-	(setq *triangle*
-	      (make-prism (list a b c)
-			  (triangle-n (list a b c))))
-	(send *triangle* :set-color #F(0 1 0))
-	(gl::transparent *triangle* 0.3)
-	;;
-	(my-objects)
-	(mapcar
-	 #'(lambda (p) (demo-pos-controller :pos p))
-	 (triangle-pos-list))
-	))))
 
 (defun waist-fix
   (&key
@@ -440,24 +400,20 @@
 		sensor_msgs::Joy
 		#'spacenav-subscriber
 		1)
-(ros::subscribe "/trianglepoints"
-		hrpsys_gazebo_atlas::trianglepoints
-		#'trianglepoints-subscriber
-		1)
-
 
 (setq *im-nodename* "atlas_ik_visualizer")
 (setq *fc-eus-nodename* "atlas_ik_fc_eus")
 ;;Update Interactive Marker
-(ros::advertise (format nil "~A/atlas/reset_joint_states" *im-nodename*)
-		sensor_msgs::JointState)
+(ros::advertise
+ (format nil "~A/atlas/reset_joint_states" *im-nodename*)
+ sensor_msgs::JointState)
 
-(ros::advertise *fc-eus-nodename* hrpsys_gazebo_atlas::JointStateCompressed 1)
+(ros::advertise *fc-eus-nodename*
+		hrpsys_gazebo_atlas::JointStateCompressed 1)
 
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
 (joint-index-init)
-
 
 (defun demo-mouse-controller
   nil
@@ -470,17 +426,49 @@
 
 (defun demo-pos-controller
   (&key
-   (pos (car (triangle-pos-list)))
-   (n (triangle-n))
+   (now
+    (send *robot* *move-limb*
+	  :end-coords :copy-worldcoords))
+   (goal (copy-object now))
+   (now-from-pelvis
+    (make-coords
+     :pos
+     (v- (send now :worldpos) (send *robot* :worldpos))
+     :rot
+     (m* (transpose (send *robot* :worldrot))
+   	 (send now :worldrot))))
+   (goal-from-pelvis
+    (make-coords
+     :pos
+     (v- (send goal :worldpos) (send *robot* :worldpos))
+     :rot
+     (m* (transpose (send *robot* :worldrot))
+   	 (send goal :worldrot))))
+   ;; (goal-from-pelvis
+   ;;  (make-coords
+   ;;   :pos
+   ;;   (v- (send now :worldpos) (send *robot* :worldpos))
+   ;;   :rot
+   ;;   (m* (transpose (send *robot* :worldrot))
+   ;; 	 (send now :worldrot))))
+   ;; (goal
+   ;;  (make-coords
+   ;;   :pos
+   ;;   (v+ (send goal-from-pelvis :worldpos)
+   ;; 	 (send *robot* :worldpos))
+   ;;   :rot
+   ;;   (m* (send *robot* :worldrot)
+   ;; 	 (send goal-from-pelvis :worldrot))))
    (real? nil)
    (real-feedback? nil)
    (cnt 1000)
    (return? nil)
    )
+  (send *arrow* :newcoords (Copy-Object goal))
   (if return?
       (setq return?
 	    (length *success-state-collection*)))
-  (let (ret move rpy buf tmp)
+  (let (ret move rot buf tmp)
     (do-until-key
      (if (< (decf cnt) 0) (return-from nil nil))
      (ros::spin-once)
@@ -489,46 +477,64 @@
        (ros::sleep)
        (ros::spin-once))
      ;;
-     (cond
-      ((and real-feedback?
-	    (boundp '*ri*) *ri*)
-       (leg-coords-fix-from-real
-	:init-grasp? nil)))
-     ;;
      (waist-fix :waist-key :waist-r :cnt 3)
      ;(waist-fix :waist-key :waist-p :cnt 3)
      ;(waist-fix :waist-key :waist-y :cnt 3)
      ;(hand-even-fix :cnt 1)
-     (dotimes (i 2) (call-ik-server :rotate? :x))
-     (setq move
-	   (v- pos (send *gun-coords* :worldpos)))
-     (setq rpy
-	   (coerce
-	    (rpy-from-2vec
-	     (transform (send *gun-coords* :worldrot)
-			#F(1 0 0))
-	     n)
-	    float-vector))
-     (setq rpy
-	   (v- rpy
-	       (scale (v. rpy
-			  (reverse (triangle-n)))
-		      (reverse (triangle-n)))))
-     (if (and (< (norm move) 50)
-	      (< (norm rpy) (deg2rad 180)))
+     ;(dotimes (i 2)
+     ;(call-ik-server :rotate? :x :log-stream nil))
+     (setq
+      now
+      (send *robot* *move-limb*
+	    :end-coords :copy-worldcoords))
+     (setq
+      now-from-pelvis
+      (make-coords
+       :pos
+       (v- (send now :worldpos) (send *robot* :worldpos))
+       :rot
+       (m* (transpose (send *robot* :worldrot))
+	   (send now :worldrot))))
+     (setq
+      goal-from-pelvis
+      (make-coords
+       :pos
+       (v- (send goal :worldpos) (send *robot* :worldpos))
+       :rot
+       (m* (transpose (send *robot* :worldrot))
+	   (send goal :worldrot))))
+     (setq
+      move
+      (transform
+       (send now-from-pelvis :worldrot)
+       (send now-from-pelvis :difference-position
+	     goal-from-pelvis)))
+     (setq
+      rot
+      (transform
+       (send now-from-pelvis :worldrot)
+       (send now-from-pelvis :difference-rotation
+	     goal-from-pelvis)))
+     (format t "[pos-controller] ~A ~A~%"
+	     move rot)
+     (if (and (< (norm move) 10)
+	      (< (norm rot) (deg2rad 5)))
 	 (return-from nil t))
      (setq move
 	   (scale
-	    (min 30 (norm move))
+	    (min 50 (norm move))
 	    (normalize-vector move)))
-     (setq rpy (scale (min 0.15 (norm rpy))
-		      (normalize-vector rpy)))
+     (setq rot (scale (min 0.15 (norm rot))
+		      (normalize-vector rot)))
      (setq tmp (call-ik-server
 		:real? real?
 		:move-coords
 		(make-coords
-		 :move move :rpy rpy)
-		:rotate? :x))
+		 :pos move
+		 :rpy (reverse rot))
+		:rotate? :x
+		:log-stream nil
+		))
      (cond
       ((vectorp tmp))
       (t ;(evenp (random 2))
@@ -538,29 +544,10 @@
 		  ;:rotate? :x
 		  :move-coords
 		  (make-coords
-		   :move
-		   (progn
-		     (setq buf (random-vector 50.0))
-		     (v- buf
-			 (scale (v. buf (triangle-n))
-				(triangle-n))))
-		   :rpy
-		   (progn
-		     (setq buf (random-vector 0.2))
-		     (v-
-		      buf
-		      (scale (v. buf (reverse (triangle-n)))
-			     (reverse (triangle-n))))))
-		  )))
-      ;; (t
-      ;;  (setq ret (fullbody-ik-main
-      ;; 		  :move
-      ;; 		  (float-vector
-      ;; 		   0
-      ;; 		   (- (random 2.0) 1.0)
-      ;; 		   (- (random 2.0) 1.0))
-      ;; 		  :rotate? :x)))
-      )
+		   :pos (random-vector 50.0)
+		   :rpy (random-vector 0.2))
+		  :log-stream nil
+		  ))))
      (x::window-main-one)))
   (if return?
       (subseq *success-state-collection*
@@ -569,38 +556,6 @@
 		 return?))
     t)
   )
-
-(defun triangle-pos-list
-  nil
-  (union
-   (send
-    (find-if
-     #'(lambda (f)
-	 (find :bottom (send f :id)))
-     (send *triangle* :faces))
-    :vertices)
-   nil))
-
-(defun triangle-n
-  (&optional
-   (vlist
-    (union
-     (send
-      (find-if
-       #'(lambda (f)
-	   (find :bottom (send f :id)))
-       (send *triangle* :faces))
-      :vertices)
-     nil)))
-  (let* ((c (scale (/ 1.0 (length vlist))
-		   (reduce #'v+ vlist)))
-	 (ret (normalize-vector
-	       (v* (v- (nth 0 vlist) (nth 1 vlist))
-		   (v- (nth 2 vlist) (nth 1 vlist))))))
-    (scale
-     (if (> (v. ret (v- c (send *robot* :worldpos))) 0)
-	 1 -1)
-     ret)))
 
 ;; export ROS_MASTER_URI=http://10.10.72.112:11311
 ;; export ROS_IP=10.10.72.109 && export ROS_HOSTNAME=$ROS_IP
@@ -614,15 +569,6 @@
    (inital-sleep (if real? 10000 100))
    (cnt -1)
    d)
-  ;;
-  (cond
-   ((and real? (not (and (boundp '*ri*) *ri*)))
-    (require "atlas-interface.l")
-    (atlas-init-ex)
-    (my-objects)
-    (send *ri* :start-auto-balancer)
-    (set-user)
-    ))
   ;; (cond
   ;;  (real?
   ;;   (init-grasp-pose)
@@ -646,13 +592,14 @@
 
 (atlas-with-hand)
 (setq *robot* *atlas*)
-(objects *robot*)
+(setq *arrow* (arrow))
+(objects (list *robot* *arrow*))
 
 (send-all (send *robot* :joint-list) :max-joint-velocity 0.3)
 
 (defvar *mouse-mode* nil)
 (defvar *success-state-collection* nil)
-(defvar *fix-limb-coords* nil)
+(defvar *move-limb* :larm)
 
 (defvar *prev-js*
   (instance sensor_msgs::jointstate
@@ -667,7 +614,6 @@
 		 (send *robot* :angle-vector))
 	    :name
 	    (send-all (send *robot* :joint-list) :name)))
-
 (init-pose)
 ;
 (send *robot* :rleg :knee-p :min-angle 10)
