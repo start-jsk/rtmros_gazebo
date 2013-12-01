@@ -61,22 +61,24 @@
   (apply
    #'fullbody-ik-main
    (append
+    args
     (list
      :target-limb (list arm :lleg :rleg)
      :target-coords (list goal-in-world nil nil)
      :collision? t
 					;:centroid-thre 100
      :root-link-virtual-joint-weight
-     (float-vector 0.1 0.1 0.1 0.04 0.04 0.04)
+     (float-vector 0.02 0.02 0.1 0.01 0.04 0.04)
      :thre '(1 1 1)
-     :stop 100
-     :rotation-axis '(t t t))
-    args)))
+     :cog-gain 0.7
+     ;:stop 100
+     :rotation-axis '(t t t)))))
 
 (defun torso-ik-with-collision (arm goal-in-world &rest args)
   (apply
    #'fullbody-ik-main
    (append
+    args
     (list
      :target-limb (list arm :lleg :rleg)
      :target-coords (list goal-in-world nil nil)
@@ -95,9 +97,8 @@
      :collision? t
 					;:centroid-thre 200
      :thre '(1 1 1)
-     :stop 100
-     :rotation-axis '(t t t))
-    args)))
+     ;:stop 100
+     :rotation-axis '(t t t)))))
 
 (defun normal-ik-with-collision (arm goal-in-world &rest args)
   (let* ((w
@@ -110,6 +111,7 @@
 	  (apply
 	   #'fullbody-ik-main
 	   (append
+	    args
 	    (list
 	     :target-limb (list arm :lleg :rleg)
 	     :target-coords (list goal-in-world nil nil)
@@ -140,55 +142,58 @@
 	     :max-vec (float-vector 0 0 0 0 0 0)
 	     :collision? t
 	     :centroid-thre nil
-	     :stop 100
+	     ;:stop 100
 	     :thre '(1 1 1)
 	     :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 1))
-	     :rotation-axis '(t t t))
-	    args))))
+	     :rotation-axis '(t t t))))))
     (mapcar
      #'(lambda (j g) (send j :max-joint-velocity g))
      (send *atlas* :joint-list) w)
     ret))
 
 (defun ik-service-cb (req)
-  ;(setq hoge req)
-  (let ((res (send req :response))
-        (arm (if (or (string= (subseq (send req :ik_request :group_name) 0 4) "larm")
-                     (string= (subseq (send req :ik_request :group_name) 0 4) "lhand"))
-                 :larm
-               :rarm))
-        (torsop (or (string= (send req :ik_request :group_name) "larm_torso")
-                    (string= (send req :ik_request :group_name) "rarm_torso")))
-        (fullbodyp (or (string= (send req :ik_request :group_name) "larm_fullbody")
-                       (string= (send req :ik_request :group_name) "rarm_fullbody")))
-	(opt (apply
-	      #'append
-	      (mapcar
-	       #'(lambda (dd) (list (car dd) (cdr dd)))
-	       (send (send req :ik_request) :plist)))))
+  (let* ((res (send req :response))
+	 (arm (if (or (string= (subseq (send req :ik_request :group_name) 0 4) "larm")
+		      (string= (subseq (send req :ik_request :group_name) 0 4) "lhand"))
+		  :larm
+		:rarm))
+	 (torsop (or (string= (send req :ik_request :group_name) "larm_torso")
+		     (string= (send req :ik_request :group_name) "rarm_torso")))
+	 (fullbodyp (or (string= (send req :ik_request :group_name) "larm_fullbody")
+			(string= (send req :ik_request :group_name) "rarm_fullbody")))
+	 (opt-str (send (send (send req :ik_request) :constraints) :name))
+	 (opt
+	  (cond
+	   ((and (stringp opt-str)
+		 (plusp (length opt-str))
+		 (listp (setq opt-str (read-from-string opt-str))))
+	    opt-str)
+	   (t nil))))
     ;; taking joint state into account
-    (if (and (send req :ik_request :robot_state)
-	     (send req :ik_request :robot_state :joint_state)
-	     (send req :ik_request :robot_state :joint_state :name)
-	     (send req :ik_request :robot_state :joint_state :position)
-	     (= (length (send req :ik_request :robot_state :joint_state :name))
-		(length (send req :ik_request :robot_state :joint_state :position))))
-        (progn
-          (dotimes (i (length (send req :ik_request :robot_state :joint_state :name)))
-            (let ((joint-name (elt (send req :ik_request :robot_state :joint_state :name) i)))
-              (let ((j (find joint-name (send *atlas* :joint-list) :test #'string= :key #'(lambda (x) (send x :name)))))
-                (if j
-                    (send j :joint-angle (rad2deg (elt (send req :ik_request :robot_state :joint_state :position) i)))
-                  (warn "we cannot find ~A~%" joint-name)
-                  )))))
-      (send *robot* :reset-manip-pose)
-      (send *robot* :fix-leg-to-coords (make-coords) :both)
-      (make-foot-convex)
-      )
-    ;;
-    (send *viewer* :draw-objects)
+    (cond
+     ((and (send req :ik_request :robot_state)
+	   (send req :ik_request :robot_state :joint_state)
+	   (send req :ik_request :robot_state :joint_state :name)
+	   (send req :ik_request :robot_state :joint_state :position)
+	   (= (length (send req :ik_request :robot_state :joint_state :name))
+	      (length (send req :ik_request :robot_state :joint_state :position))))
+      (dotimes (i (length (send req :ik_request :robot_state :joint_state :name)))
+	(let ((joint-name (elt (send req :ik_request :robot_state :joint_state :name) i)))
+	  (let ((j (find joint-name (send *atlas* :joint-list)
+			 :test #'string= :key #'(lambda (x) (send x :name)))))
+	    (if j
+		(send j :joint-angle
+		      (rad2deg
+		       (elt
+			(send req :ik_request :robot_state :joint_state :position)
+			i)))
+	      (warn "we cannot find ~A~%" joint-name)
+	      )))))
+     (t (send *robot* :reset-manip-pose)))
+    (format t "[ik-server] options: ~A~%" opt)
     (send *robot* :fix-leg-to-coords (make-coords) :both)
-    ;(send *atlas* :newcoords (make-coords)) ;force to move pelvis origin
+    ;(make-foot-convex)
+    (send *viewer* :draw-objects)
     (let ((goal (send req :ik_request :pose_stamped))
       ;; check that goal is malformed or not
 	  (q (float-vector (send req :ik_request :pose_stamped :pose :orientation :w)
@@ -281,3 +286,4 @@
 (start-ik-server)
 
 ;; roseus "(setq *setup-end-coords-for-hku-flag* nil)" atlas-eus-ik.l 
+;; rosrun roseus roseus "(setq *setup-end-coords-for-hku-flag* nil)" atlas-eus-ik.l /tf:=/tf_ocs

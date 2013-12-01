@@ -63,6 +63,8 @@
 	  (cons :worldcoords
 		(copy-object (send *robot* :worldcoords)))))
    (log-stream t)
+   (translation-axis *translation-axis*)
+   (rotation-axis *rotation-axis*)
    &allow-other-keys
    )
   (let* ((c target-coords-from-pelvis)
@@ -82,6 +84,21 @@
 	       #'deg2rad
 	       (send *robot* :angle-vector)))
     (send req :ik_request :robot_state :joint_state *prev-js*)
+    ;;
+    (send req :ik_request :constraints :name
+	  (apply
+	   #'concatenate
+	   (append
+	    (list string)
+	    (list "(")
+	    (mapcar
+	     #'(lambda (key val) (format nil "~A ~A " key val))
+	     '(:translation-axis :rotation-axis :stop)
+	     (list
+	      (list translation-axis t t)
+	      (list rotation-axis t t)
+	      15))
+	    (list ")"))))
     ;;
     (send req :ik_request
 	  :pose_stamped
@@ -246,6 +263,8 @@
 		 #'*
 		 rpy rpy-filter))
       (call-ik-server
+       :rotation-axis t
+       :translation-axis t
        :move-coords
        (make-coords :pos move :rpy rpy))))))
 
@@ -397,11 +416,11 @@
      ;;change ik-rotation-axis
      ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_T*)
       (print "set ik-rotation-axis t")
-      (setq *ik-rotation-axis* t)
+      (setq *rotation-axis* t)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_NIL*)
       (print "set ik-rotation-axis nil")
-      (setq *ik-rotation-axis* nil)
+      (setq *rotation-axis* nil)
       )
      ;;change use-torso
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_T*)
@@ -613,6 +632,8 @@
 (defvar *old-coords* (send *target-coords* :copy-worldcoords))
 (defvar *use-fullbody* t)
 (defvar *use-torso* nil)
+(defvar *translation-axis* t)
+(defvar *rotation-axis* t)
 
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
@@ -854,10 +875,11 @@
      (if (and (not non-stop)
 	      (< (decf cnt) 0)) (return-from nil nil))
      (ros::spin-once)
-     (while *mouse-mode*
-       (x::window-main-one)
-       (ros::sleep)
-       (ros::spin-once))
+     (do-until-key
+      (if (not *mouse-mode*) (return-from nil nil))
+      (x::window-main-one)
+      (ros::sleep)
+      (ros::spin-once))
      ;;
      (waist-fix :waist-key :waist-r :cnt 3)
      (waist-fix :waist-key :waist-p :cnt 3)
@@ -951,8 +973,6 @@
 		  ))))
      (x::window-main-one)
      (publish-joint-states)
-
-     
      ))
   (if return?
       (subseq *success-state-collection*
