@@ -63,7 +63,9 @@
   <!-- tf for sensors -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_sensor_tf.launch" />
 
+  <!-- dashboard runs on operator's side
   <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="atlas_dashboard" />
+  -->
 
   <!-- web UI -->
   <include if="$(arg USE_WEB)"
