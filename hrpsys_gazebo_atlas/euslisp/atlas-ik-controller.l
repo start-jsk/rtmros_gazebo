@@ -146,7 +146,6 @@
 (defun init-pose
   nil
   (send *robot* :reset-manip-pose)
-					;(send *robot* :newcoords (make-coords))
   (send *robot* :fix-leg-to-coords (make-coords) :both)
   (if (and (boundp '*viewer*) *viewer*)
       (send *viewer* :draw-objects))
@@ -249,6 +248,15 @@
       (call-ik-server
        :move-coords
        (make-coords :pos move :rpy rpy))))))
+
+(defun joint-state-subscriber
+  (msg)
+  (send *real-robot*
+	:angle-vector
+	(map float-vector
+	     #'rad2deg
+	     (send msg :position)))
+  )
 
 (defun ros::tf-point->tf-pose (point)
   (let ((pose (instance geometry_msgs::PoseStamped :init
@@ -449,6 +457,10 @@
 
 (defun set-origin
   ()
+  (send *robot*
+	:angle-vector
+	(copy-object
+	 (send *real-robot* :angle-vector)))
   (setq *old-coords* (send *target-coords* :copy-worldcoords))
   (send *origin-coords* :move-to *target-coords* :world)
   )
@@ -586,25 +598,28 @@
 
 (defvar *server-nodename*
   "/jsk_interactive_marker_manipulation")
-
 (ros::advertise (format nil "~A/marker" *server-nodename*)
 		visualization_msgs::Marker)
-
-(ros::advertise (format nil "~A/origin_marker" *server-nodename*)
-		visualization_msgs::Marker)
-
-(ros::subscribe (format nil "~A/pose" *server-nodename*)
-		jsk_interactive_marker::MarkerPose #'pose-callback)
-
-(ros::subscribe (format nil "~A/marker_menu" *server-nodename*)
-		jsk_interactive_marker::MarkerMenu #'move-callback)
-
+(ros::advertise
+ (format nil "~A/origin_marker" *server-nodename*)
+ visualization_msgs::Marker)
+(ros::subscribe
+ (format nil "~A/pose" *server-nodename*)
+ jsk_interactive_marker::MarkerPose #'pose-callback)
+(ros::subscribe
+ (format nil "~A/marker_menu" *server-nodename*)
+ jsk_interactive_marker::MarkerMenu #'move-callback)
 
 (defvar *im-nodename* "atlas_ik_visualizer")
 ;;Update Interactive Marker
 (ros::advertise
  (format nil "~A/atlas/reset_joint_states" *im-nodename*)
  sensor_msgs::JointState)
+
+(ros::subscribe
+ "/atlas/joint_states_decompressed"
+ sensor_msgs::JointState
+ #'joint-state-subscriber)
 
 (defun demo-mouse-controller
   nil
@@ -795,7 +810,7 @@
   (if return?
       (setq return?
 	    (length *success-state-collection*)))
-  (let (ret move rot buf tmp)
+  (let (ret move rot buf tmp str)
     (do-until-key
      (if (and (not non-stop)
 	      (< (decf cnt) 0)) (return-from nil nil))
@@ -816,16 +831,20 @@
       (send *robot* *move-limb*
 	    :end-coords :copy-worldcoords))
      (setq
+      str
+      (send *real-robot* *move-limb*
+	    :end-coords :copy-worldcoords))
+     (setq
       goal
       (make-coords
        :pos
        (v+
-	(send now :worldpos)
+	(send str :worldpos)
 	(v- (send *target-coords* :worldpos)
 	    (send *origin-coords* :worldpos)))
        :rot
        (m*
-	(transpose (send now :worldrot))
+	(transpose (send str :worldrot))
 	(m*
 	 (transpose (send *target-coords* :worldrot))
 	 (send *origin-coords* :worldrot)))))
@@ -936,6 +955,7 @@
 
 (atlas-with-hand)
 (setq *robot* *atlas*)
+(setq *real-robot* (copy-object *robot*))
 (setq *arrow* (arrow))
 (init-pose)
 					;(objects (list *robot* *arrow*))
@@ -970,6 +990,8 @@
 (send *robot* :lleg :knee-p :min-angle 10)
 
 ;(demo-mouse-controller)
+(send *robot* :joint-angle
+      (copy-object (send *real-robot* :joint-angle)))
 (demo-pos-controller2)
 
 #|
