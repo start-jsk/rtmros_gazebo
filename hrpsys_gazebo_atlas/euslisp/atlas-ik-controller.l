@@ -6,6 +6,8 @@
 (ros::load-ros-manifest "hrpsys_gazebo_atlas")
 (ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "moveit_msgs")
+(ros::load-ros-manifest "jsk_interactive")
+(ros::load-ros-manifest "jsk_interactive_marker")
 
 (ros::roseus "atlas-ik-controller")
 
@@ -13,6 +15,7 @@
 (require "atlas-fullbody-ik.l")
 (require "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
 (require "models/arrow-object.l")
+(require "package://roseus/euslisp/actionlib.l")
 
 ;;;;;;;; setup ;;;;;;;;;;;
 
@@ -250,7 +253,7 @@
 	(rpy
 	 (reverse
 	  (scale
-	   0.3
+	   0.12
 	   (coerce
 	    (subseq (send msg :axes) 3 6)
 	    float-vector)))))
@@ -462,6 +465,7 @@
    (real? nil)
    (real-feedback? nil)
    (cnt 1000)
+   (non-stop nil)
    (return? nil)
    )
   (send *arrow* :newcoords (Copy-Object goal))
@@ -515,9 +519,10 @@
        (send now-from-pelvis :worldrot)
        (send now-from-pelvis :difference-rotation
 	     goal-from-pelvis)))
-     (format t "[pos-controller] ~A ~A~%"
-	     move rot)
-     (if (and (< (norm move) 10)
+     (format t "[pos-controller] :dif-pos ~A, :dif-rot ~A~%"
+	     (norm move) (norm rot))
+     (if (and (not non-stop)
+	      (< (norm move) 10)
 	      (< (norm rot) (deg2rad 5)))
 	 (return-from nil t))
      (setq move
@@ -593,7 +598,11 @@
 (atlas-with-hand)
 (setq *robot* *atlas*)
 (setq *arrow* (arrow))
+(init-pose)
 (objects (list *robot* *arrow*))
+(send *irtviewer* :change-background #f(0.9 0.9 1.0))
+(send *irtviewer* :title "Interactive IK")
+(send *irtviewer* :look-all)
 
 (send-all (send *robot* :joint-list) :max-joint-velocity 0.3)
 
@@ -614,11 +623,18 @@
 		 (send *robot* :angle-vector))
 	    :name
 	    (send-all (send *robot* :joint-list) :name)))
-(init-pose)
 ;
 (send *robot* :rleg :knee-p :min-angle 10)
 (send *robot* :lleg :knee-p :min-angle 10)
 
 (demo-mouse-controller)
 
+#|
 
+(ros::subscribe
+ (format nil "~A/pose" server-nodename)
+ jsk_interactive_marker::MarkerPose #'send self :pose-callback)
+
+(ros::subscribe
+ (format nil "~A/marker_menu" server-nodename)
+ jsk_interactive_marker::MarkerMenu #'send self :move-callback)
