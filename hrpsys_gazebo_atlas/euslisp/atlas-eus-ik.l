@@ -151,7 +151,7 @@
     ret))
 
 (defun ik-service-cb (req)
-  (setq hoge req)
+  ;(setq hoge req)
   (let ((res (send req :response))
         (arm (if (or (string= (subseq (send req :ik_request :group_name) 0 4) "larm")
                      (string= (subseq (send req :ik_request :group_name) 0 4) "lhand"))
@@ -181,7 +181,9 @@
                     (send j :joint-angle (rad2deg (elt (send req :ik_request :robot_state :joint_state :position) i)))
                   (warn "we cannot find ~A~%" joint-name)
                   )))))
-      (send *atlas* :reset-manip-pose)
+      (send *robot* :reset-manip-pose)
+      (send *robot* :fix-leg-to-coords (make-coords) :both)
+      (make-foot-convex)
       )
     ;;
     (send *viewer* :draw-objects)
@@ -266,7 +268,6 @@
     (setq *tf* (instance ros::transform-listener :init))
     ;;
     (init-fullbody-ik-main)
-    (make-foot-convex)
     ;;
     (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
     (ros::rate 10)

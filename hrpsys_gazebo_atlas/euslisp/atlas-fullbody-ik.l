@@ -1,7 +1,13 @@
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
+(defvar *foot-convex*)
+(defvar *centroid-object*)
+(defvar *success-state-collection*)
+(defvar *fix-limb-coords*)
+
 (defun make-foot-convex
-  ()
+  (&optional
+   (foot-key '(:rleg :lleg)))
   (setq *foot-convex*
 	(make-prism
 	 (quickhull
@@ -23,14 +29,25 @@
 		   (send *robot* k :end-coords :parent)
 		   :faces)
 		  :vertices))
-	     '(:rleg :lleg)))))
+	     foot-key))))
 	 5))
   (send *foot-convex* :set-color #F(0 0 1))
+  (setq *fix-limb-coords*
+	(append
+	 (remove-if
+	  #'(lambda (kf) (find (car kf) '(:rleg :lleg)))
+	  *fix-limb-coords*)
+	 (mapcar
+	  #'(lambda (k)
+	      (cons
+	       k
+	       (send *robot* k :end-coords :copy-worldcoords)))
+	  foot-key)))
   (gl::transparent *foot-convex* 0.3))
 
 (defun make-centroid-object
   ()
-  (defvar *centroid-object* (make-cylinder 20 400))
+  (setq *centroid-object* (make-cylinder 20 400))
   (send *centroid-object* :set-color #F(1 1 0)))
 
 (defun convex-pos-list
@@ -275,8 +292,18 @@
        :solve-ik? nil)))
     (setq target-coords
 	  (mapcar
-	   #'(lambda (c m) (if c c (send m :copy-worldcoords)))
-	   target-coords move-target))
+	   #'(lambda (c m k)
+	       (cond
+		(c c)
+		((find-if
+		  #'(lambda (kf) (eq (car kf) k))
+		  *fix-limb-coords*)
+		 (cdr
+		  (find-if
+		   #'(lambda (kf) (eq (car kf) k))
+		   *fix-limb-coords*)))
+		(t (send m :copy-worldcoords))))
+	   target-coords move-target target-limb))
     ;;
     (setq
      ret
@@ -371,7 +398,7 @@
 (defun init-fullbody-ik-main
   ()
   (send (send *robot* :utorso_lk) :make-pqpmodel :fat 30)
-  (defvar *success-state-collection* nil)
+  (setq *success-state-collection* nil)
   ;; (make-foot-convex)
   (make-centroid-object))
 
