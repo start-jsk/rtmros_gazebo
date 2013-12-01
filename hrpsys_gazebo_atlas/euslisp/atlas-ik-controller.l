@@ -350,7 +350,7 @@
 ;;Interactive Marker Callback
 (defun move-callback
   ( msg )
-    (let ((menu (send msg :menu))
+  (let ((menu (send msg :menu))
 	(type (send msg :type)))
     (cond
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
@@ -359,7 +359,7 @@
      ;;reset target coords
      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
       (send target-coords :move-to old-coords :world)
-      (send self :set-marker-pose-robot (send target-coords :worldcoords))
+      (set-marker-pose-robot (send target-coords :worldcoords))
       )
      ;;set origin to hand
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
@@ -394,7 +394,6 @@
       (print "use torso nil")
       (setq use-fullbody t)
       )
-
      ;;changeControllArm
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_RARM*)
       (print "move rarm")
@@ -413,39 +412,42 @@
       (publish-origin-arrow-obj)
       )
      )
-    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    (when (boundp '*irtviewer*)
+      (send *irtviewer* :draw-objects))
     )
-    (publish-arrow-tf)
-    )
+  (publish-arrow-tf)
+  )
 
 ;;called when marker is moved
 (defun pose-callback
- ( msg )
- (setq a msg)
- (let* ((pose (send msg :pose))
-	(cds (ros::tf-pose-stamped->coords pose))
-	)
-   (send target-coords :move-to
-	 (send *robot* :worldcoords) :world)
-   (send target-coords :transform cds)
-   (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
-   ;;(send self :set-hand-marker-pose)
-   )
- (publish-arrow-tf)
- )
-(defun set-origin
-  (setq old-coords (send target-coords :copy-worldcoords))
-  (send origin-coords :move-to target-coords :world)
+  (msg)
+  (let* ((pose (send msg :pose))
+	 (cds (ros::tf-pose-stamped->coords pose))
+	 )
+    (send *target-coords* :move-to
+	  (send *robot* :worldcoords) :world)
+    (send *target-coords* :transform cds)
+    (when (boundp '*irtviewer*)
+      (send *irtviewer* :draw-objects))
+    ;;(send self :set-hand-marker-pose)
+    )
+  (publish-arrow-tf)
   )
-  
+
+(defun set-origin
+  (setq *old-coords* (send *target-coords* :copy-worldcoords))
+  (send *origin-coords* :move-to *target-coords* :world)
+  )
+
 (defun set-origin-to-hand
   (&optional (arm :rarm))
-  (send robot :angle-vector (send ri :state :potentio-vector))
-  (send target-coords :move-to (send robot arm :end-coords :worldcoords) :world)
+  ;(send *robot* :angle-vector
+  ;(send ri :state :potentio-vector))
+  (send *target-coords* :move-to
+	(send *robot* arm :end-coords :worldcoords) :world)
   (set-origin)
-  (set-marker-pose-robot (send target-coords :worldcoords))
-)
-
+  (set-marker-pose-robot (send *target-coords* :worldcoords))
+  )
 
 ;;fixed flamae is foot?
 (defun get-base-coords
@@ -453,7 +455,9 @@
   (let (coords torso->map)
     (setq coords (send (send robot :r_foot_lk :worldcoords) :copy-worldcoords))
     (while t
-      (setq torso->map (send *tfl* :lookup-transform "r_foot" "map" (ros::time 0)))
+      (setq torso->map
+	    (send *tfl* :lookup-transform
+		  "r_foot" "map" (ros::time 0)))
       (cond
        (torso->map
 	(send coords :transform torso->map)
@@ -470,78 +474,77 @@
   )
 
 
-(defun set-marker-pose 
- ( coords &key (marker-name) (frame base-frame) (markers) (server server-nodename))
- (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
-       (msg (ros::coords->tf-pose-stamped coords frame)))
-   (send req :marker_name marker-name)
-   (send req :pose msg)
-   (send req :markers markers)
-   (ros::service-call (format nil "~A/set_pose" server)
-		      req)
-   ))
-
+(defun set-marker-pose
+  (coords &key (marker-name) (frame base-frame) (markers) (server server-nodename))
+  (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
+	(msg (ros::coords->tf-pose-stamped coords frame)))
+    (send req :marker_name marker-name)
+    (send req :pose msg)
+    (send req :markers markers)
+    (ros::service-call (format nil "~A/set_pose" server)
+		       req)
+    ))
 
 (defun set-marker-pose-robot
- (coords &rest args)
- (if args
-     (set-marker-pose* (send (get-base-coords) :transformation coords :local) args)
-   (set-marker-pose (send (get-base-coords) :transformation coords :local))
-   ))
-
+  (coords &rest args)
+  (if args
+      (apply #'set-marker-pose
+	     (append
+	      (list
+	       (send (get-base-coords)
+		     :transformation coords :local)
+	       args)))
+    (set-marker-pose (send (get-base-coords) :transformation coords :local))
+    ))
 
 (defun publish-arrow-tf
   ()
   (send *tfb* :send-transform
 	(send (get-base-coords) :transformation
-	      target-coords :local)
-	base-frame "/im_target_coords_arrow")
+	      *target-coords* :local)
+	"/map" "/im_target_coords_arrow")
   ;;
   (send *tfb* :send-transform
 	(send (get-base-coords) :transformation
-	      origin-coords :local)
-	base-frame "/im_origin_coords_arrow")
+	      *origin-coords* :local)
+	"/map" "/im_origin_coords_arrow")
   )
-
 
 (defun publish-target-arrow-obj
   ()
-  (let ((org  (send target-coords :copy-worldcoords)))
-    (send target-coords :reset-coords)
-    (send target-coords :worldcoords)
-    (send-all (send target-coords :bodies) :worldcoords)
-    (ros::publish (format nil "~A/marker" server-nodename)
-		  (object->marker-msg target-coords
+  (let ((org  (send *target-coords* :copy-worldcoords)))
+    (send *target-coords* :reset-coords)
+    (send *target-coords* :worldcoords)
+    (send-all (send *target-coords* :bodies) :worldcoords)
+    (ros::publish (format nil "~A/marker" *server-nodename*)
+		  (object->marker-msg *target-coords*
 				      (instance std_msgs::header :init
 						:frame_id "/im_target_coords_arrow")))
-    (send target-coords :transform org)
-    (send target-coords :worldcoords)
+    (send *target-coords* :transform org)
+    (send *target-coords* :worldcoords)
     )
   )
-
 
 (defun publish-origin-arrow-obj
   ()
-  (let ((org  (send origin-coords :copy-worldcoords)))
-    (send origin-coords :reset-coords)
-    (send origin-coords :worldcoords)
-    (send-all (send origin-coords :bodies) :worldcoords)
-    (ros::publish (format nil "~A/origin_marker" server-nodename)
+  (let ((org  (send *origin-coords* :copy-worldcoords)))
+    (send *origin-coords* :reset-coords)
+    (send *origin-coords* :worldcoords)
+    (send-all (send *origin-coords* :bodies) :worldcoords)
+    (ros::publish (format nil "~A/origin_marker" *server-nodename*)
 		  (object->marker-msg origin-coords
 				      (instance std_msgs::header :init
 						:frame_id "/im_origin_coords_arrow")))
-    (send origin-coords :transform org)
-    (send origin-coords :worldcoords)
+    (send *origin-coords* :transform org)
+    (send *origin-coords* :worldcoords)
     )
   )
 
-
-
-(setq target-coords (instance arrow-object :init))
-(send target-coords :translate #f(500 0 0)) ;; initial pose
-(setq origin-coords (instance arrow-object :init)) ;;arrow for origin of object
-(send origin-coords :translate #f(500 0 0))
-(setq old-coords (send target-coords :copy-worldcoords))
+(setq *target-coords* (instance arrow-object :init))
+(send *target-coords* :translate #f(500 0 0)) ;; initial pose
+(setq *origin-coords* (instance arrow-object :init)) ;;arrow for origin of object
+(send *origin-coords* :translate #f(500 0 0))
+(setq *old-coords* (send *target-coords* :copy-worldcoords))
 
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
@@ -577,7 +580,6 @@
 
 (ros::subscribe (format nil "~A/marker_menu" *server-nodename*)
 		jsk_interactive_marker::MarkerMenu #'move-callback)
-
 
 
 (setq *im-nodename* "atlas_ik_visualizer")
@@ -767,7 +769,9 @@
 (setq *robot* *atlas*)
 (setq *arrow* (arrow))
 (init-pose)
-(objects (list *robot* *arrow*))
+;(objects (list *robot* *arrow*))
+(objects
+ (list *robot* *origin-coords* *target-coords*))
 (send *irtviewer* :change-background #f(0.9 0.9 1.0))
 (send *irtviewer* :title "Interactive IK")
 (send *irtviewer* :look-all)
