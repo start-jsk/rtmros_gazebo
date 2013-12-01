@@ -11,6 +11,7 @@
 
 (require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 (require "package://hrpsys_gazebo_atlas/euslisp/atlas-fullbody-ik.l")
+(require "models/arrow-object.l")
 
 (ros::roseus "atlas_eus_ik")
 
@@ -204,6 +205,8 @@
 			  (send goal-in-pelvis :worldpos))
 		 :rot (m* (send *robot* :worldrot)
 			  (send goal-in-pelvis :worldrot))))
+	       (draw-arrow
+		(send *arrow* :newcoords goal-in-world))
 	       (ik-ret (cond
 			(fullbodyp
 			 (apply
@@ -238,6 +241,7 @@
   nil
   (unless (boundp '*do-not-start-ik-server*)
     ;; initialization
+    (setq *arrow* (arrow))
     (setq *atlas* (atlas-with-hand))
 					;(send *atlas* :newcoords (make-coords))
     (send *atlas* :reset-manip-pose)
@@ -254,7 +258,8 @@
       (send *irtviewer* :title "IK server")))
     (send *irtviewer*
 	  :objects
-	  (list *atlas* *foot-convex* *centroid-object*))
+	  (list *atlas* *foot-convex*
+		*arrow* *centroid-object*))
     (send *irtviewer* :look-all)
     (send *viewer* :draw-objects)
     ;;
