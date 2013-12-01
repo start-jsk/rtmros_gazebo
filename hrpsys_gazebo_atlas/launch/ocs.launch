@@ -9,5 +9,5 @@
   </include>
   <!-- start hrpsys_atlas_dashboard -->
   <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" />
-
+  <node pkg="hrpsys_gazebo_atlas" type="atlas-eus-ik.l" name="atlas_eus_ik" output="screen" />
 </launch>
