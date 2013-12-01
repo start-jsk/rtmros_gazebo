@@ -581,6 +581,28 @@
     )
   )
 
+  
+(defun publish-joint-states
+  ()
+  (let ((joint-angles nil)
+	(joint-names nil)
+	(joint-list (send *robot* :joint-list))
+	(joint-state-msg
+	 (instance sensor_msgs::JointState :init
+		   :header (instance std_msgs::header :init
+				     :stamp (ros::time-now)))))
+    (dotimes (x (length joint-list))
+      (push (deg2rad (send (elt joint-list x) :joint-angle)) joint-angles)
+      (push (send (elt joint-list x) :name) joint-names)
+      )
+    (send joint-state-msg :position joint-angles)
+    (send joint-state-msg :name joint-names)
+
+    (ros::publish (format nil "~A/atlas/reset_joint_states" *im-nodename*)
+		  joint-state-msg)
+    )
+  )
+
 (defvar *target-coords* (instance arrow-object :init))
 (send *target-coords* :translate #f(500 0 0)) ;; initial pose
 (defvar *origin-coords* (instance arrow-object :init)) ;;arrow for origin of object
@@ -924,7 +946,11 @@
 		   :rpy (random-vector 0.2))
 		  :log-stream nil
 		  ))))
-     (x::window-main-one)))
+     (x::window-main-one)
+     (publish-joint-states)
+
+     
+     ))
   (if return?
       (subseq *success-state-collection*
 	      0
@@ -984,7 +1010,7 @@
 
 (defvar *mouse-mode* nil)
 (defvar *success-state-collection* nil)
-(defvar *move-limb* :larm)
+(defvar *move-limb* :rarm)
 
 (defvar *prev-js*
   (instance sensor_msgs::jointstate
