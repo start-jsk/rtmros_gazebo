@@ -24,11 +24,13 @@
    (target-limb *move-limb*)
    (group_name
     (nth
+     (cond
+      (*use-torso* 1)
+      (*use-fullbody* 2)
+      (t 0))
      (case target-limb
-	   (:larm 2)
-	   (:rarm 5))
-     '("larm" "larm_torso" "larm_fullbody"
-       "rarm" "rarm_torso" "rarm_fullbody")))
+	   (:larm '("larm" "larm_torso" "larm_fullbody"))
+	   (:rarm '("rarm" "rarm_torso" "rarm_fullbody")))))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
    (initial-coords
@@ -358,8 +360,8 @@
       )
      ;;reset target coords
      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
-      (send target-coords :move-to old-coords :world)
-      (set-marker-pose-robot (send target-coords :worldcoords))
+      (send *target-coords* :move-to *old-coords* :world)
+      (set-marker-pose-robot (send *target-coords* :worldcoords))
       )
      ;;set origin to hand
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
@@ -373,39 +375,39 @@
      ;;change ik-rotation-axis
      ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_T*)
       (print "set ik-rotation-axis t")
-      (setq ik-rotation-axis t)
+      (setq *ik-rotation-axis* t)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_NIL*)
       (print "set ik-rotation-axis nil")
-      (setq ik-rotation-axis nil)
+      (setq *ik-rotation-axis* nil)
       )
      ;;change use-torso
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_T*)
       (print "use torso t")
-      (setq use-torso t)
-      (setq use-fullbody nil)
+      (setq *use-torso* t)
+      (setq *use-fullbody* nil)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_NIL*)
       (print "use torso nil")
-      (setq use-torso nil)
-      (setq use-fullbody nil)
+      (setq *use-torso* nil)
+      (setq *use-fullbody* nil)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_FULLBODY*)
       (print "use torso nil")
-      (setq use-fullbody t)
+      (setq *use-fullbody* t)
       )
      ;;changeControllArm
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_RARM*)
       (print "move rarm")
-      (setq moving-arm :rarm)
+      (setq *move-limb* :rarm)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_LARM*)
       (print "move larm")
-      (setq moving-arm :larm)
+      (setq *move-limb* :larm)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_ARMS*)
       (print "move arms")
-      (setq moving-arm :arms)
+      (setq *move-limb* :arms)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*PUBLISH_MARKER*)
       (publish-target-arrow-obj)
@@ -473,7 +475,6 @@
     )
   )
 
-
 (defun set-marker-pose
   (coords &key (marker-name) (frame base-frame) (markers) (server server-nodename))
   (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
@@ -540,11 +541,13 @@
     )
   )
 
-(setq *target-coords* (instance arrow-object :init))
+(defvar *target-coords* (instance arrow-object :init))
 (send *target-coords* :translate #f(500 0 0)) ;; initial pose
-(setq *origin-coords* (instance arrow-object :init)) ;;arrow for origin of object
+(defvar *origin-coords* (instance arrow-object :init)) ;;arrow for origin of object
 (send *origin-coords* :translate #f(500 0 0))
-(setq *old-coords* (send *target-coords* :copy-worldcoords))
+(defvar *old-coords* (send *target-coords* :copy-worldcoords))
+(defvar *use-fullbody* t)
+(defvar *use-torso* nil)
 
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
@@ -567,7 +570,8 @@
 		#'spacenav-subscriber
 		1)
 
-(setq *server-nodename* "/jsk_interactive_marker_manipulation")
+(defvar *server-nodename*
+  "/jsk_interactive_marker_manipulation")
 
 (ros::advertise (format nil "~A/marker" *server-nodename*)
 		visualization_msgs::Marker)
@@ -582,7 +586,7 @@
 		jsk_interactive_marker::MarkerMenu #'move-callback)
 
 
-(setq *im-nodename* "atlas_ik_visualizer")
+(defvar *im-nodename* "atlas_ik_visualizer")
 ;;Update Interactive Marker
 (ros::advertise
  (format nil "~A/atlas/reset_joint_states" *im-nodename*)
@@ -772,6 +776,7 @@
 ;(objects (list *robot* *arrow*))
 (objects
  (list *robot* *origin-coords* *target-coords*))
+;;
 (send *irtviewer* :change-background #f(0.9 0.9 1.0))
 (send *irtviewer* :title "Interactive IK")
 (send *irtviewer* :look-all)
