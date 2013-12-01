@@ -1,0 +1,23 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="pcl_concatenater_nodelet_manager"
+        args="manager"
+        output="screen" alaunch-prefix="xterm -e gdb --args" />
+  <group ns="pcl_concatenater_nodelet">
+    <node name="concatenater" pkg="nodelet" type="nodelet"
+          args="load jsk_pcl/LazyConcatenater /lazy_manager"
+          output="screen" clear_params="true">
+      <rosparam>
+      input_topics: ["/pcl_divider_nodelet/voxelgrid1/output",
+                     "/pcl_divider_nodelet/voxelgrid2/output",
+                     "/pcl_divider_nodelet/voxelgrid3/output",
+                     "/pcl_divider_nodelet/voxelgrid4/output",
+                     "/pcl_divider_nodelet/voxelgrid5/output",
+                     "/pcl_divider_nodelet/voxelgrid6/output",
+                     "/pcl_divider_nodelet/voxelgrid7/output",
+                     "/pcl_divider_nodelet/voxelgrid8/output",
+                     "/pcl_divider_nodelet/voxelgrid9/output",
+                     "/pcl_divider_nodelet/voxelgrid10/output"]
+      </rosparam>
+    </node>
+  </group>
+</launch>
