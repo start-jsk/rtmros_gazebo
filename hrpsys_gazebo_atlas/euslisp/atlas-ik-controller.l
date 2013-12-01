@@ -33,6 +33,13 @@
        (:rarm '("rarm" "rarm_torso" "rarm_fullbody")))))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
+    ;; (make-coords
+    ;;  :pos (v- (send *target-coords* :worldpos)
+    ;; 	      (send *origin-coords* :worldpos))
+    ;;  :rot (m*
+    ;; 	   (transpose
+    ;; 	    (send *origin-coords* :worldrot))
+    ;; 	   (send *target-coords* :worldrot))))
    (initial-coords
     (send *robot* target-limb :end-coords :copy-worldcoords))
    (target-coords
@@ -79,18 +86,21 @@
     (send req :ik_request
 	  :pose_stamped
 	  (instance geometry_msgs::PoseStamped :init
-		    :header (instance std_msgs::Header :init
-				      :stamp (ros::time 0.0)
-				      :frame_id "/pelvis")
+		    :header
+		    (instance std_msgs::Header :init
+			      :stamp (ros::time 0.0)
+			      :frame_id "/pelvis")
 		    :pose
 		    (instance geometry_msgs::Pose :init
 			      :position
-			      (instance geometry_msgs::Point :init
+			      (instance geometry_msgs::Point
+					:init
 					:x (elt p 0)
 					:y (elt p 1)
 					:z (elt p 2))
 			      :orientation
-			      (instance geometry_msgs::Quaternion :init
+			      (instance geometry_msgs::Quaternion
+					:init
 					:x (elt q 1)
 					:y (elt q 2)
 					:z (elt q 3)
@@ -496,7 +506,8 @@
 	       (send (get-base-coords)
 		     :transformation coords :local)
 	       args)))
-    (set-marker-pose (send (get-base-coords) :transformation coords :local))
+    (set-marker-pose
+     (send (get-base-coords) :transformation coords :local))
     ))
 
 (defun publish-arrow-tf
@@ -737,6 +748,157 @@
     t)
   )
 
+(defun demo-pos-controller2
+  (&key
+   (now
+    (send *robot* *move-limb*
+	  :end-coords :copy-worldcoords))
+   (goal (copy-object now))
+   (now-from-pelvis
+    (make-coords
+     :pos
+     (v- (send now :worldpos) (send *robot* :worldpos))
+     :rot
+     (m* (transpose (send *robot* :worldrot))
+   	 (send now :worldrot))))
+   (goal-from-pelvis
+    (make-coords
+     :pos
+     (v- (send goal :worldpos) (send *robot* :worldpos))
+     :rot
+     (m* (transpose (send *robot* :worldrot))
+   	 (send goal :worldrot))))
+   ;; (goal-from-pelvis
+   ;;  (make-coords
+   ;;   :pos
+   ;;   (v- (send now :worldpos) (send *robot* :worldpos))
+   ;;   :rot
+   ;;   (m* (transpose (send *robot* :worldrot))
+   ;; 	 (send now :worldrot))))
+   ;; (goal
+   ;;  (make-coords
+   ;;   :pos
+   ;;   (v+ (send goal-from-pelvis :worldpos)
+   ;; 	 (send *robot* :worldpos))
+   ;;   :rot
+   ;;   (m* (send *robot* :worldrot)
+   ;; 	 (send goal-from-pelvis :worldrot))))
+   (real? nil)
+   (real-feedback? nil)
+   (cnt 1000)
+   (non-stop t)
+   (return? nil)
+   )
+  (send *arrow* :newcoords (Copy-Object goal))
+  (if return?
+      (setq return?
+	    (length *success-state-collection*)))
+  (let (ret move rot buf tmp)
+    (do-until-key
+     (if (and (not non-stop)
+	      (< (decf cnt) 0)) (return-from nil nil))
+     (ros::spin-once)
+     (while *mouse-mode*
+       (x::window-main-one)
+       (ros::sleep)
+       (ros::spin-once))
+     ;;
+     (waist-fix :waist-key :waist-r :cnt 3)
+					;(waist-fix :waist-key :waist-p :cnt 3)
+					;(waist-fix :waist-key :waist-y :cnt 3)
+					;(hand-even-fix :cnt 1)
+					;(dotimes (i 2)
+					;(call-ik-server :rotate? :x :log-stream nil))
+     (setq
+      now
+      (send *robot* *move-limb*
+	    :end-coords :copy-worldcoords))
+     (setq
+      goal
+      (make-coords
+       :pos
+       (v+
+	(send now :worldpos)
+	(v- (send *target-coords* :worldpos)
+	    (send *origin-coords* :worldpos)))
+       :rot
+       (m*
+	(transpose (send now :worldrot))
+	(m*
+	 (transpose (send *target-coords* :worldrot))
+	 (send *origin-coords* :worldrot)))))
+     (setq
+      now-from-pelvis
+      (make-coords
+       :pos
+       (v- (send now :worldpos) (send *robot* :worldpos))
+       :rot
+       (m* (transpose (send *robot* :worldrot))
+	   (send now :worldrot))))
+     (setq
+      goal-from-pelvis
+      (make-coords
+       :pos
+       (v- (send goal :worldpos) (send *robot* :worldpos))
+       :rot
+       (m* (transpose (send *robot* :worldrot))
+	   (send goal :worldrot))))
+     (setq
+      move
+      (transform
+       (send now-from-pelvis :worldrot)
+       (send now-from-pelvis :difference-position
+	     goal-from-pelvis)))
+     (setq
+      rot
+      (transform
+       (send now-from-pelvis :worldrot)
+       (send now-from-pelvis :difference-rotation
+	     goal-from-pelvis)))
+     (format t "[pos-controller] :dif-pos ~A, :dif-rot ~A~%"
+	     (norm move) (norm rot))
+     (if (and (not non-stop)
+	      (< (norm move) 10)
+	      (< (norm rot) (deg2rad 5)))
+	 (return-from nil t))
+     (setq move
+	   (scale
+	    (min 50 (norm move))
+	    (normalize-vector move)))
+     (setq rot (scale (min 0.15 (norm rot))
+		      (normalize-vector rot)))
+     (setq tmp (call-ik-server
+		:real? real?
+		:move-coords
+		(make-coords
+		 :pos move
+		 :rpy (reverse rot))
+		:rotate? :x
+		:log-stream nil
+		))
+     (cond
+      ((vectorp tmp))
+      (t ;(evenp (random 2))
+       (setq tmp (call-ik-server
+		  :real? real?
+		  :real-feedback? real-feedback?
+					;:rotate? :x
+		  :move-coords
+		  (make-coords
+		   :pos (random-vector 50.0)
+		   :rpy (random-vector 0.2))
+		  :log-stream nil
+		  ))))
+     (x::window-main-one)))
+  (if return?
+      (subseq *success-state-collection*
+	      0
+	      (- (length *success-state-collection*)
+		 return?))
+    t)
+  )
+
+
 ;; export ROS_MASTER_URI=http://10.10.72.112:11311
 ;; export ROS_IP=10.10.72.109 && export ROS_HOSTNAME=$ROS_IP
 ;; load "ssc-20131118.l"
@@ -805,7 +967,8 @@
 (send *robot* :rleg :knee-p :min-angle 10)
 (send *robot* :lleg :knee-p :min-angle 10)
 
-(demo-mouse-controller)
+;(demo-mouse-controller)
+(demo-pos-controller2)
 
 #|
 
