@@ -1,8 +1,16 @@
 <launch>
+  <arg name="RESIZE_RATE" default="0.1" />
+  <arg name="IMAGE_TYPE" default="image_rect_throttle" />
+  <arg name="COMPRESS_TYPE" default="compressed" />
+
   <node pkg="image_view2" type="image_view2"
-        name="org_image_view" >
-    <remap from="image" to="multisense_sl/camera/left/image_rect_color_buffered" />
-    <param name="autosize" value="true" />
+        name="org_image_view" output="screen" >
+    <!--remap from="image" to="multisense_sl/camera/left/image_rect_color_buffered" /-->
+    <remap from="image" to="head_resized/image_rect" />
+    <remap from="/tf" to="/tf_dummy" />
+    <param name="autosize" value="false" />
+    <param name="resize_scale_x" value="$(arg RESIZE_RATE)" />
+    <param name="resize_scale_y" value="$(arg RESIZE_RATE)" />
   </node>
 
   <!-- ROI view -->
