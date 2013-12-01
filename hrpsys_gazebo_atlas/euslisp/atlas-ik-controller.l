@@ -466,6 +466,15 @@
  (publish-arrow-tf)
  )
 
+(defun set-origin-to-hand
+  (&optional (arm :rarm))
+  (send robot :angle-vector (send ri :state :potentio-vector))
+  (send target-coords :move-to (send robot arm :end-coords :worldcoords) :world)
+  (send self :set-origin)
+  (send self :set-marker-pose-robot (send target-coords :worldcoords))
+)
+  
+
 (defun publish-arrow-tf
   ()
   (send *tfb* :send-transform
@@ -479,6 +488,40 @@
 	base-frame "/im_origin_coords_arrow")
   )
 
+
+(defun publish-target-arrow-obj
+  ()
+  (let ((org  (send target-coords :copy-worldcoords)))
+    (send target-coords :reset-coords)
+    (send target-coords :worldcoords)
+    (send-all (send target-coords :bodies) :worldcoords)
+    (ros::publish (format nil "~A/marker" server-nodename)
+		  (object->marker-msg target-coords
+				      (instance std_msgs::header :init
+						:frame_id "/im_target_coords_arrow")))
+    (send target-coords :transform org)
+    (send target-coords :worldcoords)
+    )
+  )
+
+
+(defun publish-origin-arrow-obj
+  ()
+  (let ((org  (send origin-coords :copy-worldcoords)))
+    (send origin-coords :reset-coords)
+    (send origin-coords :worldcoords)
+    (send-all (send origin-coords :bodies) :worldcoords)
+    (ros::publish (format nil "~A/origin_marker" server-nodename)
+		  (object->marker-msg origin-coords
+				      (instance std_msgs::header :init
+						:frame_id "/im_origin_coords_arrow")))
+    (send origin-coords :transform org)
+    (send origin-coords :worldcoords)
+    )
+  )
+
+
+
 (setq target-coords (instance arrow-object :init))
 (send target-coords :translate #f(500 0 0)) ;; initial pose
 (setq origin-coords (instance arrow-object :init)) ;;arrow for origin of object
@@ -490,7 +533,8 @@
 (joint-index-init)
 
 (ros::roseus "ik_server")
-(setq *tf* (instance ros::transform-listener :init))
+(setq *tfb* (instance ros::transform-broadcaster :init))
+(setq *tfl* (instance ros::transform-listener :init))
 (ros::load-ros-manifest "hrpsys_gazebo_atlas")
 ;;
 (ros::roseus-add-msgs "hrpsys_gazebo_atlas")
