@@ -187,8 +187,6 @@
    (move-filter '(1 1 1))
    (rpy-filter '(1 1 1)))
   (cond
-   ((not *mouse-mode*)
-    (return-from spacenav-subscriber nil))
    ((and (> (aref (send msg :buttons) 0) 0.1)
 	 (> (aref (send msg :buttons) 1) 0.1))
     (format t "mouse-mode~%")
@@ -199,6 +197,8 @@
     (print 1) (unix:sleep 1)
     (format t "start!!~%")
     )
+   ((not *mouse-mode*)
+    (return-from spacenav-subscriber nil))
    ((> (aref (send msg :buttons) 1) 0.1)
     (print 'waist-fix)
     (waist-fix :waist-key :waist-r :cnt 3)
@@ -256,6 +256,8 @@
 	(map float-vector
 	     #'rad2deg
 	     (send msg :position)))
+  (send *real-robot*
+	:fix-leg-to-coords (make-coords) :both)
   )
 
 (defun ros::tf-point->tf-pose (point)
@@ -990,8 +992,10 @@
 (send *robot* :lleg :knee-p :min-angle 10)
 
 ;(demo-mouse-controller)
-(send *robot* :joint-angle
-      (copy-object (send *real-robot* :joint-angle)))
+(send *robot* :angle-vector
+      (copy-object (send *real-robot* :angle-vector)))
+(send *real-robot*
+      :fix-leg-to-coords (make-coords) :both)
 (demo-pos-controller2)
 
 #|
