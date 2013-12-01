@@ -17,6 +17,9 @@
 (require "models/arrow-object.l")
 (require "package://roseus/euslisp/actionlib.l")
 
+(require "atlas-.l")
+
+
 ;;;;;;;; setup ;;;;;;;;;;;
 
 (defun call-ik-server
@@ -388,6 +391,154 @@
 	     :pos (copy-object (send *robot* :worldpos))
 	     :rpy (copy-object prev-base-rpy)))))
 
+;;Interactive Marker Callback
+(defun move-callback
+  ( msg )
+  (let ((menu (send msg :menu))
+	(type (send msg :type)))
+    (cond
+     ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
+      (send self :set-origin)
+      (send self :set-hand-marker-pose))
+
+     ;;reset target coords
+     ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
+      (send target-coords :move-to old-coords :world)
+      (send self :set-marker-pose-robot (send target-coords :worldcoords))
+      (send self :set-hand-marker-pose)
+      )
+     
+     ;;set origin to hand
+     ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
+      (print "set origin to rhand")
+      (send self :set-origin-to-hand :rarm)
+      (send self :set-hand-marker-pose))
+     ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_LHAND*)
+      (print "set origin to lhand")
+      (send self :set-origin-to-hand :larm)
+      (send self :set-hand-marker-pose))
+     
+     ;;change ik-rotation-axis
+     ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_T*)
+      (print "set ik-rotation-axis t")
+      (setq ik-rotation-axis t)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_NIL*)
+      (print "set ik-rotation-axis nil")
+      (setq ik-rotation-axis nil)
+      )
+
+     ;;change use-torso
+     ((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_T*)
+      (print "use torso t")
+      (setq use-torso t)
+      (setq use-fullbody nil)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_NIL*)
+      (print "use torso nil")
+      (setq use-torso nil)
+      (setq use-fullbody nil)
+      )
+
+     ((eq menu jsk_interactive_marker::MarkerMenu::*USE_FULLBODY*)
+      (print "use torso nil")
+      (setq use-fullbody t)
+      )
+
+     #|
+     ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE*)
+      (send self :pose-move))
+
+     ((eq menu jsk_interactive_marker::MarkerMenu::*PLAN_EXECUTE*)
+      (send self :pose-move))
+
+     ((eq menu jsk_interactive_marker::MarkerMenu::*PLAN*)
+      (send self :pose-move :move nil))
+
+     ((eq menu jsk_interactive_marker::MarkerMenu::*EXECUTE*)
+      (send self :planned-move)
+      )
+
+     ((eq menu jsk_interactive_marker::MarkerMenu::*CANCEL_PLAN*)
+      (setq planned-angle-vector nil)
+      (send robot :angle-vector (send ri :state :potentio-vector))
+      (send self :publish-joint-states)
+      )
+     |#
+
+     ;;changeControllArm
+     ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_RARM*)
+      (print "move rarm")
+      (setq moving-arm :rarm)
+      (send self :set-hand-marker-pose)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_LARM*)
+      (print "move larm")
+      (setq moving-arm :larm)
+      (send self :set-hand-marker-pose)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_ARMS*)
+      (print "move arms")
+      (setq moving-arm :arms)
+      (send self :set-hand-marker-pose)
+      )
+     
+     ;;change constraint
+     #|
+     ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE_CONSTRAINT_T*)
+      (setq constraint-move t)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*MOVE_CONSTRAINT_NIL*)
+      (setq constraint-move nil)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*PUBLISH_MARKER*)
+      (send self :publish-target-arrow-obj)
+      (send self :publish-origin-arrow-obj)
+      )
+     |#
+     )
+    (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+    )
+  (publish-arrow-tf)
+
+  )
+
+;;called when marker is moved
+(defun pose-callback
+ ( msg )
+ (setq a msg)
+ (let* ((pose (send msg :pose))
+	(cds (ros::tf-pose-stamped->coords pose))
+	)
+   (send target-coords :move-to (send (send self :get-base-coords) :worldcoords) :world)
+   (send target-coords :transform cds)
+   (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+   ;;(send self :set-hand-marker-pose)
+   )
+ (publish-arrow-tf)
+ )
+
+(defun publish-arrow-tf
+  ()
+  (send *tfb* :send-transform (send (send self :get-base-coords) :transformation target-coords :local)
+	base-frame "/im_target_coords_arrow")
+
+   (send *tfb* :send-transform (send (send self :get-base-coords) :transformation origin-coords :local)
+	 base-frame "/im_origin_coords_arrow")
+   )
+
+
+(setq target-coords (instance arrow-object :init))
+(send target-coords :translate #f(500 0 0)) ;; initial pose
+(setq origin-coords (instance arrow-object :init)) ;;arrow for origin of object
+(send origin-coords :translate #f(500 0 0))
+(setq old-coords (send target-coords :copy-worldcoords))
+
+
+
+
+
+
 (ros::roseus "ik_server")
 (setq *tf* (instance ros::transform-listener :init))
 (ros::load-ros-manifest "hrpsys_gazebo_atlas")
@@ -404,6 +555,23 @@
 		#'spacenav-subscriber
 		1)
 
+
+(setq *server-nodename* "/jsk_interactive_marker_manipulation")
+
+(ros::advertise (format nil "~A/marker" *server-nodename*)
+		visualization_msgs::Marker)
+
+(ros::advertise (format nil "~A/origin_marker" *server-nodename*)
+		visualization_msgs::Marker)
+
+(ros::subscribe (format nil "~A/pose" *server-nodename*)
+		jsk_interactive_marker::MarkerPose #'pose-callback)
+
+(ros::subscribe (format nil "~A/marker_menu" *server-nodename*)
+		jsk_interactive_marker::MarkerMenu #'move-callback)
+
+
+
 (setq *im-nodename* "atlas_ik_visualizer")
 (setq *fc-eus-nodename* "atlas_ik_fc_eus")
 ;;Update Interactive Marker
@@ -417,6 +585,7 @@
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
 (joint-index-init)
+
 
 (defun demo-mouse-controller
   nil
