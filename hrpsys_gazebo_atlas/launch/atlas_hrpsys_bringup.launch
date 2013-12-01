@@ -28,7 +28,12 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
     <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
     <arg name="USE_ROBOTHARDWARE" value="true" />
+    <arg name="USE_DIAGNOSTICS" value="false" />
   </include>
+  <!-- start diagnostics -->
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_diagnostics.launch">
+  </include>
+
   <!-- <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" > -->
   <!--   <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" /> -->
   <!--   <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" /> -->
