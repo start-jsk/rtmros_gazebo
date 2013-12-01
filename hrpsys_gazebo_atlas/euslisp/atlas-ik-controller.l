@@ -46,8 +46,8 @@
     (make-coords
      :pos (v+ (send initial-coords :worldpos)
 	      (send move-coords :worldpos))
-     :rot (m* (send initial-coords :worldrot)
-	      (send move-coords :worldrot)
+     :rot (m* (send move-coords :worldrot)
+	      (send initial-coords :worldrot)
 	      )))
    (target-coords-from-pelvis
     (make-coords
@@ -459,10 +459,6 @@
 
 (defun set-origin
   ()
-  (send *robot*
-	:angle-vector
-	(copy-object
-	 (send *real-robot* :angle-vector)))
   (setq *old-coords* (send *target-coords* :copy-worldcoords))
   (send *origin-coords* :move-to *target-coords* :world)
   )
@@ -471,8 +467,15 @@
   (&optional (arm :rarm))
   ;;(send *robot* :angle-vector
   ;;(send ri :state :potentio-vector))
+  (send *robot*
+	:angle-vector
+	(copy-object
+	 (send *real-robot* :angle-vector)))
+  (send *robot* :fix-leg-to-coords
+	(make-coords) :both)
   (send *target-coords* :move-to
-	(send *robot* arm :end-coords :worldcoords) :world)
+	(send *robot* arm :end-coords :worldcoords)
+	:world)
   (set-origin)
   (set-marker-pose-robot (send *target-coords* :worldcoords))
   )
@@ -857,8 +860,8 @@
        (ros::spin-once))
      ;;
      (waist-fix :waist-key :waist-r :cnt 3)
-					;(waist-fix :waist-key :waist-p :cnt 3)
-					;(waist-fix :waist-key :waist-y :cnt 3)
+     (waist-fix :waist-key :waist-p :cnt 3)
+     (waist-fix :waist-key :waist-y :cnt 3)
 					;(hand-even-fix :cnt 1)
 					;(dotimes (i 2)
 					;(call-ik-server :rotate? :x :log-stream nil))
@@ -880,10 +883,10 @@
 	    (send *origin-coords* :worldpos)))
        :rot
        (m*
-	(transpose (send str :worldrot))
+	(send str :worldrot)
 	(m*
-	 (transpose (send *target-coords* :worldrot))
-	 (send *origin-coords* :worldrot)))))
+	 (transpose (send *origin-coords* :worldrot))
+	 (send *target-coords* :worldrot)))))
      (setq
       now-from-pelvis
       (make-coords
@@ -920,9 +923,9 @@
 	 (return-from nil t))
      (setq move
 	   (scale
-	    (min 50 (norm move))
+	    (min 15 (norm move))
 	    (normalize-vector move)))
-     (setq rot (scale (min 0.15 (norm rot))
+     (setq rot (scale (min (deg2rad 5) (norm rot))
 		      (normalize-vector rot)))
      (setq tmp (call-ik-server
 		:real? real?
@@ -935,15 +938,15 @@
 		))
      (cond
       ((vectorp tmp))
-      (t ;(evenp (random 2))
+      (nil ;(evenp (random 2))
        (setq tmp (call-ik-server
 		  :real? real?
 		  :real-feedback? real-feedback?
 					;:rotate? :x
 		  :move-coords
 		  (make-coords
-		   :pos (random-vector 50.0)
-		   :rpy (random-vector 0.2))
+		   :pos (random-vector 15.0)
+		   :rpy (random-vector 0.1))
 		  :log-stream nil
 		  ))))
      (x::window-main-one)
