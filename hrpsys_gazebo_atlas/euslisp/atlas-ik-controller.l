@@ -399,17 +399,14 @@
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_RARM*)
       (print "move rarm")
       (setq moving-arm :rarm)
-      (send self :set-hand-marker-pose)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_LARM*)
       (print "move larm")
       (setq moving-arm :larm)
-      (send self :set-hand-marker-pose)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_ARMS*)
       (print "move arms")
       (setq moving-arm :arms)
-      (send self :set-hand-marker-pose)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*PUBLISH_MARKER*)
       (publish-target-arrow-obj)
@@ -446,7 +443,7 @@
   (send robot :angle-vector (send ri :state :potentio-vector))
   (send target-coords :move-to (send robot arm :end-coords :worldcoords) :world)
   (set-origin)
-  (send self :set-marker-pose-robot (send target-coords :worldcoords))
+  (set-marker-pose-robot (send target-coords :worldcoords))
 )
 
 
@@ -471,6 +468,26 @@
     coords
     )
   )
+
+
+(defun set-marker-pose 
+ ( coords &key (marker-name) (frame base-frame) (markers) (server server-nodename))
+ (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
+       (msg (ros::coords->tf-pose-stamped coords frame)))
+   (send req :marker_name marker-name)
+   (send req :pose msg)
+   (send req :markers markers)
+   (ros::service-call (format nil "~A/set_pose" server)
+		      req)
+   ))
+
+
+(defun set-marker-pose-robot
+ (coords &rest args)
+ (if args
+     (set-marker-pose* (send (get-base-coords) :transformation coords :local) args)
+   (set-marker-pose (send (get-base-coords) :transformation coords :local))
+   ))
 
 
 (defun publish-arrow-tf
