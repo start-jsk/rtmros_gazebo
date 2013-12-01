@@ -29,8 +29,8 @@
       (*use-fullbody* 2)
       (t 0))
      (case target-limb
-	   (:larm '("larm" "larm_torso" "larm_fullbody"))
-	   (:rarm '("rarm" "rarm_torso" "rarm_fullbody")))))
+       (:larm '("larm" "larm_torso" "larm_fullbody"))
+       (:rarm '("rarm" "rarm_torso" "rarm_fullbody")))))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
    (initial-coords
@@ -136,7 +136,7 @@
 (defun init-pose
   nil
   (send *robot* :reset-manip-pose)
-  ;(send *robot* :newcoords (make-coords))
+					;(send *robot* :newcoords (make-coords))
   (send *robot* :fix-leg-to-coords (make-coords) :both)
   (if (and (boundp '*viewer*) *viewer*)
       (send *viewer* :draw-objects))
@@ -156,18 +156,18 @@
 	  (scale
 	   5
 	   (case (aref command 0)
-		 (#\u #F(0 0 1))
-		 (#\d #F(0 0 -1))
-		 (#\r #F(0 -1 0 ))
-		 (#\l #F(0 1 0))
-		 (#\f #F(1 0 0))
-		 (#\b #F(-1 0 0))
-		 (#\v (read-from-string
-		       (concatenate
-			string
-			"#f"
-			(subseq command 1))))
-		 (t #F(0 0 0)))))
+	     (#\u #F(0 0 1))
+	     (#\d #F(0 0 -1))
+	     (#\r #F(0 -1 0 ))
+	     (#\l #F(0 1 0))
+	     (#\f #F(1 0 0))
+	     (#\b #F(-1 0 0))
+	     (#\v (read-from-string
+		   (concatenate
+		    string
+		    "#f"
+		    (subseq command 1))))
+	     (t #F(0 0 0)))))
     (call-ik-server
      :move-coords
      (make-coords :pos move))))
@@ -431,31 +431,32 @@
     (send *target-coords* :transform cds)
     (when (boundp '*irtviewer*)
       (send *irtviewer* :draw-objects))
-    ;;(send self :set-hand-marker-pose)
     )
   (publish-arrow-tf)
   )
 
 (defun set-origin
+  ()
   (setq *old-coords* (send *target-coords* :copy-worldcoords))
   (send *origin-coords* :move-to *target-coords* :world)
   )
 
 (defun set-origin-to-hand
   (&optional (arm :rarm))
-  ;(send *robot* :angle-vector
-  ;(send ri :state :potentio-vector))
+  ;;(send *robot* :angle-vector
+  ;;(send ri :state :potentio-vector))
   (send *target-coords* :move-to
 	(send *robot* arm :end-coords :worldcoords) :world)
   (set-origin)
   (set-marker-pose-robot (send *target-coords* :worldcoords))
   )
 
+
 ;;fixed flamae is foot?
 (defun get-base-coords
   ()
   (let (coords torso->map)
-    (setq coords (send (send robot :r_foot_lk :worldcoords) :copy-worldcoords))
+    (setq coords (send (send *robot* :r_foot_lk :worldcoords) :copy-worldcoords))
     (while t
       (setq torso->map
 	    (send *tfl* :lookup-transform
@@ -476,7 +477,7 @@
   )
 
 (defun set-marker-pose
-  (coords &key (marker-name) (frame base-frame) (markers) (server server-nodename))
+  (coords &key (marker-name) (frame "/map") (markers) (server *server-nodename*))
   (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
 	(msg (ros::coords->tf-pose-stamped coords frame)))
     (send req :marker_name marker-name)
@@ -533,7 +534,7 @@
     (send *origin-coords* :worldcoords)
     (send-all (send *origin-coords* :bodies) :worldcoords)
     (ros::publish (format nil "~A/origin_marker" *server-nodename*)
-		  (object->marker-msg origin-coords
+		  (object->marker-msg *origin-coords*
 				      (instance std_msgs::header :init
 						:frame_id "/im_origin_coords_arrow")))
     (send *origin-coords* :transform org)
@@ -656,11 +657,11 @@
        (ros::spin-once))
      ;;
      (waist-fix :waist-key :waist-r :cnt 3)
-     ;(waist-fix :waist-key :waist-p :cnt 3)
-     ;(waist-fix :waist-key :waist-y :cnt 3)
-     ;(hand-even-fix :cnt 1)
-     ;(dotimes (i 2)
-     ;(call-ik-server :rotate? :x :log-stream nil))
+					;(waist-fix :waist-key :waist-p :cnt 3)
+					;(waist-fix :waist-key :waist-y :cnt 3)
+					;(hand-even-fix :cnt 1)
+					;(dotimes (i 2)
+					;(call-ik-server :rotate? :x :log-stream nil))
      (setq
       now
       (send *robot* *move-limb*
@@ -720,7 +721,7 @@
        (setq tmp (call-ik-server
 		  :real? real?
 		  :real-feedback? real-feedback?
-		  ;:rotate? :x
+					;:rotate? :x
 		  :move-coords
 		  (make-coords
 		   :pos (random-vector 50.0)
@@ -773,7 +774,7 @@
 (setq *robot* *atlas*)
 (setq *arrow* (arrow))
 (init-pose)
-;(objects (list *robot* *arrow*))
+					;(objects (list *robot* *arrow*))
 (objects
  (list *robot* *origin-coords* *target-coords*))
 ;;
@@ -800,7 +801,7 @@
 		 (send *robot* :angle-vector))
 	    :name
 	    (send-all (send *robot* :joint-list) :name)))
-;
+					;
 (send *robot* :rleg :knee-p :min-angle 10)
 (send *robot* :lleg :knee-p :min-angle 10)
 
