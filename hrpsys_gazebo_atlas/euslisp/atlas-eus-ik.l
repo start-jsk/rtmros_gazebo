@@ -247,11 +247,16 @@
     (setup-end-coords)
     (make-foot-convex)
     (make-centroid-object)
-    (objects (list *atlas* *foot-convex* *centroid-object*))
-    (when (boundp '*irtviewer*)
-      (send *irtviewer* :change-background #f(1.0 0.9 0.9))
-      (send *irtviewer* :title "IK server")
-      (send *irtviewer* :draw-objects))
+    (cond
+     ((not (and (boundp '*irtviewer*) *irtviewer*))
+      (make-irtviewer :width 640 :height 640)
+      (send *irtviewer* :change-background #f(0.9 1.0 0.9))
+      (send *irtviewer* :title "IK server")))
+    (send *irtviewer*
+	  :objects
+	  (list *atlas* *foot-convex* *centroid-object*))
+    (send *irtviewer* :look-all)
+    (send *viewer* :draw-objects)
     ;;
     (setq *tf* (instance ros::transform-listener :init))
     ;;
