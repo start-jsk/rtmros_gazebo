@@ -354,7 +354,7 @@
 	(type (send msg :type)))
     (cond
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
-      (send self :set-origin)
+      (set-origin)
       (send self :set-hand-marker-pose))
      ;;reset target coords
      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
@@ -465,15 +465,18 @@
    )
  (publish-arrow-tf)
  )
-
+(defun set-origin
+  (setq old-coords (send target-coords :copy-worldcoords))
+  (send origin-coords :move-to target-coords :world)
+  )
+  
 (defun set-origin-to-hand
   (&optional (arm :rarm))
   (send robot :angle-vector (send ri :state :potentio-vector))
   (send target-coords :move-to (send robot arm :end-coords :worldcoords) :world)
-  (send self :set-origin)
+  (set-origin)
   (send self :set-marker-pose-robot (send target-coords :worldcoords))
 )
-  
 
 (defun publish-arrow-tf
   ()
