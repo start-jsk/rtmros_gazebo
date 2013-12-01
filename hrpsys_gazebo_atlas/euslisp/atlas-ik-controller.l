@@ -188,6 +188,8 @@
    (move-filter '(1 1 1))
    (rpy-filter '(1 1 1)))
   (cond
+   ((not *mouse-mode*)
+    (return-from spacenav-subscriber nil))
    ((and (> (aref (send msg :buttons) 0) 0.1)
 	 (> (aref (send msg :buttons) 1) 0.1))
     (format t "mouse-mode~%")
