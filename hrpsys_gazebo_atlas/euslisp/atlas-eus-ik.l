@@ -35,7 +35,24 @@
      ;;:stop 100
      :rotation-axis '(t t t)))))
 
-(defun torso-ik-with-collision (arm goal-in-world &rest args)
+(defun torso-ik-with-collision (arm goal-in-world
+				    &rest args
+				    &key
+				    (root-link-virtual-joint-weight
+				     (float-vector 0 0 0 0 0 0))
+				    (max
+				     (map float-vector
+					  #'*
+					  root-link-virtual-joint-weight
+					  #F(1000 1000 1000 200 200 200)))
+				    (min
+				     (scale
+				      -1
+				      (map float-vector
+					   #'*
+					   root-link-virtual-joint-weight
+					   #F(1000 1000 1000 200 200 200))))
+				    &allow-other-keys)
   (apply
    #'fullbody-ik-main
    (append
@@ -52,9 +69,9 @@
       (list 0.1 0.1 0.1))
      ;;(list 1e-3 1e-3 1e-3))
      :root-link-virtual-joint-weight
-     (float-vector 0 0 0 0 0 0)
-     :min-vec (float-vector 0 0 0 0 0 0)
-     :max-vec (float-vector 0 0 0 0 0 0)
+     root-link-virtual-joint-weight
+     :min-vec min
+     :max-vec max
      :collision? t
      ;;:centroid-thre 200
      ;;:target-centroid-pos nil
@@ -116,11 +133,12 @@
 
 (defun ik-service-cb (req)
   (let* ((res (send req :response))
-         (arm (if (or (substringp "larm" (subseq (send req :ik_request :group_name) 0 4))
-                      (substringp "lhand" (subseq (send req :ik_request :group_name) 0 4)))
+         (arm (if (or (substringp "larm" (send req :ik_request :group_name))
+                      (substringp "lhand" (send req :ik_request :group_name)))
                   :larm
                 :rarm))
          (torsop (substringp "torso" (send req :ik_request :group_name)))
+	 (torso2p (substringp "torso2" (send req :ik_request :group_name)))
          (fullbodyp (substringp "fullbody" (send req :ik_request :group_name)))
 	 (end-coords-id
 	  (if (substringp "eus" (send req :ik_request :group_name))
@@ -156,6 +174,8 @@
               )))))
      (t (send *robot* :reset-manip-pose)))
     (format t "[ik-server] options: ~A~%" opt)
+    (format t "            target: limb=~A, torso=~A(~A), fullbody=~A, end-coords=~A~%"
+	    arm torsop torso2p fullbodyp end-coords-id)
     (send *robot* :fix-leg-to-coords (make-coords) :both)
     (cond
      ((cadr (member :update-convex opt))
@@ -191,6 +211,14 @@
                            (list arm goal-in-world)
                            opt))
                          )
+			(torso2p
+			 (apply
+                          #'torso-ik-with-collision
+                          (append
+                           (list arm goal-in-world)
+			   (list :root-link-virtual-joint-weight
+				 (float-vector 0.02 0.02 0.1 0.0 0.0 0.04))
+                           opt)))
                         (torsop
                          (apply
                           #'torso-ik-with-collision

@@ -32,8 +32,8 @@
       (*use-fullbody* 2)
       (t 0))
      (case target-limb
-	   (:larm '("larm_eus" "larm_torso_eus" "larm_fullbody_eus"))
-	   (:rarm '("rarm_eus" "rarm_torso_eus" "rarm_fullbody_eus")))))
+	   (:larm '("larm_eus" "larm_torso2_eus" "larm_fullbody_eus"))
+	   (:rarm '("rarm_eus" "rarm_torso2_eus" "rarm_fullbody_eus")))))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
    (initial-coords
