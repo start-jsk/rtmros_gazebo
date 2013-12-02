@@ -251,18 +251,21 @@
     (setq *arrow* (arrow))
     (setq *atlas* (atlas-with-hand))
 					;(send *atlas* :newcoords (make-coords))
+    (setup-end-coords)
     (send *atlas* :reset-manip-pose)
     (send *atlas* :fix-leg-to-coords (make-coords) :both)
     (setq *robot* *atlas*)
     (send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
-    (setup-end-coords)
-    (make-foot-convex)
-    (make-centroid-object)
     (cond
      ((not (and (boundp '*irtviewer*) *irtviewer*))
       (make-irtviewer :width 640 :height 640)
       (send *irtviewer* :change-background #f(0.9 1.0 0.9))
       (send *irtviewer* :title "IK server")))
+    (send *irtviewer*
+	  :objects
+	  (list *atlas* *arrow*))
+    (make-foot-convex)
+    (make-centroid-object)
     (send *irtviewer*
 	  :objects
 	  (list *atlas* *foot-convex*

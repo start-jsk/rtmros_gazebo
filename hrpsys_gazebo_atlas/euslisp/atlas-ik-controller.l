@@ -603,7 +603,6 @@
     )
   )
 
-  
 (defun publish-joint-states
   ()
   (let ((joint-angles nil)
@@ -619,6 +618,7 @@
       )
     (send joint-state-msg :position joint-angles)
     (send joint-state-msg :name joint-names)
+    ;;
     (ros::publish (format nil "~A/atlas/reset_joint_states" *im-nodename*)
 		  joint-state-msg)
     )
@@ -884,9 +884,9 @@
      (waist-fix :waist-key :waist-r :cnt 3)
      (waist-fix :waist-key :waist-p :cnt 3)
      (waist-fix :waist-key :waist-y :cnt 3)
-					;(hand-even-fix :cnt 1)
-					;(dotimes (i 2)
-					;(call-ik-server :rotate? :x :log-stream nil))
+     ;;(hand-even-fix :cnt 1)
+     ;;(dotimes (i 2)
+     ;;(call-ik-server :rotate? :x :log-stream nil))
      (setq
       now
       (send *robot* *move-limb*
@@ -897,18 +897,8 @@
 	    :end-coords :copy-worldcoords))
      (setq
       goal
-      (make-coords
-       :pos
-       (v+
-	(send str :worldpos)
-	(v- (send *target-coords* :worldpos)
-	    (send *origin-coords* :worldpos)))
-       :rot
-       (m*
-	(send str :worldrot)
-	(m*
-	 (transpose (send *origin-coords* :worldrot))
-	 (send *target-coords* :worldrot)))))
+      (send *origin-coords* :transformation str))
+     (send goal :transform *target-coords* :world)
      (setq
       now-from-pelvis
       (make-coords
