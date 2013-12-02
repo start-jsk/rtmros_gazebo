@@ -195,9 +195,9 @@
      (t (send *robot* :reset-manip-pose)))
     (format t "[ik-server] options: ~A~%" opt)
     (send *robot* :fix-leg-to-coords (make-coords) :both)
-    (make-foot-convex)
-    (send *irtviewer* :objects
-	  (list *robot* *foot-convex* *centroid-object* *arrow*))
+    ;;(make-foot-convex)
+    ;;(send *irtviewer* :objects
+    ;;(list *robot* *foot-convex* *centroid-object* *arrow*))
     (send *viewer* :draw-objects)
     (let ((goal (send req :ik_request :pose_stamped))
 	  ;; check that goal is malformed or not
