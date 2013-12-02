@@ -45,10 +45,6 @@
     <remap from="/assoc_tf" to="/dynamic_tf_publisher_ocs/assoc_tf"/>
     <include file="$(find jsk_interactive_marker)/launch/atlas_interactive_marker_practical.launch" >
     </include>
-    <node pkg="rviz" type="rviz" name="rviz_for_atlas_interactive_marker" args="-d $(find jsk_interactive_marker)/launch/interactive_marker.rviz" respawn="true">
-      <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION_OCS)"/>
-    </node>
-    
     <!-- eus-ik-controller -->
     <node pkg="roseus" type="roseus" name="atlas_ik_controller" args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-ik-controller.l" output="screen"/>
   </group>
