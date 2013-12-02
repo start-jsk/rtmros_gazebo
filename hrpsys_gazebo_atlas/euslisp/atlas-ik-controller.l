@@ -474,7 +474,24 @@
   (msg)
   (let* ((pose (send msg :pose))
 	 (cds (ros::tf-pose-stamped->coords pose))
+	 map->marker
 	 )
+    (while t
+      (setq map->marker
+	    (send *tfl* :lookup-transform
+		  "pelvis" (send pose :header :frame_id) (ros::time 0)))
+      (cond
+       (map->marker
+	(send cds :transform map->marker :world)
+	(return)
+	)
+       (t
+	(ros::ros-info "map -> marker cannnot transform yet")
+	(ros::sleep)
+	)
+       )
+      )
+    
     (send *target-coords* :move-to
 	  (send *robot* :worldcoords) :world)
     (send *target-coords* :transform cds)
@@ -516,11 +533,12 @@
 (defun get-base-coords
   ()
   (let (coords torso->map)
-    (setq coords (send (send *robot* :r_foot_lk :worldcoords) :copy-worldcoords))
+    (setq coords (send *robot* :copy-worldcoords))
     (while t
       (setq torso->map
 	    (send *tfl* :lookup-transform
-		  "r_foot" "map" (ros::time 0)))
+		  ;;"r_foot" "map" (ros::time 0)))
+		  "pelvis" "map" (ros::time 0)))
       (cond
        (torso->map
 	(send coords :transform torso->map)
@@ -534,19 +552,20 @@
       )
     coords
 
-    (make-coords
-     :pos
-     (v+ (send coords :worldpos)
-    	 (v- (send *robot* :worldpos)
-    	     (send (send *robot* :r_foot_lk :worldcoords) :worldpos)))
-     :rot
-     (m*
-      (transpose (send coords :worldrot))
-      (m*
-       (transpose
-    	(send (send *robot* :r_foot_lk :worldcoords) :worldrot))
-       (send *robot* :worldrot)))
-     ))
+    ;; (make-coords
+    ;;  :pos
+    ;;  (v+ (send coords :worldpos)
+    ;; 	 (v- (send *robot* :worldpos)
+    ;; 	     (send (send *robot* :r_foot_lk :worldcoords) :worldpos)))
+    ;;  :rot
+    ;;  (m*
+    ;;   (transpose (send coords :worldrot))
+    ;;   (m*
+    ;;    (transpose
+    ;; 	(send (send *robot* :r_foot_lk :worldcoords) :worldrot))
+    ;;    (send *robot* :worldrot)))
+    ;;  )
+    )
   )
 
 
