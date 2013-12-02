@@ -268,6 +268,12 @@
 	     (send msg :position)))
   (send *real-robot*
 	:fix-leg-to-coords (make-coords) :both)
+  (case *orgin-key*
+	(:free nil)
+	(t (send *origin-coords* :move-to
+		 (send *robot* *origin-key*
+		       :end-coords :copy-worldcoords)
+		 :world)))
   )
 
 (defun ros::tf-point->tf-pose (point)
@@ -388,6 +394,7 @@
 	(type (send msg :type)))
     (cond
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
+      (setq *orgin-key* :free)
       (set-origin)
       )
      ;;reset target coords
@@ -398,10 +405,12 @@
      ;;set origin to hand
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
       (print "set origin to rhand")
+      (setq *orgin-key* :rarm)
       (set-origin-to-hand :rarm)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_LHAND*)
       (print "set origin to lhand")
+      (setq *orgin-key* :larm)
       (set-origin-to-hand :larm)
       )
      ;;change ik-rotation-axis
@@ -639,6 +648,7 @@
 (defvar *translation-axis* t)
 (defvar *rotation-axis* t)
 (defvar *publish-ik* t)
+(defvar *orgin-key* :free)
 
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
