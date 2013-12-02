@@ -124,8 +124,8 @@
          (fullbodyp (substringp "fullbody" (send req :ik_request :group_name)))
 	 (end-coords-id
 	  (if (substringp "eus" (send req :ik_request :group_name))
-	      (switch-end-coords :id 1)
-	    (switch-end-coords :id 0)))
+	      (switch-end-coords :id 0)
+	    (switch-end-coords :id 1)))
          (opt-str (send (send (send req :ik_request) :constraints) :name))
          (opt
           (cond

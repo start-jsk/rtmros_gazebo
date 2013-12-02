@@ -29,6 +29,7 @@
    (list (make-coords :pos #f(535.86 -263.914 367.043) :rpy #f(-3.14159 -0.307211 1.57079)) (make-coords :pos #f(535.862 264.076 367.037) :rpy #f(-4.551172e-06 0.308817 1.57079)) (make-coords :pos #f(24.7508 -88.999 -794.516) :rpy #f(-3.582311e-09 -0.002932 1.221736e-06)) (make-coords :pos #f(24.7513 89.001 -794.515) :rpy #f(-3.582311e-09 -0.002932 1.221736e-06)))
    )
   )
+(defvar *now-end-coords-id* 0)
 
 (defun seq-end-coords
   (&key
@@ -57,11 +58,15 @@
 (defun switch-end-coords
   (&key
    (id 0))
-  (if (< id (length *switch-endcoords-collections*))
-      (mapcar
-       #'set-end-coords
-       *limb-key*
-       (nth id *switch-endcoords-collections*))))
+  (cond
+   ((eq id *now-end-coords-id*)
+    nil)
+   ((< id (length *switch-endcoords-collections*))
+    (setq *now-end-coords-id* id)
+    (mapcar
+     #'set-end-coords
+     *limb-key*
+     (nth id *switch-endcoords-collections*)))))
 
 
 
