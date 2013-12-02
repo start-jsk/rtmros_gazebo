@@ -1,8 +1,10 @@
 <launch>
+  <arg name="OCS_TF" default="/tf_ocs"/>
   <!-- for narrow band -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_low_bandwidth_ocs.launch">
     <arg name="USE_INTERACTIVE_JOINT" value="true"/>
     <arg name="USE_INTERACTIVE_ENDCOORDS" value="true"/>
+    <arg name="OCS_TF" value="$(arg OCS_TF)"/>
   </include>
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_concatenater.launch">
   </include>
@@ -13,5 +15,7 @@
   <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" />
   <node pkg="hrpsys_gazebo_atlas" type="atlas-eus-ik.l"
 	name="atlas_eus_ik" output="screen"
-	respawn="true" />
+	respawn="true">
+    <remap from="/tf" to="$(arg OCS_TF)"/>
+  </node>
 </launch>
