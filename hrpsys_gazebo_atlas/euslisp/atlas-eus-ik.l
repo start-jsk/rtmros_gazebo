@@ -262,7 +262,6 @@
     (setq *arrow* (arrow))
     (setq *atlas* (atlas-with-hand))
 					;(send *atlas* :newcoords (make-coords))
-    (switch-end-coords :id 1)
     (send *atlas* :reset-manip-pose)
     (send *atlas* :fix-leg-to-coords (make-coords) :both)
     (setq *robot* *atlas*)
@@ -289,6 +288,7 @@
     (send *irtviewer*
 	  :objects
 	  (list *atlas* *foot-convex* *arrow* *centroid-object*))
+    (switch-end-coords :id 1)
     ;;
     (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
     (ros::rate 10)
