@@ -250,7 +250,9 @@
           (print (list 'goal-in-world goal-in-world))
           ik-ret)
         (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
-        (send res :solution :joint_state :name (send-all (send *atlas* :joint-list) :name))
+	(send *viewer* :draw-objects)
+        (send res :solution :joint_state :name
+	      (send-all (send *atlas* :joint-list) :name))
         (send res :solution :joint_state :position
               (map float-vector #'deg2rad (send *atlas* :angle-vector)))
         res)
@@ -279,17 +281,19 @@
 	  :objects
 	  (list *atlas* *arrow*))
     (make-foot-convex)
-    (make-centroid-object)
+    ;(make-centroid-object)
     (send *irtviewer*
 	  :objects
-	  (list *atlas* *foot-convex*
-		*arrow* *centroid-object*))
+	  (list *atlas* *foot-convex* *arrow*))
     (send *irtviewer* :look-all)
     (send *viewer* :draw-objects)
     ;;
     (setq *tf* (instance ros::transform-listener :init))
     ;;
     (init-fullbody-ik-main)
+    (send *irtviewer*
+	  :objects
+	  (list *atlas* *foot-convex* *arrow* *centroid-object*))
     ;;
     (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
     (ros::rate 10)

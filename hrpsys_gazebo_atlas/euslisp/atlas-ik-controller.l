@@ -271,7 +271,7 @@
   (case *orgin-key*
 	(:free nil)
 	(t (send *origin-coords* :move-to
-		 (send *robot* *origin-key*
+		 (send *real-robot* *origin-key*
 		       :end-coords :copy-worldcoords)
 		 :world)))
   )
