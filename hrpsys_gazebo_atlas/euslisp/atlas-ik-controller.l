@@ -46,19 +46,24 @@
    (initial-coords
     (send *robot* target-limb :end-coords :copy-worldcoords))
    (target-coords
+    ;; (send initial-coords
+    ;; 	  :transform
+    ;; 	  move-coords))
     (make-coords
      :pos (v+ (send initial-coords :worldpos)
-	      (send move-coords :worldpos))
+    	      (send move-coords :worldpos))
      :rot (m* (send move-coords :worldrot)
-	      (send initial-coords :worldrot)
-	      )))
+    	      (send initial-coords :worldrot)
+    	      )))
    (target-coords-from-pelvis
-    (make-coords
-     :pos (v- (send target-coords :worldpos)
-	      (send *robot* :worldpos))
-     :rot (m* (transpose
-	       (send *robot* :worldrot))
-	      (send target-coords :worldrot))))
+    (send (send *robot* :copy-worldcoords)
+	  :transformation target-coords))
+    ;; (make-coords
+    ;;  :pos (v- (send target-coords :worldpos)
+    ;; 	      (send *robot* :worldpos))
+    ;;  :rot (m* (transpose
+    ;; 	       (send *robot* :worldrot))
+    ;; 	      (send target-coords :worldrot))))
    ;;
    (prev-state
     (list (cons :angle-vector
@@ -695,141 +700,6 @@
 
 (defun demo-pos-controller
   (&key
-   (now
-    (send *robot* *move-limb*
-	  :end-coords :copy-worldcoords))
-   (goal (copy-object now))
-   (now-from-pelvis
-    (make-coords
-     :pos
-     (v- (send now :worldpos) (send *robot* :worldpos))
-     :rot
-     (m* (transpose (send *robot* :worldrot))
-   	 (send now :worldrot))))
-   (goal-from-pelvis
-    (make-coords
-     :pos
-     (v- (send goal :worldpos) (send *robot* :worldpos))
-     :rot
-     (m* (transpose (send *robot* :worldrot))
-   	 (send goal :worldrot))))
-   ;; (goal-from-pelvis
-   ;;  (make-coords
-   ;;   :pos
-   ;;   (v- (send now :worldpos) (send *robot* :worldpos))
-   ;;   :rot
-   ;;   (m* (transpose (send *robot* :worldrot))
-   ;; 	 (send now :worldrot))))
-   ;; (goal
-   ;;  (make-coords
-   ;;   :pos
-   ;;   (v+ (send goal-from-pelvis :worldpos)
-   ;; 	 (send *robot* :worldpos))
-   ;;   :rot
-   ;;   (m* (send *robot* :worldrot)
-   ;; 	 (send goal-from-pelvis :worldrot))))
-   (real? nil)
-   (real-feedback? nil)
-   (cnt 1000)
-   (non-stop nil)
-   (return? nil)
-   )
-  (send *arrow* :newcoords (Copy-Object goal))
-  (if return?
-      (setq return?
-	    (length *success-state-collection*)))
-  (let (ret move rot buf tmp)
-    (do-until-key
-     (if (< (decf cnt) 0) (return-from nil nil))
-     (ros::spin-once)
-     (while *mouse-mode*
-       (x::window-main-one)
-       (ros::sleep)
-       (ros::spin-once))
-     ;;
-     (waist-fix :waist-key :waist-r :cnt 3)
-					;(waist-fix :waist-key :waist-p :cnt 3)
-					;(waist-fix :waist-key :waist-y :cnt 3)
-					;(hand-even-fix :cnt 1)
-					;(dotimes (i 2)
-					;(call-ik-server :rotate? :x :log-stream nil))
-     (setq
-      now
-      (send *robot* *move-limb*
-	    :end-coords :copy-worldcoords))
-     (setq
-      now-from-pelvis
-      (make-coords
-       :pos
-       (v- (send now :worldpos) (send *robot* :worldpos))
-       :rot
-       (m* (transpose (send *robot* :worldrot))
-	   (send now :worldrot))))
-     (setq
-      goal-from-pelvis
-      (make-coords
-       :pos
-       (v- (send goal :worldpos) (send *robot* :worldpos))
-       :rot
-       (m* (transpose (send *robot* :worldrot))
-	   (send goal :worldrot))))
-     (setq
-      move
-      (transform
-       (send now-from-pelvis :worldrot)
-       (send now-from-pelvis :difference-position
-	     goal-from-pelvis)))
-     (setq
-      rot
-      (transform
-       (send now-from-pelvis :worldrot)
-       (send now-from-pelvis :difference-rotation
-	     goal-from-pelvis)))
-     (format t "[pos-controller] :dif-pos ~A, :dif-rot ~A~%"
-	     (norm move) (norm rot))
-     (if (and (not non-stop)
-	      (< (norm move) 10)
-	      (< (norm rot) (deg2rad 5)))
-	 (return-from nil t))
-     (setq move
-	   (scale
-	    (min 50 (norm move))
-	    (normalize-vector move)))
-     (setq rot (scale (min 0.15 (norm rot))
-		      (normalize-vector rot)))
-     (setq tmp (call-ik-server
-		:real? real?
-		:move-coords
-		(make-coords
-		 :pos move
-		 :rpy (reverse rot))
-		:rotate? :x
-		:log-stream nil
-		))
-     (cond
-      ((vectorp tmp))
-      (t ;(evenp (random 2))
-       (setq tmp (call-ik-server
-		  :real? real?
-		  :real-feedback? real-feedback?
-					;:rotate? :x
-		  :move-coords
-		  (make-coords
-		   :pos (random-vector 50.0)
-		   :rpy (random-vector 0.2))
-		  :log-stream nil
-		  ))))
-     (x::window-main-one)))
-  (if return?
-      (subseq *success-state-collection*
-	      0
-	      (- (length *success-state-collection*)
-		 return?))
-    t)
-  )
-
-(defun demo-pos-controller2
-  (&key
    (target-limb
     (case *move-limb*
 	  (:arms '(:rarm :larm))
@@ -844,22 +714,24 @@
    (now-from-pelvis
     (mapcar
      #'(lambda (now goal)
-	 (make-coords
-	  :pos
-	  (v- (send now :worldpos) (send *robot* :worldpos))
-	  :rot
-	  (m* (transpose (send *robot* :worldrot))
-	      (send now :worldrot))))
+	 (send (send *robot* :copy-worldcoords) :transformation now))
+	 ;; (make-coords
+	 ;;  :pos
+	 ;;  (v- (send now :worldpos) (send *robot* :worldpos))
+	 ;;  :rot
+	 ;;  (m* (transpose (send *robot* :worldrot))
+	 ;;      (send now :worldrot)))
      now goal))
    (goal-from-pelvis
     (mapcar
      #'(lambda (now goal)
-	 (make-coords
-	  :pos
-	  (v- (send goal :worldpos) (send *robot* :worldpos))
-	  :rot
-	  (m* (transpose (send *robot* :worldrot))
-	      (send goal :worldrot))))
+	 (send (send *robot* :copy-worldcoords) :transformation goal))
+	 ;; (make-coords
+	 ;;  :pos
+	 ;;  (v- (send goal :worldpos) (send *robot* :worldpos))
+	 ;;  :rot
+	 ;;  (m* (transpose (send *robot* :worldrot))
+	 ;;      (send goal :worldrot)))
      now goal))
    ;; (goal-from-pelvis
    ;;  (make-coords
@@ -932,23 +804,25 @@
       now-from-pelvis
       (mapcar
        #'(lambda (now goal)
-	   (make-coords
-	    :pos
-	    (v- (send now :worldpos) (send *robot* :worldpos))
-	    :rot
-	    (m* (transpose (send *robot* :worldrot))
-		(send now :worldrot))))
+	   (send (send *robot* :copy-worldcoords) :transformation now))
+	   ;; (make-coords
+	   ;;  :pos
+	   ;;  (v- (send now :worldpos) (send *robot* :worldpos))
+	   ;;  :rot
+	   ;;  (m* (transpose (send *robot* :worldrot))
+	   ;; 	(send now :worldrot))))
        now goal))
      (setq
       goal-from-pelvis
       (mapcar
        #'(lambda (now goal)
-	   (make-coords
-	    :pos
-	    (v- (send goal :worldpos) (send *robot* :worldpos))
-	    :rot
-	    (m* (transpose (send *robot* :worldrot))
-		(send goal :worldrot))))
+	   (send (send *robot* :copy-worldcoords) :transformation goal))
+	   ;; (make-coords
+	   ;;  :pos
+	   ;;  (v- (send goal :worldpos) (send *robot* :worldpos))
+	   ;;  :rot
+	   ;;  (m* (transpose (send *robot* :worldrot))
+	   ;; 	(send goal :worldrot))))
        now goal))
      (setq
       move
@@ -1024,7 +898,6 @@
     t)
   )
 
-
 ;; export ROS_MASTER_URI=http://10.10.72.112:11311
 ;; export ROS_IP=10.10.72.109 && export ROS_HOSTNAME=$ROS_IP
 ;; load "ssc-20131118.l"
@@ -1099,7 +972,7 @@
       (copy-object (send *real-robot* :angle-vector)))
 (send *real-robot*
       :fix-leg-to-coords (make-coords) :both)
-(demo-pos-controller2)
+(demo-pos-controller)
 
 #|
 
