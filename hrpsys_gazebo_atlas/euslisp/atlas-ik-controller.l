@@ -36,19 +36,9 @@
        (:rarm '("rarm" "rarm_torso" "rarm_fullbody")))))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
-    ;; (make-coords
-    ;;  :pos (v- (send *target-coords* :worldpos)
-    ;; 	      (send *origin-coords* :worldpos))
-    ;;  :rot (m*
-    ;; 	   (transpose
-    ;; 	    (send *origin-coords* :worldrot))
-    ;; 	   (send *target-coords* :worldrot))))
    (initial-coords
     (send *robot* target-limb :end-coords :copy-worldcoords))
    (target-coords
-    ;; (send initial-coords
-    ;; 	  :transform
-    ;; 	  move-coords))
     (make-coords
      :pos (v+ (send initial-coords :worldpos)
     	      (send move-coords :worldpos))
@@ -58,13 +48,6 @@
    (target-coords-from-pelvis
     (send (send *robot* :copy-worldcoords)
 	  :transformation target-coords))
-    ;; (make-coords
-    ;;  :pos (v- (send target-coords :worldpos)
-    ;; 	      (send *robot* :worldpos))
-    ;;  :rot (m* (transpose
-    ;; 	       (send *robot* :worldrot))
-    ;; 	      (send target-coords :worldrot))))
-   ;;
    (prev-state
     (list (cons :angle-vector
 		(copy-seq (send *robot* :angle-vector)))
@@ -517,7 +500,7 @@
 	 (send *real-robot* :angle-vector)))
   (send *robot* :fix-leg-to-coords
 	(make-coords) :both)
-)
+  )
 
 
 ;;fixed flamae is foot?
@@ -729,39 +712,12 @@
     (mapcar
      #'(lambda (now goal)
 	 (send (send *robot* :copy-worldcoords) :transformation now))
-	 ;; (make-coords
-	 ;;  :pos
-	 ;;  (v- (send now :worldpos) (send *robot* :worldpos))
-	 ;;  :rot
-	 ;;  (m* (transpose (send *robot* :worldrot))
-	 ;;      (send now :worldrot)))
      now goal))
    (goal-from-pelvis
     (mapcar
      #'(lambda (now goal)
 	 (send (send *robot* :copy-worldcoords) :transformation goal))
-	 ;; (make-coords
-	 ;;  :pos
-	 ;;  (v- (send goal :worldpos) (send *robot* :worldpos))
-	 ;;  :rot
-	 ;;  (m* (transpose (send *robot* :worldrot))
-	 ;;      (send goal :worldrot)))
      now goal))
-   ;; (goal-from-pelvis
-   ;;  (make-coords
-   ;;   :pos
-   ;;   (v- (send now :worldpos) (send *robot* :worldpos))
-   ;;   :rot
-   ;;   (m* (transpose (send *robot* :worldrot))
-   ;; 	 (send now :worldrot))))
-   ;; (goal
-   ;;  (make-coords
-   ;;   :pos
-   ;;   (v+ (send goal-from-pelvis :worldpos)
-   ;; 	 (send *robot* :worldpos))
-   ;;   :rot
-   ;;   (m* (send *robot* :worldrot)
-   ;; 	 (send goal-from-pelvis :worldrot))))
    (real? nil)
    (real-feedback? nil)
    (cnt 1000)
@@ -819,24 +775,12 @@
       (mapcar
        #'(lambda (now goal)
 	   (send (send *robot* :copy-worldcoords) :transformation now))
-	   ;; (make-coords
-	   ;;  :pos
-	   ;;  (v- (send now :worldpos) (send *robot* :worldpos))
-	   ;;  :rot
-	   ;;  (m* (transpose (send *robot* :worldrot))
-	   ;; 	(send now :worldrot))))
        now goal))
      (setq
       goal-from-pelvis
       (mapcar
        #'(lambda (now goal)
 	   (send (send *robot* :copy-worldcoords) :transformation goal))
-	   ;; (make-coords
-	   ;;  :pos
-	   ;;  (v- (send goal :worldpos) (send *robot* :worldpos))
-	   ;;  :rot
-	   ;;  (m* (transpose (send *robot* :worldrot))
-	   ;; 	(send goal :worldrot))))
        now goal))
      (setq
       move
