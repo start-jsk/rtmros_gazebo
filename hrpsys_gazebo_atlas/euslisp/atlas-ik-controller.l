@@ -59,6 +59,10 @@
    (update-convex t)
    &allow-other-keys
    )
+  (cond
+   (*ik-stop*
+    (print 'skip-iik)
+    (return-from call-ik-server nil)))
   (let* ((c target-coords-from-pelvis)
 	 (p (scale 1e-3 (send c :worldpos)))
 	 (q (matrix2quaternion (send c :worldrot)))
@@ -117,40 +121,39 @@
 					:w (elt q 0)))
 		    ))
     (setq res (ros::service-call "/atlas_eus_ik" req))
-    (if (= (send res :error_code :val)
-	   moveit_msgs::MoveItErrorCodes::*SUCCESS*)
-	(progn
-	  (format log-stream "successed!~%")
-	  (setq *prev-js* (send res :solution :joint_state))
-	  (send *robot* :angle-vector
-		(map float-vector
-		     #'rad2deg
-		     (send res :solution :joint_state :position)))
-	  (send *robot* :fix-leg-to-coords
-		(make-coords) :both)
-	  (send *viewer* :draw-objects)
-	  ;;
-	  (if (or
-	       (null *success-state-collection*)
-	       (> (norm
-		   (v- (send *robot* :angle-vector)
-		       (cdr (assoc :angle-vector prev-state))))
-		  1))
-	      (setq *success-state-collection*
-		    (subseq
-		     (cons
-		      (list (cons :angle-vector
-				  (copy-object
-				   (send *robot* :angle-vector)))
-			    (cons :worldcoords
-				  (copy-object
-				   (send *robot* :worldcoords))))
-		      *success-state-collection*)
-		     0 500)))
-	  (send *robot* :angle-vector)
-	  )
-      (format log-stream "failed!~%")
-      )))
+    (cond
+     ((= (send res :error_code :val)
+	 moveit_msgs::MoveItErrorCodes::*SUCCESS*)
+      (format log-stream "successed!~%")
+      (setq *prev-js* (send res :solution :joint_state))
+      (send *robot* :angle-vector
+	    (map float-vector
+		 #'rad2deg
+		 (send res :solution :joint_state :position)))
+      (send *robot* :fix-leg-to-coords
+	    (make-coords) :both)
+      (send *viewer* :draw-objects)
+      ;;
+      (if (or
+	   (null *success-state-collection*)
+	   (> (norm
+	       (v- (send *robot* :angle-vector)
+		   (cdr (assoc :angle-vector prev-state))))
+	      1))
+	  (setq *success-state-collection*
+		(subseq
+		 (cons
+		  (list (cons :angle-vector
+			      (copy-object
+			       (send *robot* :angle-vector)))
+			(cons :worldcoords
+			      (copy-object
+			       (send *robot* :worldcoords))))
+		  *success-state-collection*)
+		 0 500)))
+      (send *robot* :angle-vector)
+      )
+     (t (format log-stream "failed!~%") nil))))
 
 ;; initial pose
 (defun init-pose
@@ -431,17 +434,15 @@
       )
      ;;change use-torso
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_T*)
-      (print "use torso t")
       (setq *use-torso* t)
       (setq *use-fullbody* nil)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_TORSO_NIL*)
-      (print "use torso nil")
       (setq *use-torso* nil)
       (setq *use-fullbody* nil)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*USE_FULLBODY*)
-      (print "use torso nil")
+      (setq *use-torso* nil)
       (setq *use-fullbody* t)
       )
      ;;changeControllArm
@@ -463,10 +464,12 @@
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*PLAN*)
       (print "publish joint states")
+      (setq *ik-stop* nil)
       (setq *publish-ik* t)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*CANCEL_PLAN*)
       (print "stop publishing joint states")
+      (setq *ik-stop* t)
       (setq *publish-ik* nil)
       )
      )
@@ -575,7 +578,6 @@
     )
   )
 
-
 (defun set-marker-pose
   (coords &key (marker-name) (frame "/map") (markers) (server *server-nodename*))
   (let ((req (instance jsk_interactive_marker::MarkerSetPoseRequest :init))
@@ -673,8 +675,9 @@
 (defvar *use-torso* t)
 (defvar *translation-axis* t)
 (defvar *rotation-axis* t)
-(defvar *publish-ik* t)
+(defvar *publish-ik* nil)
 (defvar *orgin-key* :free)
+(defvar *ik-stop* (not *publish-ik*))
 
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
@@ -932,7 +935,7 @@
 (setq *arrow* (arrow))
 (make-centroid-object)
 (init-pose)
-					;(objects (list *robot* *arrow*))
+
 (objects
  (list *robot* *origin-coords* *target-coords*))
 ;;
@@ -959,7 +962,7 @@
 		 (send *robot* :angle-vector))
 	    :name
 	    (send-all (send *robot* :joint-list) :name)))
-					;
+
 (send *robot* :rleg :knee-p :min-angle 10)
 (send *robot* :lleg :knee-p :min-angle 10)
 

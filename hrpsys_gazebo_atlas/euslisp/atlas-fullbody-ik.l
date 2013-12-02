@@ -320,7 +320,7 @@
 	  (mapcar
 	   #'(lambda (c m k)
 	       (or c
-		   (print (cdr (assoc k *fix-limb-coords*)))
+		   (cdr (assoc k *fix-limb-coords*))
 		   (send m :copy-worldcoords)))
 	   target-coords move-target target-limb))
     ;;
