@@ -462,6 +462,14 @@
       (publish-target-arrow-obj)
       (publish-origin-arrow-obj)
       )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*PLAN*)
+      (print "publish joint states")
+      (setq *publish-ik* t)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*CANCEL_PLAN*)
+      (print "stop publishing joint states")
+      (setq *publish-ik* nil)
+      )
      )
     (when (boundp '*irtviewer*)
       (send *irtviewer* :draw-objects))
@@ -486,26 +494,30 @@
 
 (defun set-origin
   ()
+  (realmodel2model)
   (setq *old-coords* (send *target-coords* :copy-worldcoords))
   (send *origin-coords* :move-to *target-coords* :world)
   )
 
 (defun set-origin-to-hand
   (&optional (arm :rarm))
-  ;;(send *robot* :angle-vector
-  ;;(send ri :state :potentio-vector))
-  (send *robot*
-	:angle-vector
-	(copy-object
-	 (send *real-robot* :angle-vector)))
-  (send *robot* :fix-leg-to-coords
-	(make-coords) :both)
+  (realmodel2model)
   (send *target-coords* :move-to
 	(send *robot* arm :end-coords :worldcoords)
 	:world)
   (set-origin)
   (set-marker-pose-robot (send *target-coords* :worldcoords))
   )
+
+(defun realmodel2model
+  ()
+  (send *robot*
+	:angle-vector
+	(copy-object
+	 (send *real-robot* :angle-vector)))
+  (send *robot* :fix-leg-to-coords
+	(make-coords) :both)
+)
 
 
 ;;fixed flamae is foot?
@@ -529,20 +541,22 @@
        )
       )
     coords
+
     (make-coords
      :pos
      (v+ (send coords :worldpos)
-	 (v- (send *robot* :worldpos)
-	     (send (send *robot* :r_foot_lk :worldcoords) :worldpos)))
+    	 (v- (send *robot* :worldpos)
+    	     (send (send *robot* :r_foot_lk :worldcoords) :worldpos)))
      :rot
      (m*
       (transpose (send coords :worldrot))
       (m*
        (transpose
-	(send (send *robot* :r_foot_lk :worldcoords) :worldrot))
+    	(send (send *robot* :r_foot_lk :worldcoords) :worldrot))
        (send *robot* :worldrot)))
      ))
   )
+
 
 (defun set-marker-pose
   (coords &key (marker-name) (frame "/map") (markers) (server *server-nodename*))
@@ -888,7 +902,8 @@
 		  :log-stream nil
 		  ))))
      (x::window-main-one)
-     (publish-joint-states)
+     (if *publish-ik*
+	 (publish-joint-states))
      ))
   (if return?
       (subseq *success-state-collection*
@@ -972,6 +987,8 @@
       (copy-object (send *real-robot* :angle-vector)))
 (send *real-robot*
       :fix-leg-to-coords (make-coords) :both)
+
+(set-marker-pose-robot (send *target-coords* :worldcoords))
 (demo-pos-controller)
 
 #|
