@@ -1,6 +1,5 @@
 <launch>
   <arg name="USE_INTERACTIVE_JOINT" default="false" />
-  <arg name="USE_INTERACTIVE_ENDCOORDS" default="false" />
   <!-- for point cloud -->
 
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_divider.launch"/>
@@ -12,7 +11,6 @@
   <!-- interactive joint marker and rviz -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_interactive_marker_fc.launch">
     <arg name="USE_INTERACTIVE_JOINT" value="$(arg USE_INTERACTIVE_JOINT)"/>
-    <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
   </include>
 
   <!-- send joint_state and map->pelvis to ocs -->
