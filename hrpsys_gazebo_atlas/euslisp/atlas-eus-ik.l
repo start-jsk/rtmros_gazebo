@@ -7,55 +7,15 @@
 (ros::load-ros-manifest "arm_navigation_msgs")
 (ros::load-ros-manifest "moveit_msgs")
 
-(require :rtm-ros-robotics-interface "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
+(require :rtm-ros-robotics-interface
+	 "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 
 (require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 (require "package://hrpsys_gazebo_atlas/euslisp/atlas-fullbody-ik.l")
 (require "models/arrow-object.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-end-coords.l")
 
 (ros::roseus "atlas_eus_ik")
-
-(defun setup-end-coords ()
-  (unless (boundp '*setup-end-coords-for-hku-flag*)
-    ;; right
-    (let ((end-coords (make-coords))
-	  (arm :rarm)
-	  ;;(palm-link :right_palm_lk)
-	  (palm-link :right_palm_left_camera_optical_frame_lk)
-	  (axis (float-vector 0 0 1))
-	  (rad 2.23))
-      ;;(rad 1.57))
-      ;;(rad 0))
-      (send end-coords :rotate rad axis)
-      (send end-coords :translate (float-vector 30 -250 45) :world)
-      (let ((new-end-coords
-	     (send (send *atlas* :r_hand_lk) :copy-worldcoords)))
-	;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
-	(send new-end-coords :transform end-coords :local)
-	(let ((trans (send (send *atlas* arm :end-coords :copy-worldcoords)
-			   :transformation new-end-coords)))
-	  (send (send *atlas* arm :end-coords) :transform trans))
-	))
-    ;; left
-    (let ((end-coords (make-coords))
-	  (arm :larm)
-	  ;;(palm-link :right_palm_lk)
-	  (palm-link :left_palm_left_camera_optical_frame_lk)
-	  (axis (float-vector 0 0 1))
-	  (rad 0.91))
-      (send end-coords :rotate rad axis)
-      (send end-coords :translate (float-vector 30 250 45) :world)
-      (let ((new-end-coords
-	     (send (send *atlas* :l_hand_lk) :copy-worldcoords)))
-	;;(send (send (send *atlas* :hand arm) palm-link) :copy-worldcoords)))
-	(send new-end-coords :transform end-coords :local)
-	(let ((trans (send (send *atlas* arm :end-coords) :transformation
-			   new-end-coords)))
-	  (send (send *atlas* arm :end-coords) :transform trans))
-	))
-    )
-  (setq *setup-end-coords-for-hku-flag* t)
-  )
 
 (defun fullbody-ik-with-collision (arm goal-in-world &rest args)
   (apply
@@ -156,14 +116,16 @@
 
 (defun ik-service-cb (req)
   (let* ((res (send req :response))
-         (arm (if (or (string= (subseq (send req :ik_request :group_name) 0 4) "larm")
-                      (string= (subseq (send req :ik_request :group_name) 0 4) "lhand"))
+         (arm (if (or (substringp "larm" (subseq (send req :ik_request :group_name) 0 4))
+                      (substringp "lhand" (subseq (send req :ik_request :group_name) 0 4)))
                   :larm
                 :rarm))
-         (torsop (or (string= (send req :ik_request :group_name) "larm_torso")
-                     (string= (send req :ik_request :group_name) "rarm_torso")))
-         (fullbodyp (or (string= (send req :ik_request :group_name) "larm_fullbody")
-                        (string= (send req :ik_request :group_name) "rarm_fullbody")))
+         (torsop (substringp "torso" (send req :ik_request :group_name)))
+         (fullbodyp (substringp "fullbody" (send req :ik_request :group_name)))
+	 (end-coords-id
+	  (if (substringp "eus" (send req :ik_request :group_name))
+	      (switch-end-coords :id 1)
+	    (switch-end-coords :id 0)))
          (opt-str (send (send (send req :ik_request) :constraints) :name))
          (opt
           (cond
@@ -272,7 +234,7 @@
     (setq *arrow* (arrow))
     (setq *atlas* (atlas-with-hand))
 					;(send *atlas* :newcoords (make-coords))
-    (setup-end-coords)
+    (switch-end-coords :id 1)
     (send *atlas* :reset-manip-pose)
     (send *atlas* :fix-leg-to-coords (make-coords) :both)
     (setq *robot* *atlas*)
@@ -286,7 +248,7 @@
 	  :objects
 	  (list *atlas* *arrow*))
     (make-foot-convex)
-    ;(make-centroid-object)
+    ;;(make-centroid-object)
     (send *irtviewer*
 	  :objects
 	  (list *atlas* *foot-convex* *arrow*))
@@ -312,4 +274,3 @@
 (start-ik-server)
 
 ;; roseus "(setq *setup-end-coords-for-hku-flag* nil)" atlas-eus-ik.l 
-;; rosrun roseus roseus "(setq *setup-end-coords-for-hku-flag* nil)" atlas-eus-ik.l /tf:=/tf_ocs

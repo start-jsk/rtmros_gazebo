@@ -32,8 +32,8 @@
       (*use-fullbody* 2)
       (t 0))
      (case target-limb
-	   (:larm '("larm" "larm_torso" "larm_fullbody"))
-	   (:rarm '("rarm" "rarm_torso" "rarm_fullbody")))))
+	   (:larm '("larm_eus" "larm_torso_eus" "larm_fullbody_eus"))
+	   (:rarm '("rarm_eus" "rarm_torso_eus" "rarm_fullbody_eus")))))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
    (initial-coords
@@ -669,8 +669,8 @@
 (defvar *origin-coords* (instance arrow-object :init)) ;;arrow for origin of object
 (send *origin-coords* :translate #f(500 0 0))
 (defvar *old-coords* (send *target-coords* :copy-worldcoords))
-(defvar *use-fullbody* t)
-(defvar *use-torso* nil)
+(defvar *use-fullbody* nil)
+(defvar *use-torso* t)
 (defvar *translation-axis* t)
 (defvar *rotation-axis* t)
 (defvar *publish-ik* t)
