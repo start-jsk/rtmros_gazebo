@@ -21,7 +21,10 @@
 
 (defun call-ik-server
   (&key
-   (target-limb *move-limb*)
+   (target-limb
+    (case *move-limb*
+	  (:arms :larm)
+	  (t *move-limb*)))
    (group_name
     (nth
      (cond
@@ -827,24 +830,37 @@
 
 (defun demo-pos-controller2
   (&key
+   (target-limb
+    (case *move-limb*
+	  (:arms '(:rarm :larm))
+	  (t (list *move-limb*))))
    (now
-    (send *robot* *move-limb*
-	  :end-coords :copy-worldcoords))
+    (mapcar
+     #'(lambda (k)
+	 (send *robot* k
+	       :end-coords :copy-worldcoords))
+     target-limb))
    (goal (copy-object now))
    (now-from-pelvis
-    (make-coords
-     :pos
-     (v- (send now :worldpos) (send *robot* :worldpos))
-     :rot
-     (m* (transpose (send *robot* :worldrot))
-   	 (send now :worldrot))))
+    (mapcar
+     #'(lambda (now goal)
+	 (make-coords
+	  :pos
+	  (v- (send now :worldpos) (send *robot* :worldpos))
+	  :rot
+	  (m* (transpose (send *robot* :worldrot))
+	      (send now :worldrot))))
+     now goal))
    (goal-from-pelvis
-    (make-coords
-     :pos
-     (v- (send goal :worldpos) (send *robot* :worldpos))
-     :rot
-     (m* (transpose (send *robot* :worldrot))
-   	 (send goal :worldrot))))
+    (mapcar
+     #'(lambda (now goal)
+	 (make-coords
+	  :pos
+	  (v- (send goal :worldpos) (send *robot* :worldpos))
+	  :rot
+	  (m* (transpose (send *robot* :worldrot))
+	      (send goal :worldrot))))
+     now goal))
    ;; (goal-from-pelvis
    ;;  (make-coords
    ;;   :pos
@@ -866,7 +882,6 @@
    (non-stop t)
    (return? nil)
    )
-  (send *arrow* :newcoords (Copy-Object goal))
   (if return?
       (setq return?
 	    (length *success-state-collection*)))
@@ -888,66 +903,103 @@
      ;;(dotimes (i 2)
      ;;(call-ik-server :rotate? :x :log-stream nil))
      (setq
+      target-limb
+      (case *move-limb*
+	    (:arms '(:rarm :larm))
+	    (t (list *move-limb*))))
+     (setq
       now
-      (send *robot* *move-limb*
-	    :end-coords :copy-worldcoords))
+      (mapcar
+       #'(lambda (k)
+	   (send *robot* k
+		 :end-coords :copy-worldcoords))
+       target-limb))
      (setq
       str
-      (send *real-robot* *move-limb*
-	    :end-coords :copy-worldcoords))
+      (mapcar
+       #'(lambda (k)
+	   (send *real-robot* k
+		 :end-coords :copy-worldcoords))
+       target-limb))
      (setq
       goal
-      (send *origin-coords* :transformation str))
-     (send goal :transform *target-coords* :world)
+      (mapcar
+       #'(lambda (str)
+	   (send *origin-coords* :transformation str))
+       str))
+     (send-all goal :transform *target-coords* :world)
      (setq
       now-from-pelvis
-      (make-coords
-       :pos
-       (v- (send now :worldpos) (send *robot* :worldpos))
-       :rot
-       (m* (transpose (send *robot* :worldrot))
-	   (send now :worldrot))))
+      (mapcar
+       #'(lambda (now goal)
+	   (make-coords
+	    :pos
+	    (v- (send now :worldpos) (send *robot* :worldpos))
+	    :rot
+	    (m* (transpose (send *robot* :worldrot))
+		(send now :worldrot))))
+       now goal))
      (setq
       goal-from-pelvis
-      (make-coords
-       :pos
-       (v- (send goal :worldpos) (send *robot* :worldpos))
-       :rot
-       (m* (transpose (send *robot* :worldrot))
-	   (send goal :worldrot))))
+      (mapcar
+       #'(lambda (now goal)
+	   (make-coords
+	    :pos
+	    (v- (send goal :worldpos) (send *robot* :worldpos))
+	    :rot
+	    (m* (transpose (send *robot* :worldrot))
+		(send goal :worldrot))))
+       now goal))
      (setq
       move
-      (transform
-       (send now-from-pelvis :worldrot)
-       (send now-from-pelvis :difference-position
-	     goal-from-pelvis)))
+      (mapcar
+       #'(lambda (now-from-pelvis goal-from-pelvis)
+	   (transform
+	    (send now-from-pelvis :worldrot)
+	    (send now-from-pelvis :difference-position
+		  goal-from-pelvis)))
+       now-from-pelvis goal-from-pelvis))
      (setq
       rot
-      (transform
-       (send now-from-pelvis :worldrot)
-       (send now-from-pelvis :difference-rotation
-	     goal-from-pelvis)))
+      (mapcar
+       #'(lambda (now-from-pelvis goal-from-pelvis)
+	   (transform
+	    (send now-from-pelvis :worldrot)
+	    (send now-from-pelvis :difference-rotation
+		  goal-from-pelvis)))
+       now-from-pelvis goal-from-pelvis))
      (format t "[pos-controller] :dif-pos ~A, :dif-rot ~A~%"
-	     (norm move) (norm rot))
+	     (mapcar #'norm move) (mapcar #'norm rot))
      (if (and (not non-stop)
-	      (< (norm move) 10)
-	      (< (norm rot) (deg2rad 5)))
+	      (< (apply #'max (mapcar #'norm move)) 10)
+	      (< (apply #'max (mapcar #'norm rot)) (deg2rad 5)))
 	 (return-from nil t))
      (setq move
-	   (scale
-	    (min 15 (norm move))
-	    (normalize-vector move)))
-     (setq rot (scale (min (deg2rad 5) (norm rot))
-		      (normalize-vector rot)))
-     (setq tmp (call-ik-server
-		:real? real?
-		:move-coords
-		(make-coords
-		 :pos move
-		 :rpy (reverse rot))
-		:rotate? :x
-		:log-stream nil
-		))
+	   (mapcar
+	    #'(lambda (move)
+		(scale
+		 (min 15 (norm move))
+		 (normalize-vector move)))
+	    move))
+     (setq rot
+	   (mapcar
+	    #'(lambda (rot)
+		(scale (min (deg2rad 5) (norm rot))
+		       (normalize-vector rot)))
+	    rot))
+     (mapcar
+      #'(lambda (limb move rot)
+	  (setq tmp (call-ik-server
+		     :target-limb limb
+		     :real? real?
+		     :move-coords
+		     (make-coords
+		      :pos move
+		      :rpy (reverse rot))
+		     :rotate? :x
+		     :log-stream nil
+		     )))
+      target-limb move rot)
      (cond
       ((vectorp tmp))
       (nil ;(evenp (random 2))
