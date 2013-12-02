@@ -23,6 +23,8 @@
     <node pkg="topic_tools" type="throttle"
           name="img_throttle" ns="/sandia_hands/r_hand/camera/left"
           args="messages image_rect $(arg THROTTLE_RATE)"/>
+    
+    <!-- resized image -->
     <node pkg="resized_image_transport" type="image_resizer" name="head_resized"
           output="screen" >
       <remap from="camera" to="/multisense_sl/camera/left" />
@@ -53,6 +55,19 @@
       <param name="period" value="$(arg THROTTLE_PERIOD)" />
       <param name="use_snapshot" value="false" />
     </node>
+
+    <!-- rotate hand image -->
+    <node pkg="image_rotate" type="image_rotate" name="lhand_resized_rotated"
+	  output="screen">
+      <remap from="image" to="/lhand_resized/image_rect"/>
+      <param name="target_frame_id" value="/map"/>
+    </node>
+    <node pkg="image_rotate" type="image_rotate" name="rhand_resized_rotated"
+	  output="screen">
+      <remap from="image" to="/rhand_resized/image_rect"/>
+      <param name="target_frame_id" value="/map"/>
+    </node>
+
   </group>
 
   <group if="$(arg USE_SNAPSHOT)" >
