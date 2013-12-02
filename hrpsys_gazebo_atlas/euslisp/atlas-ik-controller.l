@@ -619,7 +619,6 @@
       )
     (send joint-state-msg :position joint-angles)
     (send joint-state-msg :name joint-names)
-
     (ros::publish (format nil "~A/atlas/reset_joint_states" *im-nodename*)
 		  joint-state-msg)
     )
@@ -634,6 +633,7 @@
 (defvar *use-torso* nil)
 (defvar *translation-axis* t)
 (defvar *rotation-axis* t)
+(defvar *publish-ik* t)
 
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
@@ -670,7 +670,7 @@
  (format nil "~A/marker_menu" *server-nodename*)
  jsk_interactive_marker::MarkerMenu #'move-callback)
 
-(defvar *im-nodename* "atlas_ik_visualizer")
+(defvar *im-nodename* "jsk_model_marker_interface")
 ;;Update Interactive Marker
 (ros::advertise
  (format nil "~A/atlas/reset_joint_states" *im-nodename*)

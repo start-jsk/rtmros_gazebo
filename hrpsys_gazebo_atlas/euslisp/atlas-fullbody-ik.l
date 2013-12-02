@@ -9,25 +9,27 @@
   (&optional
    (foot-key '(:rleg :lleg)))
   (cond
-   ((and *fix-limb-coords*
-	 (flatten
-	  (mapcar
-	   #'(lambda (k)
-	       (or
-		(not (cdr (assoc k *fix-limb-coords*)))
-		(> (norm
-		    (send
-		     (send *robot* k :end-coords :worldcoords)
-		     :difference-position
-		     (cdr (assoc k *fix-limb-coords*))))
-		   10)
-		(> (norm
-		    (send
-		     (send *robot* k :end-coords :worldcoords)
-		     :difference-rotation
-		     (cdr (assoc k *fix-limb-coords*))))
-		   (deg2rad 5))))
-	   foot-key)))
+   ((or
+     (null *foot-convex*)
+     (and *fix-limb-coords*
+	  (flatten
+	   (mapcar
+	    #'(lambda (k)
+		(or
+		 (not (cdr (assoc k *fix-limb-coords*)))
+		 (> (norm
+		     (send
+		      (send *robot* k :end-coords :worldcoords)
+		      :difference-position
+		      (cdr (assoc k *fix-limb-coords*))))
+		    10)
+		 (> (norm
+		     (send
+		      (send *robot* k :end-coords :worldcoords)
+		      :difference-rotation
+		      (cdr (assoc k *fix-limb-coords*))))
+		    (deg2rad 5))))
+	    foot-key))))
     (setq *foot-convex*
 	  (make-prism
 	   (quickhull
