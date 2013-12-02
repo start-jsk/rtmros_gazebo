@@ -171,7 +171,7 @@
                  (plusp (length opt-str))
                  (listp (setq opt-str (read-from-string opt-str))))
             opt-str)
-           (t nil))))
+           (t (list :update-convex t)))))
     ;; taking joint state into account
     (cond
      ((and (send req :ik_request :robot_state)
@@ -195,6 +195,11 @@
      (t (send *robot* :reset-manip-pose)))
     (format t "[ik-server] options: ~A~%" opt)
     (send *robot* :fix-leg-to-coords (make-coords) :both)
+    (cond
+     ((cadr (member :update-convex opt))
+      (make-foot-convex)
+      (send *irtviewer* :objects
+	    (list *robot* *centroid-object* *foot-convex* *arrow*))))
     ;;(make-foot-convex)
     ;;(send *irtviewer* :objects
     ;;(list *robot* *foot-convex* *centroid-object* *arrow*))

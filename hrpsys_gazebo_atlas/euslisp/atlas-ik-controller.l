@@ -56,6 +56,7 @@
    (log-stream t)
    (translation-axis *translation-axis*)
    (rotation-axis *rotation-axis*)
+   (update-convex t)
    &allow-other-keys
    )
   (let* ((c target-coords-from-pelvis)
@@ -84,11 +85,12 @@
 	    (list "(")
 	    (mapcar
 	     #'(lambda (key val) (format nil "~A ~A " key val))
-	     '(:translation-axis :rotation-axis :stop)
+	     '(:translation-axis :rotation-axis :stop :update-convex)
 	     (list
 	      (list translation-axis t t)
 	      (list rotation-axis t t)
-	      15))
+	      15
+	      update-convex))
 	    (list ")"))))
     ;;
     (send req :ik_request
@@ -526,6 +528,7 @@
 	 (send *real-robot* :angle-vector)))
   (send *robot* :fix-leg-to-coords
 	(make-coords) :both)
+  (fix-centroid-object)
   )
 
 

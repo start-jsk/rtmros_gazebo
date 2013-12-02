@@ -8,6 +8,7 @@
 (defun make-foot-convex
   (&optional
    (foot-key '(:rleg :lleg)))
+  (format t "[foot-convex] ")
   (cond
    ((or
      (null *foot-convex*)
@@ -16,20 +17,21 @@
 	   (mapcar
 	    #'(lambda (k)
 		(or
-		 (not (cdr (assoc k *fix-limb-coords*)))
+		 (not (assoc k *fix-limb-coords*))
 		 (> (norm
 		     (send
 		      (send *robot* k :end-coords :worldcoords)
 		      :difference-position
 		      (cdr (assoc k *fix-limb-coords*))))
-		    10)
+		    50)
 		 (> (norm
 		     (send
 		      (send *robot* k :end-coords :worldcoords)
 		      :difference-rotation
 		      (cdr (assoc k *fix-limb-coords*))))
-		    (deg2rad 5))))
+		    (deg2rad 10))))
 	    foot-key))))
+    (format t "update~%")
     (setq *foot-convex*
 	  (make-prism
 	   (quickhull
@@ -65,7 +67,9 @@
 		 k
 		 (send *robot* k :end-coords :copy-worldcoords)))
 	    foot-key)))
-    (gl::transparent *foot-convex* 0.3))))
+    (gl::transparent *foot-convex* 0.3)
+    )
+   (t (format t "reject~%"))))
 
 (defun make-centroid-object
   ()
