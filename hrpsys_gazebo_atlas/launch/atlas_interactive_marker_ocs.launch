@@ -3,7 +3,7 @@
   <arg name="USE_INTERACTIVE_JOINT" default="true" />
   <arg name="USE_INTERACTIVE_ENDCOORDS" default="true" />
   <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description_ocs" />
-  <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="true" />
+  <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" default="false" />
 
   <!-- joint marker -->
   <group if="$(arg USE_INTERACTIVE_JOINT)">
@@ -13,14 +13,26 @@
     <remap from="/dissoc_tf" to="/dynamic_tf_publisher_ocs/dissoc_tf"/>
     <remap from="/assoc_tf" to="/dynamic_tf_publisher_ocs/assoc_tf"/>
 
+    <!-- use joint_state_publisher instaed of dynamic_tf_publisher -->
+    <node pkg="robot_state_publisher" name="robot_state_publisher_for_urdf_marker" type="robot_state_publisher" >
+      <param name="robot_description" textfile="$(find hrpsys_gazebo_atlas)/build/atlas_v3.jsk.urdf" />
+      <remap from="joint_states" to="jsk_model_marker_interface/atlas/joint_states_100hz" />
+      <param name="~tf_prefix" type="string" value="atlas" />
+      <remap from="robot_description" to="robot_state_publisher_for_urdf_marker/robot_description" />
+    </node>
+    <node pkg="jsk_interactive_marker" type="joint_state_publisher.py" name="joint_state_publisher_for_jsk_interactive_marker" >
+      <remap from="joint_states_sub" to="jsk_model_marker_interface/atlas/joint_states" />
+      <remap from="joint_states_pub" to="jsk_model_marker_interface/atlas/joint_states_100hz" />
+    </node>
+    <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher" args="0 0 0 0 0 0 pelvis atlas/pelvis 100" />
+    
     <node pkg="rviz" type="rviz" name="rviz_for_atlas" args="-d $(find jsk_interactive_marker)/launch/atlas_joint_marker.rviz" respawn="true">
       <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION_OCS)"/>
     </node>
+    
     <include file="$(find jsk_interactive_marker)/launch/urdf_model_markers.launch">
       <arg name="LAUNCH_DYNAMIC_TF_PUBLISHER" value="$(arg LAUNCH_DYNAMIC_TF_PUBLISHER)"/>
       <arg name="models" value="$(find jsk_interactive_marker)/launch/models/atlas-real.yaml"/>
-
-
     </include>
   </group>
 
@@ -36,5 +48,8 @@
     <node pkg="rviz" type="rviz" name="rviz_for_atlas_interactive_marker" args="-d $(find jsk_interactive_marker)/launch/interactive_marker.rviz" respawn="true">
       <remap from="/robot_description" to="$(arg ROBOT_DESCRIPTION_OCS)"/>
     </node>
+    
+    <!-- eus-ik-controller -->
+    <node pkg="roseus" type="roseus" name="atlas_ik_controller" args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-ik-controller.l" output="screen"/>
   </group>
 </launch>

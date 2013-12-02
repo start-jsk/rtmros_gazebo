@@ -1,30 +1,8 @@
 <launch>
   <arg name="USE_INTERACTIVE_JOINT" default="true" />
-  <arg name="USE_INTERACTIVE_ENDCOORDS" default="true" />
 
   <!-- joint marker -->
   <group if="$(arg USE_INTERACTIVE_JOINT)">
     <node pkg="roseus" type="roseus" name="eus_joint" args="$(find jsk_interactive)/euslisp/joint_marker_control/atlas-joint.l"/>
   </group>
-
-  <!-- hand marker -->
-  <group if="$(arg USE_INTERACTIVE_ENDCOORDS)" >
-    <node pkg="roseus" type="roseus" name="eus_interactive_marker" args="$(find jsk_interactive)/euslisp/atlas-im-main.l"/>
-    <!-- publish transform -->
-    <node pkg="jsk_topic_tools" type="specific_transform_publisher" name="specific_tf_publisher_from_map_to_im_target"
-	  output="screen">
-      <param name="parent_frame" type="string" value="map"/>
-      <param name="child_frame" type="string" value="im_target_coords_arrow"/>
-      <param name="loop_hz" type="double" value="0.3"/>
-    </node>
-    <node pkg="jsk_topic_tools" type="specific_transform_publisher" name="specific_tf_publisher_from_map_to_im_origin"
-	  output="screen">
-      <param name="parent_frame" type="string" value="map"/>
-      <param name="child_frame" type="string" value="im_origin_coords_arrow"/>
-      <param name="loop_hz" type="double" value="0.3"/>
-    </node>
-    
-  </group>
-
-
 </launch>
