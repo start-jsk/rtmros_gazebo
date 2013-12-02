@@ -32,8 +32,8 @@
       (*use-fullbody* 2)
       (t 0))
      (case target-limb
-       (:larm '("larm" "larm_torso" "larm_fullbody"))
-       (:rarm '("rarm" "rarm_torso" "rarm_fullbody")))))
+	   (:larm '("larm" "larm_torso" "larm_fullbody"))
+	   (:rarm '("rarm" "rarm_torso" "rarm_fullbody")))))
    (req (instance moveit_msgs::GetPositionIKRequest :init))
    (move-coords (make-coords))
    (initial-coords
@@ -255,11 +255,16 @@
 	    (map float-vector
 		 #'*
 		 rpy rpy-filter))
-      (call-ik-server
-       :rotation-axis t
-       :translation-axis t
-       :move-coords
-       (make-coords :pos move :rpy rpy))))))
+      (if (and
+	   (vectorp
+	    (call-ik-server
+	     :rotation-axis t
+	     :translation-axis t
+	     :move-coords
+	     (make-coords :pos move :rpy rpy)))
+	   *publish-ik*)
+	  (publish-joint-states))
+      ))))
 
 (defun joint-state-subscriber
   (msg)
@@ -493,7 +498,6 @@
 	)
        )
       )
-    
     (send *target-coords* :move-to
 	  (send *robot* :worldcoords) :world)
     (send *target-coords* :transform cds)
@@ -548,7 +552,7 @@
 	(return)
 	)
        (t
-	(ros::ros-info "r_foot -> map cannnot transform yet")
+	(ros::ros-info "pelvis -> map cannnot transform yet")
 	(ros::sleep)
 	)
        )
@@ -763,12 +767,12 @@
     (do-until-key
      (if (and (not non-stop)
 	      (< (decf cnt) 0)) (return-from nil nil))
-     (ros::spin-once)
      (do-until-key
-      (if (not *mouse-mode*) (return-from nil nil))
       (x::window-main-one)
+      (ros::spin-once)
       (ros::sleep)
-      (ros::spin-once))
+      (if (not *mouse-mode*) (return-from nil nil))
+      )
      ;;
      (waist-fix :waist-key :waist-r :cnt 3)
      (waist-fix :waist-key :waist-p :cnt 3)
@@ -926,6 +930,7 @@
 (setq *robot* *atlas*)
 (setq *real-robot* (copy-object *robot*))
 (setq *arrow* (arrow))
+(make-centroid-object)
 (init-pose)
 					;(objects (list *robot* *arrow*))
 (objects
