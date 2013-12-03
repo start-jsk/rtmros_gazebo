@@ -8,4 +8,5 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_low_bandwidth_fc.launch">
     <arg name="USE_INTERACTIVE_JOINT" value="true"/>
   </include>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_roi_fc.launch" />
 </launch>
