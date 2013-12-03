@@ -270,13 +270,20 @@
 (defun start-ik-server
   nil
   ;; initialization
-  (setq *arrow* (arrow))
-  (setq *atlas* (atlas-with-hand))
+  (defvar *arrow* (arrow))
+  (defvar *atlas* (atlas-with-hand))
 					;(send *atlas* :newcoords (make-coords))
   (send *atlas* :reset-manip-pose)
   (send *atlas* :fix-leg-to-coords (make-coords) :both)
-  (setq *robot* *atlas*)
+  (defvar *robot* *atlas*)
   (send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
+  ;;
+  (send *robot* :torso :waist-r :max-angle 10)
+  (send *robot* :torso :waist-r :min-angle -10)
+  ;;
+  (send *robot* :torso :waist-p :max-angle 10)
+  (send *robot* :torso :waist-p :min-angle -10)
+  ;;
   (cond
    ((not (and (boundp '*irtviewer*) *irtviewer*))
     (make-irtviewer :width 640 :height 640)
