@@ -1,7 +1,7 @@
 <launch>
   <arg name="OCS_TF" default="/tf_ocs"/>
   <arg name="tf_frequency" default="10.0"/>
-  <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description_ocs" />
+  <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description" />
 
   <!-- <param name="robot_description" -->
   <!--        command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/> -->

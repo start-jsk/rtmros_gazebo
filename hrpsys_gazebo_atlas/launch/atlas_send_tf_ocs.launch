@@ -1,6 +1,6 @@
 <launch>
   <arg name="OCS_TF" default="/tf_ocs"/>
-  <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description_ocs" />
+  <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description" />
 
 
   <!-- for joint state -->
