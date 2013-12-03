@@ -50,5 +50,6 @@
     <param name="fixed_rate" value="0.1" />
     <param name="latched" value="true" />
     <remap from="/list" to="/roi_topic_buffer_server/list"/>
+    <remap from="/update" to="/roi_topic_buffer_server/update"/>
   </node>
 </launch>
