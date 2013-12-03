@@ -6,11 +6,13 @@
 (defvar *fix-limb-coords*)
 
 (defun make-foot-convex
-  (&optional
-   (foot-key '(:rleg :lleg)))
+  (&key
+   (foot-key '(:rleg :lleg))
+   (force? nil))
   (format t "[foot-convex] ")
   (cond
    ((or
+     force?
      (null *foot-convex*)
      (and *fix-limb-coords*
 	  (flatten
