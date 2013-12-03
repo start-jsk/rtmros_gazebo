@@ -46,8 +46,8 @@
     <include file="$(find jsk_interactive_marker)/launch/atlas_interactive_marker_practical.launch" >
     </include>
     <!-- eus-ik-controller -->
-    <!--
+
     <node pkg="roseus" type="roseus" name="atlas_ik_controller" args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-ik-controller.l" output="screen"/>
-    -->
+
   </group>
 </launch>

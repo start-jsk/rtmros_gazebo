@@ -19,7 +19,9 @@
 
 
   <!-- start send tf -->
-  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_send_tf_ocs.launch"/>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_send_tf_ocs.launch">
+    <arg name="ROBOT_DESCRIPTION_OCS" value="$(arg ROBOT_DESCRIPTION_OCS)"/>
+  </include>
 
   <node pkg="dynamic_tf_publisher" type="tf_publish.py" name="dynamic_tf_publisher_ocs" output="screen">
     <remap from="/tf" to="$(arg OCS_TF)"/>
