@@ -678,7 +678,7 @@
 (defvar *translation-axis* t)
 (defvar *rotation-axis* t)
 (defvar *publish-ik* nil)
-(defvar *orgin-key* :free)
+(defvar *orgin-key* :rarm)
 (defvar *ik-stop* (not *publish-ik*))
 
 ;;initialize joint-index-list
@@ -939,6 +939,7 @@
 (setq *arrow* (arrow))
 (make-centroid-object)
 (init-pose)
+(set-origin-to-hand *orgin-key*)
 
 (objects
  (list *robot* *real-robot* *origin-coords* *target-coords*))
