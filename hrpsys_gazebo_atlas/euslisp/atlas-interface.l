@@ -49,6 +49,18 @@
 (defmethod atlas-interface
   (:init (&optional (qualify nil))
    (prog1 (send-super :init :robot atlas-robot)
+     ;; add controllers
+     (dolist (l (list
+                 (cons :larm-controller "larm_controller/follow_joint_trajectory_action")
+                 (cons :rarm-controller "rarm_controller/follow_joint_trajectory_action")))
+       (let ((type (car l))
+             (name (cdr l))
+             action)
+         (setq action (find-if #'(lambda (ac) (string= name (send ac :name)))
+                               controller-actions))
+         (setf (gethash type controller-table) (list action))
+         ))
+
      (setq l_hand_grasp_pub (ros::advertise "/sandia_hands/l_hand/simple_grasp"
                                             sandia_hand_msgs::SimpleGrasp 1)
            r_hand_grasp_pub (ros::advertise "/sandia_hands/r_hand/simple_grasp"
