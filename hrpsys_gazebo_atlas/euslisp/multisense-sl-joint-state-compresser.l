@@ -4,6 +4,7 @@
 (setq js-topic-name "/multisense_sl/joint_states")
 (setq js-compressed-topic-name "/multisense_sl/joint_states_compressed")
 
+(setq display-info nil)
 
 (defun get-joint-index (joint-name)
   (cdr (assoc joint-name joint-index-list :key #'car :test #'string=))
@@ -25,7 +26,9 @@
     (send js-compressed :index (coerce joint-indexes string))
     (send js-compressed :position (coerce joint-angles float-vector))
     (ros::publish js-compressed-topic-name js-compressed)
-    (ros::ros-info "~A was published~%" js-compressed-topic-name)
+    (if display-info
+	(ros::ros-info "~A was published~%" js-compressed-topic-name)
+      )
     )
   )
 

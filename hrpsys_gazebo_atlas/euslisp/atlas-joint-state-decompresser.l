@@ -5,6 +5,7 @@
 (setq js-decompressed-topic-name "/atlas/joint_states_decompressed")
 (setq js-compressed-topic-name "/atlas/joint_states_compressed_buffered")
 
+(setq display-info nil)
 
 (defun get-joint-name (joint-index)
   (if (> (length joint-name-list) joint-index)
@@ -30,7 +31,9 @@
     (send js-decompressed :velocity (make-sequence 'float-vector (length joint-names) :initial-element 0))
     (send js-decompressed :effort (make-sequence 'float-vector (length joint-names) :initial-element 0))
     (ros::publish js-decompressed-topic-name js-decompressed)
-    (format t "published ~A~%" js-decompressed-topic-name)
+    (if display-info
+	(format t "published ~A~%" js-decompressed-topic-name)
+      )
     )
   )
 

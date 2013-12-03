@@ -4,7 +4,7 @@
 (setq js-topic-name "/atlas/joint_states")
 (setq js-compressed-topic-name "/atlas/joint_states_compressed")
 
-
+(setq display-info nil)
 
 (defun get-joint-index (joint-name)
   (cdr (assoc joint-name joint-index-list :key #'car :test #'string=))
@@ -29,7 +29,9 @@
     ;;(send js-compressed :position (coerce joint-angles float-vector))
     (send js-compressed :position (coerce js-compressed-list float-vector))
     (ros::publish js-compressed-topic-name js-compressed)
-    (ros::ros-info "joint_states_compressed was published~%")
+    (if display-info
+	(ros::ros-info "joint_states_compressed was published~%")
+      )
     )
   )
 
