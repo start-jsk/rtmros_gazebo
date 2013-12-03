@@ -19,7 +19,12 @@ else:
 
 import wx
 
+# from hrpsys_gazebo_atlas import hrpsys_config
 class HrpsysAtlasFrame(HrpsysFrame):
+    # def on_servo_on(self, evt): # override
+    #   robot.resetJointGroup()
+    #   HrpsysFrame.on_servo_on(self, evt)
+
     def setup_extra_layout(self):
       return True
         # sizer = self.GetSizer()
@@ -108,6 +113,8 @@ class HrpsysAtlasFrame(HrpsysFrame):
 
 
 if __name__ == '__main__':
+  #robot = hrpsys_config.ATLASHrpsysConfigurator()
+  #robot.init()
   app = wx.App()
   frame = HrpsysAtlasFrame(None, title='Hrpsys Atlas Dashboard', use_diagnostics=False, use_rosout=False, use_battery=False)
   frame.Show()
