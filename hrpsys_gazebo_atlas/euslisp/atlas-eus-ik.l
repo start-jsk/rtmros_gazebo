@@ -124,9 +124,9 @@
 	     :centroid-thre nil
 	     ;;:target-centroid-pos nil
 	     ;:stop 100
-	     ;;:dif-pos-ratio 1.0
-	     ;;:dif-rot-ratio 0.01
-	     ;;:manipulability-gain 0.01
+	     :dif-pos-ratio 1.0
+	     :dif-rot-ratio 0.00500
+	     :manipulability-gain 0.00500
 	     :thre '(1 1 1)
 	     :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 1))
 	     :rotation-axis '(t t t))))))
@@ -269,48 +269,55 @@
 
 (defun start-ik-server
   nil
-  (unless (boundp '*do-not-start-ik-server*)
-    ;; initialization
-    (setq *arrow* (arrow))
-    (setq *atlas* (atlas-with-hand))
+  ;; initialization
+  (setq *arrow* (arrow))
+  (setq *atlas* (atlas-with-hand))
 					;(send *atlas* :newcoords (make-coords))
-    (send *atlas* :reset-manip-pose)
-    (send *atlas* :fix-leg-to-coords (make-coords) :both)
-    (setq *robot* *atlas*)
-    (send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
-    (cond
-     ((not (and (boundp '*irtviewer*) *irtviewer*))
-      (make-irtviewer :width 640 :height 640)
-      (send *irtviewer* :change-background #f(0.9 1.0 0.9))
-      (send *irtviewer* :title "IK server")))
-    (send *irtviewer*
-	  :objects
-	  (list *atlas* *arrow*))
-    (make-foot-convex)
-    ;;(make-centroid-object)
-    (send *irtviewer*
-	  :objects
-	  (list *atlas* *foot-convex* *arrow*))
-    (send *irtviewer* :look-all)
-    (send *viewer* :draw-objects)
-    ;;
-    (setq *tf* (instance ros::transform-listener :init))
-    ;;
-    (init-fullbody-ik-main)
-    (send *irtviewer*
-	  :objects
-	  (list *atlas* *foot-convex* *arrow* *centroid-object*))
-    (switch-end-coords :id 1)
-    ;;
-    (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
-    (ros::rate 10)
-    (do-until-key
-     (if (not (ros::ok)) (return-from nil nil))
-     (unless (or (null x::*display*) (= x::*display* 0))
-       (x::window-main-one))
-     (ros::sleep)
-     (ros::spin-once))))
+  (send *atlas* :reset-manip-pose)
+  (send *atlas* :fix-leg-to-coords (make-coords) :both)
+  (setq *robot* *atlas*)
+  (send-all (send *atlas* :joint-list) :max-joint-velocity 0.3)
+  (cond
+   ((not (and (boundp '*irtviewer*) *irtviewer*))
+    (make-irtviewer :width 640 :height 640)
+    (send *irtviewer* :change-background #f(0.9 1.0 0.9))
+    (send *irtviewer* :title "IK server")))
+  (send *irtviewer*
+	:objects
+	(list *atlas* *arrow*))
+  (make-foot-convex)
+  ;;(make-centroid-object)
+  (send *irtviewer*
+	:objects
+	(list *atlas* *foot-convex* *arrow*))
+  (send *irtviewer* :look-all)
+  (send *viewer* :draw-objects)
+  ;;
+  (setq *tf* (instance ros::transform-listener :init))
+  ;;
+  (init-fullbody-ik-main)
+  (send *irtviewer*
+	:objects
+	(list *atlas* *foot-convex* *arrow* *centroid-object*))
+  (switch-end-coords :id 1)
+  ;;
+  (ros::advertise-service "/atlas_eus_ik" moveit_msgs::GetPositionIK #'ik-service-cb)
+  (ros::rate 10)
+  (loop-ik-server)
+  )
 
-(start-ik-server)
+(defun loop-ik-server
+  nil
+  (do-until-key
+   (if (not (ros::ok)) (return-from nil nil))
+   (unless (or (null x::*display*) (= x::*display* 0))
+     (x::window-main-one))
+   (ros::sleep)
+   (ros::spin-once)))
 
-;; roseus "(setq *setup-end-coords-for-hku-flag* nil)" atlas-eus-ik.l 
+(unless (boundp '*do-not-start-ik-server*)
+  (start-ik-server))
+
+;;
+;; roseus "(setq *setup-end-coords-for-hku-flag* nil)" atlas-eus-ik.l
+;;
