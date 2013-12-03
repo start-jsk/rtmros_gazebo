@@ -15,7 +15,7 @@
     <arg name="CONF_FILE" value="$(arg CONF_FILE)" />
     <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
     <arg name="HRPSYS_PY_PKG" value="hrpsys_gazebo_atlas"/>
-    <arg name="HRPSYS_PY_NAME" value="hrpsys_config.py"/>
+    <arg name="HRPSYS_PY_NAME" value="atlas_client.py"/>
     <arg name="hrpsys_periodic_rate" value="333"/>
     <arg name="OUTPUT" value="screen"/>
   </include>
