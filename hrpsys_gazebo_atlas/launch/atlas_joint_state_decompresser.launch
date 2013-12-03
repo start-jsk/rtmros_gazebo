@@ -1,6 +1,7 @@
 <launch>
   <arg name="OCS_TF" default="/tf_ocs"/>
   <arg name="tf_frequency" default="10.0"/>
+  <arg name="JOINT_STATE_UPDATE_RATE" default="1.0"/>
   <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description" />
 
   <!-- <param name="robot_description" -->
@@ -21,7 +22,9 @@
   <node pkg="jsk_topic_tools" type="topic_buffer_client"
         name="joint_state_buffer_client"
         output="screen">
+    <param name="update_rate" value="$(arg JOINT_STATE_UPDATE_RATE)"  />
     <remap from="/list" to="/joint_state_buffer_server/list"/>
+    <remap from="/update" to="/joint_state_buffer_server/update"/>
   </node>
 
   <node pkg="robot_state_publisher" type="state_publisher" name="decompressed_robot_state_publisher"
