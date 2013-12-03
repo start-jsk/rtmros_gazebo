@@ -1,4 +1,5 @@
 <launch>
+  <remap from="/tf" to="/tf_ocs" />
   <node pkg="nodelet" type="nodelet" name="pcl_concatenater_nodelet_manager"
         args="manager"
         output="screen" alaunch-prefix="xterm -e gdb --args" />
@@ -17,16 +18,16 @@
         enable_input_topic7: true
         enable_input_topic8: true
         enable_input_topic9: true
-        input_topic0: "/pcl_divider_nodelet/voxelgrid1/output"
-        input_topic1: "/pcl_divider_nodelet/voxelgrid2/output"
-        input_topic2: "/pcl_divider_nodelet/voxelgrid3/output"
-        input_topic3: "/pcl_divider_nodelet/voxelgrid4/output"
-        input_topic4: "/pcl_divider_nodelet/voxelgrid5/output"
-        input_topic5: "/pcl_divider_nodelet/voxelgrid6/output"
-        input_topic6: "/pcl_divider_nodelet/voxelgrid7/output"
-        input_topic7: "/pcl_divider_nodelet/voxelgrid8/output"
-        input_topic8: "/pcl_divider_nodelet/voxelgrid9/output"
-        input_topic9: "/pcl_divider_nodelet/voxelgrid10/output"
+        input_topic0: "/pcl_divider_nodelet/voxelgrid1/output_update"
+        input_topic1: "/pcl_divider_nodelet/voxelgrid2/output_update"
+        input_topic2: "/pcl_divider_nodelet/voxelgrid3/output_update"
+        input_topic3: "/pcl_divider_nodelet/voxelgrid4/output_update"
+        input_topic4: "/pcl_divider_nodelet/voxelgrid5/output_update"
+        input_topic5: "/pcl_divider_nodelet/voxelgrid6/output_update"
+        input_topic6: "/pcl_divider_nodelet/voxelgrid7/output_update"
+        input_topic7: "/pcl_divider_nodelet/voxelgrid8/output_update"
+        input_topic8: "/pcl_divider_nodelet/voxelgrid9/output_update"
+        input_topic9: "/pcl_divider_nodelet/voxelgrid10/output_update"
       </rosparam>
     </node>
   </group>
