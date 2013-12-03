@@ -18,10 +18,10 @@
           name="img_throttle" ns="/multisense_sl/camera/left"
           args="messages image_rect $(arg THROTTLE_RATE)"/>
     <node pkg="topic_tools" type="throttle"
-          name="img_throttle" ns="/sandia_hands/l_hand/camera/left"
+          name="img_throttle" ns="/sandia_hands/l_hand/left"
           args="messages image_rect $(arg THROTTLE_RATE)"/>
     <node pkg="topic_tools" type="throttle"
-          name="img_throttle" ns="/sandia_hands/r_hand/camera/left"
+          name="img_throttle" ns="/sandia_hands/r_hand/left"
           args="messages image_rect $(arg THROTTLE_RATE)"/>
     
     <!-- resized image -->
