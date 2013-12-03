@@ -2,10 +2,11 @@
   <arg name="OCS_TF" default="/tf_ocs"/>
   <arg name="USE_INTERACTIVE_JOINT" default="false" />
   <arg name="USE_INTERACTIVE_ENDCOORDS" default="false" />
-  <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description_ocs" />
-
+  <arg name="ROBOT_DESCRIPTION_OCS" default="robot_description" />
+  <!--
   <param name="$(arg ROBOT_DESCRIPTION_OCS)"
          command="$(find xacro)/xacro.py '$(find atlas_description)/robots/atlas_v3_sandia_hands.urdf.xacro'"/>
+  -->
 
   <!-- interactive joint marker and rviz -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_interactive_marker_ocs.launch">
