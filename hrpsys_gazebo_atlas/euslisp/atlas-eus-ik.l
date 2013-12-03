@@ -38,6 +38,7 @@
 (defun torso-ik-with-collision (arm goal-in-world
 				    &rest args
 				    &key
+				    (waist-gain '(0.1 0.1 0.1))
 				    (root-link-virtual-joint-weight
 				     (float-vector 0 0 0 0 0 0))
 				    (max
@@ -66,7 +67,7 @@
 	  (list (send *atlas* :torso k :child-link)
 		gain))
       (list :waist-r :waist-p :waist-y)
-      (list 0.1 0.1 0.1))
+      waist-gain)
      ;;(list 1e-3 1e-3 1e-3))
      :root-link-virtual-joint-weight
      root-link-virtual-joint-weight
@@ -123,6 +124,9 @@
 	     :centroid-thre nil
 	     ;;:target-centroid-pos nil
 	     ;:stop 100
+	     ;;:dif-pos-ratio 1.0
+	     ;;:dif-rot-ratio 0.01
+	     ;;:manipulability-gain 0.01
 	     :thre '(1 1 1)
 	     :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 1))
 	     :rotation-axis '(t t t))))))
@@ -139,6 +143,7 @@
                 :rarm))
          (torsop (substringp "torso" (send req :ik_request :group_name)))
 	 (torso2p (substringp "torso2" (send req :ik_request :group_name)))
+	 (torso3p (substringp "torso3" (send req :ik_request :group_name)))
          (fullbodyp (substringp "fullbody" (send req :ik_request :group_name)))
 	 (end-coords-id
 	  (if (substringp "eus" (send req :ik_request :group_name))
@@ -218,6 +223,13 @@
                            (list arm goal-in-world)
 			   (list :root-link-virtual-joint-weight
 				 (float-vector 0.02 0.02 0.1 0.0 0.0 0.04))
+                           opt)))
+			(torso3p
+			 (apply
+                          #'torso-ik-with-collision
+                          (append
+                           (list arm goal-in-world)
+			   (list :waist-gain '(0 0 1))
                            opt)))
                         (torsop
                          (apply

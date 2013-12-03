@@ -61,7 +61,6 @@
    )
   (cond
    (*ik-stop*
-    (print 'skip-iik)
     (return-from call-ik-server nil)))
   (let* ((c target-coords-from-pelvis)
 	 (p (scale 1e-3 (send c :worldpos)))
@@ -305,6 +304,9 @@
    (angle-target 0)
    (prev-waist-angle waist-angle)
    (move-step 1)
+   (target-coords
+    (send *robot* *move-limb*
+	  :end-coords :copy-worldcoords))
    (cnt 10)
    (ret #F()))
   (while (and (vectorp ret)
@@ -317,7 +319,8 @@
 	  (* (if (> waist-angle 0) 1 -1)
 	     (- (abs waist-angle) move-step)))
     (send waist-joint :joint-angle waist-angle)
-    (setq ret (call-ik-server :rotate? :x)))
+    (setq ret (call-ik-server ;:target-coords target-coords
+	       :rotate? :x)))
   (if (not (vectorp ret))
       (send waist-joint :joint-angle prev-waist-angle)))
 
@@ -839,8 +842,9 @@
 	    (send now-from-pelvis :difference-rotation
 		  goal-from-pelvis)))
        now-from-pelvis goal-from-pelvis))
-     (format t "[pos-controller] :dif-pos ~A, :dif-rot ~A~%"
-	     (mapcar #'norm move) (mapcar #'norm rot))
+     (format t
+	     "[pos-controller] :dif-pos ~A, :dif-rot ~A, :sleep ~A~%"
+	     (mapcar #'norm move) (mapcar #'norm rot) *ik-stop*)
      (if (and (not non-stop)
 	      (< (apply #'max (mapcar #'norm move)) 10)
 	      (< (apply #'max (mapcar #'norm rot)) (deg2rad 5)))
@@ -932,12 +936,13 @@
 (atlas-with-hand)
 (setq *robot* *atlas*)
 (setq *real-robot* (copy-object *robot*))
+(gl::transparent *real-robot* 0.3)
 (setq *arrow* (arrow))
 (make-centroid-object)
 (init-pose)
 
 (objects
- (list *robot* *origin-coords* *target-coords*))
+ (list *robot* *real-robot* *origin-coords* *target-coords*))
 ;;
 (send *irtviewer* :change-background #f(0.9 0.9 1.0))
 (send *irtviewer* :title "Interactive IK")
