@@ -72,6 +72,7 @@
 		      (float-vector 0 0 0 0 0 0)
 		      #F(1000 1000 1000 200 200 200))
 	:collision? t
+	:debug-view nil
 	;;:centroid-thre 200
 	;;:target-centroid-pos nil
 	:thre '(1 1 1)
@@ -92,4 +93,11 @@
   ()
   (init-door-setting -700)
   (try-door 30))
+
+(defun try-door-demo
+  ()
+  (do-until-key
+   (try-pull-door)
+   (try-push-door))
+  )
 
