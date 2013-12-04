@@ -369,7 +369,7 @@
 		  (mapcar
 		   #'(lambda (ll) (cons (car ll) (cadr ll)))
 		   collision-pair))))
-    (format t "[collision check] ~A~%" collision?)
+    (when collision? (format t "[collision check] ~A~%" collision?))
     ;;
     (cond
      ((and (not collision?) (vectorp ret))
