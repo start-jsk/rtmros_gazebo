@@ -37,7 +37,7 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="lhand_resized"
           output="screen" >
-      <remap from="camera" to="/sandia_hands/l_hand/camera/left" />
+      <remap from="camera" to="/sandia_hands/l_hand/left" />
       <remap from="image" to="$(arg THROTTLE_IMAGE_TYPE)"/>
       <param name="resize_scale_x" value="$(arg THROTTLE_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg THROTTLE_RESIZE_RATE)" />
@@ -47,7 +47,7 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="rhand_resized"
           output="screen" >
-      <remap from="camera" to="/sandia_hands/r_hand/camera/left" />
+      <remap from="camera" to="/sandia_hands/r_hand/left" />
       <remap from="image" to="$(arg THROTTLE_IMAGE_TYPE)"/>
       <param name="resize_scale_x" value="$(arg THROTTLE_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg THROTTLE_RESIZE_RATE)" />
@@ -81,7 +81,7 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="lhand_snap"
           output="screen" >
-      <remap from="camera" to="/sandia_hands/l_hand/camera/left" />
+      <remap from="camera" to="/sandia_hands/l_hand/left" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
@@ -89,7 +89,7 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="rhand_snap"
           output="screen" >
-      <remap from="camera" to="/sandia_hands/r_hand/camera/left" />
+      <remap from="camera" to="/sandia_hands/r_hand/left" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
