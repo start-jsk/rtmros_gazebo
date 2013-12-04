@@ -486,6 +486,10 @@
       (setq *ik-stop* t)
       (setq *publish-ik* nil)
       )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCH*)
+      (print "touch it")
+      ;;TODO touch It
+      )
      )
     (when (boundp '*irtviewer*)
       (send *irtviewer* :draw-objects))
