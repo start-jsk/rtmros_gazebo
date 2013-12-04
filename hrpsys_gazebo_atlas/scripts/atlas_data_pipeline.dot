@@ -1,71 +1,84 @@
 ## dot -O -Tpdf <this file>
 digraph atlas_tilt_laser {
    node[shape="ellipse"]
-   "/atlas/joint_states" [shape="box"]
-   "/multisense_sl/joint_states" [shape="box"]
-   "/atlas/joint_states_compressed" [shape="box"]
-   "/multisense_sl/joint_states_compressed" [shape="box"]
-   "/atlas/joint_states_compressed_update" [shape="box"]
-   "/multisense_sl/joint_states_compressed_update" [shape="box"]
-   "/atlas/joint_states_compressed_buffered" [shape="box"]
-   "/multisense_sl/joint_states_compressed_buffered" [shape="box"]
-   "/atlas/joint_states_decompressed" [shape="box"]
-   "/multisense_sl/joint_states_decompressed" [shape="box"]
-   "/tf_ocs" [shape="box"]
-   "/tf" [shape="box"]
+   rankdir=LR;
+   subgraph cluster_3 {
+     label = "legend"
+     "Topic/Service" [shape="box"]
+     "Node" [shape="ellipse"]    
+   }
+   subgraph cluster_2 {
+       label = "common topics between fc and ocs"
+      "/atlas/joint_states_compressed_update" [shape="box"]
+      "/multisense_sl/joint_states_compressed_update" [shape="box"]
+      "pointcloud_roi/voxel_grid_manager/output_encoded" [shape="box"]
+      "/specific_transform" [shape="box"]
+   }
    
-   "/specific_transform" [shape="box"]
-
-   "/laser/full_cloud2_raw" [shape="box"]
-   "pointcloud_roi/voxel_grid_manager/output_encoded" [shape="box"]
-   "pointcloud_roi/voxel_grid_decoder/output" [shape="box"]
-
-   "Topic/Service" [shape="box"]
-   "Node" [shape="ellipse"]
-
-
-   "/atlas/joint_states" -> "atlas_joint_state_compresser" [label="JointState"]
-   "/multisense_sl/joint_states" -> "multisense_sl_joint_state_compresser" [label="JointState"]
-
-   "atlas_joint_state_compresser" -> "/atlas/joint_states_compressed" [label="JointStateCompressed"]
-   "/atlas/joint_states_compressed" -> "atlas/joint_state_buffer_server" [label="JointStateCompressed"]
-
-   "multisense_sl_joint_state_compresser" -> "/multisense_sl/joint_states_compressed" [label="JointStateCompressed"]
-   "/multisense_sl/joint_states_compressed" -> "multisense/joint_state_buffer_server" [label="JointStateCompressed"]
-
-   "atlas/joint_state_buffer_server" -> "/atlas/joint_states_compressed_update" [label="JointStateCompressed"]
-   "/atlas/joint_states_compressed_update" -> "atlas/joint_state_buffer_client" [label="JointStateCompressed"]
-
-   "multisense/joint_state_buffer_server" -> "/multisense_sl/joint_states_compressed_update" [label="JointStateCompressed"]
-   "/multisense_sl/joint_states_compressed_update" -> "multisense/joint_state_buffer_client" [label="JointStateCompressed"]
-
-   "atlas/joint_state_buffer_client" -> "/atlas/joint_states_compressed_buffered" [label="JointStateCompressed"]
-   "/atlas/joint_states_compressed_buffered" -> "atlas_joint_state_decompresser" [label="JointStateCompressed"]
-
-   "multisense/joint_state_buffer_client" -> "/multisense_sl/joint_states_compressed_buffered" [label="JointStateCompressed"]
-   "/multisense_sl/joint_states_compressed_buffered" -> "multisense_sl_joint_state_decompresser" [label="JointStateCompressed"]
-
-   "atlas_joint_state_decompresser" -> "/atlas/joint_states_decompressed" [label="JointState"]
-   "multisense_sl_joint_state_decompresser" -> "/multisense_sl/joint_states_decompressed" [label="JointState"]
+   subgraph cluster_0 {
+       label="fc"
+       "/atlas/joint_states" [shape="box"]
+       "/multisense_sl/joint_states" [shape="box"]
+       "/atlas/joint_states_compressed" [shape="box"]
+       "/multisense_sl/joint_states_compressed" [shape="box"]
+       "/tf" [shape="box"]
+       "/laser/full_cloud2_raw" [shape="box"]
    
+       
+       "/atlas/joint_states" -> "atlas_joint_state_compresser" [label="JointState"]
+       "/multisense_sl/joint_states" -> "multisense_sl_joint_state_compresser" [label="JointState"]
 
-   "/atlas/joint_states_decompressed" -> "decompressed_robot_state_publisher" [label="JointState"]
-   "/multisense_sl/joint_states_decompressed" -> "decompressed_robot_state_publisher" [label="JointState"]
+       "atlas_joint_state_compresser" -> "/atlas/joint_states_compressed" [label="JointStateCompressed"]
+       "/atlas/joint_states_compressed" -> "atlas/joint_state_buffer_server" [label="JointStateCompressed"]
 
-   "decompressed_robot_state_publisher" -> "/tf_ocs" [label="tfMessage"]
+       "multisense_sl_joint_state_compresser" -> "/multisense_sl/joint_states_compressed" [label="JointStateCompressed"]
+       "/multisense_sl/joint_states_compressed" -> "multisense/joint_state_buffer_server" [label="JointStateCompressed"]
 
-   "/tf" -> "specific_tf_publisher_from_map_to_pelvis" [label="tfMessage"]
-   "specific_tf_publisher_from_map_to_pelvis" -> "/specific_transform" [label="TransformStamped"]
-   "/specific_transform" -> "specific_tf_subscriber" [label="TransformStamped"]
-   "specific_tf_subscriber" -> "/tf_ocs" [label="tfMessage"]
+       "atlas/joint_state_buffer_server" -> "/atlas/joint_states_compressed_update" [label="JointStateCompressed"]
+       "multisense/joint_state_buffer_server" -> "/multisense_sl/joint_states_compressed_update" [label="JointStateCompressed"]
 
+       "/tf" -> "specific_tf_publisher_from_map_to_pelvis" [label="tfMessage"]
+       "specific_tf_publisher_from_map_to_pelvis" -> "/specific_transform" [label="TransformStamped"]
 
-   "/laser/full_cloud2_raw" -> "pointcloud_roi/voxel_grid_manager" [label="PointCloud2"]
-   "pointcloud_roi/voxel_grid_manager" -> "pointcloud_roi/voxel_grid_manager/output_encoded" [label="PointCloud2"]
+       "/laser/full_cloud2_raw" -> "pointcloud_roi/voxel_grid_manager" [label="PointCloud2"]
+       "pointcloud_roi/voxel_grid_manager" -> "pointcloud_roi/voxel_grid_manager/output_encoded" [label="PointCloud2"]
+   
+   }
+   
    "pointcloud_roi/voxel_grid_manager/output_encoded" -> "pointcloud_roi/voxel_grid_decoder" [label="PointCloud2"]
-   "pointcloud_roi/voxel_grid_decoder" -> "pointcloud_roi/voxel_grid_decoder/output" [label="PointCloud2"]
    
-   "/tf_ocs" -> "ocs user processes"
-   "pointcloud_roi/voxel_grid_decoder/output" -> "ocs user processes"
+   subgraph cluster_1 {
+       label="ocs"
+       "/atlas/joint_states_compressed_buffered" [shape="box"]
+       "/multisense_sl/joint_states_compressed_buffered" [shape="box"]
+       "/atlas/joint_states_decompressed" [shape="box"]
+       "/multisense_sl/joint_states_decompressed" [shape="box"]
+       "pointcloud_roi/voxel_grid_decoder/output" [shape="box"]
+       "/tf_ocs" [shape="box"]
+       "pointcloud_roi/voxel_grid_decoder"
+       "/specific_transform" -> "specific_tf_subscriber" [label="TransformStamped"]
+       "/atlas/joint_states_compressed_update" -> "atlas/joint_state_buffer_client" [label="JointStateCompressed"]
+       "/multisense_sl/joint_states_compressed_update" -> "multisense/joint_state_buffer_client" [label="JointStateCompressed"]
+
+       "atlas/joint_state_buffer_client" -> "/atlas/joint_states_compressed_buffered" [label="JointStateCompressed"]
+       "/atlas/joint_states_compressed_buffered" -> "atlas_joint_state_decompresser" [label="JointStateCompressed"]
+
+       "multisense/joint_state_buffer_client" -> "/multisense_sl/joint_states_compressed_buffered" [label="JointStateCompressed"]
+       "/multisense_sl/joint_states_compressed_buffered" -> "multisense_sl_joint_state_decompresser" [label="JointStateCompressed"]
+
+       "atlas_joint_state_decompresser" -> "/atlas/joint_states_decompressed" [label="JointState"]
+       "multisense_sl_joint_state_decompresser" -> "/multisense_sl/joint_states_decompressed" [label="JointState"]
+
+       "/atlas/joint_states_decompressed" -> "decompressed_robot_state_publisher" [label="JointState"]
+       "/multisense_sl/joint_states_decompressed" -> "decompressed_robot_state_publisher" [label="JointState"]
+
+       "decompressed_robot_state_publisher" -> "/tf_ocs" [label="tfMessage"]
+
+       "specific_tf_subscriber" -> "/tf_ocs" [label="tfMessage"]
+
+       "pointcloud_roi/voxel_grid_decoder" -> "pointcloud_roi/voxel_grid_decoder/output" [label="PointCloud2"]
    
+       "/tf_ocs" -> "ocs user processes"
+       "pointcloud_roi/voxel_grid_decoder/output" -> "ocs user processes"
+   }
 }
