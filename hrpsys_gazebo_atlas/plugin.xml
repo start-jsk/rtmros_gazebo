@@ -11,7 +11,18 @@
       <statustip>hogehoge</statustip>
     </qtgui>
   </class>
-
+  <class name="rqt_hrpsys_rosping"
+         type="hrpsys_gazebo_atlas.ping.PingGUI"
+         base_class_type="rqt_gui_py::Plugin">
+    <description>
+      hogehogehoge
+    </description>
+    <qtgui>
+      <label>Hoge</label>
+      <icon type="theme">utilities-system-monitor</icon>
+      <statustip>hogehoge</statustip>
+    </qtgui>
+  </class>
   <class name="rqt_hrpsys_imagesnapshot"
          type="hrpsys_gazebo_atlas.image_snapshot.ImageSnapShotGUI"
          base_class_type="rqt_gui_py::Plugin">
@@ -25,4 +36,5 @@
     </qtgui>
   </class>
 
+>>>>>>> .r6483
 </library>
