@@ -662,6 +662,25 @@
     )
   )
 
+(defun publish-touchit-result
+  (text)
+  (let ((marker (instance visualization_msgs::marker :init)))
+    (send marker :header :frame_id "/im_target_coords_arrow")
+    (send marker :id 1)
+    (send marker :pose :orientation :w 1)
+    (send marker :color :r 1)
+    (send marker :color :g 1)
+    ;;(send marker :color :b 1)
+    (send marker :color :a 1)
+    (send marker :type visualization_msgs::marker::*TEXT_VIEW_FACING*)
+    (send marker :text text)
+    (ros::publish (format nil "~A/marker" *server-nodename*) marker)
+    )
+)
+
+
+
+
 (defun publish-joint-states
   ()
   (let ((joint-angles nil)
