@@ -844,7 +844,7 @@
   (&key
    (real? nil)
    (data (reverse *success-state-collection*))
-   (inital-sleep (if real? 10000 100))
+   (inital-sleep (if real? 10000 1000))
    (cnt -1)
    d)
   ;;
@@ -875,7 +875,7 @@
     (real?
      (model2real :sleep-time inital-sleep :wait t))
     (t (unix:usleep (round (* inital-sleep 1e+3)))))
-   (setq inital-sleep 100))
+   (setq inital-sleep 1000))
   )
 
 (defun triangle-trial
@@ -1190,6 +1190,9 @@ roseus atlas-dual-arm-ik.l
 (load "ssc-dual-20131120-2.l")
 (demo-collection-play)
 
+(load "ssc-20131203-120-rot-single.l")
+(demo-collection-play)
+
 (send *ri* :angle-vector-sequence
       (mapcar
        #'(lambda (data)
@@ -1256,6 +1259,66 @@ roseus atlas-dual-arm-ik.l
 	:rotation-axis rotation-axis
 	:debug-view :no-message)
   )
+
+
+(load "ssc-20131203-120-rot-single.l")
+(demo-collection-play)
+
+(setq *success-state-collection*
+      (mapcar
+       #'(lambda (data)
+	   (send *robot* :angle-vector
+		 (cdr (assoc :angle-vector data)))
+	   (mirror-angle-vector)
+	   (list (cons :angle-vector
+		       (copy-object
+			(send *robot* :angle-vector)))
+		 (cons :worldcoords
+		       (send *robot* :worldcoords))))
+       *success-state-collection*))
+
+
+(send *ri* :angle-vector-sequence
+      (mapcar
+       #'(lambda (data)
+	   (cdr (assoc :angle-vector data)))
+       (reverse *success-state-collection*))
+      (cons 10000
+	    (make-list
+	     (- (length *success-state-collection*) 1)
+	     :initial-element 1000)))
+(print 'causion)
+(read-line)
+(send *ri* :stop-motion)
+
+
+(defun joint-angle-eus2urdf
+  nil
+  (let ((jn (list :back_bkz :back_bky :back_bkx
+		  ;;
+		  :neck_ry
+		  ;;
+		  :l_leg_hpz :l_leg_hpy :l_leg_hpx
+		  :l_leg_kny
+		  :l_leg_aky :l_leg_akx
+		  ;;
+		  :r_leg_hpz :r_leg_hpy :r_leg_hpx
+		  :r_leg_kny
+		  :r_leg_aky :r_leg_akx
+		  ;;
+		  :l_arm_shy :l_arm_shx
+		  :l_arm_ely :l_arm_elx
+		  :l_arm_wry :l_arm_wrx
+		  ;;
+		  :r_arm_shy :r_arm_shx
+		  :r_arm_ely :r_arm_elx
+		  :r_arm_wry :r_arm_wrx
+		  ;;
+		  )))
+    (mapcar
+     #'(lambda (j)
+	 (deg2rad (send *robot* j :joint-angle)))
+     jn)))
 
 |#
 

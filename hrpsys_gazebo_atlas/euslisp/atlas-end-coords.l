@@ -4,31 +4,120 @@
 (defvar *robot* (atlas-with-hand))
 (defvar *atlas* *robot*)
 
+;; (defmethod robot-model
+;;   (:set-end-coords
+;;    (&key
+;;     (key :rarm)
+;;     (coords (send self key :end-coords :copy-worldcoords)))
+;;    (let* ((now (send self key :end-coords))
+;; 	  (root (send now :parent)))
+;;      (send root :dissoc now)
+;;      (case key
+;; 	   (:rarm 
+;; 	    (setq rarm-end-coords
+;; 		  (make-cascoords :init :link-list
+;; 				  :parent root
+;; 				  :coords coords
+;; 				  :name (send now :name)))
+;; 	    (send root :assoc rarm-end-coords)
+;; 	    )
+;; 	   (:larm
+;; 	    (setq larm-end-coords
+;; 		  (make-cascoords :init :link-list
+;; 				  :parent root
+;; 				  :coords coords
+;; 				  :name (send now :name)))
+;; 	    (send root :assoc larm-end-coords)
+;; 	    )
+;; 	   (:rleg
+;; 	    (setq rleg-end-coords
+;; 		  (make-cascoords :init :link-list
+;; 				  :parent root
+;; 				  :coords coords
+;; 				  :name (send now :name)))
+;; 	    (send root :assoc rleg-end-coords)
+;; 	    )
+;; 	   (:lleg
+;; 	    (setq lleg-end-coords
+;; 		  (make-cascoords :init :link-list
+;; 				  :parent root
+;; 				  :coords coords
+;; 				  :name (send now :name)))
+;; 	    (send root :assoc lleg-end-coords)
+;; 	    )
+;; 	   ))))
+
 (defun set-end-coords
   (key coords
        &key
        (now-av (copy-object (send *robot* :angle-vector)))
        (now-c (copy-object (send *robot* :copy-worldcoords)))
        buf ret)
-  (send *robot* :reset-manip-pose)
+  (send *robot* :old-reset-manip-pose)
   (send *robot* :newcoords (make-coords))
+  (send *robot* key :end-coords :worldcoords)
   (let ((trans
 	 (send (send *robot* key :end-coords)
 	       :transformation
-	       coords)))
+	       (copy-object coords))))
     (send (send *robot* key :end-coords) :transform trans))
+  (send *robot* key :end-coords :worldcoords)
   (send *robot* :angle-vector now-av)
   (send *robot* :newcoords now-c)
+  (send *robot* key :end-coords :worldcoords)
   (send *robot* key :end-coords))
+
+;; (defun set-end-coords
+;;   (key coords
+;;        &key
+;;        (now-av (copy-object (send *robot* :angle-vector)))
+;;        (now-c (copy-object (send *robot* :copy-worldcoords)))
+;;        buf ret)
+;;   (send *robot* :reset-manip-pose)
+;;   (send *robot* :newcoords (make-coords))
+;;   (send *robot* key :end-coords :worldcoords)
+;;   ;;
+;;   (send *robot* :set-end-coords
+;; 	:key key
+;; 	:coords coords)
+;;   ;;
+;;   (send *robot* key :end-coords :worldcoords)
+;;   (send *robot* :angle-vector now-av)
+;;   (send *robot* :newcoords now-c)
+;;   (send *robot* key :end-coords :worldcoords)
+;;   (send *robot* key :end-coords))
 
 ;; reset-manip-pose & pelvis 0-coords
 (defvar *limb-key* '(:rarm :larm :rleg :lleg))
 (defvar *switch-endcoords-collections*
   (list
-   (list (make-coords :pos #f(474.777 -267.564 376.567) :rpy #f(7.748074e-06 -0.002922 -1.494227e-06)) (make-coords :pos #f(474.779 267.726 376.562) :rpy #f(-7.472436e-06 -0.00291 2.071643e-06)) (make-coords :pos #f(24.7508 -88.999 -794.516) :rpy #f(-3.582311e-09 -0.002932 1.221736e-06)) (make-coords :pos #f(24.7513 89.001 -794.515) :rpy #f(-3.582311e-09 -0.002932 1.221736e-06))) ;; default
-   (list (make-coords :pos #f(535.86 -263.914 367.043) :rpy #f(-3.14159 -0.307211 1.57079)) (make-coords :pos #f(535.862 264.076 367.037) :rpy #f(-4.551172e-06 0.308817 1.57079)) (make-coords :pos #f(24.7508 -88.999 -794.516) :rpy #f(-3.582311e-09 -0.002932 1.221736e-06)) (make-coords :pos #f(24.7513 89.001 -794.515) :rpy #f(-3.582311e-09 -0.002932 1.221736e-06)))
-   )
-  )
+   (list
+    (make-coords
+     :pos (float-vector 474.777 -267.564 376.567)
+     :rpy (float-vector 7.748074e-06 -0.002922 -1.494227e-06))
+    (make-coords
+     :pos (float-vector 474.779 267.726 376.562)
+     :rpy (float-vector -7.472436e-06 -0.00291 2.071643e-06))
+    (make-coords
+     :pos (float-vector 24.7508 -88.999 -794.516)
+     :rpy (float-vector -3.582311e-09 -0.002932 1.221736e-06))
+    (make-coords
+     :pos (float-vector 24.7513 89.001 -794.515)
+     :rpy (float-vector -3.582311e-09 -0.002932 1.221736e-06))) ;; default
+   (list
+    (make-coords
+     :pos (float-vector 535.86 -263.914 367.043)
+     :rpy (float-vector -3.14159 -0.307211 1.57079))
+    (make-coords
+     :pos (float-vector 535.862 264.076 367.037)
+     :rpy (float-vector -4.551172e-06 0.308817 1.57079))
+    (make-coords
+     :pos (float-vector 24.7508 -88.999 -794.516)
+     :rpy (float-vector -3.582311e-09 -0.002932 1.221736e-06))
+    (make-coords
+     :pos (float-vector 24.7513 89.001 -794.515)
+     :rpy (float-vector -3.582311e-09 -0.002932 1.221736e-06)))
+   ))
 (defvar *now-end-coords-id* 0)
 
 (defun seq-end-coords
@@ -38,7 +127,7 @@
    buf
    ret
    )
-  (send *robot* :reset-manip-pose)
+  (send *robot* :old-reset-manip-pose)
   (send *robot* :newcoords (make-coords))
   (setq
    ret
