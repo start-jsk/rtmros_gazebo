@@ -95,7 +95,10 @@
     (when *touch-it-goal-new-p*
       (setq *touch-it-goal-new-p* nil)
       (if (and (boundp '*ri*) *ri*)
-	  (setq *touch-it-force-reference* (send *ri* :state :absolute-force-vector arm)))
+	  (setq *touch-it-force-reference*
+		(if (send *ri* :state :force-vector arm)
+		    (send *ri* :state :absolute-force-vector arm)
+		  #f(0 0 0))))
       (setq *touch-it-iteration-count* 0)
       )
     
@@ -153,10 +156,11 @@
 
   (setq *tf* (instance ros::transform-listener :init))
 
-  ;; (init-touch-it-without-server)
-  (init-touch-it-without-server :real nil)
 
-  (send *irtviewer* :draw-objects)
+  (cond ((substringp "ocs" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
+	 (init-touch-it-without-server :real nil))
+	(t
+	 (init-touch-it-without-server :real t)))
   (send *atlas* :newcoords (make-coords))
 
   (send *irtviewer* :title (format nil "~a : ~a" "TouchIt!" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME")))

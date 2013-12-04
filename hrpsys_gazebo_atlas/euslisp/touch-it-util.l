@@ -46,7 +46,9 @@
         (f-orig))
     
     (when (and (boundp '*ri*) *ri*)
-      (setq f-orig (send *ri* :state :absolute-force-vector arm)))
+      (setq f-orig (if (send *ri* :state :force-vector arm)
+		       (send *ri* :state :absolute-force-vector arm)
+		     #f(0 0 0))))
 
     (do-until-key
      (let ((touch-it-status
@@ -91,7 +93,11 @@
 	     val
 	     (thre 20))
 	(if (and (boundp '*ri*) *ri*)
-	    (setq f (v- (send *ri* :state :absolute-force-vector arm) f-orig))
+	    (setq f (v- 
+		     (if (send *ri* :state :force-vector arm)
+			 (send *ri* :state :absolute-force-vector arm)
+		       #f(0 0 0))
+		     f-orig))
 	  (setq f (float-vector 0 0 0)))
 	(setq f-conv (float-vector (elt f 0) (- (elt f 1)) (- (elt f 2))))
 	(setq dir (normalize-vector
