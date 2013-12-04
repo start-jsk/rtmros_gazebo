@@ -152,9 +152,6 @@
   (ros::rate 500)
 
   (setq *tf* (instance ros::transform-listener :init))
-  ;;(atlas-init-ex :real nil)
-  ;;(atlas-init-ex :set-reset-pose nil)
-  ;;(send *atlas* :reset-manip-pose)
 
   ;; (init-touch-it-without-server)
   (init-touch-it-without-server :real nil)
@@ -162,10 +159,13 @@
   (send *irtviewer* :draw-objects)
   (send *atlas* :newcoords (make-coords))
 
-  (send *irtviewer* :change-background #f(0.2 0.2 0.8))
-  (send *irtviewer* :title "TouchIt!")
-  (send *irtviewer* :draw-objects)
+  (send *irtviewer* :title (format nil "~a : ~a" "TouchIt!" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME")))
+  (cond ((substringp "ocs" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
+	 (send *irtviewer* :change-background #f(0.2 0.2 0.8)))
+	(t
+	 (send *irtviewer* :change-background #f(0.5 0.5 0.9))))
 
+  (send *irtviewer* :draw-objects)
 
   (warning-message 1 "~%")
   (warning-message 1 "[touch_it] touch_it_action_node started !~%")
