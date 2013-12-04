@@ -2,6 +2,6 @@
   <node pkg="hrpsys_gazebo_atlas"
 	type="touch-it-server.l"
 	name="atlas_touchit_server">
-    <env name="TOUCH_IT_ACTION_TOPIC_NAME" value="/touchit/act/exec" />
+    <env name="TOUCH_IT_ACTION_TOPIC_NAME" value="/touchit/act/exec_ocs" />
   </node>
 </launch>
