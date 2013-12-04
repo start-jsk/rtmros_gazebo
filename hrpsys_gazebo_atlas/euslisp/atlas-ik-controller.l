@@ -164,9 +164,28 @@
 		      move_base_msgs::MoveBaseAction)))
 (defvar *touchit-reached* 9)
 (defvar *touchit-touched* 3)
+
+(defvar *touchit-target-larm* 0)
+(defvar *touchit-target-larm-torso* 1)
+(defvar *touchit-target-larm-fullbody* 2)
+(defvar *touchit-target-rarm* 3)
+(defvar *touchit-target-rarm-torso* 4)
+(defvar *touchit-target-rarm-fullbody* 5)
+
 (defun call-touch-it-server
   (command
-   &key (ik-type 3)
+   &key (ik-type
+	 (cond
+	  ((eq *move-limb* :rarm)
+	   (cond
+	    (*use-fullbody* *touchit-target-rarm-fullbody*)
+	    (*use-torso* *touchit-target-rarm-torso*)
+	    (t *touchit-target-rarm*)))
+	  ((eq *move-limb* :larm)
+	   (cond
+	    (*use-fullbody* *touchit-target-larm-fullbody*)
+	    (*use-torso* *touchit-target-larm-torso*)
+	    (t *touchit-target-larm*)))))
 	(frame_id "/pelvis")
 	(target-coords *target-coords*)
 	(target-coords-from-pelvis
