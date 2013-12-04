@@ -9,4 +9,6 @@
     <arg name="USE_INTERACTIVE_JOINT" value="true"/>
   </include>
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_roi_fc.launch" />
+
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_roi_camera.launch" />
 </launch>

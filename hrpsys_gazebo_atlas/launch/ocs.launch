@@ -20,4 +20,6 @@
     <remap from="/tf" to="$(arg OCS_TF)"/>
   </node>
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_roi_ocs.launch" />
+
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_roi_image_view.launch" />
 </launch>
