@@ -4,6 +4,7 @@ digraph atlas_tilt_laser {
    rankdir=LR;
    subgraph cluster_3 {
      label = "legend"
+     color=blue
      "Topic/Service" [shape="box"]
      "Node" [shape="ellipse"]    
    }
