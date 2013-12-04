@@ -1,5 +1,7 @@
-(load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
+(defvar *touchit-reached* 9)
+(defvar *touchit-touched* 3)
 
 (defun init-touch-it-without-server
   (&key (real t))

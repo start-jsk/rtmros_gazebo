@@ -11,7 +11,6 @@
 
 (load "package://hrpsys_gazebo_atlas/euslisp/touch-it-util.l")
 
-
 (defmethod ros::simple-action-server
   (:set-rejected
     (msg &optional (text ""))
@@ -121,7 +120,7 @@
            )
           ((eq touch-flag :arrived-at-goal)
            (warning-message 1 "[touch_it] IK finished~%")
-           (send server :set-succeeded msg)
+           (send server :set-lost msg)
            (setq *touch-it-goal-new-p* t)
            )
           ((eq touch-flag :touched)
