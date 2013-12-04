@@ -120,7 +120,7 @@
            )
           ((eq touch-flag :arrived-at-goal)
            (warning-message 1 "[touch_it] IK finished~%")
-           (send server :set-lost msg)
+           (send server :set-succeeded msg)
            (setq *touch-it-goal-new-p* t)
            )
           ((eq touch-flag :touched)
