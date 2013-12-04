@@ -15,11 +15,12 @@
   <!-- start hrpsys_atlas_dashboard -->
   <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" />
   <node pkg="hrpsys_gazebo_atlas" type="atlas-eus-ik.l"
-	name="atlas_eus_ik" output="screen"
-	respawn="true">
+        name="atlas_eus_ik" output="screen"
+        respawn="true">
     <remap from="/tf" to="$(arg OCS_TF)"/>
   </node>
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_roi_ocs.launch" />
 
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_roi_image_view.launch" />
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_ping.launch" />
 </launch>
