@@ -1,0 +1,12 @@
+<launch>
+  <node pkg="rosping" type="rosping" name="rosping"
+        respawn="true" launch-prefix=""
+        clear_params="true" args="172.16.3.101">
+    <param name="rate" value="1"/>
+  </node>
+  <node pkg="hrpsys_gazebo_atlas" type="rosping_gui.py" name="rosping_gui"
+        respawn="true" launch-prefix=""
+        output="log"
+        clear_params="true">
+  </node>
+</launch>
