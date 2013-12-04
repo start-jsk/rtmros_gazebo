@@ -44,12 +44,4 @@
         args=" /roi_camera_output/image_raw"
         output="screen"/>
 
-  <node pkg="jsk_topic_tools" type="topic_buffer_client"
-        name="roi_topic_buffer_client"
-        output="screen" >
-    <param name="fixed_rate" value="0.1" />
-    <param name="latched" value="true" />
-    <remap from="/list" to="/roi_topic_buffer_server/list"/>
-    <remap from="/update" to="/roi_topic_buffer_server/update"/>
-  </node>
 </launch>
