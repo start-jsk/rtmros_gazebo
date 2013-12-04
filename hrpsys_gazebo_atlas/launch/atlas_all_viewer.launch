@@ -41,8 +41,8 @@
     <remap from="/tf" to="/tf_dummy" />
     <param name="autosize" value="false" />
     <param name="image_transport" value="$(arg COMPRESS_TYPE)" />
-    <param name="resize_scale_x" value="$(arg SNAP_RESIZE_RATE)" />
-    <param name="resize_scale_y" value="$(arg SNAP_RESIZE_RATE)" />
+    <param name="resize_scale_x" value="0.16" />
+    <param name="resize_scale_y" value="0.16" />
   </node>
 
   <node pkg="image_view2" type="image_view2"

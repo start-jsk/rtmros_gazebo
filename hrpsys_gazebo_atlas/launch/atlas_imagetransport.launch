@@ -95,8 +95,8 @@
           output="screen" >
       <remap from="camera" to="/multisense_sl/camera/left" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
-      <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
-      <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
+      <param name="resize_scale_x" value="0.16" />
+      <param name="resize_scale_y" value="0.16" />
       <param name="use_snapshot" value="true" />
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="lhand_snap"
