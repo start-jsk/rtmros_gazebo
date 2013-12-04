@@ -2,6 +2,7 @@
   <arg name="USE_SNAPSHOT" default="true" />
   <arg name="USE_THROTTLE" default="true" />
   <arg name="USE_MJPEGSERVER" default="false" />
+  <arg name="USE_ROTATED" default="true" />
 
   <arg name="THROTTLE_RATE" default="1.4" />
   <arg name="THROTTLE_RESIZE_RATE" default="0.1" />
@@ -12,18 +13,39 @@
   <arg name="SNAPSHOT_IMAGE_TYPE" default="image_rect" />
   <arg name="MJPEGSERVER_PORT" default="8181"/>
 
+  <arg name="LHAND_NAMESPACE" default="/sandia_hands/l_hand" />
+  <arg name="RHAND_NAMESPACE" default="/sandia_hands/r_hand" />
+  <arg name="LFISHEYE_NAMESPACE" default="/fish_eye/left" />
+  <arg name="RFISHEYE_NAMESPACE" default="/fish_eye/right" />
+
+  <!-- rotate hand image -->
+  <group if="$(arg USE_ROTATED)" >
+    <node ns="$(arg LHAND_NAMESPACE)/left"
+          pkg="image_rotate" type="image_rotate" name="lhand_resized_rotated"
+          output="screen">
+      <remap from="image" to="image_rect"/>
+      <param name="target_frame_id" value="/map"/>
+    </node>
+    <node ns="$(arg RHAND_NAMESPACE)/left"
+          pkg="image_rotate" type="image_rotate" name="rhand_resized_rotated"
+          output="screen">
+      <remap from="image" to="image_rect"/>
+      <param name="target_frame_id" value="/map"/>
+    </node>
+  </group>
 
   <group if="$(arg USE_THROTTLE)" >
+    <!--
     <node pkg="topic_tools" type="throttle"
           name="img_throttle" ns="/multisense_sl/camera/left"
           args="messages image_rect $(arg THROTTLE_RATE)"/>
     <node pkg="topic_tools" type="throttle"
-          name="img_throttle" ns="/sandia_hands/l_hand/left"
-          args="messages image_rect $(arg THROTTLE_RATE)"/>
+          name="img_throttle" ns="$(arg LHAND_NAMESPACE)/left/rotated"
+          args="messages image $(arg THROTTLE_RATE)"/>
     <node pkg="topic_tools" type="throttle"
-          name="img_throttle" ns="/sandia_hands/r_hand/left"
-          args="messages image_rect $(arg THROTTLE_RATE)"/>
-    
+          name="img_throttle" ns="$(arg RHAND_NAMESPACE)/left/rotated"
+          args="messages image $(arg THROTTLE_RATE)"/>
+    -->
     <!-- resized image -->
     <node pkg="resized_image_transport" type="image_resizer" name="head_resized"
           output="screen" >
@@ -37,8 +59,8 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="lhand_resized"
           output="screen" >
-      <remap from="camera" to="/sandia_hands/l_hand/left" />
-      <remap from="image" to="$(arg THROTTLE_IMAGE_TYPE)"/>
+      <remap from="camera" to="$(arg LHAND_NAMESPACE)/left/rotated" />
+      <!--remap from="image" to="$(arg THROTTLE_IMAGE_TYPE)"/-->
       <param name="resize_scale_x" value="$(arg THROTTLE_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg THROTTLE_RESIZE_RATE)" />
       <param name="use_messages" value="$(arg THROTTLE_USE_MESSAGES)" />
@@ -47,27 +69,13 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="rhand_resized"
           output="screen" >
-      <remap from="camera" to="/sandia_hands/r_hand/left" />
-      <remap from="image" to="$(arg THROTTLE_IMAGE_TYPE)"/>
+      <remap from="camera" to="$(arg RHAND_NAMESPACE)/left/rotated" />
+      <!--remap from="image" to="$(arg THROTTLE_IMAGE_TYPE)"/-->
       <param name="resize_scale_x" value="$(arg THROTTLE_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg THROTTLE_RESIZE_RATE)" />
       <param name="use_messages" value="$(arg THROTTLE_USE_MESSAGES)" />
       <param name="period" value="$(arg THROTTLE_PERIOD)" />
       <param name="use_snapshot" value="false" />
-    </node>
-
-    <!-- rotate hand image -->
-    <node ns="lhand_resized"
-          pkg="image_rotate" type="image_rotate" name="lhand_resized_rotated"
-          output="screen">
-      <remap from="image" to="image_rect"/>
-      <param name="target_frame_id" value="/map"/>
-    </node>
-    <node ns="rhand_resized"
-          pkg="image_rotate" type="image_rotate" name="rhand_resized_rotated"
-          output="screen">
-      <remap from="image" to="image_rect"/>
-      <param name="target_frame_id" value="/map"/>
     </node>
   </group>
 
@@ -82,7 +90,7 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="lhand_snap"
           output="screen" >
-      <remap from="camera" to="/sandia_hands/l_hand/left" />
+      <remap from="camera" to="$(arg LHAND_NAMESPACE)/left" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
@@ -90,25 +98,23 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="rhand_snap"
           output="screen" >
-      <remap from="camera" to="/sandia_hands/r_hand/left" />
+      <remap from="camera" to="$(arg RHAND_NAMESPACE)/left" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="use_snapshot" value="true" />
     </node>
     <node pkg="resized_image_transport" type="image_resizer"
-	  name="lfisheye_snap"
-          output="screen" >
-      <remap from="camera" to="/fish_eye/right/" />
+          name="lfisheye_snap" output="screen" >
+      <remap from="camera" to="$(arg LFISHEYE_NAMESPACE)" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="use_snapshot" value="true" />
     </node>
     <node pkg="resized_image_transport" type="image_resizer"
-	  name="rfisheye_snap"
-          output="screen" >
-      <remap from="camera" to="/fish_eye/left/" />
+          name="rfisheye_snap" output="screen" >
+      <remap from="camera" to="$(arg RFISHEYE_NAMESPACE)" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
