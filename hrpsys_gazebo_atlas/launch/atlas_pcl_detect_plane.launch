@@ -15,7 +15,7 @@
             args="load pcl/PassThrough /$(arg ground_pcl_manager)"
             respawn="true"
             output="screen" clear_params="true">
-        <remap from="~input" to="/laser/full_cloud2_filtered" />
+        <remap from="~input" to="/laser/full_cloud2_raw" />
         <!-- <remap from="~input" to="/multisense_sl/points2" /> -->
         <rosparam>
           filter_field_name: z
@@ -101,7 +101,7 @@
             args="load pcl/PassThrough /$(arg manip_pcl_manager)"
             output="screen" clear_params="true"
             respawn="true">
-        <remap from="~input" to="/laser/full_cloud2_filtered" />
+        <remap from="~input" to="/laser/full_cloud2_raw" />
         <!-- <remap from="~input" to="/multisense_sl/points2" /> -->
         <rosparam>
           filter_field_name: z
@@ -220,7 +220,7 @@
             args="load pcl/PassThrough /$(arg wall_pcl_manager)"
             output="screen" clear_params="true"
             respawn="true">
-        <remap from="~input" to="/laser/full_cloud2_filtered" />
+        <remap from="~input" to="/laser/full_cloud2_raw" />
         <!-- <remap from="~input" to="/multisense_sl/points2" /> -->
         <rosparam>
           filter_field_name: z
