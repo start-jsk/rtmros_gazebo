@@ -18,6 +18,13 @@
   <arg name="LFISHEYE_NAMESPACE" default="/fish_eye/left_fisheye" />
   <arg name="RFISHEYE_NAMESPACE" default="/fish_eye/right_fisheye" />
 
+  <!--
+  <arg name="LHAND_NAMESPACE" default="/sandia_hands/l_hand/camera" />
+  <arg name="RHAND_NAMESPACE" default="/sandia_hands/r_hand/camera" />
+  <arg name="LFISHEYE_NAMESPACE" default="/l_situational_awareness_camera" />
+  <arg name="RFISHEYE_NAMESPACE" default="/r_situational_awareness_camera" />
+  -->
+
   <!-- rotate hand image -->
   <group if="$(arg USE_ROTATED)" >
     <node ns="$(arg LHAND_NAMESPACE)/left"
