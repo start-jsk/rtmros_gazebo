@@ -658,21 +658,6 @@
     )
   )
 
-(defun publish-triangle
-  ()
-  (let ((org  (send *triangle* :copy-worldcoords)))
-    (send *origin-coords* :reset-coords)
-    (send *origin-coords* :worldcoords)
-    (send-all (send *origin-coords* :bodies) :worldcoords)
-    (ros::publish (format nil "~A/origin_marker" *server-nodename*)
-		  (object->marker-msg *origin-coords*
-				      (instance std_msgs::header :init
-						:frame_id "/im_origin_coords_arrow")))
-    (send *origin-coords* :transform org)
-    (send *origin-coords* :worldcoords)
-    )
-  )
-
 (defun publish-joint-states
   ()
   (let ((joint-angles nil)
@@ -805,9 +790,9 @@
       (if (not *mouse-mode*) (return-from nil nil))
       )
      ;;
-     (waist-fix :waist-key :waist-r :cnt 3)
-     (waist-fix :waist-key :waist-p :cnt 3)
-     (waist-fix :waist-key :waist-y :cnt 3)
+     ;;(waist-fix :waist-key :waist-r :cnt 3)
+     ;;(waist-fix :waist-key :waist-p :cnt 3)
+     ;;(waist-fix :waist-key :waist-y :cnt 3)
      ;;(hand-even-fix :cnt 1)
      ;;(dotimes (i 2)
      ;;(call-ik-server :rotate? :x :log-stream nil))
@@ -902,7 +887,7 @@
       target-limb move rot)
      (cond
       ((vectorp tmp))
-      (nil ;(evenp (random 2))
+      (t ;(evenp (random 2))
        (setq tmp (call-ik-server
 		  :real? real?
 		  :real-feedback? real-feedback?
