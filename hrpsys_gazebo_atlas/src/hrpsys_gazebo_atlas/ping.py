@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import sys
 
 import rospy
 import roslib
@@ -16,22 +17,25 @@ from python_qt_binding.QtGui import QWidget
 from python_qt_binding.QtGui import QLabel, QTreeWidget, QTreeWidgetItem, QVBoxLayout, QCheckBox, QWidget, QToolBar, QLineEdit, QPushButton, QPixmap
 from python_qt_binding.QtCore import Qt, QTimer
 
-
+class RedirectStdStreams(object):
+    def __init__(self, stdout=None, stderr=None):
+        self._stdout = stdout or sys.stdout
+        self._stderr = stderr or sys.stderr
+    def __enter__(self):
+        self.old_stdout, self.old_stderr = sys.stdout, sys.stderr
+        self.old_stdout.flush(); self.old_stderr.flush()
+        sys.stdout, sys.stderr = self._stdout, self._stderr
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._stdout.flush(); self._stderr.flush()
+        sys.stdout = self.old_stdout
+        sys.stderr = self.old_stderr
+                                                                                                
 
 class PingGUI(Plugin):
     def __init__(self, context):
         super(PingGUI, self).__init__(context)
         # Give QObjects reasonable names
         self.setObjectName('PingGUI')
-        
-        # Process standalone plugin command-line arguments
-        from argparse import ArgumentParser
-        parser = ArgumentParser()
-        # Add argument(s) to the parser.
-        parser.add_argument("-q", "--quiet", action="store_true",
-                            dest="quiet",
-                            help="Put plugin in silent mode")
-        args, unknowns = parser.parse_known_args(context.argv())
         
         # Create a container widget and give it a layout
         self._container = QWidget()
@@ -44,23 +48,6 @@ class PingGUI(Plugin):
         self._layout.addWidget(self._label)
         self.set_bg_color(100, 100, 100)
         
-        # self.label = QLabel()
-        # myPixmap = QPixmap('image.jpg')
-        # myScaledPixmap = myPixmap.scaled(self.label.size(), Qt.KeepAspectRatio)
-        # self.label.setPixmap(myScaledPixmap)
-        # self._layout.addWidget(self.label)
-
-        
-        
-        # # Add a button for killing nodes
-        # self._go_button = QPushButton('Go')
-        # self._go_button.clicked.connect(self._go)
-        # self._layout.addWidget(self._go_button)
-        
-        # self._clear_button = QPushButton('Clear')
-        # self._clear_button.clicked.connect(self._clear)
-        # self._layout.addWidget(self._clear_button)
-        # self._step_run_button.setStyleSheet('QPushButton {color: black}')
         rospy.Subscriber("/ping/delay", Float64, self.ping_cb)
         context.add_widget(self._container)
     def set_bg_color(self, r, g, b):
@@ -77,8 +64,10 @@ class PingGUI(Plugin):
         ratio = (msg.data - 100) / (1000 - 100)
         color_r = ratio * 255.0
         color_g = (1 - ratio) * 255.0
-        self.set_bg_color(color_r, color_g, 0)
-        self._label.setText("%d ms latency" % (orig_latency))
+        devnull = open(os.devnull, "w")
+        with RedirectStdStreams(stdout=devnull, stderr=devnull):
+            self.set_bg_color(color_r, color_g, 0)
+            self._label.setText("%d ms latency" % (orig_latency))
     def shutdown_plugin(self):
         pass
     def save_settings(self, plugin_settings, instance_settings):
