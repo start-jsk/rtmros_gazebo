@@ -18,6 +18,9 @@ digraph atlas_tilt_laser {
       "/multisense_sl/joint_states_compressed_update" [shape="box"]
       "/pointcloud_roi/voxel_grid_manager/output_encoded" [shape="box"]
       "/specific_transform" [shape="box"]
+      "/head_resized/image_rect" [shape="box"]
+      "/lhand_resized/image_rect" [shape="box"]
+      "/rhand_resized/image_rect" [shape="box"]
    }
    
    //FC side
@@ -31,11 +34,11 @@ digraph atlas_tilt_laser {
        "/tf" [shape="box"]
        "/laser/full_cloud2_raw" [shape="box"]
        "/multisense_sl/camera/left/image_rect" [shape="box"]
-       "/multisense_sl/camera/left/image_rect" [shape="box"]
        "/sandia_hands/l_hand/left/image_rect" [shape="box"]
        "/sandia_hands/r_hand/left/image_rect" [shape="box"]
        "/fish_eye/right/image_raw" [shape="box"]
        "/fish_eye/left/image_raw" [shape="box"]
+       
        
        // nodes
        "atlas_joint_state_compresser"
@@ -47,9 +50,20 @@ digraph atlas_tilt_laser {
        "multisense/joint_state_buffer_server"
        "specific_tf_publisher_from_map_to_pelvis"
        "pointcloud_roi/voxel_grid_manager"
-       
+       "head_resized"
+       "lhand_resized"
+       "rhand_resized"
 
        
+       // images
+       "/multisense_sl/camera/left/image_rect" -> "head_resized" [label="Image"]
+       "/sandia_hands/l_hand/left/image_rect" -> "lhand_resized" [label="Image"]
+       "/sandia_hands/r_hand/left/image_rect" -> "rhand_resized" [label="Image"]
+       "head_resized" -> "/head_resized/image_rect" [label="Image"]
+       "lhand_resized" -> "/lhand_resized/image_rect" [label="Image"]
+       "rhand_resized" -> "/rhand_resized/image_rect" [label="Image"]
+       
+       // joint states
        "/atlas/joint_states" -> "atlas_joint_state_compresser" [label="JointState"]
        "/multisense_sl/joint_states" -> "multisense_sl_joint_state_compresser" [label="JointState"]
 
@@ -115,5 +129,9 @@ digraph atlas_tilt_laser {
        
        "/tf_ocs" -> "ocs user processes"
        "/pointcloud_roi/voxel_grid_decoder/output" -> "ocs user processes"
+       // image
+       "/head_resized/image_rect" -> "ocs user processes"
+       "/lhand_resized/image_rect" -> "ocs user processes"
+       "/rhand_resized/image_rect" -> "ocs user processes"
    }
 }
