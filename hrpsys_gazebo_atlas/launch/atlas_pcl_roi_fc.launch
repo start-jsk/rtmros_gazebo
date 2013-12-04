@@ -8,7 +8,7 @@
           name="voxel_grid_manager"
           args="load jsk_pcl/VoxelGridDownsampleManager /pointcloud_roi/pcl_roi_fc_manager"
           output="screen" clear_params="true">
-      <remap from="~input" to="/laser/full_cloud2_filtered" />
+      <remap from="~input" to="/laser/full_cloud2_raw" />
     </node>
   </group>
 </launch>
