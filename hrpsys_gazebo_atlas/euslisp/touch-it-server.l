@@ -54,12 +54,20 @@
                     (4 :rarm-torso)
                     (5 :rarm-fullbody)))
          touch-flag
+	 axis
          arm
          msg)
 
     (x::window-main-one)
 
     (warning-message 4 "[touch_it] callback function was called !~%")
+
+    (setq axis (send (send goal :goal_id) :id))
+    (setq axis
+	  (if (and axis (plusp (length axis)))
+	      (read-from-string axis)
+	    :z))
+    (warning-message 4 "[touch_it] axis = ~A !~%" axis)
 
     ;; recieve arguments
     (warning-message 4 "[touch_it] original pose timestamp is ~a!~%"
@@ -103,7 +111,8 @@
     
     (setq touch-flag (touch-it-control-proc tc :arm arm :ik-type ik-type
 					    :f-orig *touch-it-force-reference*
-					    :i *touch-it-iteration-count*))
+					    :i *touch-it-iteration-count*
+					    :axis axis))
     (incf *touch-it-iteration-count*)
     ;; set result
     (setq msg (send server :result))
@@ -218,7 +227,7 @@
   (warning-message 1 "~%")
   (warning-message 1 "[touch_it] touch_it_action_node started !~%")
 
-  (while t
+  (do-until-key
     (x::window-main-one)
     (send *s* :worker)
     (ros::spin-once)

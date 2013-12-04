@@ -77,7 +77,12 @@
 ;;     :touched
 ;;     
 (defun touch-it-control-proc
-  (tc &key (arm :rarm) (ik-type arm) (i 0) (f-orig nil))
+  (tc &key
+      (arm :rarm)
+      (ik-type arm)
+      (i 0)
+      (f-orig nil)
+      (axis :z))
   ;; calculate target
   (let ((div 30)
         (touch-flag :continue))
@@ -154,14 +159,14 @@
 		 ;;:target-centroid-pos nil
 		 :thre '(1 1 1)
 		 ;;:stop 100
-		 :rotation-axis '(:z t t)))
+		 :rotation-axis (list axis t t)))
 	       ;; (torso-ik-with-collision arm c)
 	       )
 	      (t
 	       (send *atlas* arm :inverse-kinematics c :stop 100
 		     :thre 2
 		     :rthre (deg2rad 5)
-		     :rotation-axis :z
+		     :rotation-axis axis
 		     :revert-if-fail t))
 	      )
 	;; send angle

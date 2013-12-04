@@ -176,6 +176,7 @@
 	 (case command
 	       (:prev *touch-it-interface-ocs*)
 	       (t *touch-it-interface*)))
+	(axis :x)
 	res)
   (case command
 	(:prev nil)
@@ -202,6 +203,7 @@
 	   (send goal :goal :target_pose :pose :orientation :z (elt q 3))
 	   (send goal :goal :target_pose :pose :orientation :w (elt q 0))
 	   (send goal :goal :target_pose :header :seq ik-type)
+	   (send (send goal :goal_id) :id (format nil "~A" axis))
 	   ;; send request
 	   (warning-message 2 "[touch_it_client] send goal to server ~%")
 	   (send touch-it-interface :send-goal goal)
@@ -631,7 +633,6 @@
 	(make-coords) :both)
   (fix-centroid-object)
   )
-
 
 ;;fixed flamae is foot?
 (defun get-base-coords
