@@ -84,7 +84,7 @@
     (if *touch-it-goal-new-p*
         (if (and (boundp '*ri*) *ri*) (real2model)))
     ;;(send *atlas* :reset-pose))
-    ;;(send *atlas* :reset-manip-pose))
+      ;;(send *atlas* :reset-manip-pose))
     (send *irtviewer* :draw-objects)
     (send* tc :rpy (car (rpy-angle (send (send *atlas* arm :end-coords) :worldrot))))
 
@@ -140,6 +140,50 @@
     ))
 
 
+(defclass dummy-ri
+  :super object
+  :slots nil)
+(defmethod dummy-ri
+  (:nomethod (&rest args)))
+
+(cond
+ ((substringp "ocs" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
+  ;;
+  (defvar *last-angle-vector* (make-hash-table))
+  (defun joint-state-subscriber
+    (msg)
+    (let ((joint-names (send msg :name))
+	  (joint-angles (send msg :position))
+	  joint-name joint-angle
+	  buf
+	  )
+      (dotimes (x (length joint-names))
+	(setq joint-name (elt joint-names x))
+	;;(print joint-name)
+	(setq joint-angle (rad2deg (elt joint-angles x)))
+	(setq buf
+	      (intern (string-upcase joint-name) *keyword-package*))
+	(send *last-angle-vector* :enter buf joint-angle)
+	)
+      ))
+  ;;
+  (ros::subscribe
+   "/atlas/joint_states_decompressed"
+   sensor_msgs::JointState
+   #'joint-state-subscriber 1)
+  ;;
+  (defun real2model
+    (&rest args)
+    (cond
+     ((and (boundp '*atlas*) *atlas*)
+      (mapcar
+       #'(lambda (key val)
+	   (if (find-method *atlas* key)
+	       (send *atlas* key :joint-angle val)))
+       (send *last-angle-vector* :list-keys)
+       (send *last-angle-vector* :list-values)))))
+  ))
+
 (unless (boundp '*do-not-start-touch-it*)
   
   (cond ((unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME")
@@ -158,7 +202,8 @@
 
 
   (cond ((substringp "ocs" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
-	 (init-touch-it-without-server :real nil))
+	 (init-touch-it-without-server :real nil)
+	 (setq *ri* (instance dummy-ri)))
 	(t
 	 (init-touch-it-without-server :real t)))
   (send *atlas* :newcoords (make-coords))

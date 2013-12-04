@@ -54,7 +54,6 @@
     ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
     res))
 
-
 (warning-message 1 "~%")
 (warning-message 1 "[touch_it_client] touch_it_action_client_node started !~%")
 
