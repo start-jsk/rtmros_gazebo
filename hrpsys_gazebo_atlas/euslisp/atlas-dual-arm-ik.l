@@ -17,22 +17,23 @@
 	     (send *robot* k :end-coords :copy-worldcoords))
 	 '(:rleg :lleg)))
   ;;
-  (send *triangle* :translate
-	(float-vector
-	 0 0
-	 (+
-	  (aref (send (car *fix-leg-coords*) :worldpos) 2)
-	  (-
-	   910
-	   (apply
-	    #'min
-	    (mapcar
-	     #'(lambda (v) (aref v 2))
-	     (flatten
-	      (send-all
-	       (send *triangle* :faces)
-	       :vertices)))))))
-	:world)
+  (if (and (boundp '*triangle*) *triangle*)
+      (send *triangle* :translate
+	    (float-vector
+	     0 0
+	     (+
+	      (aref (send (car *fix-leg-coords*) :worldpos) 2)
+	      (-
+	       910
+	       (apply
+		#'min
+		(mapcar
+		 #'(lambda (v) (aref v 2))
+		 (flatten
+		  (send-all
+		   (send *triangle* :faces)
+		   :vertices)))))))
+	    :world))
   (make-foot-convex :force? t)
   ;;
   (fix-gun-coords)
@@ -67,10 +68,11 @@
 (defun fix-gun-coords
   nil
   (fix-centroid-object)
-  (send *gun-coords*
- 	:newcoords
-	(copy-object
-	 (send *robot* :rarm :end-coords :worldcoords)))
+  (if (and (boundp '*gun-coords*) *gun-coords*)
+      (send *gun-coords*
+	    :newcoords
+	    (copy-object
+	     (send *robot* :rarm :end-coords :worldcoords))))
   )
 
 (defun rpy-from-2vec
@@ -187,7 +189,7 @@
    (initial-av (copy-seq (send *robot* :angle-vector)))
    (initial-coords (copy-object (send *robot* :worldcoords)))
    (debug-view :no-message)
-   (stop 50)
+   (stop 30)
    collision?
    (collision-pair
     (apply
@@ -402,9 +404,13 @@
 
 (defun my-objects
   nil
-  (objects
-   (list *gun-coords* *robot* *foot-convex*
-	 *centroid-object* *triangle*)))
+  (if (and (boundp '*gun-coords*) *gun-coords*
+	   (boundp '*robot*) *robot*
+	   (boundp '*centroid-object*) *centroid-object*
+	   (boundp '*triangle*) *triangle*)
+      (objects
+       (list *gun-coords* *robot* *foot-convex*
+	     *centroid-object* *triangle*))))
 
 (defun str-subscriber
   (msg)
@@ -435,6 +441,7 @@
    &optional
    (move-filter '(1 1 1))
    (rpy-filter '(1 1 1)))
+  (format t "[spacenav-callback] ~A~%" (send msg :axes))
   (cond
    ((and (> (aref (send msg :buttons) 0) 0.1)
 	 (> (aref (send msg :buttons) 1) 0.1))
@@ -469,37 +476,38 @@
       :worldpos)
      :cnt 10)
     (print 'done)
-    ))
-  (let ((move
-	 (scale
-	  30
-	  (coerce
-	   (subseq (send msg :axes) 0 3)
-	   float-vector)))
-	(rpy
-	 (reverse
-	  (scale
-	   0.15
-	   (coerce
-	    (subseq (send msg :axes) 3 6)
-	    float-vector)))))
-    (setq move
-	  (map float-vector
-	       #'*
-	       move move-filter))
-    (setq rpy
-	  (map float-vector
-	       #'*
-	       rpy rpy-filter))
-    (ik-main :move move
-	     :rpy rpy
-;	     :target-gun-coords
-;	     (make-coords
-;	      :pos (send *gun-coords* :worldpos))
-	     :rthre
-	     (list (deg2rad 10) (deg2rad 4)
-		   (deg2rad 4) (deg2rad 4)))
-    ))
+    )
+   ((> (norm (send msg :axes)) 0.01)
+    (let ((move
+	   (scale
+	    30
+	    (coerce
+	     (subseq (send msg :axes) 0 3)
+	     float-vector)))
+	  (rpy
+	   (reverse
+	    (scale
+	     0.15
+	     (coerce
+	      (subseq (send msg :axes) 3 6)
+	      float-vector)))))
+      (setq move
+	    (map float-vector
+		 #'*
+		 move move-filter))
+      (setq rpy
+	    (map float-vector
+		 #'*
+		 rpy rpy-filter))
+      (ik-main :move move
+	       :rpy rpy
+					;	     :target-gun-coords
+					;	     (make-coords
+					;	      :pos (send *gun-coords* :worldpos))
+	       :rthre
+	       (list (deg2rad 10) (deg2rad 4)
+		     (deg2rad 4) (deg2rad 4)))
+      ))))
 
 (defun ros::tf-point->tf-pose (point)
   (let ((pose (instance geometry_msgs::PoseStamped :init
@@ -765,6 +773,7 @@
      (cond
       ((vectorp tmp))
       (t ;(evenp (random 2))
+       (format t "[demo-pos] random-search~%")
        (setq tmp (ik-main
 		  :real? real?
 		  :debug-view debug-view
@@ -772,7 +781,7 @@
 		  ;:rotate? :x
 		  :move
 		  (progn
-		    (setq buf (random-vector 3.0))
+		    (setq buf (random-vector 1.0))
 ;		    (v- buf
 ;			(scale (v. buf (triangle-n))
 ;			       (triangle-n))))
@@ -805,14 +814,24 @@
 
 (defun triangle-pos-list
   nil
-  (union
-   (send
-    (find-if
-     #'(lambda (f)
-	 (find :bottom (send f :id)))
-     (send *triangle* :faces))
-    :vertices)
-   nil))
+  (let ((pos-list
+	 (union
+	  (send
+	   (find-if
+	    #'(lambda (f)
+		(find :bottom (send f :id)))
+	    (send *triangle* :faces))
+	   :vertices)
+	  nil))
+	(org
+	 (send
+	  (send *robot* :rarm
+		:end-coords :copy-worldcoords)
+	  :worldpos)))
+    (sort
+     pos-list
+     #'(lambda (p1 p2)
+	 (< (norm (v- p1 org)) (norm (v- p2 org)))))))
 
 (defun triangle-n
   (&optional
@@ -844,7 +863,8 @@
   (&key
    (real? nil)
    (data (reverse *success-state-collection*))
-   (inital-sleep (if real? 10000 1000))
+   (step-sleep 1000)
+   (inital-sleep (if real? 10000 step-sleep))
    (cnt -1)
    d)
   ;;
@@ -875,7 +895,7 @@
     (real?
      (model2real :sleep-time inital-sleep :wait t))
     (t (unix:usleep (round (* inital-sleep 1e+3)))))
-   (setq inital-sleep 1000))
+   (setq inital-sleep step-sleep))
   )
 
 (defun triangle-trial
@@ -1005,10 +1025,10 @@
   ))
 
 (send-all (send *robot* :joint-list) :max-joint-velocity 0.3)
-;(send *robot* :lleg :crotch-r :min-angle -5)
-;(send *robot* :lleg :crotch-r :joint-angle 15)
-;(send *robot* :rleg :crotch-r :max-angle 5)
-;(send *robot* :rleg :crotch-r :joint-angle -15)
+;;(send *robot* :lleg :crotch-r :min-angle -5)
+;;(send *robot* :lleg :crotch-r :joint-angle 15)
+;;(send *robot* :rleg :crotch-r :max-angle 5)
+;;(send *robot* :rleg :crotch-r :joint-angle -15)
 
 (defvar *mouse-mode* nil)
 
@@ -1019,19 +1039,29 @@
 ;; (send *triangle* :translate #F(600 -200 600) :world)
 ;; (gl::transparent *triangle* 0.3)
 
-(cond
- ((not (and (boundp '*triangle*) *triangle*))
+(defun gen-triangle
+  (&key
+   (mirror? nil))
   (setq *triangle*
 	(make-prism
-	 (list #F(0 0 0) #F(300 0 0) #F(0 600 0)) 5))
+	 (list (float-vector 0 (- 0 70) 0)
+	       (float-vector (+ 300 70) 0 0)
+	       (float-vector 0
+			     (* (if mirror? -1 1)
+				(+ 600 70))
+			     0))
+	 5))
   (send *triangle* :set-color #F(0 0 1))
   (send *triangle* :rotate (deg2rad -90) :y)
-  (send *triangle* :translate #F(500 -200 0) :world)
-  ;;(send *triangle* :translate #F(100 0 0) :world)
+  (send *triangle* :translate
+	(float-vector 500 (if mirror? 450 -200) 0) :world)
   (gl::transparent *triangle* 0.3)
-  ;; (load "triangle.l")
-  ;;  (send *triangle* :translate #F(-100 0 200) :world)
-  ))
+  (update-objects)
+  )
+
+(cond
+ ((not (and (boundp '*triangle*) *triangle*))
+  (gen-triangle)))
 
 (if (not (and (boundp '*centroid-object*) *centroid-object*))
     (init-fullbody-ik-main))
@@ -1091,6 +1121,8 @@
 	(send *robot* :rarm :end-coords :worldpos))))
 
 (send *viewer* :draw-objects)
+
+;;
 (defvar *obj-id* -1)
 (defun publish-eus-obj
   (eus-obj
@@ -1121,7 +1153,39 @@
 (publish-eus-obj *triangle*)
 (publish-eus-obj *foot-convex*)
 
+(defun solve-triangle
+  nil
+  (init-pose)
+  (let ((tri (triangle-pos-list)))
+    (send *robot* :rarm :inverse-kinematics
+	  (make-coords)
+	  :translation-axis nil
+	  :debug-view :no-message)
+    (fix-gun-coords)
+    (send *viewer* :draw-objects)
+    (demo-pos-controller
+     :pos
+     (v+ (scale -300 (triangle-n)) (car tri)))
+    (setq *success-state-collection* nil)
+    (mapcar
+     #'(lambda (pos)
+	 (demo-pos-controller :pos pos))
+     (append tri (list (car tri))))
+    *success-state-collection*))
+
+;; end
+
 #|
+
+(mapcar
+ #'(lambda (pos)
+     (demo-pos-controller :pos pos))
+ (let ((tri (triangle-pos-list)))
+   (append
+    (list (v+ (scale -300 (triangle-n)) (car tri)))
+    tri
+    (list (car tri))
+    )))
 
 (set-end-coords
  :rarm
