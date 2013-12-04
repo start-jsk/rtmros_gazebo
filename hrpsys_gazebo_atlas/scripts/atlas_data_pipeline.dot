@@ -20,6 +20,7 @@ digraph atlas_tilt_laser {
       "/specific_transform" [shape="box"]
    }
    
+   //FC side
    subgraph cluster_0 {
        label="fc"
        // topics
@@ -29,6 +30,12 @@ digraph atlas_tilt_laser {
        "/multisense_sl/joint_states_compressed" [shape="box"]
        "/tf" [shape="box"]
        "/laser/full_cloud2_raw" [shape="box"]
+       "/multisense_sl/camera/left/image_rect" [shape="box"]
+       "/multisense_sl/camera/left/image_rect" [shape="box"]
+       "/sandia_hands/l_hand/left/image_rect" [shape="box"]
+       "/sandia_hands/r_hand/left/image_rect" [shape="box"]
+       "/fish_eye/right/image_raw" [shape="box"]
+       "/fish_eye/left/image_raw" [shape="box"]
        
        // nodes
        "atlas_joint_state_compresser"
@@ -40,6 +47,8 @@ digraph atlas_tilt_laser {
        "multisense/joint_state_buffer_server"
        "specific_tf_publisher_from_map_to_pelvis"
        "pointcloud_roi/voxel_grid_manager"
+       
+
        
        "/atlas/joint_states" -> "atlas_joint_state_compresser" [label="JointState"]
        "/multisense_sl/joint_states" -> "multisense_sl_joint_state_compresser" [label="JointState"]
@@ -60,7 +69,8 @@ digraph atlas_tilt_laser {
        "pointcloud_roi/voxel_grid_manager" -> "/pointcloud_roi/voxel_grid_manager/output_encoded" [label="PointCloud2"]
    
    }
-   
+
+   // OCS side
    subgraph cluster_1 {
        label="ocs"
        // topics
