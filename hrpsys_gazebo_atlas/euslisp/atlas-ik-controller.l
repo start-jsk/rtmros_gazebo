@@ -658,6 +658,21 @@
     )
   )
 
+(defun publish-triangle
+  ()
+  (let ((org  (send *triangle* :copy-worldcoords)))
+    (send *origin-coords* :reset-coords)
+    (send *origin-coords* :worldcoords)
+    (send-all (send *origin-coords* :bodies) :worldcoords)
+    (ros::publish (format nil "~A/origin_marker" *server-nodename*)
+		  (object->marker-msg *origin-coords*
+				      (instance std_msgs::header :init
+						:frame_id "/im_origin_coords_arrow")))
+    (send *origin-coords* :transform org)
+    (send *origin-coords* :worldcoords)
+    )
+  )
+
 (defun publish-joint-states
   ()
   (let ((joint-angles nil)

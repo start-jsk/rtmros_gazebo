@@ -53,7 +53,9 @@
        (now-av (copy-object (send *robot* :angle-vector)))
        (now-c (copy-object (send *robot* :copy-worldcoords)))
        buf ret)
-  (send *robot* :old-reset-manip-pose)
+  (if (find-method *robot* :old-reset-manip-pose)
+      (send *robot* :old-reset-manip-pose)
+    (send *robot* :reset-manip-pose))
   (send *robot* :newcoords (make-coords))
   (send *robot* key :end-coords :worldcoords)
   (let ((trans
@@ -127,7 +129,9 @@
    buf
    ret
    )
-  (send *robot* :old-reset-manip-pose)
+  (if (find-method *robot* :old-reset-manip-pose)
+      (send *robot* :old-reset-manip-pose)
+    (send *robot* :reset-manip-pose))
   (send *robot* :newcoords (make-coords))
   (setq
    ret
