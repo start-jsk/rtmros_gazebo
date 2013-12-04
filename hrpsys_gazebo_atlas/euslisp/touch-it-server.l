@@ -138,8 +138,14 @@
 
 
 (unless (boundp '*do-not-start-touch-it*)
+  
+  (cond ((unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME")
+	 (setq *touch-it-action-topic-name* (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME")))
+	(t
+	 (setq *touch-it-action-topic-name* "/touchit/act/exec")))
+
   (setq *s* (instance ros::simple-action-server :init
-                      "/touchit/act/exec" move_base_msgs::MoveBaseAction
+                      *touch-it-action-topic-name* move_base_msgs::MoveBaseAction
                       :execute-cb 'touch-it-action-cb
                       :preempt-cb 'touch-it-preempt-cb))
 
