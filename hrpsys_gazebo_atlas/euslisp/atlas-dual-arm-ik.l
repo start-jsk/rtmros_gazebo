@@ -1090,6 +1090,36 @@
        (copy-object
 	(send *robot* :rarm :end-coords :worldpos))))
 
+(send *viewer* :draw-objects)
+(defvar *obj-id* -1)
+(defun publish-eus-obj
+  (eus-obj
+   &key
+   (frame "/pelvis")
+   (name "eus_obj")
+   (id (incf *obj-id*))
+   (server-nodename "/jsk_interactive_marker_manipulation"))
+  (ros::advertise
+   (format nil "~A/~A" server-nodename name)
+   visualization_msgs::Marker)
+  (let* ((org (send eus-obj :copy-worldcoords))
+	 (org-from-pelvis (send (send *robot* :copy-worldcoords)
+				:transformation org)))
+    (send eus-obj :newcoords org-from-pelvis)
+    (send eus-obj :worldcoords)
+    (ros::publish (format nil "~A/~A" server-nodename name)
+		  (object->marker-msg
+		   eus-obj
+		   (instance std_msgs::header :init
+			     :frame_id frame)
+		   :id id))
+    (send eus-obj :newcoords org)
+    (send eus-obj :worldcoords)
+    )
+  )
+
+(publish-eus-obj *triangle*)
+(publish-eus-obj *foot-convex*)
 
 #|
 
