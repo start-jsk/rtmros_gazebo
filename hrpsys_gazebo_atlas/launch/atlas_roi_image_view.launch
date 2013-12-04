@@ -3,22 +3,25 @@
   <arg name="IMAGE_TYPE" default="image_rect_throttle" />
   <arg name="COMPRESS_TYPE" default="compressed" />
 
+  <!--
   <node pkg="image_view2" type="image_view2"
         name="org_image_view" output="screen" >
-    <!--remap from="image" to="multisense_sl/camera/left/image_rect_color_buffered" /-->
     <remap from="image" to="head_resized/image_rect" />
     <remap from="/tf" to="/tf_dummy" />
     <param name="autosize" value="false" />
     <param name="resize_scale_x" value="$(arg RESIZE_RATE)" />
     <param name="resize_scale_y" value="$(arg RESIZE_RATE)" />
   </node>
+  -->
 
   <!-- ROI view -->
   <node pkg="image_view" type="image_view"
         name="roi_image_view" >
     <remap from="image" to="roi_camera_output/image_raw_buffered" />
-    <param name="autosize" value="true" />
+    <param name="autosize" value="false" />
   </node>
   <!-- rosservice call /roi_topic_buffer_server/update "/roi_camera_output/image_raw" -->
   <!-- rosservice call /roi_topic_buffer_server/update "/multisense_sl/camera/left/image_rect_color" -->
+
+  <node pkg="hrpsys_gazebo_atlas" type="image_gui.py" name="image_snapshot_gui" />
 </launch>

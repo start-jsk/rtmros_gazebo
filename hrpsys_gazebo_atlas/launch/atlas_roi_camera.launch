@@ -34,14 +34,14 @@
            to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)_buffered/screenpoint" />
     -->
     <remap from="/image_rect_color/screenrectangle"
-           to="head_resized/image_rect/screenrectangle" />
+           to="head_snap/image_rect/screenrectangle" />
     <remap from="/image_rect_color/screenpoint"
-           to="head_resized/image_rect/screenpoint" />
+           to="head_snap/image_rect/screenpoint" />
   </node>
 
   <node pkg="jsk_topic_tools" type="topic_buffer_server"
         name="roi_topic_buffer_server"
-        args=" /multisense_sl/camera/left/image_rect_color /roi_camera_output/image_raw"
+        args=" /roi_camera_output/image_raw"
         output="screen"/>
 
   <node pkg="jsk_topic_tools" type="topic_buffer_client"
