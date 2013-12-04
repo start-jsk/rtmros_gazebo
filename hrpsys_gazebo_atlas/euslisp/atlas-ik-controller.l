@@ -162,6 +162,8 @@
   (setq *c* (instance ros::simple-action-client :init
 		      "/touchit/act/exec_ocs"
 		      move_base_msgs::MoveBaseAction)))
+(defvar *touchit-reached* 9)
+(defvar *touchit-touched* 3)
 (defun call-touch-it-server
   (command
    &key (ik-type 3)
@@ -175,6 +177,9 @@
 	       (:prev *touch-it-interface-ocs*)
 	       (t *touch-it-interface*)))
 	res)
+  (case command
+	(:prev nil)
+	(t (send touch-it-interface :cancel-all-goals)))
   (case command
 	(:cancel (send touch-it-interface :cancel-all-goals))
 	(t
@@ -207,6 +212,14 @@
     ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
   (setq res (send touch-it-interface :get-state))
   ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
+  (publish-touchit-result
+   (format nil
+	   "~A (CODE: ~A)"
+	   (cond
+	    ((eq res *touchit-touched*) "TOUCHED")
+	    ((eq res *touchit-reached*) "REACHED")
+	    (t "UNKNOWN"))
+	   res))
   res)
 
 ;; initial pose
