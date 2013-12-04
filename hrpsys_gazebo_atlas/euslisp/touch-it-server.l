@@ -32,7 +32,10 @@
 (defun touch-it-preempt-cb (server goal)
   ;; does not support distinghushing between goal, cancel everything always
   (setq *touch-it-goal-new-p* t)
-  (Send server :set-preempted)
+  (when (and (boundp '*ri*) *ri*)
+    (real2model)
+    (model2real :time 500))
+  (send server :set-preempted)
   )
 
 (defun touch-it-action-cb (server goal)
@@ -91,13 +94,14 @@
     ;; initialize global variables if needed
     (when *touch-it-goal-new-p*
       (setq *touch-it-goal-new-p* nil)
-      (setq *touch-it-force-reference* (send *ri* :state :absolute-force-vector arm))
+      (if (and (boundp '*ri*) *ri*)
+	  (setq *touch-it-force-reference* (send *ri* :state :absolute-force-vector arm)))
       (setq *touch-it-iteration-count* 0)
       )
     
     (setq touch-flag (touch-it-control-proc tc :arm arm :ik-type ik-type
-                                       :f-orig *touch-it-force-reference*
-                                       :i *touch-it-iteration-count*))
+					    :f-orig *touch-it-force-reference*
+					    :i *touch-it-iteration-count*))
     (incf *touch-it-iteration-count*)
     ;; set result
     (setq msg (send server :result))
@@ -119,8 +123,11 @@
            )
           ((eq touch-flag :touched)
            (warning-message 1 "[touch_it] touched!~%")
-           (send server :set-succeeded msg)
-           (setq *touch-it-goal-new-p* t)
+	   (send server :set-succeeded msg)
+	   (when (and (boundp '*ri*) *ri*)
+	     (real2model)
+	     (model2real :time 500))
+	   (setq *touch-it-goal-new-p* t)
            ))
     ;; (cond (touch-flag (send server :set-succeeded msg))
     ;;      (t (send server :set-lost msg)))
@@ -143,8 +150,8 @@
   ;;(atlas-init-ex :set-reset-pose nil)
   ;;(send *atlas* :reset-manip-pose)
 
-  (init-touch-it-without-server)
-  ;; (init-touch-it-without-server :real nil)
+  ;; (init-touch-it-without-server)
+  (init-touch-it-without-server :real nil)
 
   (send *irtviewer* :draw-objects)
   (send *atlas* :newcoords (make-coords))

@@ -14,7 +14,10 @@
 ;;                              :init :logger "ros" :level "DEBUG"))
 
 
-(defun touch-it-client (&optional (order (scale 0.001 (float-vector 479.364 -800.006 378.368))))
+(defun touch-it-client
+  (&optional (order (scale 0.001 (float-vector 479.364 -800.006 378.368)))
+	     (ik-type 3)
+	     (frame_id "/pelvis"))
   (let (goal res)
     ;; set request
     (if (not (boundp '*c*))
@@ -24,13 +27,13 @@
     (send *c* :wait-for-server)
     (warning-message 2 "[touch_it_client] finish waiting for server ~%")
     (setq goal (instance move_base_msgs::MoveBaseActionGoal :init))
-    (send goal :goal :target_pose :header :frame_id "/pelvis")
+    (send goal :goal :target_pose :header :frame_id frame_id)
     (send goal :goal :target_pose :header :stamp (ros::time 0.0))
     (send goal :goal :target_pose :pose :position :x (elt order 0))
     (send goal :goal :target_pose :pose :position :y (elt order 1))
     (send goal :goal :target_pose :pose :position :z (elt order 2))
     (send goal :goal :target_pose :pose :orientation :w 1.0)
-    (send goal :goal :target_pose :header :seq 3)
+    (send goal :goal :target_pose :header :seq ik-type)
 
     ;; send request
     (warning-message 2 "[touch_it_client] send goal to server ~%")
@@ -39,23 +42,25 @@
     ;; wait
     (warning-message 2 "[touch_it_client] start waiting for result~%")
 
-    (warning-message 2 "[touch_it_client] waitin 20 sec~%")
-    (unix:sleep 20)
-    (send *c* :cancel-all-goals)
-    (send *c* :wait-for-result)
+    ;; test cancel
+    ;; (warning-message 2 "[touch_it_client] waitin 20 sec~%")
+    ;; (unix:sleep 1)
+    ;; (send *c* :cancel-all-goals)
 
     ;; check the result
-    (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
+    (send *c* :wait-for-result)
+    ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
     (setq res (send *c* :get-state))
-    (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
+    ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
     res))
 
 
 (warning-message 1 "~%")
 (warning-message 1 "[touch_it_client] touch_it_action_client_node started !~%")
 
-(setq res (touch-it-client (scale 0.001 (float-vector 479.364 -800.006 378.368))))
 (setq res (touch-it-client (scale 0.001 (float-vector 479.364 0 378.368))))
+(warning-message 1 "[touch_it_client] result: ~a~%" res)
+(setq res (touch-it-client (scale 0.001 (float-vector 479.364 -800.006 378.368))))
 (warning-message 1 "[touch_it_client] result: ~a~%" res)
 (exit 0)
 

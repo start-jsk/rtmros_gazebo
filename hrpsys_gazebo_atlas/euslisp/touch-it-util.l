@@ -6,41 +6,48 @@
   (cond ((and real (not (and (boundp '*ri*) *ri*)))
          (atlas-init-ex :set-reset-pose nil :real t))
         ((not (and (boundp '*atlas*) *atlas*))
-         (atlas-init-ex :set-reset-pose nil :real nil)))
+         (atlas-init-ex :set-reset-pose nil :real nil)
+	 (send *atlas* :reset-manip-pose)))
   (setq *do-not-start-ik-server* t)
   (load "package://hrpsys_gazebo_atlas/euslisp/atlas-eus-ik.l")
   ;; (setq *do-not-start-touch-it* t)
-  ;;(load "package://hrpsys_gazebo_atlas/euslisp/touch-it-server.l")
-  (setup-end-coords)
+  ;; (load "package://hrpsys_gazebo_atlas/euslisp/touch-it-server.l")
+  (switch-end-coords :id 1)
   (when (and (boundp '*ri*) *ri*)
     (send *ri* :set-interpolation-mode ":linear")))
 
 
 (defun move-down-with-touch-it
   ()
-  (send *atlas* :reset-manip-pose)
+  (send *atlas* :old-reset-manip-pose)
   (send *atlas* :rarm :move-end-rot 90 :x :local)
   (send *atlas* :rarm :move-end-pos #f(0 0 150) :world :rotation-axis :z :revert-if-fail t)
+  (send *atlas* :rarm :move-end-rot -15 :y :local :revert-if-fail nil)
   (send *irtviewer* :draw-objects)
-  (model2real :time 3000 :wait t)
+  (when (and (boundp '*ri*) *ri*)
+    (model2real :time 3000 :wait t))
   (my-wait)
   (touch-it-control (send (send (send *atlas* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 -300) :world)))
 
 
 (defun move-lateral-with-touch-it
   ()
-  (send *atlas* :reset-manip-pose)
+  (send *atlas* :old-reset-manip-pose)
   (send *atlas* :rarm :move-end-pos #f(0 0 -200))
   (send *irtviewer* :draw-objects)
-  (model2real :time 3000 :wait t)
+  (when (and (boundp '*ri*) *ri*)
+    (model2real :time 3000 :wait t))
   (my-wait)
   (touch-it-control (send (send (send *atlas* :rarm :end-coords) :copy-worldcoords) :translate #f(0 0 300)))) 
 
 (defun touch-it-control
   (tc &key (arm :rarm) (ik-type arm))
   (let ((i 0)
-        (f-orig (send *ri* :state :absolute-force-vector arm)))
+        (f-orig))
         
+    (when (and (boundp '*ri*) *ri*)
+      (setq f-orig (send *ri* :state :absolute-force-vector arm)))
+
     (do-until-key
      (let ((touch-it-status
             (touch-it-control-proc tc :arm arm :ik-type ik-type :i i :f-orig f-orig)))
@@ -58,7 +65,7 @@
   (when (and (boundp '*ri*) *ri*)
     (real2model)
     (model2real :time 500))
-  )
+ ) 
 
 ;; return value:
 ;;     :arrived-at-goal
@@ -71,7 +78,6 @@
   (let ((div 30)
         (touch-flag :continue))
     (block :touch-it-loop
-;;      (do-until-key
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; check count
        (when (> i div)
@@ -109,7 +115,40 @@
          (cond ((substringp "fullbody" (string ik-type))
                 (fullbody-ik-with-collision arm c))
                ((substringp "torso" (string ik-type))
-                (torso-ik-with-collision arm c))
+		(apply
+		 #'fullbody-ik-main
+		 (list
+		  :target-limb (list arm :lleg :rleg)
+		  :target-coords (list c nil nil)
+		  :additional-weight-list
+		  (mapcar
+		   #'(lambda (k gain)
+		       (list (send *atlas* :torso k :child-link)
+			     gain))
+		   (list :waist-r :waist-p :waist-y)
+		   '(0 0 1))
+		  ;;(list 1e-3 1e-3 1e-3))
+		  :root-link-virtual-joint-weight
+		  (float-vector 0 0 0 0 0 0)
+		  :min-vec (min
+			    (scale
+			     -1
+			     (map float-vector
+				  #'*
+				  (float-vector 0 0 0 0 0 0)
+				  #F(1000 1000 1000 200 200 200))))
+		  :max-vec (map float-vector
+				#'*
+				(float-vector 0 0 0 0 0 0)
+				#F(1000 1000 1000 200 200 200))
+		  :collision? t
+		  ;;:centroid-thre 200
+		  ;;:target-centroid-pos nil
+		  :thre '(1 1 1)
+		  ;;:stop 100
+		  :rotation-axis '(:z t t)))
+                ;; (torso-ik-with-collision arm c)
+		)
                (t
                 (send *atlas* arm :inverse-kinematics c :stop 100
                       :thre 2
@@ -127,13 +166,7 @@
              (unix:usleep (* 20 1000))))
          (send *irtviewer* :draw-objects)
          )
-       ;;(incf i)
-       
-;;       )                                ;do-until-key
-      ;;(read-line)
       )                                 ;touch-it-loop
-
-    
     (send *irtviewer* :draw-objects)
     touch-flag
     ))
