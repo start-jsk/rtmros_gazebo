@@ -1,7 +1,7 @@
 <launch>
   <arg name="USE_SNAPSHOT" default="true" />
   <arg name="USE_THROTTLE" default="true" />
-  <arg name="USE_MJPEGSERVER" default="true" />
+  <arg name="USE_MJPEGSERVER" default="false" />
 
   <arg name="THROTTLE_RATE" default="1.4" />
   <arg name="THROTTLE_RESIZE_RATE" default="0.1" />
@@ -90,6 +90,24 @@
     <node pkg="resized_image_transport" type="image_resizer" name="rhand_snap"
           output="screen" >
       <remap from="camera" to="/sandia_hands/r_hand/left" />
+      <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
+      <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
+      <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
+      <param name="use_snapshot" value="true" />
+    </node>
+    <node pkg="resized_image_transport" type="image_resizer"
+	  name="lfisheye_snap"
+          output="screen" >
+      <remap from="camera" to="/fish_eye/right/" />
+      <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
+      <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
+      <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
+      <param name="use_snapshot" value="true" />
+    </node>
+    <node pkg="resized_image_transport" type="image_resizer"
+	  name="rfisheye_snap"
+          output="screen" >
+      <remap from="camera" to="/fish_eye/left/" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
