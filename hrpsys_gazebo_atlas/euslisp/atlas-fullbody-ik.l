@@ -80,14 +80,15 @@
 
 (defun convex-pos-list
   nil
-  (union
-   (send
-    (find-if
-     #'(lambda (f)
-	 (find :bottom (send f :id)))
-     (send *foot-convex* :faces))
-    :vertices)
-   nil))
+  (if (and (boundp '*foot-convex*) *foot-convex*)
+      (union
+       (send
+	(find-if
+	 #'(lambda (f)
+	     (find :bottom (send f :id)))
+	 (send *foot-convex* :faces))
+	:vertices)
+       nil)))
 
 (defun fix-centroid-object
   (&optional
@@ -97,14 +98,15 @@
 		  (send *robot* :rleg :end-coords :worldpos)
 		  (send *robot* :lleg :end-coords :worldpos))
 		 )))
-  (send *centroid-object*
-	:newcoords
-	(make-coords
-	 :pos (v+
-	       #F(0 0 -200)
-	       (concatenate float-vector
-			    (subseq centroid 0 2)
-			    (list (+ 10 (aref leg-h 2)))))))
+  (if (and (boundp '*centroid-object*) *centroid-object*)
+      (send *centroid-object*
+	    :newcoords
+	    (make-coords
+	     :pos (v+
+		   #F(0 0 -200)
+		   (concatenate float-vector
+				(subseq centroid 0 2)
+				(list (+ 10 (aref leg-h 2))))))))
   )
 
 (defun check-centroid-with-convex
