@@ -154,6 +154,61 @@
       )
      (t (format log-stream "failed!~%") nil))))
 
+(defvar *touch-it-interface*
+  (setq *c* (instance ros::simple-action-client :init
+		      "/touchit/act/exec"
+		      move_base_msgs::MoveBaseAction)))
+(defvar *touch-it-interface-ocs*
+  (setq *c* (instance ros::simple-action-client :init
+		      "/touchit/act/exec_ocs"
+		      move_base_msgs::MoveBaseAction)))
+(defun call-touch-it-server
+  (command
+   &key (ik-type 3)
+	(frame_id "/pelvis")
+	(target-coords *target-coords*)
+	(target-coords-from-pelvis
+	 (send (send *robot* :copy-worldcoords)
+	       :transformation target-coords))
+	(touch-it-interface
+	 (case command
+	       (:prev *touch-it-interface-ocs*)
+	       (t *touch-it-interface*)))
+	res)
+  (case command
+	(:cancel (send touch-it-interface :cancel-all-goals))
+	(t
+	 (let* ((c target-coords-from-pelvis)
+		(p (scale 1e-3 (send c :worldpos)))
+		(q (matrix2quaternion (send c :worldrot)))
+		goal)
+	   ;; set request
+	   (warning-message 2 "[touch_it_client] start waiting for server~%")
+	   (send touch-it-interface :wait-for-server)
+	   (warning-message 2 "[touch_it_client] finish waiting for server ~%")
+	   (setq goal (instance move_base_msgs::MoveBaseActionGoal :init))
+	   (send goal :goal :target_pose :header :frame_id frame_id)
+	   (send goal :goal :target_pose :header :stamp (ros::time 0.0))
+	   (send goal :goal :target_pose :pose :position :x (elt p 0))
+	   (send goal :goal :target_pose :pose :position :y (elt p 1))
+	   (send goal :goal :target_pose :pose :position :z (elt p 2))
+	   (send goal :goal :target_pose :pose :orientation :x (elt q 1))
+	   (send goal :goal :target_pose :pose :orientation :y (elt q 2))
+	   (send goal :goal :target_pose :pose :orientation :z (elt q 3))
+	   (send goal :goal :target_pose :pose :orientation :w (elt q 0))
+	   (send goal :goal :target_pose :header :seq ik-type)
+	   ;; send request
+	   (warning-message 2 "[touch_it_client] send goal to server ~%")
+	   (send touch-it-interface :send-goal goal)
+	   ;; wait
+	   (warning-message 2 "[touch_it_client] start waiting for result~%")
+	   (send touch-it-interface :wait-for-result)
+	   )))
+    ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
+  (setq res (send touch-it-interface :get-state))
+  ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
+  res)
+
 ;; initial pose
 (defun init-pose
   nil
@@ -486,9 +541,17 @@
       (setq *ik-stop* t)
       (setq *publish-ik* nil)
       )
-     ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCH*)
-      (print "touch it")
-      ;;TODO touch It
+     ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_EXEC*)
+      (print "touch it exec")
+      (call-touch-it-server :exec)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_PREV*)
+      (print "touch it prev")
+      (call-touch-it-server :prev)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_CANCEL*)
+      (print "touch it cancel")
+      (call-touch-it-server :cancel)
       )
      )
     (when (boundp '*irtviewer*)
@@ -679,10 +742,7 @@
     (send marker :text text)
     (ros::publish (format nil "~A/marker" *server-nodename*) marker)
     )
-)
-
-
-
+  )
 
 (defun publish-joint-states
   ()
