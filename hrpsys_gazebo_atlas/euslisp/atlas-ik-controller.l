@@ -270,20 +270,31 @@
 
 (defun joint-state-subscriber
   (msg)
-  (send *real-robot*
-	:angle-vector
-	(map float-vector
-	     #'rad2deg
-	     (send msg :position)))
-  (send *real-robot*
-	:fix-leg-to-coords (make-coords) :both)
-  (case *orgin-key*
-	(:free nil)
-	(t (send *origin-coords* :move-to
-		 (send *real-robot* *origin-key*
-		       :end-coords :copy-worldcoords)
-		 :world)))
-  )
+  (let ((joint-names (send msg :name))
+	(joint-angles (send msg :position))
+	joint-name joint-angle
+	buf
+	)
+    (dotimes (x (length joint-names))
+      (setq joint-name (elt joint-names x))
+      ;;(print joint-name)
+      (setq joint-angle (rad2deg (elt joint-angles x)))
+      (setq buf
+	    (intern (string-upcase joint-name) *keyword-package*))
+      (if (find-method *real-robot* buf)
+	  (send *real-robot* buf :joint-angle joint-angle))
+      (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
+      )
+    (send *real-robot*
+	  :fix-leg-to-coords (make-coords) :both)
+    (case *orgin-key*
+	  (:free nil)
+	  (t (send *origin-coords* :move-to
+		   (send *real-robot* *orgin-key*
+			 :end-coords :copy-worldcoords)
+		   :world)))
+    (x::window-main-one)
+    ))
 
 (defun ros::tf-point->tf-pose (point)
   (let ((pose (instance geometry_msgs::PoseStamped :init
@@ -725,7 +736,7 @@
 (ros::subscribe
  "/atlas/joint_states_decompressed"
  sensor_msgs::JointState
- #'joint-state-subscriber)
+#'joint-state-subscriber 1)
 
 (defun demo-mouse-controller
   nil
