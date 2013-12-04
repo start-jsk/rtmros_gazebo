@@ -708,6 +708,7 @@
    (cnt 1000)
    (return? nil)
    (debug-view :no-message)
+   (thre 70)
    )
   (if return?
       (setq return?
@@ -749,14 +750,14 @@
 		      (reverse (triangle-n)))))
      (format t "[demo-pos-controller(~A)] dist: ~A~%"
 	     cnt (norm move))
-     (if (and (< (norm move) 70)
+     (if (and (< (norm move) thre)
 	      (< (norm rpy) (deg2rad 180)))
 	 (return-from demo-pos-controller :convergence))
      (setq move
 	   (scale
-	    (min 30 (norm move))
+	    (min 15 (norm move))
 	    (normalize-vector move)))
-     (setq rpy (scale (min 0.15 (norm rpy))
+     (setq rpy (scale (min (deg2rad 5) (norm rpy))
 		      (normalize-vector rpy)))
      (setq tmp (ik-main
 		:real? real?
@@ -764,7 +765,7 @@
 		:move move
 		:rpy rpy
 		:rthre
-		(list (deg2rad 10)
+		(list (deg2rad 8)
 		      (deg2rad 4)
 		      (deg2rad 4)
 		      (deg2rad 4))
@@ -782,9 +783,9 @@
 		  :move
 		  (progn
 		    (setq buf (random-vector 1.0))
-;		    (v- buf
-;			(scale (v. buf (triangle-n))
-;			       (triangle-n))))
+;;		    (v- buf
+;;			(scale (v. buf (triangle-n))
+;;			       (triangle-n))))
 		    buf)
 		  :rpy
 		  (progn
@@ -795,7 +796,7 @@
 		    ;; 	    (reverse (triangle-n)))))
 		    buf)
 		  :rthre
-		  (list (deg2rad 4)
+		  (list (deg2rad 8)
 			(deg2rad 4)
 			(deg2rad 4)
 			(deg2rad 4))
@@ -1041,20 +1042,22 @@
 
 (defun gen-triangle
   (&key
-   (mirror? nil))
+   (mirror? nil)
+   (fat 70))
   (setq *triangle*
 	(make-prism
-	 (list (float-vector 0 (- 0 70) 0)
-	       (float-vector (+ 300 70) 0 0)
+	 (list (float-vector 0 (- 0 fat) 0)
+	       (float-vector (+ 300 fat) (- 0 fat) 0)
 	       (float-vector 0
 			     (* (if mirror? -1 1)
-				(+ 600 70))
+				(+ 600 fat))
 			     0))
 	 5))
   (send *triangle* :set-color #F(0 0 1))
   (send *triangle* :rotate (deg2rad -90) :y)
   (send *triangle* :translate
-	(float-vector 500 (if mirror? 450 -200) 0) :world)
+	(float-vector (+ (if mirror? 150 0) 500)
+		      (if mirror? 450 -200) 0) :world)
   (gl::transparent *triangle* 0.3)
   (update-objects)
   )
@@ -1072,11 +1075,11 @@
 (send *robot* :rleg :knee-p :min-angle 10)
 (send *robot* :lleg :knee-p :min-angle 10)
 ;;
-(send *robot* :torso :waist-r :max-angle 10)
-(send *robot* :torso :waist-r :min-angle -10)
+(send *robot* :torso :waist-r :max-angle 5)
+(send *robot* :torso :waist-r :min-angle -5)
 ;;
-(send *robot* :torso :waist-p :max-angle 10)
-(send *robot* :torso :waist-p :min-angle -10)
+(send *robot* :torso :waist-p :max-angle 5)
+(send *robot* :torso :waist-p :min-angle -5)
 
 (defvar *hand-to-origin*
   #2f((-0.833315 -0.522108 0.181628)
@@ -1154,8 +1157,12 @@
 (publish-eus-obj *foot-convex*)
 
 (defun solve-triangle
-  nil
+  (&optional (mirror? nil))
+  (gen-triangle :mirror? mirror?)
   (init-pose)
+  (send *robot* :newcoords
+	(make-coords :pos
+		     (float-vector 0 0 (if mirror? 0 0))))
   (let ((tri (triangle-pos-list)))
     (send *robot* :rarm :inverse-kinematics
 	  (make-coords)
@@ -1165,7 +1172,8 @@
     (send *viewer* :draw-objects)
     (demo-pos-controller
      :pos
-     (v+ (scale -300 (triangle-n)) (car tri)))
+     (v+ (scale -300 (triangle-n)) (car tri))
+     :thre 150)
     (setq *success-state-collection* nil)
     (mapcar
      #'(lambda (pos)
