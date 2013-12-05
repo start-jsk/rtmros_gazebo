@@ -8,7 +8,8 @@ import roslib
 roslib.load_manifest("hrpsys_gazebo_atlas")
 
 ##
-from std_srvs.srv import Empty
+import std_srvs
+import std_msgs
 
 ##
 from qt_gui.plugin import Plugin
@@ -65,21 +66,32 @@ class ImageSnapShotGUI(Plugin):
         # self._step_run_button.setStyleSheet('QPushButton {color: black}')
         context.add_widget(self._container)
 
+        self._head_pub = rospy.Publisher('/head_snap/snapshot', std_msgs.msg.Empty)
+        self._lhand_pub = rospy.Publisher('/lhand_snap/snapshot', std_msgs.msg.Empty)
+        self._rhand_pub = rospy.Publisher('/rhand_snap/snapshot', std_msgs.msg.Empty)
+        self._lfisheye_pub = rospy.Publisher('/lfisheye_snap/snapshot', std_msgs.msg.Empty)
+        self._rfisheye_pub = rospy.Publisher('/rfisheye_snap/snapshot', std_msgs.msg.Empty)
+
     def _head(self):
-        go = rospy.ServiceProxy('/head_snap/snapshot', Empty)
-        go()
+        #go = rospy.ServiceProxy('/head_snap/snapshot', std_srvs.srv.Empty)
+        #go()
+        self._head_pub.publish(std_msgs.msg.Empty())
     def _larm(self):
-        go = rospy.ServiceProxy('/lhand_snap/snapshot', Empty)
-        go()
+        #go = rospy.ServiceProxy('/lhand_snap/snapshot', std_srvs.srv.Empty)
+        #go()
+        self._lhand_pub.publish(std_msgs.msg.Empty())
     def _rarm(self):
-        go = rospy.ServiceProxy('/rhand_snap/snapshot', Empty)
-        go()
+        #go = rospy.ServiceProxy('/rhand_snap/snapshot', std_srvs.srv.Empty)
+        #go()
+        self._rhand_pub.publish(std_msgs.msg.Empty())
     def _lfisheye(self):
-        go = rospy.ServiceProxy('/lfisheye_snap/snapshot', Empty)
-        go()
+        #go = rospy.ServiceProxy('/lfisheye_snap/snapshot', std_srvs.srv.Empty)
+        #go()
+        self._lfisheye_pub.publish(std_msgs.msg.Empty())
     def _rfisheye(self):
-        go = rospy.ServiceProxy('/rfisheye_snap/snapshot', Empty)
-        go()
+        #go = rospy.ServiceProxy('/rfisheye_snap/snapshot', std_srvs.srv.Empty)
+        #go()
+        self._rfisheye_pub.publish(std_msgs.msg.Empty())
 
     def shutdown_plugin(self):
         pass
