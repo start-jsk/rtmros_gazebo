@@ -21,5 +21,6 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_roi_ocs.launch" />
 
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_roi_image_view.launch" />
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_all_viewer.launch" />
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_ping.launch" />
 </launch>
