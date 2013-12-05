@@ -19,8 +19,11 @@
 
 
   (setq multisense-sl-joint-name-list
+	;; (list
+	;;  "hokuyo_joint" "pre_spindle_cal_x_joint" "pre_spindle_cal_y_joint" "pre_spindle_cal_z_joint" "pre_spindle_cal_roll_joint" "pre_spindle_cal_pitch_joint" "pre_spindle_cal_yaw_joint" "post_spindle_cal_x_joint" "post_spindle_cal_y_joint" "post_spindle_cal_z_joint" "post_spindle_cal_roll_joint" "post_spindle_cal_pitch_joint" "post_spindle_cal_yaw_joint"
+	;;  )
 	(list
-	 "hokuyo_joint" "pre_spindle_cal_x_joint" "pre_spindle_cal_y_joint" "pre_spindle_cal_z_joint" "pre_spindle_cal_roll_joint" "pre_spindle_cal_pitch_joint" "pre_spindle_cal_yaw_joint" "post_spindle_cal_x_joint" "post_spindle_cal_y_joint" "post_spindle_cal_z_joint" "post_spindle_cal_roll_joint" "post_spindle_cal_pitch_joint" "post_spindle_cal_yaw_joint"
+	 "hokuyo_joint"
 	 )
 	)
   (setq joint-name-list
@@ -45,6 +48,14 @@
     (push (cons joint-name i) joint-index-list)
     (setq i (+ i 1))
     )
+
+  (setq i 0)
+  (setq multisense-sl-joint-index-list nil)
+  (dolist (joint-name multisense-sl-joint-name-list)
+    (push (cons joint-name i) multisense-sl-joint-index-list)
+    (setq i (+ i 1))
+    )
+
 )
 
 (defun get-joint-index (joint-name)

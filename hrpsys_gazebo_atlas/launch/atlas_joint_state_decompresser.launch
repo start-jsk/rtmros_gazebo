@@ -14,7 +14,7 @@
   
   <node pkg="roseus" type="roseus"
 	name="multisense_sl_joint_state_decompresser"
-	args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-state-decompresser.l"
+	args="$(find hrpsys_gazebo_atlas)/euslisp/multisense-sl-joint-state-decompresser.l"
 	output="screen">
     <remap from="/atlas/joint_states_compressed_buffered" to="/multisense_sl/joint_states_compressed_buffered"/>
   </node>

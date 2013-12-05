@@ -25,7 +25,7 @@
 	)
       )
     ;;(send js-compressed :index ros-atlas-joint-index)
-    (send js-compressed :velocity ros-atlas-joint-index-float)
+    ;;(send js-compressed :velocity ros-atlas-joint-index-float)
     (send js-compressed :position (coerce js-compressed-list float-vector))
     (ros::publish js-compressed-topic-name js-compressed)
     (if display-info
