@@ -11,4 +11,5 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_roi_fc.launch" />
 
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_roi_camera.launch" />
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_force_sensor_fc.launch" />
 </launch>
