@@ -39,8 +39,8 @@
   ()
   ;; (send *atlas* :reset-pose)
   (send *atlas* :reset-manip-pose)
-  (send *atlas* :larm :inverse-kinematics (make-coords :pos (send *atlas* :larm :end-coords :worldpos) :rpy (list 0 0 0)))
-  (send *atlas* :rarm :inverse-kinematics (make-coords :pos (send *atlas* :rarm :end-coords :worldpos) :rpy (list 0 0 0)))
+  ;; (send *atlas* :larm :inverse-kinematics (make-coords :pos (send *atlas* :larm :end-coords :worldpos) :rpy (list 0 0 0)))
+  ;; (send *atlas* :rarm :inverse-kinematics (make-coords :pos (send *atlas* :rarm :end-coords :worldpos) :rpy (list 0 0 0)))
   )
 
 (defun door-pose1
@@ -148,52 +148,54 @@
     (send *door* :door :joint-angle 0)
     (dotimes (i div-num)
 
-      (apply
-       #'fullbody-ik-main
-       (list
-	:target-limb (list arm :lleg :rleg)
-	:target-coords (list (send *door* hname) nil nil)
-	:additional-weight-list
-	(mapcar
-	 #'(lambda (k gain)
-	     (list (send *atlas* :torso k :child-link)
-		   gain))
-	 (list :waist-r :waist-p :waist-y)
-	 '(0 0 1))
-	;;(list 1e-3 1e-3 1e-3))
-	:root-link-virtual-joint-weight
-	(float-vector 0 0 0 0 0 0)
-	:min-vec (min
-		  (scale
-		   -1
-		   (map float-vector
-			#'*
-			(float-vector 0 0 0 0 0 0)
-			#F(1000 1000 1000 200 200 200))))
-	:max-vec (map float-vector
-		      #'*
-		      (float-vector 0 0 0 0 0 0)
-		      #F(1000 1000 1000 200 200 200))
-	:collision? t
-	:debug-view nil
-	:centroid-thre 200
-	;;:target-centroid-pos nil
-	:thre '(100 1 1)
-	;;:stop 100
-	:rotation-axis '(nil t t)))
-
+      (if
+	  (null (apply
+		 #'fullbody-ik-main
+		 (list
+		  :target-limb (list arm :lleg :rleg)
+		  :target-coords (list (send *door* hname) nil nil)
+		  :additional-weight-list
+		  (mapcar
+		   #'(lambda (k gain)
+		       (list (send *atlas* :torso k :child-link)
+			     gain))
+		   (list :waist-r :waist-p :waist-y)
+		   '(0 0 1))
+		  ;;(list 1e-3 1e-3 1e-3))
+		  :root-link-virtual-joint-weight
+		  (float-vector 0 0 0 0 0 0)
+		  :min-vec (min
+			    (scale
+			     -1
+			     (map float-vector
+				  #'*
+				  (float-vector 0 0 0 0 0 0)
+				  #F(1000 1000 1000 200 200 200))))
+		  :max-vec (map float-vector
+				#'*
+				(float-vector 0 0 0 0 0 0)
+				#F(1000 1000 1000 200 200 200))
+		  :collision? t
+		  :debug-view :no-message
+		  :centroid-thre 200
+		  ;;:target-centroid-pos nil
+		  :thre '(100 1 1)
+		  ;;:stop 100
+		  :rotation-axis '(nil t t))))
+	  (format t "fail~%"))
 
       (send (send *door* :door)
 	    :joint-angle (- (/ door-rotate-angle div-num)) :relative t)
       (x::window-main-one)
 
       (unix:usleep (* 200 1000))
+      ;; (read-line)
       )))
 
 (defun try-push-door
   ()
-  (init-door-setting -475 -100 80)
-  (try-door -95))
+  (init-door-setting -550 -100 80)
+  (try-door -90))
 
 (defun try-pull-door
   ()
@@ -209,3 +211,12 @@
 
 (defmethod atlas-robot
   (:door-pre-pose () (send self :angle-vector (float-vector 0.0 3.0 0.0 117.193 75.6237 28.4498 -64.3526 39.0765 78.3247 -85.6098 101.869 10.52 77.8411 -74.4278 83.6718 28.0 -1.7 -12.5 1.7 -15.5 -6.516951e-16 28.0 1.7 -12.5 -1.7 -15.5 -2.815605e-16 65.6002))))
+
+
+
+;; (send *atlas* :reset-manip-pose)
+
+;; (send *atlas* :angle-vector #f(0.0 3.0 0.0 120.0 100.0 5.0 -65.0 35.0 90.0 -134.779 164.672 57.381 35.3525 37.0383 115.548 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0))
+
+
+
