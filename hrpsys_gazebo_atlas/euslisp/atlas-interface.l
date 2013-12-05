@@ -929,6 +929,7 @@
     (send *ri* :bdi_step_static (make-coords :pos (float-vector (/ step 2) -140 0)) :l/r :rleg :index 1)))
   )
 
+(in-package "ROS")
 (defmethod ros::simple-action-client
   (:wait-for-server
    (&optional (timeout nil))
@@ -959,3 +960,4 @@
        (incf count))
      t))
   )
+(in-package "USER")
