@@ -13,14 +13,22 @@
       nil)
 )
 
+(defun get-joint-name-float (joint-index)
+  (setq joint-index (round joint-index))
+  (if (> (length joint-name-list) joint-index)
+      (elt joint-name-list joint-index)
+      nil)
+)
+
 (defun decompress-callback (msg)
   (let ((js-decompressed (instance sensor_msgs::JointState :init))
 	joint-names joint-name joint-angles
 	)
     (setq hoge msg)
     (send js-decompressed :header (send msg :header))
-    (dotimes (i (length (send msg :index)))
-      (setq joint-name (get-joint-name (elt (send msg :index) i)))
+    (dotimes (i (length (send msg :position)))
+      ;;(setq joint-name (get-joint-name (elt (send msg :index) i)))
+      (setq joint-name (get-joint-name-float (elt (send msg :velocity) i)))
       (when joint-name
 	(push joint-name joint-names)
 	(push (elt (send msg :position) i) joint-angles)
@@ -42,8 +50,10 @@
   (joint-index-init)
   (ros::advertise js-decompressed-topic-name
 		  sensor_msgs::JointState 1)
+;;  (ros::subscribe js-compressed-topic-name 
+;;		  hrpsys_gazebo_atlas::JointStateCompressed #'decompress-callback)
   (ros::subscribe js-compressed-topic-name 
-		  hrpsys_gazebo_atlas::JointStateCompressed #'decompress-callback)
+		  sensor_msgs::JointState #'decompress-callback)
 
   (ros::rate 10)
   (do-until-key

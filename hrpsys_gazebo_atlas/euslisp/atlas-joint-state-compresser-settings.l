@@ -14,6 +14,7 @@
       (setf (elt atlas-joint-indexes i) i)
       )
     (setq ros-atlas-joint-index (coerce atlas-joint-indexes string))
+    (setq ros-atlas-joint-index-float (coerce atlas-joint-indexes float-vector))
     )
 
 

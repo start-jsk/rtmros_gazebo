@@ -11,7 +11,9 @@
 )
 
 (defun compress-callback (msg)
-  (let ((js-compressed (instance hrpsys_gazebo_atlas::JointStateCompressed :init))
+  (let (
+	;;(js-compressed (instance hrpsys_gazebo_atlas::JointStateCompressed :init))
+	(js-compressed (instance sensor_msgs::JointState :init))
 	joint-indexes joint-index joint-angles joint-name
 	)
     (setq hoge msg)
@@ -23,7 +25,8 @@
 	(push (elt (send msg :position) i) joint-angles)
 	)
       )
-    (send js-compressed :index (coerce joint-indexes string))
+;;    (send js-compressed :index (coerce joint-indexes string))
+    (send js-compressed :velocity (coerce joint-indexes float-vector))
     (send js-compressed :position (coerce joint-angles float-vector))
     (ros::publish js-compressed-topic-name js-compressed)
     (if display-info
@@ -37,7 +40,8 @@
   (joint-index-init)
   (ros::subscribe js-topic-name
 		  sensor_msgs::JointState #'compress-callback)
-  (ros::advertise js-compressed-topic-name hrpsys_gazebo_atlas::JointStateCompressed 1)
+  ;;(ros::advertise js-compressed-topic-name hrpsys_gazebo_atlas::JointStateCompressed 1)
+  (ros::advertise js-compressed-topic-name sensor_msgs::JointState 1)
 
   (ros::rate 10)
   (do-until-key
