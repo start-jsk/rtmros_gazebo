@@ -195,7 +195,7 @@
 	 (case command
 	       (:prev *touch-it-interface-ocs*)
 	       (t *touch-it-interface*)))
-	(axis :x)
+	(axis *rotation-axis*)
 	res)
   (case command
 	(:prev nil)
@@ -230,7 +230,7 @@
 	   (warning-message 2 "[touch_it_client] start waiting for result~%")
 	   (send touch-it-interface :wait-for-result)
 	   )))
-    ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
+  ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
   (setq res (send touch-it-interface :get-state))
   ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
   (publish-touchit-result
