@@ -8,7 +8,8 @@
     <rosparam>
       use_service: false
       topics: ["/off_lhsensor", "/off_lfsensor", "/off_rhsensor", "/off_rfsensor"]
-      fixed_rate: 1.0
+      fixed_rate: 10
+      update_rate: 10
     </rosparam>
     <remap from="/update" to="/force_sensor_buffer_server/update"/>
   </node>
