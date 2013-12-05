@@ -354,7 +354,7 @@
 	     :move-coords
 	     (make-coords :pos move :rpy rpy)))
 	   *publish-ik*)
-	  (publish-joint-states))
+	  (publish-joint-states :real? nil))
       ))))
 
 (defun joint-state-subscriber
@@ -509,6 +509,7 @@
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN*)
       (setq *orgin-key* :free)
       (set-origin)
+      (publish-joint-states :real? nil)
       )
      ;;reset target coords
      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_COORDS*)
@@ -517,22 +518,24 @@
       )
      ;;set origin to hand
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
-      (print "set origin to rhand")
+      (format t "[marker-menu] set origin to rhand~%")
       (setq *orgin-key* :rarm)
       (set-origin-to-hand :rarm)
+      (publish-joint-states :real? nil)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_LHAND*)
-      (print "set origin to lhand")
+      (format t "[marker-menu] set origin to lhand~%")
       (setq *orgin-key* :larm)
       (set-origin-to-hand :larm)
+      (publish-joint-states :real? nil)
       )
      ;;change ik-rotation-axis
      ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_T*)
-      (print "set ik-rotation-axis t")
+      (format t "[marker-menu] set ik-rotation-axis t~%")
       (setq *rotation-axis* t)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*IK_ROTATION_AXIS_NIL*)
-      (print "set ik-rotation-axis nil")
+      (format t "[marker-menu] set ik-rotation-axis nil~%")
       (setq *rotation-axis* nil)
       )
      ;;change use-torso
@@ -550,15 +553,15 @@
       )
      ;;changeControllArm
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_RARM*)
-      (print "move rarm")
+      (format t "[marker-menu] move rarm~%")
       (setq *move-limb* :rarm)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_LARM*)
-      (print "move larm")
+      (format t "[marker-menu] move larm~%")
       (setq *move-limb* :larm)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_MOVE_ARMS*)
-      (print "move arms")
+      (format t "[marker-menu] move arms~%")
       (setq *move-limb* :arms)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*PUBLISH_MARKER*)
@@ -566,25 +569,25 @@
       (publish-origin-arrow-obj)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*PLAN*)
-      (print "publish joint states")
+      (format t "[marker-menu] publish joint states~%")
       (setq *ik-stop* nil)
       (setq *publish-ik* t)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*CANCEL_PLAN*)
-      (print "stop publishing joint states")
+      (format t "[marker-menu] stop publishing joint states~%")
       (setq *ik-stop* t)
       (setq *publish-ik* nil)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_EXEC*)
-      (print "touch it exec")
+      (format t "[marker-menu] touch it exec~%")
       (call-touch-it-server :exec)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_PREV*)
-      (print "touch it prev")
+      (format t "[marker-menu] touch it prev~%")
       (call-touch-it-server :prev)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_CANCEL*)
-      (print "touch it cancel")
+      (format t "[marker-menu] touch it cancel~%")
       (call-touch-it-server :cancel)
       )
      )
@@ -599,14 +602,22 @@
   (let ((menu (send msg :menu))
 	(type (send msg :type)))
     (cond
+     ((eq menu jsk_interactive_marker::MarkerMenu::*JOINT_MOVE*)
+      (format t "[marker-menu] move robot!!~%")
+      (publish-joint-states :real? t))
      ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_JOINT*)
-      (publish-joint-states))
+      (format t "[marker-menu] move robot!!~%")
+      (realmodel2model)
+      (publish-joint-states :real? nil))
      ((eq menu 100)
+      (format t "[marker-menu] stand-pose~%")
       (send *robot* :stand-pose)
-      (publish-joint-states))
+      (publish-joint-states :real? nil))
      ((eq menu 101)
+      (format t "[marker-menu] reset-manip-pose~%")
       (send *robot* :reset-manip-pose)
-      (publish-joint-states))
+      (publish-joint-states :real? nil))
+     (t (format t "[marker-menu] unknonw(~A)~%" menu))
      )
     ))
 
@@ -794,7 +805,8 @@
   )
 
 (defun publish-joint-states
-  ()
+  (&key
+   (real? nil))
   (let ((joint-angles nil)
 	(joint-names nil)
 	(joint-list (send *robot* :joint-list))
@@ -809,8 +821,13 @@
     (send joint-state-msg :position joint-angles)
     (send joint-state-msg :name joint-names)
     ;;
-    (ros::publish (format nil "~A/atlas/reset_joint_states" *im-nodename*)
-		  joint-state-msg)
+    (cond
+     (real?
+      (ros::publish (format nil "~A/atlas/joint_states_ri_move" *im-nodename*)
+		    joint-state-msg))
+     (t
+      (ros::publish (format nil "~A/atlas/reset_joint_states" *im-nodename*)
+		    joint-state-msg)))
     )
   )
 
@@ -826,6 +843,10 @@
 (defvar *publish-ik* nil)
 (defvar *orgin-key* :rarm)
 (defvar *ik-stop* (not *publish-ik*))
+
+(defvar *im-nodename* "jsk_model_marker_interface")
+(defvar *server-nodename*
+  "/jsk_interactive_marker_manipulation")
 
 ;;initialize joint-index-list
 ;;it is used to convert joint-name -> index
@@ -848,8 +869,6 @@
 		#'spacenav-subscriber
 		1)
 
-(defvar *server-nodename*
-  "/jsk_interactive_marker_manipulation")
 (ros::advertise (format nil "~A/marker" *server-nodename*)
 		visualization_msgs::Marker)
 (ros::advertise
@@ -865,10 +884,13 @@
  (format nil "~A/marker_menu" *im-nodename*)
  jsk_interactive_marker::MarkerMenu #'marker-menu-callback2)
 
-(defvar *im-nodename* "jsk_model_marker_interface")
 ;;Update Interactive Marker
 (ros::advertise
  (format nil "~A/atlas/reset_joint_states" *im-nodename*)
+ sensor_msgs::JointState)
+
+(ros::advertise
+ (format nil "~A/atlas/joint_states_ri_move" *im-nodename*)
  sensor_msgs::JointState)
 
 (ros::subscribe
@@ -1038,7 +1060,7 @@
 		  ))))
      (x::window-main-one)
      (if *publish-ik*
-	 (publish-joint-states))
+	 (publish-joint-states :real? nil))
      ))
   (if return?
       (subseq *success-state-collection*
