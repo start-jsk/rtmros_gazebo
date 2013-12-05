@@ -61,11 +61,12 @@ class PingGUI(Plugin):
         # 100 -> green, 1000 -> red
         # normalize within 1000 ~ 100
         orig_latency = msg.data
+        msg_data = orig_latency
         if msg.data > 1000:
-            msg.data = 1000
+            msg_data = 1000
         elif msg.data < 100:
-            msg.data = 100
-        ratio = (msg.data - 100) / (1000 - 100)
+            msg_data = 100
+        ratio = (msg_data - 100) / (1000 - 100)
         color_r = ratio * 255.0
         color_g = (1 - ratio) * 255.0
         # devnull = open(os.devnull, "w")
