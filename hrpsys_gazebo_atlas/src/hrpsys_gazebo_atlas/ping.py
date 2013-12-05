@@ -36,7 +36,7 @@ class PingGUI(Plugin):
         super(PingGUI, self).__init__(context)
         # Give QObjects reasonable names
         self.setObjectName('PingGUI')
-        
+        self.msg = None
         # Create a container widget and give it a layout
         self._container = QWidget()
         self._layout    = QVBoxLayout()
@@ -50,9 +50,13 @@ class PingGUI(Plugin):
         
         rospy.Subscriber("/ping/delay", Float64, self.ping_cb)
         context.add_widget(self._container)
-    def set_bg_color(self, r, g, b):
-        self._label.setStyleSheet("QLabel { display: block; background-color: rgba(%d, %d, %d, 255); text-align: center; font-size: 30px;}" % (r, g, b))
-    def ping_cb(self, msg):
+        self._update_plot_timer = QTimer(self)
+        self._update_plot_timer.timeout.connect(self.update_gui)
+        self._update_plot_timer.start(1)
+    def update_gui(self):
+        if not self.msg:
+            return
+        msg = self.msg
         # msec 
         # 100 -> green, 1000 -> red
         # normalize within 1000 ~ 100
@@ -64,10 +68,14 @@ class PingGUI(Plugin):
         ratio = (msg.data - 100) / (1000 - 100)
         color_r = ratio * 255.0
         color_g = (1 - ratio) * 255.0
-        devnull = open(os.devnull, "w")
-        with RedirectStdStreams(stdout=devnull, stderr=devnull):
-            self.set_bg_color(color_r, color_g, 0)
-            self._label.setText("%d ms latency" % (orig_latency))
+        # devnull = open(os.devnull, "w")
+        # with RedirectStdStreams(stdout=devnull, stderr=devnull):
+        self.set_bg_color(color_r, color_g, 0)
+        self._label.setText("%d ms latency" % (orig_latency))
+    def set_bg_color(self, r, g, b):
+        self._label.setStyleSheet("QLabel { display: block; background-color: rgba(%d, %d, %d, 255); text-align: center; font-size: 30px;}" % (r, g, b))
+    def ping_cb(self, msg):
+        self.msg = msg
     def shutdown_plugin(self):
         pass
     def save_settings(self, plugin_settings, instance_settings):
