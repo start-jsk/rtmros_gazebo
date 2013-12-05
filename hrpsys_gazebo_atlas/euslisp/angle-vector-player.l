@@ -30,8 +30,8 @@
 	  (nth *angle-vector-list-index*
 	       *angle-vector-list*)))
    (t
-    (setq *angle-vector-list*
-	  (- *angle-vector-list* 1))
+    (setq *angle-vector-list-index*
+	  (- *angle-vector-list-index* 1))
     (send *robot* :angle-vector
 	  (nth *angle-vector-list-index*
 	       *angle-vector-list*))))
@@ -57,8 +57,8 @@
 	  (nth *angle-vector-list-index*
 	       *angle-vector-list*)))
    (t
-    (setq *angle-vector-list*
-	  (+ *angle-vector-list* 1))
+    (setq *angle-vector-list-index*
+	  (+ *angle-vector-list-index* 1))
     (send *robot* :angle-vector
 	  (nth *angle-vector-list-index*
 	       *angle-vector-list*))))
