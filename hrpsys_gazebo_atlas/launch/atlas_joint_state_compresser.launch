@@ -16,5 +16,5 @@
   <node pkg="jsk_topic_tools" type="topic_buffer_server"
         name="joint_state_buffer_server"
         args="/atlas/joint_states_compressed /multisense_sl/joint_states_compressed"
-        output="screen"/>
+	/>
 </launch>
