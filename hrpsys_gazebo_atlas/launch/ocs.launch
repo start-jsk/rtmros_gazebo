@@ -10,7 +10,6 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_concatenater.launch">
   </include>
   <include file="$(find atlas_prog)/launch/xbox_footstep.launch">
-    <arg name="DEV" value="/dev/input/js1"/>
   </include>
   <!-- start hrpsys_atlas_dashboard -->
   <node pkg="hrpsys_gazebo_atlas" type="hrpsys_atlas_dashboard" name="hrpsys_atlas_dashboard" />
