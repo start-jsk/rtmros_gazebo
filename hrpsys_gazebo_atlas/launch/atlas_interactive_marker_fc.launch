@@ -3,6 +3,6 @@
 
   <!-- joint marker -->
   <group if="$(arg USE_INTERACTIVE_JOINT)">
-    <node pkg="roseus" type="roseus" name="eus_joint" args="$(find jsk_interactive)/euslisp/joint_marker_control/atlas-joint.l"/>
+    <node pkg="roseus" type="roseus" name="atlas_joint_interface_fc" args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-joint-interface-fc.l"/>
   </group>
 </launch>
