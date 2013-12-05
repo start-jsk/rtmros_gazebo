@@ -388,9 +388,6 @@
 	  (unix::usleep (round (* 1000 1000)))
 					;(read-line)
 	  )))
-      (send *robot* :head :look-at
-	    (if left-support? (send (apply #'midcoords 0.5 (send *robot* :arms :end-coords)) :worldpos)
-	      (send (send *robot* :rarm :end-coords) :worldpos)))
       (send *viewer* :draw-objects)
       (if (or
 	   (null *success-state-collection*)
