@@ -501,7 +501,7 @@
 	     :rpy (copy-object prev-base-rpy)))))
 
 ;;Interactive Marker Callback
-(defun move-callback
+(defun marker-menu-callback
   ( msg )
   (let ((menu (send msg :menu))
 	(type (send msg :type)))
@@ -593,6 +593,22 @@
     )
   (publish-arrow-tf)
   )
+
+(defun marker-menu-callback2
+  ( msg )
+  (let ((menu (send msg :menu))
+	(type (send msg :type)))
+    (cond
+     ((eq menu jsk_interactive_marker::MarkerMenu::*RESET_JOINT*)
+      (publish-joint-states))
+     ((eq menu 100)
+      (send *robot* :stand-pose)
+      (publish-joint-states))
+     ((eq menu 101)
+      (send *robot* :reset-manip-pose)
+      (publish-joint-states))
+     )
+    ))
 
 ;;called when marker is moved
 (defun pose-callback
@@ -844,7 +860,10 @@
  jsk_interactive_marker::MarkerPose #'pose-callback)
 (ros::subscribe
  (format nil "~A/marker_menu" *server-nodename*)
- jsk_interactive_marker::MarkerMenu #'move-callback)
+ jsk_interactive_marker::MarkerMenu #'marker-menu-callback)
+(ros::subscribe
+ (format nil "~A/marker_menu" *im-nodename*)
+ jsk_interactive_marker::MarkerMenu #'marker-menu-callback2)
 
 (defvar *im-nodename* "jsk_model_marker_interface")
 ;;Update Interactive Marker
