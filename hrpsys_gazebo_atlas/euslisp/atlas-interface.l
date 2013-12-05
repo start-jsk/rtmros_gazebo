@@ -928,3 +928,34 @@
    (:lleg
     (send *ri* :bdi_step_static (make-coords :pos (float-vector (/ step 2) -140 0)) :l/r :rleg :index 1)))
   )
+
+(defmethod ros::simple-action-client
+  (:wait-for-server
+   (&optional (timeout nil))
+   (let ((goal-topic (format nil "~A/goal" name-space))
+         (cancel-topic (format nil "~A/cancel" name-space))
+         (feedback-topic (format nil "~A/feedback" name-space))
+         (result-topic (format nil "~A/result" name-space))
+         (count 0))
+     (ros::ros-debug "[~A] wait-for-server" name-space)
+     (ros::rate 10)
+     (while (or (= (ros::get-num-subscribers goal-topic) 0)
+                (= (ros::get-num-subscribers cancel-topic) 0)
+                ;;(= (ros::get-num-publishers feedback-topic) 0) ;; by pragmatic reason
+                (= (ros::get-num-publishers result-topic) 0))
+       (ros::ros-debug "[~A] num subscribers ~A ~d, ~A ~d" name-space
+                       goal-topic (ros::get-num-subscribers goal-topic)
+                       cancel-topic (ros::get-num-subscribers cancel-topic))
+       (send self :spin-once)
+       (ros::sleep)
+       (when (and timeout (>= count (* timeout 10)))
+         (ros::ros-warn "[~A] action server is not found" name-space)
+         (ros::ros-warn "     goal=~d, cancel=~d, feedback=~d, result=~d"
+                        (ros::get-num-subscribers goal-topic)
+                        (ros::get-num-subscribers cancel-topic)
+                        (ros::get-num-publishers feedback-topic)
+                        (ros::get-num-publishers result-topic))
+         (return-from :wait-for-server nil))
+       (incf count))
+     t))
+  )
