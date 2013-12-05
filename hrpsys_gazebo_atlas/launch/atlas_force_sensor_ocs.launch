@@ -1,0 +1,15 @@
+<launch>
+  
+    <node pkg="jsk_topic_tools" type="topic_buffer_client"
+          name="force_sensor_buffer_client"
+          output="screen">
+    <param name="update_rate" value="1"  />
+    <remap from="/list" to="/force_sensor_buffer_server/list"/>
+    <rosparam>
+      use_service: false
+      topics: ["/off_lhsensor", "/off_lfsensor", "/off_rhsensor", "/off_rfsensor"]
+      fixed_rate: 1.0
+    </rosparam>
+    <remap from="/update" to="/force_sensor_buffer_server/update"/>
+  </node>
+</launch>

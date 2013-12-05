@@ -1,0 +1,6 @@
+<launch>
+  <node pkg="jsk_topic_tools" type="topic_buffer_server"
+        name="force_sensor_buffer_server"
+        args="/off_lhsensor /off_lfsensor /off_rhsensor /off_rfsensor"
+        output="screen"/>
+</launch>
