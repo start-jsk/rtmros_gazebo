@@ -357,6 +357,22 @@
 	  (publish-joint-states :real? nil))
       ))))
 
+;; (defun joint-state-callback
+;;   (msg)
+;;   (let ((joint-names (send msg :name))
+;; 	(joint-angles (send msg :position))
+;; 	joint-name joint-angle
+;; 	)
+;;     (dotimes (x (length joint-names))
+;;       (setq joint-name (elt joint-names x))
+;;       (setq joint-angle (rad2deg (elt joint-angles x)))
+;;       (send *robot* (intern (string-upcase joint-name) *keyword-package*)
+;; 	    :joint-angle joint-angle)
+;;       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))   
+;;       )
+;;     )
+;;   )
+
 (defun joint-state-subscriber
   (msg)
   (format t "[joint-state-subscriber] called ")
@@ -366,6 +382,7 @@
 	 joint-name joint-angle
 	 buf
 	 )
+     ;;(describe msg)
      (dotimes (x (length joint-names))
        (setq joint-name (elt joint-names x))
        ;;(print joint-name)
@@ -374,7 +391,6 @@
 	     (intern (string-upcase joint-name) *keyword-package*))
        (if (find-method *real-robot* buf)
 	   (send *real-robot* buf :joint-angle joint-angle))
-       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
        )
      (send *real-robot*
 	   :fix-leg-to-coords (make-coords) :both)
@@ -384,6 +400,7 @@
 		    (send *real-robot* *orgin-key*
 			  :end-coords :copy-worldcoords)
 		    :world)))
+     (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
      )))
 
 (defun ros::tf-point->tf-pose (point)
@@ -893,6 +910,10 @@
 (ros::advertise
  (format nil "~A/atlas/reset_joint_states" *im-nodename*)
  sensor_msgs::JointState)
+
+(ros::subscribe
+ (format nil "~A/atlas/joint_states" *im-nodename*)
+ sensor_msgs::JointState #'joint-state-subscriber)
 
 (ros::advertise
  (format nil "~A/atlas/joint_states_ri_move" *im-nodename*)
