@@ -929,6 +929,11 @@
     (send *ri* :bdi_step_static (make-coords :pos (float-vector (/ step 2) -140 0)) :l/r :rleg :index 1)))
   )
 
+(defmethod atlas-interface
+  (:pre-manip-pose ()
+   (send self :angle-vector
+         (float-vector 0.0 3.0 0.0 110.0 120.0 60.0 -70.0 45.0 0.0 -110.0 120.0 -60.0 70.0 45.0 0.0 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0)))
+  )
 (in-package "ROS")
 (defmethod ros::simple-action-client
   (:wait-for-server
