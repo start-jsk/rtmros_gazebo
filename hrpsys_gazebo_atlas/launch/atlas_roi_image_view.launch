@@ -31,6 +31,9 @@
     <param name="fixed_rate" value="10000000" />
     <param name="update_rate" value="10000000" />
     <param name="latched" value="true" />
+    <rosparam>
+      topics: ["/roi_camera_output/image_raw"]
+    </rosparam>
     <remap from="/list" to="/roi_topic_buffer_server/list"/>
     <remap from="/update" to="/roi_topic_buffer_server/update"/>
   </node>
