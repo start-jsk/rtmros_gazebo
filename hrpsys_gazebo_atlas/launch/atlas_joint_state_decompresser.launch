@@ -24,11 +24,11 @@
         output="screen">
     <param name="update_rate" value="$(arg JOINT_STATE_UPDATE_RATE)"  />
     <remap from="/list" to="/joint_state_buffer_server/list"/>
-    <!-- <rosparam> -->
-    <!--   use_service: false -->
-    <!--   topics: ["/atlas/joint_states_compressed", "/multisense_sl/joint_states_compressed"] -->
-    <!--   fixed_rate: 0.1 -->
-    <!-- </rosparam> -->
+    <rosparam>
+      use_service: false
+      topics: ["/atlas/joint_states_compressed", "/multisense_sl/joint_states_compressed"]
+      fixed_rate: 1.0
+    </rosparam>
     <remap from="/update" to="/joint_state_buffer_server/update"/>
   </node>
 
