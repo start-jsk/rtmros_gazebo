@@ -26,10 +26,10 @@
      :target-limb (list arm :lleg :rleg)
      :target-coords (list goal-in-world nil nil)
      :collision? t
-					;:centroid-thre 100
+     ;;:centroid-thre 100
      :root-link-virtual-joint-weight
      (float-vector 0.02 0.02 0.1 0.01 0.04 0.04)
-     :thre '(1 1 1)
+     :thre '(5 5 5)
      :cog-gain 0.7
      ;;:target-centroid-pos nil
      ;;:stop 100
@@ -74,9 +74,12 @@
      :min-vec min
      :max-vec max
      :collision? t
+     :dif-pos-ratio 1.0
+     :dif-rot-ratio 0.00500
+     :manipulability-gain 0 ;0.00500
      ;;:centroid-thre 200
      ;;:target-centroid-pos nil
-     :thre '(1 1 1)
+     :thre '(5 5 5)
      ;;:stop 100
      :rotation-axis '(t t t)))))
 
@@ -121,13 +124,12 @@
 	     :min-vec (float-vector 0 0 0 0 0 0)
 	     :max-vec (float-vector 0 0 0 0 0 0)
 	     :collision? t
-	     :centroid-thre nil
-	     ;;:target-centroid-pos nil
+	     :centroid-thre 1e+10000
 	     ;:stop 100
 	     :dif-pos-ratio 1.0
 	     :dif-rot-ratio 0.00500
 	     :manipulability-gain 0.00500
-	     :thre '(1 1 1)
+	     :thre '(5 5 5)
 	     :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 1))
 	     :rotation-axis '(t t t))))))
     (mapcar
@@ -184,7 +186,7 @@
     (send *robot* :fix-leg-to-coords (make-coords) :both)
     (cond
      ((cadr (member :update-convex opt))
-      (make-foot-convex)
+      (make-foot-convex :force? t)
       (send *irtviewer* :objects
 	    (list *robot* *centroid-object* *foot-convex* *arrow*))))
     ;;(make-foot-convex)

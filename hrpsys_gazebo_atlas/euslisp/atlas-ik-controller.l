@@ -88,12 +88,20 @@
 	    (list "(")
 	    (mapcar
 	     #'(lambda (key val) (format nil "~A ~A " key val))
-	     '(:translation-axis :rotation-axis :stop :update-convex)
+	     '(:translation-axis :rotation-axis :stop :update-convex
+	       :thre :rthre)
 	     (list
 	      (list translation-axis t t)
 	      (list rotation-axis t t)
-	      15
-	      update-convex))
+	      10
+	      update-convex
+	      (list (* 0.9 (norm (send move-coords :worldpos))) 5 5)
+	      (list (* 0.9 (norm
+			    (coerce
+			     (car (send move-coords :rpy-angle))
+			     float-vector)))
+		    (deg2rad 5) (deg2rad 5))
+	      ))
 	    (list ")"))))
     ;;
     (send req :ik_request
@@ -536,7 +544,7 @@
     (send *viewer* :draw-objects)
     (read-line)
     (setq ret (call-ik-server
-	       :rotate? :x :debug-view :no-message)))
+	       :rotate? :x :debug-view nil)))
   (if (not (vectorp ret))
       (send *robot* :newcoords
 	    (make-coords
@@ -1070,7 +1078,7 @@
 	    (mapcar
 	     #'(lambda (move)
 		 (scale
-		  (min 15 (norm move))
+		  (min 30 (norm move))
 		  (normalize-vector move)))
 	     move))
       (setq rot
@@ -1101,8 +1109,8 @@
 					;:rotate? :x
 		   :move-coords
 		   (make-coords
-		    :pos (random-vector 15.0)
-		    :rpy (random-vector 0.1))
+		    :pos (random-vector 30.0)
+		    :rpy (random-vector (deg2rad 10)))
 		   :log-stream nil
 		   ))))
       (x::window-main-one)
@@ -1196,7 +1204,7 @@
 (send *irtviewer* :draw-objects)
 (send *irtviewer* :look-all)
 
-(ros::rate 10)
+(ros::rate 100)
 (set-marker-pose-robot (send *target-coords* :worldcoords))
 (demo-pos-controller)
 
