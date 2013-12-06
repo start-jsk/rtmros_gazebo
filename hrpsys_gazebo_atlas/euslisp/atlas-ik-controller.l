@@ -417,7 +417,6 @@
      (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
      )))
 
-
 (defun joint-state-subscriber
   (msg)
   (format t "[joint-state-subscriber] called ")
@@ -436,6 +435,10 @@
 	     (intern (string-upcase joint-name) *keyword-package*))
        (if (find-method *real-robot* buf)
 	   (send *real-robot* buf :joint-angle joint-angle))
+       (if (find-method *sandia_right_hand* buf)
+	   (send *sandia_right_hand* buf :joint-angle joint-angle))
+       (if (find-method *sandia_left_hand* buf)
+	   (send *sandia_left_hand* buf :joint-angle joint-angle))
        )
      (send *real-robot*
 	   :fix-leg-to-coords (make-coords) :both)
@@ -880,19 +883,17 @@
 (defun publish-joint-states
   (&key
    (real? nil))
-  (let ((joint-angles nil)
-	(joint-names nil)
-	(joint-list (send *robot* :joint-list))
+  (let ((joint-list
+	 (append (send *robot* :joint-list)
+		 (send *sandia_left_hand* :joint-list)
+		 (send *sandia_right_hand* :joint-list)))
 	(joint-state-msg
 	 (instance sensor_msgs::JointState :init
 		   :header (instance std_msgs::header :init
 				     :stamp (ros::time-now)))))
-    (dotimes (x (length joint-list))
-      (push (deg2rad (send (elt joint-list x) :joint-angle)) joint-angles)
-      (push (send (elt joint-list x) :name) joint-names)
-      )
-    (send joint-state-msg :position joint-angles)
-    (send joint-state-msg :name joint-names)
+    (send joint-state-msg :position
+	  (mapcar #'deg2rad (send-all joint-list :joint-angle)))
+    (send joint-state-msg :name (send-all joint-list :name))
     ;;
     (cond
      (real?
