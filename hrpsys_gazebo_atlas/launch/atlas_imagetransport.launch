@@ -12,21 +12,17 @@
   <arg name="SNAPSHOT_RESIZE_RATE" default="0.25" />
   <arg name="SNAPSHOT_IMAGE_TYPE" default="image_rect" />
   <arg name="MJPEGSERVER_PORT" default="8181"/>
-
   <arg name="GAZEBO_MODE" default="false" />
 
-  <group unless="$(arg GAZEBO_MODE)" >
-    <arg name="LHAND_NAMESPACE" default="/sandia_hands/l_hand" />
-    <arg name="RHAND_NAMESPACE" default="/sandia_hands/r_hand" />
-    <arg name="LFISHEYE_NAMESPACE" default="/fish_eye/left_fisheye" />
-    <arg name="RFISHEYE_NAMESPACE" default="/fish_eye/right_fisheye" />
-  </group>
-  <group if="$(arg GAZEBO_MODE)" >
-    <arg name="LHAND_NAMESPACE" default="/sandia_hands/l_hand/camera" />
-    <arg name="RHAND_NAMESPACE" default="/sandia_hands/r_hand/camera" />
-    <arg name="LFISHEYE_NAMESPACE" default="/l_situational_awareness_camera" />
-    <arg name="RFISHEYE_NAMESPACE" default="/r_situational_awareness_camera" />
-  </group>
+  <arg unless="$(arg GAZEBO_MODE)" name="LHAND_NAMESPACE"    value="/sandia_hands/l_hand" />
+  <arg unless="$(arg GAZEBO_MODE)" name="RHAND_NAMESPACE"    value="/sandia_hands/r_hand" />
+  <arg unless="$(arg GAZEBO_MODE)" name="LFISHEYE_NAMESPACE" value="/fish_eye/left_fisheye" />
+  <arg unless="$(arg GAZEBO_MODE)" name="RFISHEYE_NAMESPACE" value="/fish_eye/right_fisheye" />
+
+  <arg if="$(arg GAZEBO_MODE)"     name="LHAND_NAMESPACE"    value="/sandia_hands/l_hand/camera" />
+  <arg if="$(arg GAZEBO_MODE)"     name="RHAND_NAMESPACE"    value="/sandia_hands/r_hand/camera" />
+  <arg if="$(arg GAZEBO_MODE)"     name="LFISHEYE_NAMESPACE" value="/l_situational_awareness_camera" />
+  <arg if="$(arg GAZEBO_MODE)"     name="RFISHEYE_NAMESPACE" value="/r_situational_awareness_camera" />
 
   <!-- rotate hand image -->
   <group if="$(arg USE_ROTATED)" >
