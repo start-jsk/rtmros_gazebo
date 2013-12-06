@@ -38,6 +38,32 @@
       <remap from="image" to="image_rect"/>
       <param name="target_frame_id" value="/map"/>
     </node>
+    <node ns="$(arg LFISHEYE_NAMESPACE)"
+          pkg="image_rotate" type="image_rotate" name="lfisheye_resized_rotated"
+          output="screen">
+      <remap from="image" to="image_raw"/>
+      <param name="target_frame_id" value=""/>
+      <param name="target_x" value="0.0" />
+      <param name="target_y" value="1.0" />
+      <param name="target_z" value="0.0" />
+      <param name="source_frame_id" value=""/>
+      <param name="source_x" value="1.0" />
+      <param name="source_y" value="0.0" />
+      <param name="source_z" value="0.0" />
+    </node>
+    <node ns="$(arg RFISHEYE_NAMESPACE)"
+          pkg="image_rotate" type="image_rotate" name="rfisheye_resized_rotated"
+          output="screen">
+      <remap from="image" to="image_raw"/>
+      <param name="target_frame_id" value=""/>
+      <param name="target_x" value="0.0" />
+      <param name="target_y" value="1.0" />
+      <param name="target_z" value="0.0" />
+      <param name="source_frame_id" value=""/>
+      <param name="source_x" value="-1.0" />
+      <param name="source_y" value="0.0" />
+      <param name="source_z" value="0.0" />
+    </node>
   </group>
 
   <group if="$(arg USE_THROTTLE)" >
@@ -129,16 +155,28 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer"
           name="lfisheye_snap" output="screen" >
+      <!--
       <remap from="camera" to="$(arg LFISHEYE_NAMESPACE)" />
       <remap from="image" to="image_raw" />
+      -->
+      <remap from="camera" to="$(arg LFISHEYE_NAMESPACE)/rotated" />
+      <remap from="$(arg LFISHEYE_NAMESPACE)/rotated/camera_info"
+             to="$(arg LFISHEYE_NAMESPACE)/camera_info" />
+      <remap from="lfisheye_snap/image" to="lfisheye_snap/image_raw" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="use_snapshot" value="true" />
     </node>
     <node pkg="resized_image_transport" type="image_resizer"
           name="rfisheye_snap" output="screen" >
+      <!--
       <remap from="camera" to="$(arg RFISHEYE_NAMESPACE)" />
       <remap from="image" to="image_raw" />
+      -->
+      <remap from="camera" to="$(arg RFISHEYE_NAMESPACE)/rotated" />
+      <remap from="$(arg RFISHEYE_NAMESPACE)/rotated/camera_info"
+             to="$(arg RFISHEYE_NAMESPACE)/camera_info" />
+      <remap from="rfisheye_snap/image" to="rfisheye_snap/image_raw" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="use_snapshot" value="true" />
