@@ -342,10 +342,13 @@
 	    float-vector)))))
     (cond
      ((< (norm
-	  (concatenate
-	   float-vector
-	   (scale 1e-3 move)
-	   rpy)) 0.01)
+	  (coerce
+	   (send msg :axes)
+	   float-vector)) 0.01)
+	  ;; (concatenate
+	  ;;  float-vector
+	  ;;  (scale 1e-3 move)
+	  ;;  rpy)) 0.01)
       (format t "skip ~A ~A~%" move rpy))
      (t
       (setq move
@@ -1098,13 +1101,13 @@
 	    (mapcar
 	     #'(lambda (move)
 		 (scale
-		  (min 30 (norm move))
+		  (min max-step (norm move))
 		  (normalize-vector move)))
 	     move))
       (setq rot
 	    (mapcar
 	     #'(lambda (rot)
-		 (scale (min (deg2rad 5) (norm rot))
+		 (scale (min max-rstep (norm rot))
 			(normalize-vector rot)))
 	     rot))
       (mapcar
@@ -1121,21 +1124,31 @@
 		      )))
        target-limb move rot)
       (cond
-       ((vectorp tmp))
-       (nil ;(evenp (random 2))
-	(setq tmp (call-ik-server
-		   :real? real?
-		   :real-feedback? real-feedback?
-					;:rotate? :x
-		   :move-coords
-		   (make-coords
-		    :pos (random-vector 30.0)
-		    :rpy (random-vector (deg2rad 10)))
-		   :log-stream nil
-		   ))))
-      (x::window-main-one)
-      (if *publish-ik*
-	  (publish-joint-states :real? nil))
+       ((vectorp tmp)
+	(x::window-main-one)
+	(setq max-step
+	      (min 1000 (* max-step 2)))
+	(setq max-rstep
+	      (min (deg2rad 180)
+		   (* max-rstep 2)))
+	(if *publish-ik*
+	    (publish-joint-states :real? nil)))
+       (t ;(evenp (random 2))
+	(setq max-step
+	      (max 1 (/ max-step 2.0)))
+	(setq max-rstep
+	      (max (deg2rad 1) (/ max-rstep 2.0)))
+	;; (setq tmp (call-ik-server
+	;; 	   :real? real?
+	;; 	   :real-feedback? real-feedback?
+	;; 				;:rotate? :x
+	;; 	   :move-coords
+	;; 	   (make-coords
+	;; 	    :pos (random-vector 30.0)
+	;; 	    :rpy (random-vector (deg2rad 10)))
+	;; 	   :log-stream nil
+	;; 	   ))
+	))
       )))
   (if return?
       (subseq *success-state-collection*
