@@ -12,18 +12,16 @@
   <arg name="SNAPSHOT_RESIZE_RATE" default="0.25" />
   <arg name="SNAPSHOT_IMAGE_TYPE" default="image_rect" />
   <arg name="MJPEGSERVER_PORT" default="8181"/>
-
+  <!--
   <arg name="LHAND_NAMESPACE" default="/sandia_hands/l_hand" />
   <arg name="RHAND_NAMESPACE" default="/sandia_hands/r_hand" />
   <arg name="LFISHEYE_NAMESPACE" default="/fish_eye/left_fisheye" />
   <arg name="RFISHEYE_NAMESPACE" default="/fish_eye/right_fisheye" />
-
-  <!--
+  -->
   <arg name="LHAND_NAMESPACE" default="/sandia_hands/l_hand/camera" />
   <arg name="RHAND_NAMESPACE" default="/sandia_hands/r_hand/camera" />
   <arg name="LFISHEYE_NAMESPACE" default="/l_situational_awareness_camera" />
   <arg name="RFISHEYE_NAMESPACE" default="/r_situational_awareness_camera" />
-  -->
 
   <!-- rotate hand image -->
   <group if="$(arg USE_ROTATED)" >
@@ -68,7 +66,7 @@
           output="screen" >
       <remap from="camera" to="$(arg LHAND_NAMESPACE)/left/rotated" />
       <remap from="$(arg LHAND_NAMESPACE)/left/rotated/camera_info"
-	     to="$(arg LHAND_NAMESPACE)/left/camera_info" />
+             to="$(arg LHAND_NAMESPACE)/left/camera_info" />
       <!--remap from="image" to="$(arg THROTTLE_IMAGE_TYPE)"/-->
       <param name="resize_scale_x" value="$(arg THROTTLE_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg THROTTLE_RESIZE_RATE)" />
@@ -80,7 +78,7 @@
           output="screen" >
       <remap from="camera" to="$(arg RHAND_NAMESPACE)/left/rotated" />
       <remap from="$(arg RHAND_NAMESPACE)/left/rotated/camera_info"
-	     to="$(arg RHAND_NAMESPACE)/left/camera_info" />
+             to="$(arg RHAND_NAMESPACE)/left/camera_info" />
       <!--remap from="image" to="$(arg THROTTLE_IMAGE_TYPE)"/-->
       <param name="resize_scale_x" value="$(arg THROTTLE_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg THROTTLE_RESIZE_RATE)" />
@@ -108,7 +106,8 @@
       -->
       <remap from="camera" to="$(arg LHAND_NAMESPACE)/left/rotated" />
       <remap from="$(arg LHAND_NAMESPACE)/left/rotated/camera_info"
-	     to="$(arg LHAND_NAMESPACE)/left/camera_info" />
+             to="$(arg LHAND_NAMESPACE)/left/camera_info" />
+      <remap from="lhand_snap/image" to="lhand_snap/image_rect" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="use_snapshot" value="true" />
@@ -121,7 +120,8 @@
       -->
       <remap from="camera" to="$(arg RHAND_NAMESPACE)/left/rotated" />
       <remap from="$(arg RHAND_NAMESPACE)/left/rotated/camera_info"
-	     to="$(arg RHAND_NAMESPACE)/left/camera_info" />
+             to="$(arg RHAND_NAMESPACE)/left/camera_info" />
+      <remap from="rhand_snap/image" to="rhand_snap/image_rect" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="use_snapshot" value="true" />
