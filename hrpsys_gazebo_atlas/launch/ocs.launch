@@ -23,5 +23,12 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_roi_image_view.launch" />
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_all_viewer.launch" />
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_ping.launch" />
+
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_force_sensor_ocs.launch" />
+  <node name="sensor_tf_larm" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /l_hand /l_arm_wrx 400" >
+    <remap from="/tf" to="/tf_ocs" />
+  </node>
+  <node name="sensor_tf_rarm" pkg="tf" type="static_transform_publisher" args="0 0 0 0 0 0 /r_hand /r_arm_wrx 400" >
+    <remap from="/tf" to="/tf_ocs" />
+  </node>
 </launch>
