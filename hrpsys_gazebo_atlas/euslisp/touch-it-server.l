@@ -141,6 +141,8 @@
 	     (model2real :time 500))
 	   (setq *touch-it-goal-new-p* t)
            ))
+    ;;(send server :publish-feedback (instance geometry_msgs::PoseStamped :init :pose (ros::coords->pose (make-coords :pos #f(1 2 3)))))
+
     ;; (cond (touch-flag (send server :set-succeeded msg))
     ;;      (t (send server :set-lost msg)))
     ;; (send server :set-aborted msg)
