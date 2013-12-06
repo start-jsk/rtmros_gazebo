@@ -7,7 +7,10 @@
 
 
 (defun init-door-setting
-  (&optional (robot-x -800) (robot-y 0) (robot-yaw 0))
+  (&optional (robot-x -800)
+	     (robot-y 0)
+	     (robot-yaw 0)
+	     (view t))
 
   (setq *door* (room73b2-door-right))
   (send *door* :door :max-angle 100)
@@ -16,14 +19,14 @@
 	(send (send (send (send *door* :handle-front-knob) :translate #f(200 0 0))
 		    :rotate (deg2rad -90) :x) :rotate (deg2rad 180) :z))
   (send (elt (send *door* :links) 2) :assoc (send *door* :handle-rear-knob))
-  (objects (list *door*))
+  (if view (objects (list *door*)))
 
   ;; (atlas-init-ex :real nil)
   (unless (and (boundp '*atlas*) *atlas*)
     (atlas-with-hook)
     (send (send *atlas* :larm :end-coords) :translate #f(100 0 0))
     (send (send *atlas* :rarm :end-coords) :translate #f(100 0 0)))
-  (send *irtviewer* :change-background #f(1.0 0.9 1.0))
+  (if view (send *irtviewer* :change-background #f(1.0 0.9 1.0)))
 
   (setq *robot* *atlas*)
   (init-fullbody-ik-main)
@@ -32,7 +35,7 @@
   (send *atlas* :fix-leg-to-coords (make-coords :pos (float-vector robot-x robot-y 0) :rpy (list (deg2rad robot-yaw) 0 0)))
   (make-foot-convex)
 
-  (objects (list *atlas* *door* *foot-convex* *centroid-object*))
+  (if view (objects (list *atlas* *door* *foot-convex* *centroid-object*)))
   )
 
 (defun init-door-pose
@@ -261,6 +264,4 @@
 
 (defmethod atlas-robot
   (:door-pre-pose () (send self :angle-vector (float-vector 0.0 3.0 0.0 117.193 75.6237 28.4498 -64.3526 39.0765 78.3247 -85.6098 101.869 10.52 77.8411 -74.4278 83.6718 28.0 -1.7 -12.5 1.7 -15.5 -6.516951e-16 28.0 1.7 -12.5 -1.7 -15.5 -2.815605e-16 65.6002))))
-
-
 

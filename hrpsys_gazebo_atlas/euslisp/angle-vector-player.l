@@ -42,14 +42,12 @@
     ;;(setq *angle-vector-list-index*
     ;;(- (length *angle-vector-list*) 1))
     (send *robot* :angle-vector
-	  (nth *angle-vector-list-index*
-	       *angle-vector-list*)))
+	  (nth-angle-vector *angle-vector-list-index*)))
    (t
     (setq *angle-vector-list-index*
 	  (- *angle-vector-list-index* 1))
     (send *robot* :angle-vector
-	  (nth *angle-vector-list-index*
-	       *angle-vector-list*))))
+	  (nth-angle-vector *angle-vector-list-index*))))
   (publish-joint-states)
   (send req :response)
   )
@@ -142,7 +140,7 @@
 (ros::advertise-service
  "/next" std_srvs::Empty #'next)
 
-(ros::rate 500)
+(ros::rate 10)
 
 (log "start!!")
 (do-until-key
