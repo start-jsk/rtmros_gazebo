@@ -43,16 +43,68 @@
   ;; (send *atlas* :rarm :inverse-kinematics (make-coords :pos (send *atlas* :rarm :end-coords :worldpos) :rpy (list 0 0 0)))
   )
 
-(defun door-pose1
-  ()
-  ;; (send *atlas* :reset-pose)
+
+(defun open-first-door-side
+  (&key (wait t))
+
   (send *atlas* :reset-manip-pose)
-  (send *atlas* :larm :inverse-kinematics (make-coords :pos (send *atlas* :larm :end-coords :worldpos) :rpy (list 0 0 0)))
-  (send *atlas* :rarm :inverse-kinematics (make-coords :pos (send *atlas* :rarm :end-coords :worldpos) :rpy (list 0 0 0)))
+
+  (init-door-setting -650 -100 80)
+  (make-foot-convex :force? t)
+  (objects (list *atlas* *door* *foot-convex* *centroid-object*))
+  (send *atlas* :angle-vector #f(0.0 3.0 0.0 120.0 100.0 5.0 -65.0 35.0 90.0 -126.851 167.544 66.7547 37.286 27.6476 111.557 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0))
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+
+  (send *atlas* :angle-vector #f(0.0 3.0 0.0 120.0 100.0 5.0 -65.0 35.0 90.0 -135.0 162.593 67.5002 24.9209 27.1113 104.142 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0))
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+  (send *atlas* :angle-vector #f(0.0 3.0 0.0 120.0 100.0 5.0 -65.0 35.0 90.0 -135.0 157.148 67.5002 20.5246 26.5905 97.5366 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0))
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+
+  (send *atlas* :angle-vector #f(0.0 3.0 0.0 120.0 100.0 5.0 -65.0 35.0 90.0 -130.656 111.167 20.8357 36.3135 45.0 83.7744 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0))
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+
+  (send *atlas* :rarm :move-end-pos #f(-25 0 0) :world :revert-if-fail nil)
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+
+  (send *atlas* :rarm :move-end-pos #f(0 0 -100) :world :revert-if-fail nil)
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+  (send *atlas* :rarm :move-end-pos #f(0 0 -100) :world :revert-if-fail nil)
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+  (send *atlas* :rarm :move-end-pos #f(200 0 0) :world :revert-if-fail nil)
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+  (send *atlas* :rarm :move-end-pos #f(100 -30 0) :world :revert-if-fail nil)
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
+
+  (send *atlas* :rarm :elbow-y :joint-angle 40)
+  (send *irtviewer* :draw-objects)
+  (if wait (read-line) (unix:usleep (* 200 1000)))
   )
 
-(defun open-first-door
-  (&key (wait t) )
+(defun open-first-door-front
+  (&key (wait t))
+
+  (init-door-setting)
+  
+  (send *atlas* :fix-leg-to-coords (make-coords :pos (float-vector -600 -200 0)))
+  (make-foot-convex)
+  (objects (list *atlas* *door* *foot-convex* *centroid-object*))
 
   (send *door* :door :joint-angle 0)
 
@@ -106,8 +158,6 @@
   (send *atlas* :angle-vector #f(0.0 3.0 0.0 124.399 74.4945 54.4666 -90.0002 45.0 58.0857 -30.0 90.0 0.0 80.0 15.0 0.0 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0))
   (send *irtviewer* :draw-objects)
   (if wait (read-line) (unix:usleep (* 200 1000)))
-
-
   )
 
 
@@ -177,7 +227,7 @@
 				#F(1000 1000 1000 200 200 200))
 		  :collision? t
 		  :debug-view :no-message
-		  :centroid-thre 200
+		  ;; :centroid-thre 200
 		  ;;:target-centroid-pos nil
 		  :thre '(100 1 1)
 		  ;;:stop 100
@@ -211,12 +261,6 @@
 
 (defmethod atlas-robot
   (:door-pre-pose () (send self :angle-vector (float-vector 0.0 3.0 0.0 117.193 75.6237 28.4498 -64.3526 39.0765 78.3247 -85.6098 101.869 10.52 77.8411 -74.4278 83.6718 28.0 -1.7 -12.5 1.7 -15.5 -6.516951e-16 28.0 1.7 -12.5 -1.7 -15.5 -2.815605e-16 65.6002))))
-
-
-
-;; (send *atlas* :reset-manip-pose)
-
-;; (send *atlas* :angle-vector #f(0.0 3.0 0.0 120.0 100.0 5.0 -65.0 35.0 90.0 -126.851 167.544 66.7547 37.286 27.6476 111.557 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0))
 
 
 
