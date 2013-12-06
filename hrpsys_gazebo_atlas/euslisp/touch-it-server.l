@@ -46,28 +46,28 @@
          (vec (scale 1000.0 (float-vector (send pos :x) (send pos :y) (send pos :z))))
          (goal-coords (make-coords :pos vec))
          tc
-         (ik-type (case seq
-                    (0 :larm)
-                    (1 :larm-torso)
-                    (2 :larm-fullbody)
-                    (3 :rarm)
-                    (4 :rarm-torso)
-                    (5 :rarm-fullbody)))
+         (ik-type
+	  (case (mod seq 10)
+		(0 :larm)
+		(1 :larm-torso)
+		(2 :larm-fullbody)
+		(3 :rarm)
+		(4 :rarm-torso)
+		(5 :rarm-fullbody)))
          touch-flag
-	 axis
+	 (axis
+	  (case (round (/ seq 10))
+		(0 :z)
+		(1 :x)
+		(2 :y)
+		(3 nil)
+		(t t)))
          arm
          msg)
 
     (x::window-main-one)
 
     (warning-message 4 "[touch_it] callback function was called !~%")
-
-    (setq axis (send (send goal :goal_id) :id))
-    (setq axis
-	  (if (and axis (plusp (length axis)))
-	      (read-from-string axis)
-	    :z))
-    (warning-message 4 "[touch_it] axis = ~A !~%" axis)
 
     ;; recieve arguments
     (warning-message 4 "[touch_it] original pose timestamp is ~a!~%"
@@ -108,7 +108,8 @@
 		  #f(0 0 0))))
       (setq *touch-it-iteration-count* 0)
       )
-    
+
+    (warning-message 1 "[touch_it] arm=~A ik-type=~A axis=~A !~%" arm ik-type axis)
     (setq touch-flag (touch-it-control-proc tc :arm arm :ik-type ik-type
 					    :f-orig *touch-it-force-reference*
 					    :i *touch-it-iteration-count*

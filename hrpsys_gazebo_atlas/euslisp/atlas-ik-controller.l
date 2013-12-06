@@ -185,29 +185,36 @@
 (defvar *touch-it-server-detected* nil)
 (defun call-touch-it-server
   (command
-   &key (ik-type
-	 (cond
-	  ((eq *move-limb* :rarm)
-	   (cond
-	    (*use-fullbody* *touchit-target-rarm-fullbody*)
-	    (*use-torso* *touchit-target-rarm-torso*)
-	    (t *touchit-target-rarm*)))
-	  ((eq *move-limb* :larm)
-	   (cond
-	    (*use-fullbody* *touchit-target-larm-fullbody*)
-	    (*use-torso* *touchit-target-larm-torso*)
-	    (t *touchit-target-larm*)))))
-	(frame_id "/pelvis")
-	(target-coords *target-coords*)
-	(target-coords-from-pelvis
-	 (send (send *robot* :copy-worldcoords)
-	       :transformation target-coords))
-	(touch-it-interface
-	 (case command
-	       (:prev *touch-it-interface-ocs*)
-	       (t *touch-it-interface*)))
-	(axis *rotation-axis*)
-	res)
+   &key
+   (ik-type
+    (cond
+     ((eq *move-limb* :rarm)
+      (cond
+       (*use-fullbody* *touchit-target-rarm-fullbody*)
+       (*use-torso* *touchit-target-rarm-torso*)
+       (t *touchit-target-rarm*)))
+     ((eq *move-limb* :larm)
+      (cond
+       (*use-fullbody* *touchit-target-larm-fullbody*)
+       (*use-torso* *touchit-target-larm-torso*)
+       (t *touchit-target-larm*)))))
+   (frame_id "/pelvis")
+   (target-coords *target-coords*)
+   (target-coords-from-pelvis
+    (send (send *robot* :copy-worldcoords)
+	  :transformation target-coords))
+   (touch-it-interface
+    (case command
+	  (:prev *touch-it-interface-ocs*)
+	  (t *touch-it-interface*)))
+   (axis
+    (case *rotation-axis*
+	  (:z 0)
+	  (:x 1)
+	  (:y 2)
+	  (nil 3)
+	  (t 4)))
+   res)
   (case command
 	(:prev nil)
 	(t (send touch-it-interface :cancel-all-goals)))
@@ -235,8 +242,7 @@
 	   (send goal :goal :target_pose :pose :orientation :y (elt q 2))
 	   (send goal :goal :target_pose :pose :orientation :z (elt q 3))
 	   (send goal :goal :target_pose :pose :orientation :w (elt q 0))
-	   (send goal :goal :target_pose :header :seq ik-type)
-	   (send (send goal :goal_id) :id (format nil "~A" axis))
+	   (send goal :goal :target_pose :header :seq (+ (* 10 axis) ik-type))
 	   ;; send request
 	   (warning-message 2 "[touch_it_client] send goal to server ~%")
 	   (send touch-it-interface :send-goal goal)
