@@ -435,10 +435,10 @@
 	     (intern (string-upcase joint-name) *keyword-package*))
        (if (find-method *real-robot* buf)
 	   (send *real-robot* buf :joint-angle joint-angle))
-       (if (find-method *sandia_right_hand* buf)
-	   (send *sandia_right_hand* buf :joint-angle joint-angle))
-       (if (find-method *sandia_left_hand* buf)
-	   (send *sandia_left_hand* buf :joint-angle joint-angle))
+       (if (find-method *sandia_hand_left* buf)
+	   (send *sandia_hand_left* buf :joint-angle joint-angle))
+       (if (find-method *sandia_hand_right* buf)
+	   (send *sandia_hand_right* buf :joint-angle joint-angle))
        )
      (send *real-robot*
 	   :fix-leg-to-coords (make-coords) :both)
@@ -885,8 +885,8 @@
    (real? nil))
   (let ((joint-list
 	 (append (send *robot* :joint-list)
-		 (send *sandia_left_hand* :joint-list)
-		 (send *sandia_right_hand* :joint-list)))
+		 (send *sandia_hand_right* :joint-list)
+		 (send *sandia_hand_left* :joint-list)))
 	(joint-state-msg
 	 (instance sensor_msgs::JointState :init
 		   :header (instance std_msgs::header :init
