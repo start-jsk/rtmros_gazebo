@@ -94,7 +94,8 @@
     <node pkg="resized_image_transport" type="image_resizer" name="head_snap"
           output="screen" >
       <remap from="camera" to="/multisense_sl/camera/left" />
-      <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
+      <!--remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" /-->
+      <remap from="image" to="image_rect_color" />
       <param name="resize_scale_x" value="0.16" />
       <param name="resize_scale_y" value="0.16" />
       <param name="use_snapshot" value="true" />
