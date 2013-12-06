@@ -182,6 +182,7 @@
 (defvar *touchit-target-rarm-torso* 4)
 (defvar *touchit-target-rarm-fullbody* 5)
 
+(defvar *touch-it-server-detected* nil)
 (defun call-touch-it-server
   (command
    &key (ik-type
@@ -219,7 +220,10 @@
 		goal)
 	   ;; set request
 	   (warning-message 2 "[touch_it_client] start waiting for server~%")
-	   (send touch-it-interface :wait-for-server)
+	   (cond
+	    ((not *touch-it-server-detected*)
+	     (setq *touch-it-server-detected* t)
+	     (send touch-it-interface :wait-for-server)))
 	   (warning-message 2 "[touch_it_client] finish waiting for server ~%")
 	   (setq goal (instance move_base_msgs::MoveBaseActionGoal :init))
 	   (send goal :goal :target_pose :header :frame_id frame_id)
@@ -640,7 +644,7 @@
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_PREV*)
       (format t "[marker-menu] touch it prev~%")
-      (call-touch-it-server :prev)
+      ;;(call-touch-it-server :prev)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*TOUCHIT_CANCEL*)
       (format t "[marker-menu] touch it cancel~%")
