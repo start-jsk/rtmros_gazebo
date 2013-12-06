@@ -17,6 +17,7 @@
 	args="$(find hrpsys_gazebo_atlas)/euslisp/multisense-sl-joint-state-decompresser.l"
 	output="screen">
     <remap from="/atlas/joint_states_compressed_buffered" to="/multisense_sl/joint_states_compressed_buffered"/>
+    <remap from="/atlas/joint_states_decompressed" to="/multisense_sl/joint_state_decompressed"/>
   </node>
 
   <node pkg="jsk_topic_tools" type="topic_buffer_client"
