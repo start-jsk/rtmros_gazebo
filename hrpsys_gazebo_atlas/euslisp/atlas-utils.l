@@ -616,6 +616,49 @@
 
 
 
+(defun look-hand
+  (&optional (arm :rarm))
+  (let* ((carm (car (remove arm (list :larm :rarm))))
+	 (axis :y)
+	 (v1 (normalize-vector
+	      (v- (send (send *atlas* carm :end-coords) :worldpos)
+		  (send (send *atlas* arm :end-coords) :worldpos))))
+	 (v2 (float-vector 0 0 1))
+	 v3
+	 tc-pos tc-rot tc
+	 ret)
+    (setq v2 (normalize-vector (v* v1 v2)))
+    (setq v3 (normalize-vector (v* v1 v2)))
+    (setq tc-pos (send (send *atlas* arm :end-coords) :worldpos))
+    (cond ((equal arm :larm)
+	   (setq tc-rot (transpose (matrix v3 (v- v1) (v- v2)))))
+	  ((equal arm :rarm)
+	   (setq tc-rot (transpose (matrix v3 v1 v2)))))
+    (setq tc (make-coords :pos tc-pos :rot tc-rot))
+    ;; (send tc :draw-on :flush t :size 800 :width 5 :color #f(1 0 0))
+    (setq ret (send *atlas* arm :inverse-kinematics tc :stop 100
+		    :thre 1
+		    :rthre (deg2rad 2)
+		    :rotation-axis axis
+		    :revert-if-fail nil))
+    (send *irtviewer* :draw-objects)
+    ret))
+
+(defun test-look-hand
+  (&optional (arm :larm))
+  (do-until-key
+   (let* ((carm (car (remove arm (list :larm :rarm))))
+	  (r 1000)
+	  (r/2 (/ r 2)))
+     (send *atlas* :reset-manip-pose)
+     (send *atlas* carm :move-end-pos (float-vector (- r/2 (random r)) (- r/2 (random r)) (- r/2 (random r))) :world :revert-if-fail nil)
+     (send *irtviewer* :draw-objects)
+     (unix::usleep (* 200 1000))
+     (look-hand arm)
+     (read-line))))
+
+
+
 ;; for safety comfirmation
 
 (defun draw-real-robot
