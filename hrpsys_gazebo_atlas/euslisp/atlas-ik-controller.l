@@ -59,9 +59,8 @@
    (update-convex t)
    &allow-other-keys
    )
-  (cond
-   (*ik-stop*
-    (return-from call-ik-server nil)))
+  ;;(cond
+  ;;(*ik-stop* (return-from call-ik-server nil)))
   (let* ((c target-coords-from-pelvis)
 	 (p (scale 1e-3 (send c :worldpos)))
 	 (q (matrix2quaternion (send c :worldrot)))
@@ -369,14 +368,12 @@
 	    (map float-vector
 		 #'*
 		 rpy rpy-filter))
-      (if (and
-	   (vectorp
-	    (call-ik-server
-	     :rotation-axis t
-	     :translation-axis t
-	     :move-coords
-	     (make-coords :pos move :rpy rpy)))
-	   *publish-ik*)
+      (if (vectorp
+	   (call-ik-server
+	    :rotation-axis t
+	    :translation-axis t
+	    :move-coords
+	    (make-coords :pos move :rpy rpy)))
 	  (publish-joint-states :real? nil))
       ))))
 
@@ -1044,122 +1041,127 @@
       ;;(hand-even-fix :cnt 1)
       ;;(dotimes (i 2)
       ;;(call-ik-server :rotate? :x :log-stream nil))
-      (setq
-       target-limb
-       (case *move-limb*
-	     (:arms '(:rarm :larm))
-	     (t (list *move-limb*))))
-      (setq
-       now
-       (mapcar
-	#'(lambda (k)
-	    (send *robot* k
-		  :end-coords :copy-worldcoords))
-	target-limb))
-      (setq
-       str
-       (mapcar
-	#'(lambda (k)
-	    (send *real-robot* k
-		  :end-coords :copy-worldcoords))
-	target-limb))
-      (setq
-       goal
-       (mapcar
-	#'(lambda (str)
-	    (send *origin-coords* :transformation str))
-	str))
-      (send-all goal :transform *target-coords* :world)
-      (setq
-       now-from-pelvis
-       (mapcar
-	#'(lambda (now goal)
-	    (send (send *robot* :copy-worldcoords) :transformation now))
-	now goal))
-      (setq
-       goal-from-pelvis
-       (mapcar
-	#'(lambda (now goal)
-	    (send (send *robot* :copy-worldcoords) :transformation goal))
-	now goal))
-      (setq
-       move
-       (mapcar
-	#'(lambda (now-from-pelvis goal-from-pelvis)
-	    (transform
-	     (send now-from-pelvis :worldrot)
-	     (send now-from-pelvis :difference-position
-		   goal-from-pelvis)))
-	now-from-pelvis goal-from-pelvis))
-      (setq
-       rot
-       (mapcar
-	#'(lambda (now-from-pelvis goal-from-pelvis)
-	    (transform
-	     (send now-from-pelvis :worldrot)
-	     (send now-from-pelvis :difference-rotation
-		   goal-from-pelvis)))
-	now-from-pelvis goal-from-pelvis))
-      (format t
-	      "[pos-controller] :dif-pos ~A, :dif-rot ~A, :sleep ~A "
-	      (mapcar #'norm move) (mapcar #'norm rot) *ik-stop*)
-      (if (and (not non-stop)
-	       (< (apply #'max (mapcar #'norm move)) 10)
-	       (< (apply #'max (mapcar #'norm rot)) (deg2rad 5)))
-	  (return-from nil t))
-      (setq move
-	    (mapcar
-	     #'(lambda (move)
-		 (scale
-		  (min max-step (norm move))
-		  (normalize-vector move)))
-	     move))
-      (setq rot
-	    (mapcar
-	     #'(lambda (rot)
-		 (scale (min max-rstep (norm rot))
-			(normalize-vector rot)))
-	     rot))
-      (mapcar
-       #'(lambda (limb move rot)
-	   (setq tmp (call-ik-server
-		      :target-limb limb
-		      :real? real?
-		      :move-coords
-		      (make-coords
-		       :pos move
-		       :rpy (reverse rot))
-		      :rotate? :x
-		      :log-stream nil
-		      )))
-       target-limb move rot)
       (cond
-       ((vectorp tmp)
-	(x::window-main-one)
-	(setq max-step
-	      (min 1000 (* max-step 2)))
-	(setq max-rstep
-	      (min (deg2rad 180)
-		   (* max-rstep 2)))
-	(if *publish-ik*
-	    (publish-joint-states :real? nil)))
-       (t ;(evenp (random 2))
-	(setq max-step
-	      (max 1 (/ max-step 2.0)))
-	(setq max-rstep
-	      (max (deg2rad 1) (/ max-rstep 2.0)))
-	;; (setq tmp (call-ik-server
-	;; 	   :real? real?
-	;; 	   :real-feedback? real-feedback?
-	;; 				;:rotate? :x
-	;; 	   :move-coords
-	;; 	   (make-coords
-	;; 	    :pos (random-vector 30.0)
-	;; 	    :rpy (random-vector (deg2rad 10)))
-	;; 	   :log-stream nil
-	;; 	   ))
-	))
-      )))
+       (*ik-stop*
+	(format t "[demo-pos-controller] ik-stop")
+	(unix:usleep (round (* 1000 100))))
+       (t
+	(setq
+	 target-limb
+	 (case *move-limb*
+	       (:arms '(:rarm :larm))
+	       (t (list *move-limb*))))
+	(setq
+	 now
+	 (mapcar
+	  #'(lambda (k)
+	      (send *robot* k
+		    :end-coords :copy-worldcoords))
+	  target-limb))
+	(setq
+	 str
+	 (mapcar
+	  #'(lambda (k)
+	      (send *real-robot* k
+		    :end-coords :copy-worldcoords))
+	  target-limb))
+	(setq
+	 goal
+	 (mapcar
+	  #'(lambda (str)
+	      (send *origin-coords* :transformation str))
+	  str))
+	(send-all goal :transform *target-coords* :world)
+	(setq
+	 now-from-pelvis
+	 (mapcar
+	  #'(lambda (now goal)
+	      (send (send *robot* :copy-worldcoords) :transformation now))
+	  now goal))
+	(setq
+	 goal-from-pelvis
+	 (mapcar
+	  #'(lambda (now goal)
+	      (send (send *robot* :copy-worldcoords) :transformation goal))
+	  now goal))
+	(setq
+	 move
+	 (mapcar
+	  #'(lambda (now-from-pelvis goal-from-pelvis)
+	      (transform
+	       (send now-from-pelvis :worldrot)
+	       (send now-from-pelvis :difference-position
+		     goal-from-pelvis)))
+	  now-from-pelvis goal-from-pelvis))
+	(setq
+	 rot
+	 (mapcar
+	  #'(lambda (now-from-pelvis goal-from-pelvis)
+	      (transform
+	       (send now-from-pelvis :worldrot)
+	       (send now-from-pelvis :difference-rotation
+		     goal-from-pelvis)))
+	  now-from-pelvis goal-from-pelvis))
+	(format t
+		"[pos-controller] :dif-pos ~A, :dif-rot ~A, :sleep ~A "
+		(mapcar #'norm move) (mapcar #'norm rot) *ik-stop*)
+	(if (and (not non-stop)
+		 (< (apply #'max (mapcar #'norm move)) 10)
+		 (< (apply #'max (mapcar #'norm rot)) (deg2rad 5)))
+	    (return-from nil t))
+	(setq move
+	      (mapcar
+	       #'(lambda (move)
+		   (scale
+		    (min max-step (norm move))
+		    (normalize-vector move)))
+	       move))
+	(setq rot
+	      (mapcar
+	       #'(lambda (rot)
+		   (scale (min max-rstep (norm rot))
+			  (normalize-vector rot)))
+	       rot))
+	(mapcar
+	 #'(lambda (limb move rot)
+	     (setq tmp (call-ik-server
+			:target-limb limb
+			:real? real?
+			:move-coords
+			(make-coords
+			 :pos move
+			 :rpy (reverse rot))
+			:rotate? :x
+			:log-stream nil
+			)))
+	 target-limb move rot)
+	(cond
+	 ((vectorp tmp)
+	  (x::window-main-one)
+	  (setq max-step
+		(min 1000 (* max-step 2)))
+	  (setq max-rstep
+		(min (deg2rad 180)
+		     (* max-rstep 2)))
+	  (if *publish-ik*
+	      (publish-joint-states :real? nil)))
+	 (t ;(evenp (random 2))
+	  (setq max-step
+		(max 1 (/ max-step 2.0)))
+	  (setq max-rstep
+		(max (deg2rad 1) (/ max-rstep 2.0)))
+	  ;; (setq tmp (call-ik-server
+	  ;; 	   :real? real?
+	  ;; 	   :real-feedback? real-feedback?
+	  ;; 				;:rotate? :x
+	  ;; 	   :move-coords
+	  ;; 	   (make-coords
+	  ;; 	    :pos (random-vector 30.0)
+	  ;; 	    :rpy (random-vector (deg2rad 10)))
+	  ;; 	   :log-stream nil
+	  ;; 	   ))
+	  ))
+	)))))
   (if return?
       (subseq *success-state-collection*
 	      0
