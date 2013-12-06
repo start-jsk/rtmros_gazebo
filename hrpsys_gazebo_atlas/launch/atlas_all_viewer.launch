@@ -85,4 +85,5 @@
     <param name="resize_scale_y" value="$(arg SNAP_RESIZE_RATE)" />
   </node>
 
+  <node pkg="hrpsys_gazebo_atlas" type="image_gui.py" name="image_snapshot_gui" />
 </launch>
