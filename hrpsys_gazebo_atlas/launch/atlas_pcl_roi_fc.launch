@@ -1,5 +1,6 @@
 <launch>
   <group ns="pointcloud_roi">
+    <!-- we will have add_grid at /pointcloud_roi/add_grid -->
     <!-- fc -->
     <node pkg="nodelet" type="nodelet"
           name="pcl_roi_fc_manager" args="manager"
@@ -9,6 +10,24 @@
           args="load jsk_pcl/VoxelGridDownsampleManager /pointcloud_roi/pcl_roi_fc_manager"
           output="screen" clear_params="true">
       <remap from="~input" to="/laser/full_cloud2_raw" />
+      <remap from="~add_grid" to="add_grid"/>
     </node>
+    
+    <node pkg="nodelet" type="nodelet"
+          name="l_hand_voxel_grid_manager"
+          args="load jsk_pcl/VoxelGridDownsampleManager /pointcloud_roi/pcl_roi_fc_manager"
+          output="screen" clear_params="true">
+      <remap from="~input" to="/sandia_hands/l_hand/points2" />
+      <remap from="~add_grid" to="add_grid"/>
+    </node>
+
+    <node pkg="nodelet" type="nodelet"
+          name="r_hand_voxel_grid_manager"
+          args="load jsk_pcl/VoxelGridDownsampleManager /pointcloud_roi/pcl_roi_fc_manager"
+          output="screen" clear_params="true">
+      <remap from="~input" to="/sandia_hands/r_hand/points2" />
+      <remap from="~add_grid" to="add_grid"/>
+    </node>
+    
   </group>
 </launch>
