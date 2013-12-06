@@ -3,6 +3,7 @@
 (ros::load-ros-manifest "roseus")
 (ros::load-ros-manifest "std_srvs")
 (ros::load-ros-manifest "sensor_msgs")
+(ros::load-ros-manifest "visualization_msgs")
 
 (ros::roseus "angle-vector-player")
 
@@ -18,14 +19,28 @@
     "                     "))
   (format t "~A ~A~%" (or pre-fix space-pre-fix) str))
 
+(defun nth-angle-vector
+  (id)
+  (cond
+   ((or (< id 0)
+	(>= id (length *angle-vector-list*)))
+    (log "index out of range ~A~%" id) nil)
+   (t
+    (let ((target (nth id *angle-vector-list*)))
+      (cond
+       ((vectorp target) target)
+       ((functionp target) (funcall target :id id))
+       (t (log "unknow type ~A~%" target) nil))))))
+
 (defun prev (req)
   (log "prev")
   (cond
    ((zerop (length *angle-vector-list*))
     (log "no-candidates!!" :pre-fix nil))
    ((<= *angle-vector-list-index* 0)
-    (setq *angle-vector-list-index*
-	  (- (length *angle-vector-list*) 1))
+    (publish-text "no candidate")
+    ;;(setq *angle-vector-list-index*
+    ;;(- (length *angle-vector-list*) 1))
     (send *robot* :angle-vector
 	  (nth *angle-vector-list-index*
 	       *angle-vector-list*)))
@@ -52,16 +67,16 @@
     (log "no-candidates!!" :pre-fix nil))
    ((>= *angle-vector-list-index*
 	(- (length *angle-vector-list*) 1))
-    (setq *angle-vector-list-index* 0)
+    (publish-text "no candidate")
+    ;;(setq *angle-vector-list-index* 0)
     (send *robot* :angle-vector
-	  (nth *angle-vector-list-index*
-	       *angle-vector-list*)))
+	  (nth-angle-vector *angle-vector-list-index*)))
    (t
     (setq *angle-vector-list-index*
 	  (+ *angle-vector-list-index* 1))
     (send *robot* :angle-vector
-	  (nth *angle-vector-list-index*
-	       *angle-vector-list*))))
+	  (nth-angle-vector
+	   *angle-vector-list-index*))))
   (publish-joint-states)
   (send req :response)
   )
@@ -86,9 +101,33 @@
 		  joint-state-msg))
   )
 
+(defun publish-text
+  (text)
+  (let ((marker (instance visualization_msgs::marker :init)))
+    (send marker :header :frame_id "/im_target_coords_arrow")
+    (send marker :id 1)
+    (send marker :lifetime (ros::time 5))
+    (send marker :pose :position :z 1)
+    (send marker :pose :orientation :w 1)
+    (send marker :color :r 1)
+    (send marker :color :g 1)
+    (send marker :color :a 1)
+    (send marker :scale :z 0.3)
+    (send marker :type visualization_msgs::marker::*TEXT_VIEW_FACING*)
+    (send marker :text text)
+    (ros::publish (format nil "~A/marker" *server-nodename*) marker)
+    )
+  )
+
+(defvar *server-nodename*
+  "/jsk_interactive_marker_manipulation")
 (defvar *im-nodename* "jsk_model_marker_interface")
 (defvar *angle-vector-list-index* 0)
 (defvar *angle-vector-list*)
+
+(ros::advertise
+ (format nil "~A/marker" *server-nodename*)
+ visualization_msgs::Marker)
 
 (ros::advertise
  (format nil "~A/atlas/reset_joint_states" *im-nodename*)
