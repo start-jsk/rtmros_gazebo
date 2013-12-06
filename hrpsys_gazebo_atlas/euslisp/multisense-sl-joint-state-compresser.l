@@ -4,7 +4,7 @@
 (setq js-topic-name "/multisense_sl/joint_states")
 (setq js-compressed-topic-name "/multisense_sl/joint_states_compressed")
 
-(setq display-info t)
+(setq display-info nil)
 
 (defun get-joint-index (joint-name)
   (cdr (assoc joint-name multisense-sl-joint-index-list :key #'car :test #'string=))
