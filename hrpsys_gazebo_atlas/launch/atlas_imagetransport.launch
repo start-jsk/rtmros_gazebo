@@ -102,16 +102,26 @@
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="lhand_snap"
           output="screen" >
+      <!--
       <remap from="camera" to="$(arg LHAND_NAMESPACE)/left" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
+      -->
+      <remap from="camera" to="$(arg LHAND_NAMESPACE)/left/rotated" />
+      <remap from="$(arg LHAND_NAMESPACE)/left/rotated/camera_info"
+	     to="$(arg LHAND_NAMESPACE)/left/camera_info" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="use_snapshot" value="true" />
     </node>
     <node pkg="resized_image_transport" type="image_resizer" name="rhand_snap"
           output="screen" >
+      <!--
       <remap from="camera" to="$(arg RHAND_NAMESPACE)/left" />
       <remap from="image" to="$(arg SNAPSHOT_IMAGE_TYPE)" />
+      -->
+      <remap from="camera" to="$(arg RHAND_NAMESPACE)/left/rotated" />
+      <remap from="$(arg RHAND_NAMESPACE)/left/rotated/camera_info"
+	     to="$(arg RHAND_NAMESPACE)/left/camera_info" />
       <param name="resize_scale_x" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="resize_scale_y" value="$(arg SNAPSHOT_RESIZE_RATE)" />
       <param name="use_snapshot" value="true" />
