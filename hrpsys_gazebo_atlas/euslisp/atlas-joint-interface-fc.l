@@ -24,9 +24,10 @@
        )
     (dotimes (x (length joint-names))
       (setq joint-name (elt joint-names x))
-      (setq joint-angle (rad2deg (elt joint-angles x)))
-      (send *atlas* (intern (string-upcase joint-name) *keyword-package*)
-	    :joint-angle joint-angle)
+      (let ((hand-method (intern (string-upcase joint-name) *keyword-package*)))
+	(setq joint-angle (rad2deg (elt joint-angles x)))
+	(if (find-method *atlas* hand-method)
+	    (send *atlas* hand-method :joint-angle joint-angle)))
       (when (boundp '*irtviewer*) (send *irtviewer* :draw-objects))
       )
 
