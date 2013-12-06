@@ -617,12 +617,25 @@
 
 
 (defun look-hand
-  (&optional (arm :rarm))
+  (&optional
+   (arm :rarm)
+   &key
+   (rotate 0)
+   (axis
+    (transform
+     (send (send *atlas* :links :r_hand) :worldrot)
+     #F(0 -1 0)))
+   (rotate-matrix
+    (matrix-exponent
+     (normalize-vector axis) (deg2rad rotate))))
   (let* ((carm (car (remove arm (list :larm :rarm))))
 	 (axis :y)
-	 (v1 (normalize-vector
-	      (v- (send (send *atlas* carm :end-coords) :worldpos)
-		  (send (send *atlas* arm :end-coords) :worldpos))))
+	 (v1
+	  (transform
+	   rotate-matrix
+	   (normalize-vector
+	    (v- (send (send *atlas* carm :end-coords) :worldpos)
+		(send (send *atlas* arm :end-coords) :worldpos)))))
 	 (v2 (float-vector 0 0 1))
 	 v3
 	 tc-pos tc-rot tc
