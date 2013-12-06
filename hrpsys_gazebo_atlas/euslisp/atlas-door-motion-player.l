@@ -4,6 +4,8 @@
 (ros::load-ros-manifest "jsk_interactive")
 (ros::load-ros-manifest "jsk_interactive_marker")
 
+(ros::roseus "atlas_door_motion_player")
+
 (require "atlas-door.l")
 
 (init-door-setting -650 -100 80 nil)
