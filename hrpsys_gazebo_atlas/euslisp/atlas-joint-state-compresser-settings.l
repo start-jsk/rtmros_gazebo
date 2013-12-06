@@ -19,12 +19,12 @@
 
 
   (setq multisense-sl-joint-name-list
-	;; (list
-	;;  "hokuyo_joint" "pre_spindle_cal_x_joint" "pre_spindle_cal_y_joint" "pre_spindle_cal_z_joint" "pre_spindle_cal_roll_joint" "pre_spindle_cal_pitch_joint" "pre_spindle_cal_yaw_joint" "post_spindle_cal_x_joint" "post_spindle_cal_y_joint" "post_spindle_cal_z_joint" "post_spindle_cal_roll_joint" "post_spindle_cal_pitch_joint" "post_spindle_cal_yaw_joint"
-	;;  )
 	(list
-	 "hokuyo_joint"
+	 "hokuyo_joint" "pre_spindle_cal_x_joint" "pre_spindle_cal_y_joint" "pre_spindle_cal_z_joint" "pre_spindle_cal_roll_joint" "pre_spindle_cal_pitch_joint" "pre_spindle_cal_yaw_joint" "post_spindle_cal_x_joint" "post_spindle_cal_y_joint" "post_spindle_cal_z_joint" "post_spindle_cal_roll_joint" "post_spindle_cal_pitch_joint" "post_spindle_cal_yaw_joint"
 	 )
+	;; (list
+	;;  "hokuyo_joint"
+	;;  )
 	)
   (setq joint-name-list
 	(append atlas-joint-name-list multisense-sl-joint-name-list)
