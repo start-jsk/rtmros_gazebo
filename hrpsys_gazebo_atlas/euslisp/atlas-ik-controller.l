@@ -95,11 +95,13 @@
 	      (list rotation-axis t t)
 	      10
 	      update-convex
-	      (list (* 0.9 (norm (send move-coords :worldpos))) 5 5)
-	      (list (* 0.9 (norm
-			    (coerce
-			     (car (send move-coords :rpy-angle))
-			     float-vector)))
+	      (list (max 1 (* 0.9 (norm (send move-coords :worldpos))))
+		    5 5)
+	      (list (max (deg2rad 5)
+			 (* 0.9 (norm
+				 (coerce
+				  (car (send move-coords :rpy-angle))
+				  float-vector))))
 		    (deg2rad 5) (deg2rad 5))
 	      ))
 	    (list ")"))))
@@ -641,6 +643,16 @@
       (format t "[marker-menu] touch it cancel~%")
       (call-touch-it-server :cancel)
       )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*LOOK_RARM*)
+      (format t "[marker-menu] look rarm~%")
+      (look-hand :rarm)
+      (publish-joint-states :real? nil)
+      )
+     ((eq menu jsk_interactive_marker::MarkerMenu::*LOOK_LARM*)
+      (format t "[marker-menu] look larm~%")
+      (look-hand :larm)
+      (publish-joint-states :real? nil)
+      )
      )
     (when (boundp '*irtviewer*)
       (send *irtviewer* :draw-objects))
@@ -888,7 +900,7 @@
 (send *origin-coords* :translate #f(500 0 0))
 (defvar *old-coords* (send *target-coords* :copy-worldcoords))
 (defvar *use-fullbody* nil)
-(defvar *use-torso* t)
+(defvar *use-torso* nil)
 (defvar *translation-axis* t)
 (defvar *rotation-axis* t)
 (defvar *publish-ik* nil)
@@ -989,6 +1001,9 @@
    (cnt 1000)
    (non-stop t)
    (return? nil)
+   ;;
+   (max-step 1000)
+   (max-rstep (deg2rad 180))
    )
   (if return?
       (setq return?
@@ -1102,7 +1117,7 @@
        target-limb move rot)
       (cond
        ((vectorp tmp))
-       (t ;(evenp (random 2))
+       (nil ;(evenp (random 2))
 	(setq tmp (call-ik-server
 		   :real? real?
 		   :real-feedback? real-feedback?
