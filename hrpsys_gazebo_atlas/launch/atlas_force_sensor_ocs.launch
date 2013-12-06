@@ -2,7 +2,7 @@
   
     <node pkg="jsk_topic_tools" type="topic_buffer_client"
           name="force_sensor_buffer_client"
-          output="screen">
+          output="log">
     <param name="update_rate" value="1"  />
     <remap from="/list" to="/force_sensor_buffer_server/list"/>
     <rosparam>

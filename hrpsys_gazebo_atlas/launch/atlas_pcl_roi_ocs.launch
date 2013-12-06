@@ -4,7 +4,7 @@
     <node pkg="jsk_interactive_marker"
           type="point_cloud_config_marker"
           name="roi_point_cloud_config_marker"
-          output="screen"
+          output="log"
           clear_params="true">
       <param name="size" value="0.5" />
       <remap from="~get" to="voxel_grid_manager/add_grid" />
@@ -12,7 +12,7 @@
     <!-- ocs -->
     <node pkg="nodelet" type="nodelet"
           name="pcl_roi_ocs_manager" args="manager"
-          output="screen" alaunch-prefix="xterm -e gdb --args" />
+          output="log" alaunch-prefix="xterm -e gdb --args" />
     <node pkg="nodelet" type="nodelet"
           name="voxel_grid_decoder"
           args="load jsk_pcl/VoxelGridDownsampleDecoder /pointcloud_roi/pcl_roi_ocs_manager"

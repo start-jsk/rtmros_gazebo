@@ -47,7 +47,7 @@
     </include>
     <!-- eus-ik-controller -->
 
-    <node pkg="roseus" type="roseus" name="atlas_ik_controller" args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-ik-controller.l" output="screen"/>
+    <node pkg="roseus" type="roseus" name="atlas_ik_controller" args="$(find hrpsys_gazebo_atlas)/euslisp/atlas-ik-controller.l" output="log"/>
 
   </group>
 </launch>
