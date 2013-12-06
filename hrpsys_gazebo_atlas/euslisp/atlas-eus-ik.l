@@ -105,13 +105,7 @@
 		   (list (send *atlas* :torso k :child-link)
 			 gain))
 	       (list :waist-r :waist-p :waist-y)
-	       (make-list 3 :initial-element 0))
-	      (mapcar
-	       #'(lambda (k gain)
-		   (list (send *atlas* arm k :child-link)
-			 gain))
-	       '(:shoulder-r :shoulder-y :elbow-p)
-	       '(1e-4 1e-1 1e+10)))
+	       (make-list 3 :initial-element 0)))
 	     ;; :additional-nspace-list
 	     ;; (mapcar
 	     ;;  #'(lambda (k)
