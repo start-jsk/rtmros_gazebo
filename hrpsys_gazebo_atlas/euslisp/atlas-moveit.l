@@ -76,6 +76,60 @@
    )
   )
 
+
+(defun init-moveit-environment ()
+  (setq *co* (instance collision-object-publisher :init))
+  (setq *me* (instance atlas-moveit-environment :init)) ;; call (atlas) inside it
+
+  (if (not (boundp '*ri*)) (setq *ri* (instance robot-interface :init :robot (atlas) :namespace "ri")))
+  (setq *atlas* (atlas-with-hand))
+  (send *atlas* :fix-leg-to-coords (make-coords))
+  (objects (list *atlas*))
+  )
+
+(defun make-simple-box (&optional (x 480) (y 580))
+  (send *co* :wipe-all)
+  (send *atlas* :fix-leg-to-coords (make-coords))
+  (let (cb0 cb1 cb2)
+    (setq cb0 (make-cube 10 1800 2000))
+    (send cb0 :translate (float-vector (+ x 5) 0 1000))
+    (setq cb1 (make-cube 1800 10 2000))
+    (send cb1 :translate (float-vector 0 (- -5 y) 1000))
+    (setq cb2 (make-cube 1800 10 2000))
+    (send cb2 :translate (float-vector 0 (+ 5 y) 1000))
+    (objects (list *atlas* cb0 cb1 cb2))
+
+    (publish-collision-object cb0 *atlas* "pelvis")
+    (publish-collision-object cb1 *atlas* "pelvis")
+    (publish-collision-object cb2 *atlas* "pelvis")
+    ))
+
+(defun make-door-like (&optional (x 480) (door-width 914.4))
+  (send *co* :wipe-all)
+  (send *atlas* :fix-leg-to-coords (make-coords))
+  (let (cb3 cb4)
+    (setq cb3 (make-cube 40 1000 2000))
+    (send cb3 :translate (float-vector (+ x 20) (+ 500 (/  door-width 2)) 1000))
+    (setq cb4 (make-cube 40 1000 2000))
+    (send cb4 :translate (float-vector (+ x 20) (- -500 (/ door-width 2)) 1000))
+    (objects (list *atlas* cb3 cb4))
+    (publish-collision-object cb3 *atlas* "pelvis")
+    (publish-collision-object cb4 *atlas* "pelvis")
+    ))
+
+(defun moveit-motion-plan (target-pose &key initial-pose (tm 1000) (arm :larm))
+  ;;(send *atlas* :reset-manip-pose)
+  (let ((av (send *atlas* :angle-vector))
+        ret)
+    (when initial-pose
+      (send *ri* :angle-vector initial-pose tm))
+    (send *atlas* :angle-vector target-pose)
+    (send *me* :sync-robot-model *atlas*) ;; set target-pose to moveit
+    (setq ret (send *me* :motion-plan arm
+                    :planning-attempts 10 :planning-time 200.0))
+    (send *atlas* :angle-vector av)
+    ret))
+
 #|
 ;; gazebo
 (atlas-init-ex)
@@ -91,45 +145,21 @@
 
 #|
 ;; simulation
-(setq *co* (instance collision-object-publisher :init))
-(setq *me* (instance atlas-moveit-environment :init)) ;; call (atlas) inside it
-
-(if (not (boundp '*ri*)) (setq *ri* (instance robot-interface :init :robot (atlas) :namespace "ri")))
-(setq *atlas* (atlas-with-hand)))
-(send *atlas* :fix-leg-to-coords (make-coords))
-(objects (list *atlas*))
+$ roslaunch atlas_v3_moveit_config demo.launch
+(init-moveit-environment)
+(make-simple-box)
+;; solve motion plan
+(moveit-motion-plan (send *atlas* :reset-manip-pose)
+                    :initial-pose (send *atlas* :reset-pose)
+                    :arm :larm)
 
 ;; motion plan
 (send *ri* :angle-vector (send *atlas* :reset-pose)) ;; set robot joint-angle (start state)
 (send *ri* :angle-vector (send *atlas* :angle-vector)) ;; set robot joint-angle (start state)
 
 ;; add collision object
-(send *co* :wipe-all)
-(setq cb0 (make-cube 10 2400 2000))
-(send cb0 :translate #f(480 0 1000))
-(setq cb1 (make-cube 2400 10 2000))
-(send cb1 :translate #f(0 -580 1000))
-(setq cb2 (make-cube 2400 10 2000))
-(send cb2 :translate #f(0 580 1000))
-(objects (list *atlas* cb0 cb1 cb2))
 
-(publish-collision-object cb0 *atlas* "pelvis")
-(publish-collision-object cb1 *atlas* "pelvis")
-(publish-collision-object cb2 *atlas* "pelvis")
 
-(send *co* :wipe-all)
-(setq cb3 (make-cube 40 1000 2000))
-(send cb3 :translate (float-vector 450 (+ 500 (/ 914.4 2)) 1000))
-(setq cb4 (make-cube 40 1000 2000))
-(send cb4 :translate (float-vector 450 (- -500 (/ 914.4 2)) 1000))
-(objects (list *atlas* cb3 cb4))
-(publish-collision-object cb3 *atlas* "pelvis")
-(publish-collision-object cb4 *atlas* "pelvis")
-
-(send *atlas* :pre-manip-pose
-;;(send *atlas* :reset-manip-pose)
-(send *me* :sync-robot-model *atlas*) ;; set target-pose to moveit
-(setq ret (send *me* :motion-plan :larm :planning-attempts 10 :planning-time 200.0))
 (setq avs (apply-joint_trajectory (send ret :trajectory :joint_trajectory) *atlas*))
 
 (send *me* :motion-plan :rarm-torso)
