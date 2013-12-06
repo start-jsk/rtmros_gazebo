@@ -1,5 +1,5 @@
 <launch>
-  <arg name="USE_INTERACTIVE_JOINT" default="false" />
+  <arg name="USE_INTERACTIVE_JOINT" default="true" />
   <!-- for point cloud -->
 
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_pcl_divider.launch"/>
