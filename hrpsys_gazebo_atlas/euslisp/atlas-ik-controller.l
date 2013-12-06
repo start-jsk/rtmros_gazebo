@@ -951,6 +951,11 @@
  sensor_msgs::JointState
 #'joint-state-subscriber 1)
 
+(ros::subscribe
+ "/multisense_sl/joint_states_decompressed"
+ sensor_msgs::JointState
+#'joint-state-subscriber 1)
+
 ;;Update Interactive Marker
 (ros::advertise
  (format nil "~A/atlas/reset_joint_states" *im-nodename*)
