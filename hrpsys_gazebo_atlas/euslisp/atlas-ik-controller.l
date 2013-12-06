@@ -214,9 +214,10 @@
 	  (nil 3)
 	  (t 4)))
    res)
-  (case command
-	(:prev nil)
-	(t (send touch-it-interface :cancel-all-goals)))
+  ;;(case command
+  ;;(:prev nil)
+  ;;(t (send touch-it-interface :cancel-all-goals)))
+  ;;(unix:sleep 2)
   (case command
 	(:cancel (send touch-it-interface :cancel-all-goals))
 	(t
