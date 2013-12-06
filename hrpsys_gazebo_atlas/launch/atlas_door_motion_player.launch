@@ -1,0 +1,8 @@
+<launch>
+  <node pkg="hrpsys_gazebo_atlas"
+	type="atlas-door-motion-player.l"
+	name="atlas_door_motion_player" output="screen"/>
+  <node pkg="hrpsys_gazebo_atlas"
+	type="eus_gui.py"
+	name="angle_vector_player_gui" output="screen"/>
+</launch>
