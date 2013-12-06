@@ -17,7 +17,7 @@
 	args="$(find hrpsys_gazebo_atlas)/euslisp/multisense-sl-joint-state-decompresser.l"
 	output="screen">
     <remap from="/atlas/joint_states_compressed_buffered" to="/multisense_sl/joint_states_compressed_buffered"/>
-    <remap from="/atlas/joint_states_decompressed" to="/multisense_sl/joint_state_decompressed"/>
+    <remap from="/atlas/joint_states_decompressed" to="/multisense_sl/joint_states_decompressed"/>
   </node>
 
   <node pkg="jsk_topic_tools" type="topic_buffer_client"
@@ -40,4 +40,12 @@
     <remap from="/joint_states" to="/atlas/joint_states_decompressed"/>
     <remap from="robot_description" to="$(arg ROBOT_DESCRIPTION_OCS)"/>
   </node>
+  <node pkg="robot_state_publisher" type="state_publisher" name="decompressed_multisense_sl_robot_state_publisher"
+	output="screen">
+    <param name="publish_frequency" type="double" value="$(arg tf_frequency)" />
+    <remap from="/tf" to="$(arg OCS_TF)"/>
+    <remap from="/joint_states" to="/multisense_sl/joint_states_decompressed"/>
+    <remap from="robot_description" to="$(arg ROBOT_DESCRIPTION_OCS)"/>
+  </node>
+
 </launch>
