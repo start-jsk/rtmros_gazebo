@@ -16,7 +16,7 @@
   <arg name="USE_CONTROLLER" default="true" />
   <group if="$(arg USE_CONTROLLER)" >
     <env name="HRPSYS_GAZEBO_ATLAS_COMMAND_TOPIC_NAME" value="/atlas/atlas_command_hrpsys" />
-    <!-- <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_touchit_server.launch" /> -->
+    <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_touchit_server.launch" />
   </group>
   <group unless="$(arg USE_CONTROLLER)" >
     <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_ik.launch" /> 
