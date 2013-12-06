@@ -34,9 +34,9 @@
            to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)_buffered/screenpoint" />
     -->
     <remap from="/image_rect_color/screenrectangle"
-           to="head_snap/image_rect/screenrectangle" />
+           to="head_snap/image_rect_color/screenrectangle" />
     <remap from="/image_rect_color/screenpoint"
-           to="head_snap/image_rect/screenpoint" />
+           to="head_snap/image_rect_color/screenpoint" />
   </node>
 
   <node pkg="jsk_topic_tools" type="topic_buffer_server"
