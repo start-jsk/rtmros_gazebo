@@ -1,6 +1,7 @@
 <launch>
   <arg name="CREATE_MANAGER" default="true" />
   <arg name="MANAGER_NAME" default="roi_image_proc_manager" />
+  <arg name="GAZEBO_MODE" default="false" />
 
   <node if="$(arg CREATE_MANAGER)"
         pkg="nodelet" type="nodelet" name="$(arg MANAGER_NAME)"
@@ -11,37 +12,47 @@
   <arg name="DECIMATE_OUTPUT_CAMERA" default="roi_camera_output" />
   <!--arg name="DECIMATE_OUTPUT_IMAGE" default="image_raw" /-->
 
+  <arg unless="$(arg GAZEBO_MODE)" name="LHAND_NAMESPACE"    value="/sandia_hands/l_hand" />
+  <arg unless="$(arg GAZEBO_MODE)" name="RHAND_NAMESPACE"    value="/sandia_hands/r_hand" />
+
+  <arg if="$(arg GAZEBO_MODE)"     name="LHAND_NAMESPACE"    value="/sandia_hands/l_hand/camera" />
+  <arg if="$(arg GAZEBO_MODE)"     name="RHAND_NAMESPACE"    value="/sandia_hands/r_hand/camera" />
+
   <node pkg="nodelet" type="nodelet" name="roi_crop_decimate"
         args="load image_proc/crop_decimate $(arg MANAGER_NAME)" >
-    <!--remap from="camera" to="$(arg DECIMATE_CAMERA)" /-->
     <remap from="camera/image_raw" to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)" />
     <remap from="camera_out" to="$(arg DECIMATE_OUTPUT_CAMERA)" />
   </node>
+  <node pkg="nodelet" type="nodelet" name="roi_crop_lh_decimate"
+        args="load image_proc/crop_decimate $(arg MANAGER_NAME)" >
+    <remap from="camera/image_raw" to="$(arg LHAND_NAMESPACE)/left/rotated/image" />
+    <remap from="$(arg LHAND_NAMESPACE)/left/rotated/camera_info"
+           to="$(arg LHAND_NAMESPACE)/left/camera_info" />
+    <remap from="camera_out" to="roi_camera_output_lh" />
+  </node>
+  <node pkg="nodelet" type="nodelet" name="roi_crop_rh_decimate"
+        args="load image_proc/crop_decimate $(arg MANAGER_NAME)" >
+    <remap from="camera/image_raw" to="$(arg RHAND_NAMESPACE)/left/rotated/image" />
+    <remap from="$(arg RHAND_NAMESPACE)/left/rotated/camera_info"
+           to="$(arg RHAND_NAMESPACE)/left/camera_info" />
+    <remap from="camera_out" to="roi_camera_output_rh" />
+  </node>
 
   <node pkg="roseus_tutorials" type="roi-reconfigure-call.l"
-        name="roi_reconfigure_call" output="screen" >
-    <!--remap from="roi_crop_decimate/set_parameters" to="" /-->
-    <!--
-    <remap from="/image_rect_color/screenrectangle"
-           to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)/screenrectangle" />
-    <remap from="/image_rect_color/screenpoint"
-           to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)/screenpoint" />
-    -->
-    <!--
-    <remap from="/image_rect_color/screenrectangle"
-           to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)_buffered/screenrectangle" />
-    <remap from="/image_rect_color/screenpoint"
-           to="$(arg DECIMATE_CAMERA)/$(arg DECIMATE_IMAGE)_buffered/screenpoint" />
-    -->
-    <remap from="/image_rect_color/screenrectangle"
-           to="head_snap/image_rect_color/screenrectangle" />
-    <remap from="/image_rect_color/screenpoint"
-           to="head_snap/image_rect_color/screenpoint" />
+        name="roi_reconfigure_call" output="screen" respawn="true" >
   </node>
 
   <node pkg="jsk_topic_tools" type="topic_buffer_server"
         name="roi_topic_buffer_server"
         args=" /roi_camera_output/image_raw"
+        output="screen"/>
+  <node pkg="jsk_topic_tools" type="topic_buffer_server"
+        name="roi_lh_topic_buffer_server"
+        args=" /roi_camera_output_lh/image_raw"
+        output="screen"/>
+  <node pkg="jsk_topic_tools" type="topic_buffer_server"
+        name="roi_rh_topic_buffer_server"
+        args=" /roi_camera_output_rh/image_raw"
         output="screen"/>
 
 </launch>
