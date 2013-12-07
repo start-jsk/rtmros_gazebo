@@ -17,13 +17,19 @@
 
 (ros::roseus "atlas_eus_ik")
 
-(defun fullbody-ik-with-collision (arm goal-in-world &rest args)
+(defun fullbody-ik-with-collision
+  (arm goal-in-world
+       &key (move-target (send *robot* arm :end-coords))
+       &rest args)
   (apply
    #'fullbody-ik-main
    (append
     args
     (list
      :target-limb (list arm :lleg :rleg)
+     :move-target
+     (cons move-target
+	   (mapcar #'(lambda (k) (send *robot* k :end-coords)) '(:rleg :lleg)))
      :target-coords (list goal-in-world nil nil)
      :collision? t
      ;;:centroid-thre 100
@@ -35,31 +41,36 @@
      ;;:stop 100
      :rotation-axis '(t t t)))))
 
-(defun torso-ik-with-collision (arm goal-in-world
-				    &rest args
-				    &key
-				    (waist-gain '(0.1 0.1 0.1))
-				    (root-link-virtual-joint-weight
-				     (float-vector 0 0 0 0 0 0))
-				    (max
-				     (map float-vector
-					  #'*
-					  root-link-virtual-joint-weight
-					  #F(1000 1000 1000 200 200 200)))
-				    (min
-				     (scale
-				      -1
-				      (map float-vector
-					   #'*
-					   root-link-virtual-joint-weight
-					   #F(1000 1000 1000 200 200 200))))
-				    &allow-other-keys)
+(defun torso-ik-with-collision
+  (arm goal-in-world
+       &key (move-target (send *robot* arm :end-coords))
+       &rest args
+       &key
+       (waist-gain '(0.1 0.1 0.1))
+       (root-link-virtual-joint-weight
+	(float-vector 0 0 0 0 0 0))
+       (max
+	(map float-vector
+	     #'*
+	     root-link-virtual-joint-weight
+	     #F(1000 1000 1000 200 200 200)))
+       (min
+	(scale
+	 -1
+	 (map float-vector
+	      #'*
+	      root-link-virtual-joint-weight
+	      #F(1000 1000 1000 200 200 200))))
+       &allow-other-keys)
   (apply
    #'fullbody-ik-main
    (append
     args
     (list
      :target-limb (list arm :lleg :rleg)
+     :move-target
+     (cons move-target
+	   (mapcar #'(lambda (k) (send *robot* k :end-coords)) '(:rleg :lleg)))
      :target-coords (list goal-in-world nil nil)
      :additional-weight-list
      (mapcar
@@ -83,7 +94,10 @@
      ;;:stop 100
      :rotation-axis '(t t t)))))
 
-(defun normal-ik-with-collision (arm goal-in-world &rest args)
+(defun normal-ik-with-collision
+  (arm goal-in-world
+       &key (move-target (send *robot* arm :end-coords))
+       &rest args)
   (let* ((w
 	  (send-all (send *atlas* :joint-list)
 		    :max-joint-velocity))
@@ -97,6 +111,9 @@
 	    args
 	    (list
 	     :target-limb (list arm :lleg :rleg)
+	     :move-target
+	     (cons move-target
+		   (mapcar #'(lambda (k) (send *robot* k :end-coords)) '(:rleg :lleg)))
 	     :target-coords (list goal-in-world nil nil)
 	     :additional-weight-list
 	     (append
@@ -152,7 +169,17 @@
                  (plusp (length opt-str))
                  (listp (setq opt-str (read-from-string opt-str))))
             opt-str)
-           (t (list :update-convex t)))))
+           (t (list :update-convex t))))
+	 (move-target-pre (cdr (assoc :ik-move-target opt)))
+	 (move-target
+	  (cond
+	   (move-target-pre
+	    (make-cascoords :init :link-list
+			    :name :ik-server-end-coords
+			    :parent (send *robot* arm :end-coords :parent)
+			    :coords (eval move-target-pre)))
+	   (t (send *robot* arm :end-coords))))
+	 )
     ;; taking joint state into account
     (cond
      ((and (send req :ik_request :robot_state)
@@ -195,6 +222,11 @@
                            (send req :ik_request :pose_stamped :pose :orientation :z))))
       (send res :error_code :val moveit_msgs::MoveItErrorCodes::*FAILURE*)
       (cond
+       ((eq (send move-target :name) :ik-server-end-coords)
+	(send (send *robot* arm :end-coords :parent)
+	      :assoc
+	      move-target)))
+      (cond
        ((not (eps= (norm q) 1.0))
         (format t "invalid quotanion detected ~A~%" q)
         res)
@@ -210,6 +242,7 @@
                           #'fullbody-ik-with-collision
                           (append
                            (list arm goal-in-world)
+			   (list :move-target move-target)
                            opt))
                          )
 			(torso2p
@@ -217,6 +250,7 @@
                           #'torso-ik-with-collision
                           (append
                            (list arm goal-in-world)
+			   (list :move-target move-target)
 			   (list :root-link-virtual-joint-weight
 				 (float-vector 0.02 0.02 0.1 0.0 0.0 0.04))
                            opt)))
@@ -225,6 +259,7 @@
                           #'torso-ik-with-collision
                           (append
                            (list arm goal-in-world)
+			   (list :move-target move-target)
 			   (list :waist-gain '(0 0 1))
                            opt)))
                         (torsop
@@ -232,12 +267,14 @@
                           #'torso-ik-with-collision
                           (append
                            (list arm goal-in-world)
+			   (list :move-target move-target)
                            opt)))
                         (t
                          (apply
                           #'normal-ik-with-collision
                           (append
                            (list arm goal-in-world)
+			   (list :move-target move-target)
                            opt))))))
           ;;(print (list 'original goal))
           ;; (print (list 'original
@@ -252,6 +289,11 @@
           ;; (print (list 'goal-in-pelvis goal-in-pelvis))
           ;; (print (list 'goal-in-world goal-in-world))
           ik-ret)
+	(cond
+	 ((eq (send move-target :name) :ik-server-end-coords)
+	  (send (send *robot* arm :end-coords :parent)
+		:dissoc
+		move-target)))
         (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
 	(send *viewer* :draw-objects)
         (send res :solution :joint_state :name
