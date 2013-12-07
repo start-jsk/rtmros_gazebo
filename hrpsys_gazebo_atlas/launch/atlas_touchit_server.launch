@@ -1,7 +1,8 @@
 <launch>
   <node pkg="hrpsys_gazebo_atlas"
 	type="touch-it-server.l"
-	name="atlas_touchit_server">
+	name="atlas_touchit_server"
+	output="screen">
     <env name="TOUCH_IT_ACTION_TOPIC_NAME" value="/touchit/act/exec" />
   </node>
 </launch>
