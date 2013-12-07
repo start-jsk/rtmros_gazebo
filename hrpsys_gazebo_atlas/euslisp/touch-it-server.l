@@ -232,8 +232,8 @@
 
   (send *irtviewer* :draw-objects)
 
-  (warning-message 1 "~%")
-  (warning-message 1 "[touch_it] touch_it_action_node started !~%")
+  (ros::ros-warn "~%")
+  (ros::ros-warn "[touch_it] touch_it_action_node started !~%")
 
   (do-until-key
     (x::window-main-one)
