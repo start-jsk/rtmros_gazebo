@@ -14,6 +14,8 @@ else
     next_topic=/sandia_hands/${hand}/points2_dummy
 fi
 
-echo $selected_topic '->' $next_topic
+
 
 rosrun topic_tools mux_select /pointcloud_roi/${hand}_pointcloud_mux $next_topic
+echo $selected_topic '->' $next_topic
+sleep 10;
