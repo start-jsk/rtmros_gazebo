@@ -358,7 +358,7 @@
 	   ;; 	 (send *robot* k :links)))
 	   ;;   '(:rarm :larm)))
 	   :root-link-virtual-joint-weight
-	   #f(0.1 0.1 0.1 0.1 0.5 0.1)
+	   #f(0.1 0.1 0.5 0.1 0.5 0.1)
 	   :stop stop
 	   ))
     (if (vectorp ret)
@@ -425,7 +425,7 @@
      :other-link-list
      (list
       (send *robot* :link-list (send *robot* :torso :end-coords :parent)))
-     :other-thre (list (/ (norm move) 2.0))
+     :other-thre (list (min 1 (* (norm move) 0.9)))
      :other-rotation-axis (list nil)
      :other-translation-axis (list :y))
     args))
@@ -525,24 +525,35 @@
   ;;  support-leg)
   (send *robot* :fix-leg-to-coords (make-coords) (car support-leg))
   (update-objects))
-       
+
 ;; #f(0.2728 25.0957 0.200876 68.3812 95.4757 17.3559 -9.84019 -38.041 120.288 -68.4782 96.3951 -16.5412 8.46219 -37.1436 118.89 56.871 -1.69028 -29.4271 1.67763 -21.6498 -0.178443 56.8317 1.97898 -29.4029 -1.9736 -21.6338 0.1912 0.0)
 
 ;; #f(-0.006031 21.5731 -0.00371 66.8495 95.763 -4.5047 3.588 -51.1387 94.5435 -66.8393 95.7746 4.50817 -3.58026 -51.1616 94.544 68.3758 0.005316 -53.0474 -0.005879 -21.0097 -0.000292 68.3762 0.005316 -53.0477 -0.005879 -21.0098 -0.000292 0.0)
 
 #|
 
+(init-pose)
+(send *robot* :translate #F(50 0 0) :world)
 (defvar *rsd*)
 (defvar *cen*)
 (setq *rsd* nil)
 (setq *cen* nil)
-(on-ladder :move-limb :lleg :centroid-thre 100 :cog-gain 0.5)
+(on-ladder :move-limb :lleg
+	   :all-limbs '(:rleg :lleg)
+	   :centroid-thre 100 :cog-gain 0.5)
 (push (copy-object (send *robot* :centroid)) *cen*)
 (push (gen-rsd :reach) *rsd*)
-(static-limb-move :move-limb nil :centroid-thre 100)
-(static-limb-move :move-limb nil :centroid-thre 100 :centroid-offset #F(10 10 0))
-(static-limb-move :move-limb nil :centroid-thre 100 :centroid-offset #F(10 10 0))
-(static-limb-move :move-limb nil :centroid-thre 100 :centroid-offset #F(10 10 0))
+(static-limb-move :move-limb nil
+		  :all-limbs '(:rleg :lleg)
+		  :centroid-thre 100)
+(static-limb-move :move-limb nil
+		  :all-limbs '(:rleg :lleg)
+		  :centroid-thre 100
+		  :centroid-offset #F(10 10 0))
+(static-limb-move :move-limb nil
+		  :all-limbs '(:rleg :lleg)
+		  :centroid-thre 100
+		  :centroid-offset #F(10 10 0))
 (send *robot* :torso :waist-p :joint-angle 100)
 (push (copy-object (send *robot* :centroid)) *cen*)
 (push (gen-rsd :balance) *rsd*)
@@ -559,6 +570,11 @@
 		  (v- (send *robot* :rleg :end-coords :worldpos)
 		      (car *cen*))
 		  0 2))))
+(on-ladder :move-limb :rleg
+	   :all-limbs '(:rleg :lleg)
+	   :centroid-thre 10 :cog-gain 1.0)
+(push  (list  (cons :tag :land) (cons :angle-vector (copy-object (send *robot* :angle-vector))) (cons :worldcoords (copy-object (send *robot* :worldcoords)))) *rsd*)
+(dump-loadable-structure "dynamic-ladder-climb-data.l" *rsd*)
 
 (init-pose)
 (on-ladder :move-limb :larm :centroid-thre 100 :cog-gain 0.5)

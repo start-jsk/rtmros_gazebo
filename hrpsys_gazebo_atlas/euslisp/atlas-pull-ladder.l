@@ -447,6 +447,8 @@
 (lift-up-lleg :balance-leg :rleg :lleg #F(100 0 0) :centroid-offset #F(50 0 0))
 (lift-up-lleg :balance-leg :rleg :lleg #F(0 0 -20) :centroid-offset #F(50 0 0))
 
+(track-orbit :centroid-offset #F(50 0 0))
+(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 -30) :centroid-offset #F(50 0 0))
 
 ;; (atlas-init-ex :set-reset-pose nil)
 
