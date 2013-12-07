@@ -87,7 +87,7 @@
   (objects (list *atlas*))
   )
 
-(defun make-simple-box (&optional (x 480) (y 580))
+(defun make-simple-box (&optional (x 520) (y 590))
   (send *co* :wipe-all)
   (send *atlas* :fix-leg-to-coords (make-coords))
   (let (cb0 cb1 cb2)
@@ -178,4 +178,24 @@ $ roslaunch atlas_v3_moveit_config demo.launch
       (send *atlas* :larm :end-coords :copy-worldcoords)
       :larm :end-coords (list :larm :end-coords))
 (send *me* :sync-robot-model *atlas* t) ;; set ik result to *atlas*
+
+(send *atlas* :lleg :angle-vector #f(80 0 -40 0 -40 0))
+(send *atlas* :rleg :angle-vector #f(80 0 -40 0 -40 0))
+
+(send *atlas* :larm :angle-vector #f(130.0 120.0 60.0 -75.0 45.0 0.0))
+(send *atlas* :rarm :angle-vector #f(-130.0 120.0 -60.0 75.0 45.0 0.0))
+
+(make-simple-box 340 570)
+
+(setq cb (make-cube 400 400 2000))
+(send cb :translate #f(400 0 1000))
+(publish-collision-object cb *atlas* "pelvis")
+
+(send *atlas* :reset-pose)
+(send *atlas* :larm :angle-vector #f(130.0 120.0 60.0 -75.0 45.0 0.0))
+(send *atlas* :rarm :angle-vector #f(-130.0 120.0 -60.0 75.0 45.0 0.0))
+
+(moveit-motion-plan (send *atlas* :angle-vector)
+                    :initial-pose (send *atlas* :reset-pose)
+                    :arm :larm)
 |#
