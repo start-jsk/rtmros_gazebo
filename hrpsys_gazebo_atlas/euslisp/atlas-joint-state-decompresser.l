@@ -22,23 +22,21 @@
 
 (defun decompress-callback (msg)
   (let ((js-decompressed (instance sensor_msgs::JointState :init))
-	joint-names joint-name joint-angles
+	joint-names joint-name joint-angles joint-angle
+	(nan (sqrt -1))
 	)
-    (setq hoge msg)
     (send js-decompressed :header (send msg :header))
-;;    (dotimes (i (length (send msg :position)))
-;;      (setf (elt js-compressed-list joint-index) (elt (send msg :position) i))
-      ;;(setq joint-name (get-joint-name (elt (send msg :index) i)))
-;;      (setq joint-name (get-joint-name-float (elt (send msg :velocity) i)))
-;;      (when joint-name
-;;	(push joint-name joint-names)
-;;	(push (elt (send msg :position) i) joint-angles)
-;;	)
-;;      )
-    (send js-decompressed :name atlas-joint-name-list)
-    (send js-decompressed :position (send msg :position))
-    ;;(send js-decompressed :velocity (make-sequence 'float-vector (length joint-names) :initial-element 0))
-    ;;(send js-decompressed :effort (make-sequence 'float-vector (length joint-names) :initial-element 0))
+    (setq hoge msg)
+    (dotimes (i (length (send msg :position)))
+      (setq joint-angle (elt (send msg :position) i))
+      (setq joint-name (elt atlas-joint-name-list i))
+      (unless (equal joint-angle nan)
+      	(push joint-name joint-names)
+	(push joint-angle joint-angles)
+	)
+      )
+    (send js-decompressed :name joint-names)
+    (send js-decompressed :position joint-angles)
     (ros::publish js-decompressed-topic-name js-decompressed)
     (if display-info
 	(format t "published ~A~%" js-decompressed-topic-name)
@@ -52,9 +50,7 @@
   (setq js-compressed-list (make-list (length atlas-joint-name-list) :initial-element 0))
   (ros::advertise js-decompressed-topic-name
 		  sensor_msgs::JointState 1)
-;;  (ros::subscribe js-compressed-topic-name 
-;;		  hrpsys_gazebo_atlas::JointStateCompressed #'decompress-callback)
-  (ros::subscribe js-compressed-topic-name 
+  (ros::subscribe js-compressed-topic-name
 		  sensor_msgs::JointState #'decompress-callback)
 
   (ros::rate 10)
