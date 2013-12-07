@@ -255,7 +255,167 @@
 		  (case balance-leg
 			(:both '(:rleg :lleg))
 			(t (list balance-leg))))
+  (send *robot* :angle-vector)
   )
+
+(defun leg-orbit
+  (&key
+   (time-list (list 0 0.7 1.0))
+   (move-key :lleg)
+   (fix-key (case move-key (:rleg :lleg) (:lleg :rleg)))
+   (start-coords
+    (copy-object (send *robot* move-key :end-coords :worldcoords)))
+   (end-coords
+    (let* ((move (send *robot* move-key :end-coords :worldcoords))
+	   (fix (send *robot* fix-key :end-coords :worldcoords)))
+      (make-coords
+       :pos
+       (v+ (map float-vector #'* #F(0 1 0) (send move :worldpos))
+	   (map float-vector #'* #F(1 0 1) (send fix :worldpos)))
+       :rot (copy-object (send fix :worldrot)))))
+   (margin 100)
+   (p-list
+    (list
+     (send start-coords :worldpos)
+     (let ((s (send start-coords :worldpos))
+	   (e (send end-coords :worldpos)))
+       (concatenate
+	float-vector
+	(subseq (v+ (scale 0.3 s) (scale 0.7 e)) 0 2)
+	(list (+ (aref (vmax s e) 2) margin))))
+     (v+ (float-vector 0 0 30)
+	 (send end-coords :worldpos))
+     ))
+   (dp-list
+    (list #F(0 0 0) nil #F(0 0 -1)))
+   (ddp-list
+    (list #F(0 0 0) nil #F(0 0 0)))
+   (time-step 0.05)
+   (spline-coeff-func 'solve-spline)
+   (debug? t)
+   (n nil))
+  (require "euslib/demo/s-noda/util/spline.l")
+  (let*
+      ((coeff
+	(apply
+	 spline-coeff-func
+	 (append
+	  (list :time-list time-list)
+	  (list
+	   :p
+	   (mapcar
+	    (function
+	     (lambda (v)
+	       (cond
+		((vectorp v) (list (cons :vector v))))))
+	    p-list))
+	  (list
+	   :dp
+	   (mapcar
+	    (function
+	     (lambda (v)
+	       (cond
+		((vectorp v) (list (cons :vector v))))))
+	    dp-list))
+	  (list
+	   :ddp
+	   (mapcar
+	    (function
+	     (lambda (v)
+	       (cond
+		((vectorp v) (list (cons :vector v))))))
+	    ddp-list))
+	  (if n (list :n n))
+	  (list
+	   :d
+	   (length
+	    (find-if
+	     #'vectorp
+	     (append p-list dp-list ddp-list)))))))
+       (timer (car time-list))
+       (end-time (car (last time-list)))
+       ret
+       sphere
+       obj)
+    (while
+	(<= timer end-time)
+      (push (calc-spline coeff timer) ret)
+      (setq timer (+ timer time-step)))
+    (cond
+     (debug?
+      (dolist (pos ret)
+	(setq sphere (make-sphere 10))
+	(send sphere :set-color #F(0 1 0))
+	(send sphere :newcoords (make-coords :pos pos))
+	(push sphere obj))
+      (send *irtviewer* :objects
+	    (append
+	     (list *ladder* *robot*)
+	     ;(send *irtviewer* :objects)
+	     (flatten obj)))
+      (send *viewer* :draw-objects)
+      ))
+    (reverse ret)))
+
+(defun simple-robot-state
+  (&optional tag)
+  (list (cons :tag tag)
+	(cons :angle-vector
+	      (copy-object (send *robot* :angle-vector)))
+	(cons :worldcoords
+	      (copy-object (send *robot* :worldcoords)))))
+
+(defun track-orbit
+  (&key
+   (move-key :lleg)
+   (fix-key (case move-key (:rleg :lleg) (:lleg :rleg)))
+   (target-limb '(:rleg :lleg))
+   (orbit (leg-orbit :move-key move-key))
+   (centroid-offset #F(0 0 0))
+   ret pos buf
+   )
+  (do-until-key
+   (setq pos (car orbit))
+   (setq orbit (cdr orbit))
+   (if (null orbit) (return-from nil (reverse ret)))
+   (setq
+    buf
+    (lift-up-lleg
+     :centroid-offset centroid-offset
+     :balance-leg fix-key
+     move-key (v- pos (send *robot* move-key :end-coords :worldpos))))
+   (if (not (vectorp buf)) (return-from nil nil))
+   (push (simple-robot-state :track-orbit) ret))
+  ret)
+
+(defun simple-rsd-play
+  (rsd
+   &key
+   (time-list
+    (list (cons :init 500)
+	  (cons :grasp 500)
+	  (cons :balance 500)
+	  (cons :lean 500)
+	  (cons :track-orbit 50)
+	  (cons :land 50)
+	  (cons :default 100))))
+  (mapcar
+   #'(lambda (rsd)
+       (send *robot* :angle-vector
+	     (cdr (assoc :angle-vector rsd)))
+       (send *robot* :newcoords
+	     (cdr (assoc :worldcoords rsd)))
+       (send *viewer* :draw-objects)
+       (x::window-main-one)
+       (unix:usleep
+	(round (* 1000
+		  (or (cdr (assoc
+			    (cdr (assoc :tag rsd))
+			    time-list))
+		      (cdr (assoc
+			    :default
+			    time-list)))))))
+   (reverse rsd)))
 
 (send *robot* :rleg :crotch-r :min-angle -11)
 (send *robot* :rleg :crotch-r :max-angle 5)
@@ -265,8 +425,8 @@
 (init-pose)
 (send *irtviewer* :look-all)
 
-(setq *right-force* #F(0 0 0))
-(setq *left-force* #F(0 0 0))
+(setq *right-force* #F(10 0 0))
+(setq *left-force* #F(10 0 0))
 
 (lift-up-lleg :balance-leg :lleg)
 (lift-up-lleg :balance-leg :lleg :rleg #F(0 0 100))
