@@ -9,6 +9,31 @@
 (send *ladder* :rotate (deg2rad -90) :z)
 (send *ladder* :translate #F(1180 0 0) :world)
 
+(defmethod robot-model
+  (:calc-static-balance-point
+   (forces
+    &optional (force-points
+               (mapcar #'(lambda (tmp-arm)
+                           (send (send self tmp-arm :end-coords) :worldpos))
+                       '(:rarm :larm)))
+    &key (ref-cog-height (aref (apply #'midpoint 0.5 (send self :legs :end-coords :worldpos)) 2)))
+   (let* ((sbp (float-vector 0 0 ref-cog-height))
+          (cog (send self :centroid))
+          (mg (* 1e-6 (send self :weight nil) (elt *g-vec* 2))))
+     (dotimes (idx 2)
+       (let ((denom mg)
+             (nume (* mg (elt cog idx))))
+         (mapcar #'(lambda (f fp)
+                     (setq nume
+                           (+ nume
+                              (- (* (- (elt fp 2) ref-cog-height) (elt f idx))
+                                 (* (elt fp idx) (elt f 2))))
+                           denom (- denom (elt f 2))))
+                 forces force-points)
+         (setf (elt sbp idx) (/ nume denom))
+         ))
+     sbp)))
+
 (defun make-foot-convex
   (&key
    (target-limbs '(:rleg :lleg)))
@@ -54,6 +79,32 @@
 	 5))
   (send *foot-convex* :set-color #F(0 0 1))
   (gl::transparent *foot-convex* 0.3))
+
+(defvar *right-force* #f(0 0 0))
+(defvar *left-force* #F(0 0 0))
+(defun fix-centroid-object
+  (&optional (centroid;; (send *robot* :centroid)) 
+	      (send *robot* :calc-static-balance-point 
+		    (list *right-force* *left-force*)))
+	     (leg-h
+	      (scale
+	       0.5
+	       (v+
+		(send *robot* :rleg :end-coords :worldpos)
+		(send *robot* :lleg :end-coords :worldpos)))))
+  (if
+      (and (boundp '*centroid-object*) *centroid-object*)
+      (send
+       *centroid-object*
+       :newcoords
+       (make-coords
+	:pos
+	(v+
+	 #f(0.0 0.0 -200.0)
+	 (concatenate
+	  float-vector
+	  (subseq centroid 0 2)
+	  (list (+ 10 (aref leg-h 2)))))))))
 
 (defun update-objects
   (&key
@@ -176,7 +227,7 @@
    (fix-limbs (remove move-limb all-limbs))
    (move #F(0 0 0))
    ;;
-   (cog-gain 1.0)
+   (cog-gain 1.5)
    (leg-weight 10)
    (centroid-weight
     (normalize-vector
@@ -187,7 +238,7 @@
 	       leg-weight 1))
        fix-limbs)
       float-vector)))
-   (centroid-thre 5) ;#'check-centroid-with-convex
+   (centroid-thre #'check-centroid-with-convex)
    (additional-weight-list
     (mapcar
      #'(lambda (k gain)
@@ -195,8 +246,16 @@
 	       gain))
      (list :waist-r :waist-p :waist-y)
      (list 1e-1 1e-1 1e-1)))
-   (stop 500)
+   (stop 100)
    ;;
+   ;;(right-force #F(0 0 0))
+   ;;(left-force #F(0 0 0))
+   (centroid-offset-func
+    '(lambda ()
+       (x::window-main-one)
+       (send *robot*
+	     :calc-static-balance-point
+	     (list *right-force* *left-force*))))
    (centroid-offset #F(0 0 0))
    (target-centroid-pos
     (v+
@@ -268,10 +327,11 @@
 	   :rotation-axis
 	   (append
 	    (make-list (length all-limbs) :initial-element t)
+	    ;;'(:y :y t t)
 	    other-rotation-axis)
 	   :thre
 	   (append
-	    (make-list (length all-limbs) :initial-element 5)
+	    (make-list (length all-limbs) :initial-element 10)
 	    other-thre)
 	   :rthre
 	   (append
@@ -279,10 +339,11 @@
 	    other-rthre)
 	   :additional-weight-list additional-weight-list
 	   :centroid-thre centroid-thre
-	   :centroid-offset-func
-	   #'(lambda nil
-	       (x::window-main-one)
-	       (send *robot* :centroid))
+	   ;;:centroid-offset-func
+	   ;;#'(lambda nil
+	   ;;(x::window-main-one)
+	   ;;(send *robot* :centroid))
+	   :centroid-offset-func centroid-offset-func
 	   :target-centroid-pos
 	   target-centroid-pos
 	   ;; :obstacles (list (send *ladder* :link_lk))
@@ -435,6 +496,40 @@
   (send *viewer* :draw-objects)
   )
 
+(setq *odom* nil)
+(ros::subscribe "/atlas/odom" geometry_msgs::PoseStamped
+  #'(lambda (msg)
+      (setq *odom* (ros::tf-pose-stamped->coords msg))))
+
+(defvar *angle-vector-collection*)
+(defun m2r
+  nil
+  (push (copy-object (send *robot* :angle-vector)) *angle-vector-collection*)
+  (model2real :sleep-time 5000))
+
+(defun r2m
+  (&key
+   (support-leg '(:rleg :lleg))); :lleg)))
+  (real2model)
+  (ros::spin-once) (ros::sleep)
+  (ros::spin-once) (ros::sleep)
+  (ros::spin-once) (ros::sleep)
+  ;;(send *robot* :newcoords (send *odom* :copy-worldcoords))
+  ;;(send *robot* :rotate (deg2rad 180) :z)
+  ;; (mapcar
+  ;;  #'(lambda (k)
+  ;;      (send *robot* k :inverse-kinematics
+  ;; 	     (make-coords)
+  ;; 	     :translation-axis t
+  ;; 	     :debug-view :no-message))
+  ;;  support-leg)
+  (send *robot* :fix-leg-to-coords (make-coords) (car support-leg))
+  (update-objects))
+       
+;; #f(0.2728 25.0957 0.200876 68.3812 95.4757 17.3559 -9.84019 -38.041 120.288 -68.4782 96.3951 -16.5412 8.46219 -37.1436 118.89 56.871 -1.69028 -29.4271 1.67763 -21.6498 -0.178443 56.8317 1.97898 -29.4029 -1.9736 -21.6338 0.1912 0.0)
+
+;; #f(-0.006031 21.5731 -0.00371 66.8495 95.763 -4.5047 3.588 -51.1387 94.5435 -66.8393 95.7746 4.50817 -3.58026 -51.1616 94.544 68.3758 0.005316 -53.0474 -0.005879 -21.0097 -0.000292 68.3762 0.005316 -53.0477 -0.005879 -21.0098 -0.000292 0.0)
+
 #|
 
 (defvar *rsd*)
@@ -464,9 +559,6 @@
 		  (v- (send *robot* :rleg :end-coords :worldpos)
 		      (car *cen*))
 		  0 2))))
-
-#|
-
 
 (init-pose)
 (on-ladder :move-limb :larm :centroid-thre 100 :cog-gain 0.5)
@@ -516,12 +608,105 @@
        '(:rarm :larm))
       :translation-axis '(nil nil))
 
+(send *robot*
+      :fullbody-inverse-kinematics
+      (list
+       (send (send *robot* :rarm :end-coords :copy-worldcoords)
+	     :translate #f(300 0 0))
+       (send (send *robot* :larm :end-coords :copy-worldcoords)
+	     :translate #f(300 0 0))
+       (send (send *robot* :rleg :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       (send (send *robot* :lleg :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       )
+      :move-target
+      (mapcar
+       #'(lambda (k) (send *robot* k :end-coords))
+       '(:rarm :larm :rleg :lleg))
+      :link-list
+      (mapcar
+       #'(lambda (k)
+	   (send *robot* :link-list (send *robot* k :end-coords :parent)))
+       '(:rarm :larm :rleg :lleg))
+      :debug-view :no-message))
 
-(list
- (list (cons :tag :reach)
-       (cons :angle-vector
-	     #f(20.7534 -17.6512 -1.85774 70.7795 91.3111 15.8408 -73.3207 -7.22137 98.3702 -112.746 133.627 43.1478 26.3454 32.768 64.4252 86.3868 4.47966 -83.1232 -4.47147 1.5549 15.1938 24.7949 -0.687169 -5.37227 -1.72134 -15.2656 -15.1451 0.0))
-       (cons :worldcoords
-	     (make-coords :pos #F(-295.445 -47.218 912.331)
-			  :rpy '(0.002 -0.081 0.022))))
- 
+(send *robot*
+      :fullbody-inverse-kinematics
+      (list
+       (send (send *robot* :rarm :end-coords :copy-worldcoords)
+	     :rotate (deg2rad -90) :x)
+       (send (send *robot* :larm :end-coords :copy-worldcoords)
+	     :rotate (deg2rad 90) :x)
+       (send (send *robot* :rleg :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       (send (send *robot* :lleg :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       )
+      :move-target
+      (mapcar
+       #'(lambda (k) (send *robot* k :end-coords))
+       '(:rarm :larm :rleg :lleg))
+      :link-list
+      (mapcar
+       #'(lambda (k)
+	   (send *robot* :link-list (send *robot* k :end-coords :parent)))
+       '(:rarm :larm :rleg :lleg))
+      :debug-view :no-message))
+
+(send *robot*
+      :fullbody-inverse-kinematics
+      (list
+       (send (send *robot* :rarm :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       (send (send *robot* :larm :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       (send (send *robot* :rleg :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       (send (send *robot* :lleg :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       )
+      :target-centroid-pos
+      (copy-object (send *robot* :rleg :end-coords :worldpos))
+      :move-target
+      (mapcar
+       #'(lambda (k) (send *robot* k :end-coords))
+       '(:rarm :larm :rleg :lleg))
+      :centroid-thre 50
+      :rthre (list (deg2rad 10) (deg2rad 10) (deg2rad 5) (deg2rad 5))
+      :link-list
+      (mapcar
+       #'(lambda (k)
+	   (send *robot* :link-list (send *robot* k :end-coords :parent)))
+       '(:rarm :larm :rleg :lleg))
+      :debug-view :no-message))
+
+
+(send *robot*
+      :fullbody-inverse-kinematics
+      (list
+       (send (send *robot* :rarm :end-coords :copy-worldcoords)
+	     :translate #f(50 0 0))
+       (send (send *robot* :larm :end-coords :copy-worldcoords)
+	     :translate #f(50 0 0))
+       (send (send *robot* :rleg :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       (send (send *robot* :lleg :end-coords :copy-worldcoords)
+	     :translate #f(0 0 0))
+       )
+      :centroid-thre 100
+      :target-centroid-pos
+      (copy-object (send *robot* :lleg :end-coords :worldpos))
+      :move-target
+      (mapcar
+       #'(lambda (k) (send *robot* k :end-coords))
+       '(:rarm :larm :rleg :lleg))
+      :link-list
+      (mapcar
+       #'(lambda (k)
+	   (send *robot* :link-list (send *robot* k :end-coords :parent)))
+       '(:rarm :larm :rleg :lleg))
+      :stop 100
+      :debug-view :no-message))
+
+(atlas-init-ex :set-reset-pose nil)
