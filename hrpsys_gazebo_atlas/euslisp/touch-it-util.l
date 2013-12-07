@@ -172,6 +172,12 @@
 		     :thre 2
 		     :rthre (deg2rad 5)
 		     :rotation-axis axis
+		     ;; :dif-pos-ratio 1.00000 ;;
+		     ;; :dif-rot-ratio 0.01000 ;;
+		     ;; :manipulability-gain 0.00250  ;;
+		     ;; :null-space nil ;;
+		     ;; :additional-nspace-list nil ;;
+		     ;; :avoid-nspace-gain 0 ;;
 		     :revert-if-fail t))
 	      )
 	;; send angle
