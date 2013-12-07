@@ -28,19 +28,19 @@
   <group if="$(arg USE_ROTATED)" >
     <node ns="$(arg LHAND_NAMESPACE)/left"
           pkg="image_rotate" type="image_rotate" name="lhand_resized_rotated"
-          output="screen">
+          respawn="true" output="screen">
       <remap from="image" to="image_rect"/>
       <param name="target_frame_id" value="/map"/>
     </node>
     <node ns="$(arg RHAND_NAMESPACE)/left"
           pkg="image_rotate" type="image_rotate" name="rhand_resized_rotated"
-          output="screen">
+          respawn="true" output="screen">
       <remap from="image" to="image_rect"/>
       <param name="target_frame_id" value="/map"/>
     </node>
     <node ns="$(arg LFISHEYE_NAMESPACE)"
           pkg="image_rotate" type="image_rotate" name="lfisheye_resized_rotated"
-          output="screen">
+          respawn="true" output="screen">
       <remap from="image" to="image_raw"/>
       <param name="target_frame_id" value=""/>
       <param name="target_x" value="0.0" />
@@ -53,7 +53,7 @@
     </node>
     <node ns="$(arg RFISHEYE_NAMESPACE)"
           pkg="image_rotate" type="image_rotate" name="rfisheye_resized_rotated"
-          output="screen">
+          respawn="true" output="screen">
       <remap from="image" to="image_raw"/>
       <param name="target_frame_id" value=""/>
       <param name="target_x" value="0.0" />
