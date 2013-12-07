@@ -38,7 +38,7 @@
     <remap from="camera_out" to="roi_camera_output_rh" />
   </node>
 
-  <node pkg="roseus_tutorials" type="roi-reconfigure-call.l"
+  <node pkg="hrpsys_gazebo_atlas" type="roi-reconfigure-call.l"
         name="roi_reconfigure_call" output="screen" respawn="true" >
   </node>
 
