@@ -254,6 +254,11 @@
 			(t (list balance-leg))))
   )
 
+(send *robot* :rleg :crotch-r :min-angle -11)
+(send *robot* :rleg :crotch-r :max-angle 5)
+(send *robot* :lleg :crotch-r :min-angle -5)
+(send *robot* :lleg :crotch-r :max-angle 11)
+
 (init-pose)
 (send *irtviewer* :look-all)
 
