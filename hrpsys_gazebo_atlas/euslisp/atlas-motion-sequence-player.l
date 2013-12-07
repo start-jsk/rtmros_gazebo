@@ -44,9 +44,7 @@
       (log "unknow tag ~A" tag))
      (t
       (log "correct pre-call")
-      (send *robot* :angle-vector
-	    (cadr (assoc :angle-vector data)))
-      (model2real :sleep-time 10000)
+      ;;(model2real :sleep-time 10000)
       (setq *now-status* tag)))))
 
 (defun last-call
@@ -73,6 +71,9 @@
 	   tag *now-status*))
      (t
       (log "correct last-call")
+      (send *robot* :angle-vector
+	    (cadr (assoc :angle-vector data)))
+      (model2real :sleep-time 10000)
       (send *ri*
 	    :angle-vector-sequence
 	    av time)
