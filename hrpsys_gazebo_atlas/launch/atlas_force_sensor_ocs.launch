@@ -1,6 +1,5 @@
 <launch>
-  
-    <node pkg="jsk_topic_tools" type="topic_buffer_client"
+  <node pkg="jsk_topic_tools" type="topic_buffer_client"
           name="force_sensor_buffer_client"
           output="log">
     <param name="update_rate" value="1"  />
@@ -13,4 +12,14 @@
     </rosparam>
     <remap from="/update" to="/force_sensor_buffer_server/update"/>
   </node>
+  <!-- sensor tf -->
+  <node name="sensor_tf_larm" pkg="tf" type="static_transform_publisher" args="0 0.12 0 0 0 0 /l_hand /off_lhsensor 400" >
+    <remap from="/tf" to="/tf_ocs" />
+  </node>
+  <node name="sensor_tf_rarm" pkg="tf" type="static_transform_publisher" args="0 -0.12 0 0 0 0 /r_hand /off_rhsensor 400" >
+    <remap from="/tf" to="/tf_ocs" />
+  </node>
+  <!-- -->
+  <node name="sensor_wrench_string_publisher"
+	pkg="hrpsys_gazebo_atlas" type="atlas-wrench-string-publisher.l" />
 </launch>

@@ -25,10 +25,4 @@
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_ping.launch" />
 
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_force_sensor_ocs.launch" />
-  <node name="sensor_tf_larm" pkg="tf" type="static_transform_publisher" args="0 0.12 0 0 0 0 /l_hand /off_lhsensor 400" >
-    <remap from="/tf" to="/tf_ocs" />
-  </node>
-  <node name="sensor_tf_rarm" pkg="tf" type="static_transform_publisher" args="0 -0.12 0 0 0 0 /r_hand /off_rhsensor 400" >
-    <remap from="/tf" to="/tf_ocs" />
-  </node>
 </launch>
