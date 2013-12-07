@@ -16,7 +16,9 @@
   ;; (load "package://hrpsys_gazebo_atlas/euslisp/touch-it-server.l")
   (switch-end-coords :id 1)
   (when (and (boundp '*ri*) *ri*)
-    (send *ri* :set-interpolation-mode ":linear")))
+    (send *ri* :set-interpolation-mode ":linear"))
+  (ros::ros-warn "[touch_it] init-touchit-without-server done with real ~A" real)
+  )
 
 
 (defun move-down-with-touch-it
@@ -126,7 +128,8 @@
 			   tc)))
 
 	;; solve ik
-	(warning-message 1 "[touch_it] calculating pose <~a = ~a/~a> !~%" r i div)
+	(ros::ros-warn "[touch_it] calculating pose <~a = ~a/~a> !~%" r i div)
+	;;(warning-message 1 "[touch_it] calculating pose <~a = ~a/~a> !~%" r i div)
 	(cond ((substringp "fullbody" (string ik-type))
 	       (fullbody-ik-with-collision arm c))
 	      ((substringp "torso" (string ik-type))
@@ -174,10 +177,12 @@
 	;; send angle
 	(if (and (boundp '*ri*) *ri*)
 	    (progn
+	      (ros::ros-warn "[touch_it] sending to real robot")
 	      (model2real :time 2000 :wait t))
 	  ;;(send *ri* :angle-vector (send *atlas* :angle-vector) 2000)
 	  ;;(unix:usleep (* 1500 1000)))
 	  (progn
+	    (ros::ros-warn "[touch_it] sending to dummy robot")
 	    (unix:usleep (* 20 1000))))
 	(send *irtviewer* :draw-objects)
 	)
