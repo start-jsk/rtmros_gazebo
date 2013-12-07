@@ -7,8 +7,17 @@
 	type="eus_gui.py"
 	name="angle_vector_player_gui" output="screen"/>
 
-  <node pkg="jsk_interactive_marker"
-	type="door_foot"
-	name="door_foot" output="screen"/>
-  
+  <node pkg="jsk_interactive_marker" type="door_foot"
+	name="door_foot" output="screen">
+    <rosparam param="foot_list">
+      - pose:
+          position: {x: -0.523, y: 0.27, z: 0}
+          orientation: {x: 0, y: 0, z: 0.642788, w: 0.766}
+        leg: "right"
+      - pose:
+          position: {x: -0.747, y: 0.31, z: 0}
+          orientation: {x: 0, y: 0, z: 0.642788, w: 0.766}
+        leg: "left"
+    </rosparam>
+  </node>
 </launch>
