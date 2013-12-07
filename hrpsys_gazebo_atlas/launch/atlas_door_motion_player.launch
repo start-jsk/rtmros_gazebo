@@ -11,90 +11,93 @@
 	name="door_foot" output="screen">
     <rosparam param="foot_list">
       - pose:
-          position: {x: -0.493483, y: 0.34505, z: 0}
+          position: {x: -0.523, y: 0.27, z: 0}
           orientation: {x: 0, y: 0, z: 0.642788, w: 0.766}
         leg: "right"
       - pose:
-          position: {x: -0.776516, y: 0.394957, z: 0}
+          position: {x: -0.747, y: 0.31, z: 0}
           orientation: {x: 0, y: 0, z: 0.642788, w: 0.766}
         leg: "left"
-      <!-- - pose: -->
-      <!--     position: {x: -0.523, y: 0.27, z: 0} -->
-      <!--     orientation: {x: 0, y: 0, z: 0.642788, w: 0.766} -->
-      <!--   leg: "right" -->
-      <!-- - pose: -->
-      <!--     position: {x: -0.747, y: 0.31, z: 0} -->
-      <!--     orientation: {x: 0, y: 0, z: 0.642788, w: 0.766} -->
-      <!--   leg: "left" -->
+
       - pose:
-          position: {x: -0.523, y: 0.4435, z: 0}
+          position: {x: -0.523, y: 0.31, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "right"
       - pose:
-          position: {x: -0.747, y: 0.4435, z: 0}
+          position: {x: -0.747, y: 0.31, z: 0}
+          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
+        leg: "left"
+
+      - pose:
+          position: {x: -0.4485, y: 0.418, z: 0}
+          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
+        leg: "right"
+      - pose:
+          position: {x: -0.747, y: 0.418, z: 0}
+          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
+        leg: "left"
+
+      
+      - pose:
+          position: {x: -0.4485, y: 0.527, z: 0}
+          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
+        leg: "right"
+      - pose:
+          position: {x: -0.7485, y: 0.527, z: 0}
+          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
+        leg: "left"
+
+      - pose:
+          position: {x: -0.2485, y: 0.527, z: 0}
+          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
+        leg: "right"
+      - pose:
+          position: {x: -0.5485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "left"
       
       - pose:
-          position: {x: -0.4485, y: 0.577, z: 0}
+          position: {x: -0.0485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "right"
       - pose:
-          position: {x: -0.7485, y: 0.577, z: 0}
+          position: {x: -0.3485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "left"
 
       - pose:
-          position: {x: -0.2485, y: 0.577, z: 0}
+          position: {x: 0.2485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "right"
       - pose:
-          position: {x: -0.5485, y: 0.577, z: 0}
-          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
-        leg: "left"
-      
-      - pose:
-          position: {x: -0.0485, y: 0.577, z: 0}
-          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
-        leg: "right"
-      - pose:
-          position: {x: -0.3485, y: 0.577, z: 0}
+          position: {x: -0.1485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "left"
 
       - pose:
-          position: {x: 0.2485, y: 0.577, z: 0}
+          position: {x: 0.4485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "right"
       - pose:
-          position: {x: -0.1485, y: 0.577, z: 0}
+          position: {x: 0.1485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "left"
 
       - pose:
-          position: {x: 0.4485, y: 0.577, z: 0}
+          position: {x: 0.6485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "right"
       - pose:
-          position: {x: 0.1485, y: 0.577, z: 0}
+          position: {x: 0.3485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "left"
 
       - pose:
-          position: {x: 0.6485, y: 0.577, z: 0}
+          position: {x: 0.8485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "right"
       - pose:
-          position: {x: 0.3485, y: 0.577, z: 0}
-          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
-        leg: "left"
-
-      - pose:
-          position: {x: 0.8485, y: 0.577, z: 0}
-          orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
-        leg: "right"
-      - pose:
-          position: {x: 0.5485, y: 0.577, z: 0}
+          position: {x: 0.5485, y: 0.527, z: 0}
           orientation: {x: 0, y: 0, z: 0.707107, w: 0.707107}
         leg: "left"
 
