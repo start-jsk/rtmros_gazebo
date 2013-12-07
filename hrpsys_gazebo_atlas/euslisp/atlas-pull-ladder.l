@@ -195,6 +195,7 @@
    (rleg #F(0 0 0))
    (lleg #F(0 0 0))
    (torso nil)
+   (centroid-offset #F(0 0 0))
    (centroid-offset-func
     '(lambda ()
        (x::window-main-one)
@@ -221,12 +222,14 @@
 			       (if torso (list nil)))
 	:centroid-offset-func centroid-offset-func
 	:target-centroid-pos
-	(case balance-leg
-	      (:both
-	       (scale 0.5
-		      (v+ (send *robot* :rleg :end-coords :worldpos)
-			  (send *robot* :lleg :end-coords :worldpos))))
-	      (t (copy-object (send *robot* balance-leg :end-coords :worldpos))))
+	(v+
+	 centroid-offset
+	 (case balance-leg
+	       (:both
+		(scale 0.5
+		       (v+ (send *robot* :rleg :end-coords :worldpos)
+			   (send *robot* :lleg :end-coords :worldpos))))
+	       (t (copy-object (send *robot* balance-leg :end-coords :worldpos)))))
 	:move-target
 	(mapcar
 	 #'(lambda (k) (send *robot* k :end-coords))
@@ -276,13 +279,13 @@
 (setq *right-force* #F(100 0 0))
 (setq *left-force* #F(100 0 0))
 
-(lift-up-lleg :balance-leg :rleg)
-(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 100))
-(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 100))
-(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 100))
-(lift-up-lleg :balance-leg :rleg :lleg #F(100 0 0))
-(lift-up-lleg :balance-leg :rleg :lleg #F(100 0 0))
-(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 -20))
+(lift-up-lleg :balance-leg :rleg :centroid-offset #F(50 0 0))
+(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 100) :centroid-offset #F(50 0 0))
+(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 100) :centroid-offset #F(50 0 0))
+(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 100) :centroid-offset #F(50 0 0))
+(lift-up-lleg :balance-leg :rleg :lleg #F(100 0 0) :centroid-offset #F(50 0 0))
+(lift-up-lleg :balance-leg :rleg :lleg #F(100 0 0) :centroid-offset #F(50 0 0))
+(lift-up-lleg :balance-leg :rleg :lleg #F(0 0 -20) :centroid-offset #F(50 0 0))
 
 
 ;; (atlas-init-ex :set-reset-pose nil)
