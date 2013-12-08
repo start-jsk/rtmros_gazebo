@@ -38,9 +38,6 @@
    (move-coords (make-coords))
    (initial-coords
     (send *robot* target-limb :end-coords :copy-worldcoords))
-   (initial-coords-from-pelvis
-    (send (send *robot* :copy-worldcoords)
-	  :transformation initial-coords))
    (target-coords
     (make-coords
      :pos (v+ (send initial-coords :worldpos)
@@ -91,7 +88,7 @@
 	    (mapcar
 	     #'(lambda (key val) (format nil "~A ~A " key val))
 	     '(:translation-axis :rotation-axis :stop :update-convex
-	       :thre :rthre :ik-move-target)
+	       :thre :rthre)
 	     (list
 	      (list translation-axis t t)
 	      (list rotation-axis t t)
@@ -105,9 +102,6 @@
 				  (car (send move-coords :rpy-angle))
 				  float-vector))))
 		    (deg2rad 5) (deg2rad 5))
-	      (list 'make-coords
-		    :pos (send initial-coords-from-pelvis :worldpos)
-		    :rpy (car (send initial-coords-from-pelvis :rpy-angle)))
 	      ))
 	    (list ")"))))
     ;;
