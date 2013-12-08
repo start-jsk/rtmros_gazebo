@@ -81,4 +81,7 @@
     <arg name="USE_INTERACTIVE_JOINT" value="$(arg USE_INTERACTIVE_JOINT)"/>
     <arg name="USE_INTERACTIVE_ENDCOORDS" value="$(arg USE_INTERACTIVE_ENDCOORDS)"/>
   </include>
+
+  <node pkg="hrpsys_gazebo_atlas" type="atlas-motion-sequence-player.l" name="atlas_motion_sequence_player" output="log" />
+
 </launch>
