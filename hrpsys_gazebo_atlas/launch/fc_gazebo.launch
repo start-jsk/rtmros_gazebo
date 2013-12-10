@@ -1,0 +1,14 @@
+<launch>
+  <include file="$(find hrpsys_gazebo_atlas)/launch/fc.launch" />
+  <include file="$(find hrpsys_gazebo_atlas)/launch/gazebo-map2pelvis.launch" />
+  <group ns="sandia_hands">
+    <group ns="l_hand">
+      <node pkg="topic_tools" type="relay" name="joint_state_relay"
+	    args="joint_states /atlas/joint_states" />
+    </group>
+    <group ns="r_hand">
+      <node pkg="topic_tools" type="relay" name="joint_state_relay"
+	    args="joint_states /atlas/joint_states" />
+    </group>
+  </group>
+</launch>
