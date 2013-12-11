@@ -40,7 +40,7 @@ def main():
    print "Opened it"
 
    rospy.init_node('kontrol')
-   pub = rospy.Publisher('joy', Joy, latch=True)
+   pub = rospy.Publisher('/joy_pad', Joy, latch=True)
 
    m = Joy()
    m.axes = [ 0 ] * 0
@@ -56,7 +56,7 @@ def main():
       while controller.poll():
          c += 1
          data = controller.read(1)
-         #print data
+         print data
          # loop through events received
          for event in data:
             control = event[0]
