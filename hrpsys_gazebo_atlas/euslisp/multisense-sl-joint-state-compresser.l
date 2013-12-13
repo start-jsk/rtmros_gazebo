@@ -21,13 +21,9 @@
     (dotimes (i (length (send msg :name)))
       (setq joint-index (get-joint-index (elt (send msg :name) i)))
       (when joint-index
-	;;(push joint-index joint-indexes)
-	;;(push (elt (send msg :position) i) joint-angles)
 	(setf (elt js-compressed-list joint-index) (elt (send msg :position) i))
 	)
       )
-;;    (send js-compressed :index (coerce joint-indexes string))
-    ;;(send js-compressed :velocity (coerce joint-indexes float-vector))
     (send js-compressed :position (coerce js-compressed-list float-vector))
     (ros::publish js-compressed-topic-name js-compressed)
     (if display-info
@@ -42,7 +38,6 @@
   (setq js-compressed-list (make-list (length multisense-sl-joint-name-list) :initial-element 0))
   (ros::subscribe js-topic-name
 		  sensor_msgs::JointState #'compress-callback)
-  ;;(ros::advertise js-compressed-topic-name hrpsys_gazebo_atlas::JointStateCompressed 1)
   (ros::advertise js-compressed-topic-name sensor_msgs::JointState 1)
 
   (ros::rate 10)

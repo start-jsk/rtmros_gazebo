@@ -55,7 +55,9 @@
 		(copy-object (send *robot* :worldcoords)))))
    (log-stream t)
    (translation-axis *translation-axis*)
-   (rotation-axis *rotation-axis*)
+   (rotation-axis
+    (if *tmp-rotation-axis* *rotation-axis* nil)
+    )
    (update-convex t)
    &allow-other-keys
    )
@@ -756,9 +758,17 @@
 	)
        )
       )
+    (cond
+     ((equal (send msg :type) jsk_interactive_marker::MarkerPose::*SPHERE_MARKER*)
+      (setq *tmp-rotation-axis* nil)
+      )
+     (t
+      (setq *tmp-rotation-axis* t)
+      ))
     (send *target-coords* :move-to
 	  (send *robot* :worldcoords) :world)
     (send *target-coords* :transform cds)
+    
     (when (boundp '*irtviewer*)
       (send *irtviewer* :draw-objects))
     )
@@ -952,6 +962,7 @@
 (defvar *use-torso* nil)
 (defvar *translation-axis* t)
 (defvar *rotation-axis* t)
+(defvar *tmp-rotation-axis* t) ;;turn nil when center sphere was moved
 (defvar *publish-ik* nil)
 (defvar *orgin-key* :rarm)
 (defvar *ik-stop* (not *publish-ik*))
