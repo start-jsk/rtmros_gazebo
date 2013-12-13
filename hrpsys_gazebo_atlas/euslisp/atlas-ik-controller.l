@@ -624,13 +624,15 @@
      ;;set origin to hand
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_RHAND*)
       (format t "[marker-menu] set origin to rhand~%")
-      (setq *orgin-key* :rarm)
+      (setq *orgin-key* :free)
+      ;;(setq *orgin-key* :rarm)
       (set-origin-to-hand :rarm)
       ;;(publish-joint-states :real? nil)
       )
      ((eq menu jsk_interactive_marker::MarkerMenu::*SET_ORIGIN_LHAND*)
       (format t "[marker-menu] set origin to lhand~%")
-      (setq *orgin-key* :larm)
+      (setq *orgin-key* :free)
+      ;;(setq *orgin-key* :larm)
       (set-origin-to-hand :larm)
       ;;(publish-joint-states :real? nil)
       )
@@ -744,9 +746,11 @@
 	 map->marker
 	 )
     (while t
+      (send pose :header :stamp (ros::time 0.0)) ;cheat!
       (setq map->marker
-	    (send *tfl* :lookup-transform
-		  "pelvis" (send pose :header :frame_id) (ros::time 0)))
+      	    (send *tfl* :lookup-transform
+      		  "pelvis" (send pose :header :frame_id) (ros::time 0)))
+      ;;(setq map->marker (send *tfl* :transform-pose "pelvis" pose))
       (cond
        (map->marker
 	(send cds :transform map->marker :world)
@@ -773,6 +777,7 @@
       (send *irtviewer* :draw-objects))
     )
   (publish-arrow-tf)
+  (ros::ros-error "~A" *origin-coords*)
   )
 
 (defun set-origin
@@ -787,12 +792,12 @@
   (realmodel2model)
   (let ((from-frame "pelvis")
 	(to-frame (if (eq arm :rarm) "right_grasp_frame" "left_grasp_frame")))
-    (let ((trans (send *tfl* :lookup-transform
+    (let ((trans (send *tfl* :lookup-transform ;pelvis -> grasp_frame
 		       from-frame to-frame (ros::time 0.0))))
       (if trans
 	  (progn
 	    (send trans :transform 
-		  (send (make-coords) :transformation
+		  (send (make-coords) :transformation ;origin -> pelvis
 			(send *robot* :copy-worldcoords))
 		  :world)
 	    (send *target-coords* :move-to trans :world))
