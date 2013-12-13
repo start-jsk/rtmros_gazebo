@@ -163,16 +163,28 @@
       )
      (t (format log-stream "failed!~%") nil))))
 
+(defclass touch-it-client
+  :super ros::simple-action-client
+  :slots (feedback))
+(defmethod touch-it-client
+  (:action-feedback-cb
+   (msg)
+   (ros::ros-debug "[~A] feedback-cb ~A" ros::name-space msg)
+   (setq feedback msg))
+  (:feedback () feedback)
+  (:simple-state () ros::simple-state)
+  )
 (defvar *touch-it-interface*
-  (setq *c* (instance ros::simple-action-client :init
+  (setq *c* (instance touch-it-client :init
 		      "/touchit/act/exec"
 		      move_base_msgs::MoveBaseAction)))
 (defvar *touch-it-interface-ocs*
   (setq *c* (instance ros::simple-action-client :init
 		      "/touchit/act/exec_ocs"
 		      move_base_msgs::MoveBaseAction)))
-(defvar *touchit-reached* 9)
+(defvar *touchit-reached* 4)
 (defvar *touchit-touched* 3)
+(defvar *touchit-cancelled* 6)
 
 (defvar *touchit-target-larm* 0)
 (defvar *touchit-target-larm-torso* 1)
@@ -204,64 +216,88 @@
 	  :transformation target-coords))
    (touch-it-interface
     (case command
-	  (:prev *touch-it-interface-ocs*)
-	  (t *touch-it-interface*)))
+      (:prev *touch-it-interface-ocs*)
+      (t *touch-it-interface*)))
    (axis
     (case *rotation-axis*
-	  (:z 0)
-	  (:x 1)
-	  (:y 2)
-	  (nil 3)
-	  (t 4)))
+      (:z 0)
+      (:x 1)
+      (:y 2)
+      (nil 3)
+      (t 4)))
    res)
-  ;;(case command
-  ;;(:prev nil)
-  ;;(t (send touch-it-interface :cancel-all-goals)))
-  ;;(unix:sleep 2)
-  (case command
-	(:cancel (send touch-it-interface :cancel-all-goals))
-	(t
-	 (let* ((c target-coords-from-pelvis)
-		(p (scale 1e-3 (send c :worldpos)))
-		(q (matrix2quaternion (send c :worldrot)))
-		goal)
-	   ;; set request
-	   (warning-message 2 "[touch_it_client] start waiting for server~%")
-	   (cond
-	    ((not *touch-it-server-detected*)
-	     (setq *touch-it-server-detected* t)
-	     (send touch-it-interface :wait-for-server)))
-	   (warning-message 2 "[touch_it_client] finish waiting for server ~%")
-	   (setq goal (instance move_base_msgs::MoveBaseActionGoal :init))
-	   (send goal :goal :target_pose :header :frame_id frame_id)
-	   (send goal :goal :target_pose :header :stamp (ros::time 0.0))
-	   (send goal :goal :target_pose :pose :position :x (elt p 0))
-	   (send goal :goal :target_pose :pose :position :y (elt p 1))
-	   (send goal :goal :target_pose :pose :position :z (elt p 2))
-	   (send goal :goal :target_pose :pose :orientation :x (elt q 1))
-	   (send goal :goal :target_pose :pose :orientation :y (elt q 2))
-	   (send goal :goal :target_pose :pose :orientation :z (elt q 3))
-	   (send goal :goal :target_pose :pose :orientation :w (elt q 0))
-	   (send goal :goal :target_pose :header :seq (+ (* 10 axis) ik-type))
-	   ;; send request
-	   (warning-message 2 "[touch_it_client] send goal to server ~%")
-	   (send touch-it-interface :send-goal goal)
-	   ;; wait
-	   (warning-message 2 "[touch_it_client] start waiting for result~%")
-	   (send touch-it-interface :wait-for-result)
-	   )))
-  ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
-  (setq res (send touch-it-interface :get-state))
-  ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
-  (publish-touchit-result
-   (format nil
-	   "~A (CODE: ~A)"
-	   (cond
-	    ((eq res *touchit-touched*) "TOUCHED")
-	    ((eq res *touchit-reached*) "REACHED")
-	    (t "UNKNOWN"))
-	   res))
-  res)
+  (let (feedback-value feedback-value2)
+    ;;(case command
+    ;;(:prev nil)
+    ;;(t (send touch-it-interface :cancel-all-goals)))
+    ;;(unix:sleep 2)
+    (case command
+      (:cancel (send touch-it-interface :cancel-all-goals))
+      (t
+       (let* ((c target-coords-from-pelvis)
+	      (p (scale 1e-3 (send c :worldpos)))
+	      (q (matrix2quaternion (send c :worldrot)))
+	      goal)
+	 ;; set request
+	 (warning-message 2 "[touch_it_client] start waiting for server~%")
+	 (cond
+	  ((not *touch-it-server-detected*)
+	   (setq *touch-it-server-detected* t)
+	   (send touch-it-interface :wait-for-server)))
+	 (warning-message 2 "[touch_it_client] finish waiting for server ~%")
+	 (setq goal (instance move_base_msgs::MoveBaseActionGoal :init))
+	 (send goal :goal :target_pose :header :frame_id frame_id)
+	 (send goal :goal :target_pose :header :stamp (ros::time 0.0))
+	 (send goal :goal :target_pose :pose :position :x (elt p 0))
+	 (send goal :goal :target_pose :pose :position :y (elt p 1))
+	 (send goal :goal :target_pose :pose :position :z (elt p 2))
+	 (send goal :goal :target_pose :pose :orientation :x (elt q 1))
+	 (send goal :goal :target_pose :pose :orientation :y (elt q 2))
+	 (send goal :goal :target_pose :pose :orientation :z (elt q 3))
+	 (send goal :goal :target_pose :pose :orientation :w (elt q 0))
+	 (send goal :goal :target_pose :header :seq (+ (* 10 axis) ik-type))
+	 ;; send request
+	 (warning-message 2 "[touch_it_client] send goal to server ~%")
+	 (send touch-it-interface :send-goal goal)
+	 ;; wait
+	 (warning-message 2 "[touch_it_client] start waiting for result~%")
+	 (ros::rate 10)
+	 (while (not (equal (send touch-it-interface :simple-state) ros::*simple-goal-state-done*))
+	   (warning-message 2 "[touch_it_client] waiting for result ... ~A~%" (send touch-it-interface :feedback))
+	   (when (send touch-it-interface :feedback)
+	     (setq feedback-value (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :pos))
+	     (setq feedback-value2 (rpy-angle (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :rot)))
+	     (publish-touchit-status
+	      (format nil "force ~5,2f / ~5,2f ~% IK ~a  (~5,2f %)"
+		      (elt feedback-value 0) (elt feedback-value 1) (if (eps= (elt feedback-value2 0) 0) "FAIL" "SUCC") (elt feedback-value 2)))
+	     )
+	   (ros::sleep)
+	   (ros::spin-once)
+	   ))))
+    ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
+    (setq res (send touch-it-interface :get-state))
+    ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
+    (publish-touchit-status
+     (if (send touch-it-interface :feedback)
+	 (progn
+	   (setq feedback-value (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :pos))
+	   (format nil
+		   (format nil "~A (~a)~%force ~5,2f / ~5,2f  (~5,2f %)"
+			   (cond
+			    ((equal res *touchit-touched*) "TOUCHED")
+			    ((equal res *touchit-reached*) "REACHED")
+			    ((equal res *touchit-cancelled*) "CANCELLED"))
+			   res
+			   (elt feedback-value 0) (elt feedback-value 1) (elt feedback-value 2))))
+       (format nil
+	       (format nil "~A (~a)"
+		       (cond
+			((equal res *touchit-touched*) "TOUCHED")
+			((equal res *touchit-reached*) "REACHED")
+			((equal res *touchit-cancelled*) "CANCELLED"))
+		       res))
+    :scale 0.25))
+    res))
 
 ;; initial pose
 (defun init-pose
@@ -862,24 +898,25 @@
     )
   )
 
-(defun publish-touchit-result
-  (text)
+(defun publish-touchit-status
+  (text &key (scale 0.15))
   (let ((marker (instance visualization_msgs::marker :init)))
     (send marker :header :frame_id "/im_target_coords_arrow")
     (send marker :id 1)
     (send marker :lifetime (ros::time 5))
-    (send marker :pose :position :z 1)
+    (send marker :pose :position :z 1.05)
     (send marker :pose :orientation :w 1)
     (send marker :color :r 1)
     (send marker :color :g 1)
     ;;(send marker :color :b 1)
     (send marker :color :a 1)
-    (send marker :scale :z 0.3)
+    (send marker :scale :z scale)
     (send marker :type visualization_msgs::marker::*TEXT_VIEW_FACING*)
     (send marker :text text)
     (ros::publish (format nil "~A/marker" *server-nodename*) marker)
     )
   )
+
 
 (defun publish-joint-states
   (&key
