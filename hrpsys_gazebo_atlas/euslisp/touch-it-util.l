@@ -85,7 +85,8 @@
       (i 0)
       (f-orig nil)
       (axis :z)
-      (div 30))
+      (div 30)
+      (thre 20))
   ;; calculate target
   (let (;;(div 30)
         (touch-flag :continue))
@@ -100,8 +101,7 @@
       (let* (f
 	     f-conv
 	     dir
-	     val
-	     (thre 20))
+	     val)
 	(if (and (boundp '*ri*) *ri*)
 	    (setq f (v- 
 		     (if (send *ri* :state :force-vector arm)
@@ -119,7 +119,6 @@
 	;; (warning-message 2 "[touch_it] ~a force = ~a # touchitforce~%" arm f)
 	;; (warning-message 2 "[touch_it] ~a dir = ~a  val = ~a  thre = ~a # touchitforce~%" arm dir val thre)
 	(setq *touchit-val* val)
-	(setq *touchit-thre* thre)
 	(when (> val thre)
 	  (setq touch-flag :touched)
 	  (return-from :touch-it-loop nil)))
