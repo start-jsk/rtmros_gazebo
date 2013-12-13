@@ -122,10 +122,10 @@
      :rpy (float-vector -3.582311e-09 -0.002932 1.221736e-06)))
    (list
     (make-coords
-     :pos (float-vector 674.777 -267.564 376.567)
+     :pos (float-vector 664.777 -297.564 436.567)
      :rpy (float-vector 7.748074e-06 -0.002922 -1.494227e-06))
     (make-coords
-     :pos (float-vector 674.779 267.726 376.562)
+     :pos (float-vector 664.779 297.726 436.562)
      :rpy (float-vector -7.472436e-06 -0.00291 2.071643e-06))
     (make-coords
      :pos (float-vector 24.7508 -88.999 -794.516)
