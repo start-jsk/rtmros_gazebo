@@ -117,6 +117,8 @@
 	(ros::ros-warn "[touch_it] ~a dir = ~a  val = ~a  thre = ~a # touchitforce~%" arm dir val thre)
 	;; (warning-message 2 "[touch_it] ~a force = ~a # touchitforce~%" arm f)
 	;; (warning-message 2 "[touch_it] ~a dir = ~a  val = ~a  thre = ~a # touchitforce~%" arm dir val thre)
+	(setq *touchit-val* val)
+	(setq *touchit-thre* thre)
 	(when (> val thre)
 	  (setq touch-flag :touched)
 	  (return-from :touch-it-loop nil)))
@@ -129,64 +131,67 @@
 
 	;; solve ik
 	(ros::ros-warn "[touch_it] calculating pose <~a = ~a/~a> !~%" r i div)
+	(setq *touchit-ratio* (* r 100))
 	;;(warning-message 1 "[touch_it] calculating pose <~a = ~a/~a> !~%" r i div)
-	(cond ((substringp "fullbody" (string ik-type))
-	       (fullbody-ik-with-collision arm c))
-	      ((substringp "torso" (string ik-type))
-	       (apply
-		#'fullbody-ik-main
-		(list
-		 :target-limb (list arm :lleg :rleg)
-		 :target-coords (list c nil nil)
-		 :additional-weight-list
-		 (mapcar
-		  #'(lambda (k gain)
-		      (list (send *atlas* :torso k :child-link)
-			    gain))
-		  (list :waist-r :waist-p :waist-y)
-		  '(0 0 1))
-		 ;;(list 1e-3 1e-3 1e-3))
-		 :root-link-virtual-joint-weight
-		 (float-vector 0 0 0 0 0 0)
-		 :min-vec (min
-			   (scale
-			    -1
-			    (map float-vector
-				 #'*
-				 (float-vector 0 0 0 0 0 0)
-				 #F(1000 1000 1000 200 200 200))))
-		 :max-vec (map float-vector
-			       #'*
-			       (float-vector 0 0 0 0 0 0)
-			       #F(1000 1000 1000 200 200 200))
-		 :collision? t
-		 ;;:centroid-thre 200
-		 ;;:target-centroid-pos nil
-		 :thre '(1 1 1)
-		 ;;:stop 100
-		 :rotation-axis (list axis t t)))
-	       ;; (torso-ik-with-collision arm c)
-	       )
-	      (t
-	       (send *atlas* arm :inverse-kinematics c :stop 100
-		     :thre 2
-		     :rthre (deg2rad 5)
-		     :rotation-axis axis
-		     ;; :dif-pos-ratio 1.00000 ;;
-		     ;; :dif-rot-ratio 0.01000 ;;
-		     ;; :manipulability-gain 0.00250  ;;
-		     ;; :null-space nil ;;
-		     ;; :additional-nspace-list nil ;;
-		     ;; :avoid-nspace-gain 0 ;;
-		     :revert-if-fail t))
-	      )
+	(setq *touchit-ik-res*
+	      (cond ((substringp "fullbody" (string ik-type))
+		     (fullbody-ik-with-collision arm c))
+		    ((substringp "torso" (string ik-type))
+		     (apply
+		      #'fullbody-ik-main
+		      (list
+		       :target-limb (list arm :lleg :rleg)
+		       :target-coords (list c nil nil)
+		       :additional-weight-list
+		       (mapcar
+			#'(lambda (k gain)
+			    (list (send *atlas* :torso k :child-link)
+				  gain))
+			(list :waist-r :waist-p :waist-y)
+			'(0 0 1))
+		       ;;(list 1e-3 1e-3 1e-3))
+		       :root-link-virtual-joint-weight
+		       (float-vector 0 0 0 0 0 0)
+		       :min-vec (min
+				 (scale
+				  -1
+				  (map float-vector
+				       #'*
+				       (float-vector 0 0 0 0 0 0)
+				       #F(1000 1000 1000 200 200 200))))
+		       :max-vec (map float-vector
+				     #'*
+				     (float-vector 0 0 0 0 0 0)
+				     #F(1000 1000 1000 200 200 200))
+		       :collision? t
+		       ;;:centroid-thre 200
+		       ;;:target-centroid-pos nil
+		       :thre '(1 1 1)
+		       ;;:stop 100
+		       :rotation-axis (list axis t t)))
+		     ;; (torso-ik-with-collision arm c)
+		     )
+		    (t
+		     (send *atlas* arm :inverse-kinematics c :stop 100
+			   :thre 2
+			   :rthre (deg2rad 5)
+			   :rotation-axis axis
+			   ;; :dif-pos-ratio 1.00000 ;;
+			   ;; :dif-rot-ratio 0.01000 ;;
+			   ;; :manipulability-gain 0.00250  ;;
+			   ;; :null-space nil ;;
+			   ;; :additional-nspace-list nil ;;
+			   ;; :avoid-nspace-gain 0 ;;
+			   :revert-if-fail t))
+		    ))
+	(ros::ros-warn "[touch_it] ik result ~a !~%" *touchit-ik-res*)
 	;; send angle
 	(if (and (boundp '*ri*) *ri*)
 	    (progn
 	      (ros::ros-warn "[touch_it] sending to real robot")
-	      (model2real :time 2000 :wait t))
-	  ;;(send *ri* :angle-vector (send *atlas* :angle-vector) 2000)
-	  ;;(unix:usleep (* 1500 1000)))
+	      ;; (model2real :time 2000 :wait t))
+	      (send *ri* :angle-vector (send *atlas* :angle-vector) 2000)
+	      (unix:usleep (* 1500 1000)))
 	  (progn
 	    (ros::ros-warn "[touch_it] sending to dummy robot")
 	    (unix:usleep (* 20 1000))))
