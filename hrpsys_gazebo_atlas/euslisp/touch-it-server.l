@@ -11,17 +11,6 @@
 
 (load "package://hrpsys_gazebo_atlas/euslisp/touch-it-util.l")
 
-(defmethod ros::simple-action-server
-  (:set-rejected
-    (msg &optional (text ""))
-    (ros::ros-info ";; Action Rejected ~A" (send goal-id :id))
-    (setq status actionlib_msgs::GoalStatus::*rejected*)
-    (send self :publish-result msg text))
-  (:set-lost
-    (msg &optional (text ""))
-    (ros::ros-info ";; Action Lost ~A" (send goal-id :id))
-    (setq status actionlib_msgs::GoalStatus::*lost*)
-    (send self :publish-result msg text)))
 
 ;; global variables to store IK status
 (setq *touch-it-goal-new-p* t)
@@ -119,7 +108,7 @@
 					    :f-orig *touch-it-force-reference*
 					    :i *touch-it-iteration-count*
 					    :div *touch-it-iteration-div*
-					    :axis axis))
+					    :axis axis :thre *touchit-thre*))
     (incf *touch-it-iteration-count*)
     ;; set result
     (setq msg (send server :result))
@@ -153,50 +142,12 @@
 									 :rpy (list (if *touchit-ik-res* 1 0) 0 0)) 0))))
     ))
 
+(defun touchit-thre-cb (msg)
+  (let* ((val (send msg :data)))
+    (when (and (>= val 0) (<= val 100))
+      (setq *touchit-thre* val)
+      )))
 
-;; (defclass dummy-ri
-;;   :super object
-;;   :slots nil)
-;; (defmethod dummy-ri
-;;   (:nomethod (&rest args)))
-
-;; (cond
-;;  ((substringp "ocs" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
-;;   ;;
-;;   (defvar *last-angle-vector* (make-hash-table))
-;;   (defun joint-state-subscriber
-;;     (msg)
-;;     (let ((joint-names (send msg :name))
-;; 	  (joint-angles (send msg :position))
-;; 	  joint-name joint-angle
-;; 	  buf
-;; 	  )
-;;       (dotimes (x (length joint-names))
-;; 	(setq joint-name (elt joint-names x))
-;; 	;;(print joint-name)
-;; 	(setq joint-angle (rad2deg (elt joint-angles x)))
-;; 	(setq buf
-;; 	      (intern (string-upcase joint-name) *keyword-package*))
-;; 	(send *last-angle-vector* :enter buf joint-angle)
-;; 	)
-;;       ))
-;;   ;;
-;;   (ros::subscribe
-;;    "/atlas/joint_states_decompressed"
-;;    sensor_msgs::JointState
-;;    #'joint-state-subscriber 1)
-;;   ;;
-;;   (defun real2model
-;;     (&rest args)
-;;     (cond
-;;      ((and (boundp '*atlas*) *atlas*)
-;;       (mapcar
-;;        #'(lambda (key val)
-;; 	   (if (find-method *atlas* key)
-;; 	       (send *atlas* key :joint-angle val)))
-;;        (send *last-angle-vector* :list-keys)
-;;        (send *last-angle-vector* :list-values)))))
-;;   ))
 
 (unless (boundp '*do-not-start-touch-it*)
   
@@ -210,21 +161,15 @@
                       :execute-cb 'touch-it-action-cb
                       :preempt-cb 'touch-it-preempt-cb))
 
-  ;;(ros::rate 500)
   (ros::rate 1.0)
 
   (setq *tf* (instance ros::transform-listener :init))
 
 
   (ros::ros-warn "TOUCH_IT_ACTION_TOPIC_NAME=~a" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
-  (cond 
-   ;; ((substringp "ocs" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
-   ;;  (init-touch-it-without-server :real nil)
-   ;;  (setq *ri* (instance dummy-ri)))
-   (t
-    (unix::usleep (* 10000 1000))
-    (init-touch-it-without-server :real t)
-    (ros::ros-warn "touchit ri=~a" *ri*)))
+  (unix::usleep (* 10000 1000))
+  (init-touch-it-without-server :real t)
+  (ros::ros-warn "touchit ri=~a" *ri*)
   (send *atlas* :newcoords (make-coords))
 
   (send *irtviewer* :title (format nil "~a : ~a" "TouchIt!" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME")))
@@ -238,14 +183,17 @@
   (ros::ros-warn "~%")
   (ros::ros-warn "[touch_it] touch_it_action_node started !~%")
 
-(setq *touchit-val* 0)
-(setq *touchit-thre* 0)
-(setq *touchit-ratio* 0)
-(setq *touchit-ik-res* nil)
+  (setq *touchit-val* 0)
+  (setq *touchit-thre* 20)
+  (setq *touchit-ratio* 0)
+  (setq *touchit-ik-res* nil)
+
+  (ros::subscribe "/touchit/thre" std_msgs::Float64 #'touchit-thre-cb)
 
   (do-until-key
-    (x::window-main-one)
-    (send *s* :worker)
-    (ros::spin-once)
-    (ros::sleep))
+   (x::window-main-one)
+   (send *s* :worker)
+   (ros::spin-once)
+   (ros::sleep))
   )
+
