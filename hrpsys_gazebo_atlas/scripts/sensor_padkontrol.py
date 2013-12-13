@@ -8,10 +8,8 @@ import rospy
 
 roslib.load_manifest("std_msgs")
 
-from std_msgs.msg import Empty
+from std_msgs.msg import Empty, Float64
 from sensor_msgs.msg import Joy
-
-
 
 def joyCB(msg):
     print msg
@@ -25,6 +23,8 @@ def joyCB(msg):
         lFishPub.publish(Empty())
     elif msg.buttons[4] == 1:
         rFishPub.publish(Empty())
+    elif msg.buttons[7] == 1:
+        touchItPub.publish(Float64(msg.axes[0] * 100.0))
     # elif msg.buttons[5] == 1:
     #     check_call(["xterm"])
     # elif msg.buttons[6] == 1:
@@ -40,6 +40,7 @@ lhandPub = rospy.Publisher("/lhand_snap/snapshot", Empty)
 rhandPub = rospy.Publisher("/rhand_snap/snapshot", Empty)
 lFishPub = rospy.Publisher("/lfisheys_snap/snapshot", Empty)
 rFishPub = rospy.Publisher("/rfisheys_snap/snapshot", Empty)
+touchItPub = rospy.Publisher("/touchit/thre", Float64)
 
 rospy.spin()
 
