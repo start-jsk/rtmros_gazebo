@@ -84,9 +84,10 @@
       (ik-type arm)
       (i 0)
       (f-orig nil)
-      (axis :z))
+      (axis :z)
+      (div 30))
   ;; calculate target
-  (let ((div 30)
+  (let (;;(div 30)
         (touch-flag :continue))
     (block :touch-it-loop
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
