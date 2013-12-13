@@ -25,10 +25,10 @@ def joyCB(msg):
         lFishPub.publish(Empty())
     elif msg.buttons[4] == 1:
         rFishPub.publish(Empty())
-    elif msg.buttons[5] == 1:
-        check_call(["xterm"])
-    elif msg.buttons[6] == 1:
-        check_call(["xterm"])
+    # elif msg.buttons[5] == 1:
+    #     check_call(["xterm"])
+    # elif msg.buttons[6] == 1:
+    #     check_call(["xterm"])
       
 
 
