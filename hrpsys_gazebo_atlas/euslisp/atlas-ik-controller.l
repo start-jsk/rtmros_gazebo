@@ -268,7 +268,7 @@
 	   (warning-message 2 "[touch_it_client] waiting for result ... ~A~%" (send touch-it-interface :feedback))
 	   (when (send touch-it-interface :feedback)
 	     (setq feedback-value (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :pos))
-	     (setq feedback-value2 (rpy-angle (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :rot)))
+	     (setq feedback-value2 (car (rpy-angle (send (ros::tf-pose-stamped->coords (send (send touch-it-interface :feedback) :feedback :base_position)) :rot))))
 	     (publish-touchit-status
 	      (format nil "force ~5,2f / ~5,2f ~% IK ~a  (~5,2f %)"
 		      (elt feedback-value 0) (elt feedback-value 1) (if (eps= (elt feedback-value2 0) 0) "FAIL" "SUCC") (elt feedback-value 2)))
@@ -785,9 +785,21 @@
 (defun set-origin-to-hand
   (&optional (arm :rarm))
   (realmodel2model)
-  (send *target-coords* :move-to
-	(send *robot* arm :end-coords :worldcoords)
-	:world)
+  (let ((from-frame "pelvis")
+	(to-frame (if (eq arm :rarm) "right_grasp_frame" "left_grasp_frame")))
+    (let ((trans (send *tfl* :lookup-transform
+		       from-frame to-frame (ros::time 0.0))))
+      (if trans
+	  (progn
+	    (send trans :transform 
+		  (send (make-coords) :transformation
+			(send *robot* :copy-worldcoords))
+		  :world)
+	    (send *target-coords* :move-to trans :world))
+	(send *target-coords* :move-to
+	      (send *robot* arm :end-coords :worldcoords)
+	      :world)	
+	)))
   (set-origin)
   (set-marker-pose-robot (send *target-coords* :worldcoords))
   )
