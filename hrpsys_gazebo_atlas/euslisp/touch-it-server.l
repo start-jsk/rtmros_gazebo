@@ -48,20 +48,20 @@
          tc
          (ik-type
 	  (case (mod seq 10)
-		(0 :larm)
-		(1 :larm-torso)
-		(2 :larm-fullbody)
-		(3 :rarm)
-		(4 :rarm-torso)
-		(5 :rarm-fullbody)))
+	    (0 :larm)
+	    (1 :larm-torso)
+	    (2 :larm-fullbody)
+	    (3 :rarm)
+	    (4 :rarm-torso)
+	    (5 :rarm-fullbody)))
          touch-flag
 	 (axis
 	  (case (round (/ seq 10))
-		(0 :z)
-		(1 :x)
-		(2 :y)
-		(3 nil)
-		(t t)))
+	    (0 :z)
+	    (1 :x)
+	    (2 :y)
+	    (3 nil)
+	    (t t)))
          arm
          msg)
 
@@ -91,7 +91,7 @@
     (if *touch-it-goal-new-p*
         (if (and (boundp '*ri*) *ri*) (real2model)))
     ;;(send *atlas* :reset-pose))
-      ;;(send *atlas* :reset-manip-pose))
+    ;;(send *atlas* :reset-manip-pose))
     (send *irtviewer* :draw-objects)
     (send* tc :rpy (car (rpy-angle (send (send *atlas* arm :end-coords) :worldrot))))
 
@@ -121,16 +121,15 @@
     ;; send result
     (warning-message 1 "[touch_it] result is ~a !~%" msg)
     ;; Touched: Succeeded
-    ;; IKfound: Rejected
-    ;; Cancelled: Aboarted
-    ;; NotReached: Lost
+    ;; Cancelled: Preemped
+    ;; NotReached: Aboarted
     (cond ((eq touch-flag :continue)
            (warning-message 1 "[touch_it] continues to solve ik~%")
            ;; not sending goal yet, we will solve IK on the next iteratoin (:worker method calls :execution-cb)
            )
           ((eq touch-flag :arrived-at-goal)
            (warning-message 1 "[touch_it] IK finished~%")
-           (send server :set-succeeded msg)
+           (send server :set-aborted msg)
            (setq *touch-it-goal-new-p* t)
            )
           ((eq touch-flag :touched)
@@ -141,13 +140,11 @@
 	     (model2real :time 500))
 	   (setq *touch-it-goal-new-p* t)
            ))
-    ;;(send server :publish-feedback (instance geometry_msgs::PoseStamped :init :pose (ros::coords->pose (make-coords :pos #f(1 2 3)))))
-
-    ;; (cond (touch-flag (send server :set-succeeded msg))
-    ;;      (t (send server :set-lost msg)))
-    ;; (send server :set-aborted msg)
-    ;; (send server :set-rejected msg)
-    ;; (send server :set-lost msg)
+    (send server :publish-feedback
+	  (instance move_base_msgs::MoveBaseActionFeedback :init :feedback
+		    (instance move_base_msgs::MoveBaseFeedback :init :base_position
+			      (ros::coords->tf-pose-stamped (make-coords :pos (float-vector *touchit-val* *touchit-thre* *touchit-ratio*)
+									 :rpy (list (if *touchit-ik-res* 1 0) 0 0)) 0))))
     ))
 
 
@@ -234,6 +231,11 @@
 
   (ros::ros-warn "~%")
   (ros::ros-warn "[touch_it] touch_it_action_node started !~%")
+
+(setq *touchit-val* 0)
+(setq *touchit-thre* 0)
+(setq *touchit-ratio* 0)
+(setq *touchit-ik-res* nil)
 
   (do-until-key
     (x::window-main-one)
