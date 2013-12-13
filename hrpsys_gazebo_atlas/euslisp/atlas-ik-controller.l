@@ -15,6 +15,7 @@
 (require "atlas-fullbody-ik.l")
 (require "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
 (require "models/arrow-object.l")
+(require "atlas-end-coords.l")
 (require "package://roseus/euslisp/actionlib.l")
 
 ;;;;;;;; setup ;;;;;;;;;;;
@@ -772,7 +773,6 @@
     (send *target-coords* :move-to
 	  (send *robot* :worldcoords) :world)
     (send *target-coords* :transform cds)
-    
     (when (boundp '*irtviewer*)
       (send *irtviewer* :draw-objects))
     )
@@ -796,14 +796,14 @@
 		       from-frame to-frame (ros::time 0.0))))
       (if trans
 	  (progn
-	    (send trans :transform 
+	    (send trans :transform
 		  (send (make-coords) :transformation ;origin -> pelvis
 			(send *robot* :copy-worldcoords))
 		  :world)
 	    (send *target-coords* :move-to trans :world))
 	(send *target-coords* :move-to
 	      (send *robot* arm :end-coords :worldcoords)
-	      :world)	
+	      :world)
 	)))
   (set-origin)
   (set-marker-pose-robot (send *target-coords* :worldcoords))
@@ -919,7 +919,8 @@
     (ros::publish (format nil "~A/origin_marker" *server-nodename*)
 		  (object->marker-msg *origin-coords*
 				      (instance std_msgs::header :init
-						:frame_id "/im_origin_coords_arrow")))
+						:frame_id
+						"/im_origin_coords_arrow")))
     (send *origin-coords* :transform org)
     (send *origin-coords* :worldcoords)
     )
@@ -1272,6 +1273,7 @@
 
 (atlas-with-hand)
 (setq *robot* *atlas*)
+(switch-end-coords :id 2)
 (setq *real-robot* (copy-object *robot*))
 (gl::transparent *real-robot* 0.3)
 (setq *arrow* (arrow))
