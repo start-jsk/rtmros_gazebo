@@ -16,6 +16,7 @@ import sys
 from sensor_msgs.msg import *
 
 BUTTON_INDICES = [61, 69, 65, 63, 60, 59, 57, 55, 49, 51, 68, 56, 48, 52, 54, 58]
+AXIS_INDICES = [20, 21]
 
 
 def main():
@@ -43,7 +44,7 @@ def main():
    pub = rospy.Publisher('/joy_pad', Joy, latch=True)
 
    m = Joy()
-   m.axes = [ 0 ] * 0
+   m.axes = [ 0 ] * 2
    m.buttons = [ 0 ] * 16
    mode = None
 
@@ -51,6 +52,7 @@ def main():
 
    while not rospy.is_shutdown():
       m.header.stamp = rospy.Time.now()
+      
       # count the number of events that are coalesced together
       c = 0
       while controller.poll():
@@ -65,9 +67,7 @@ def main():
 
             # 153 -> pushed
             # 137 -> pulled
-            if not (control[0] == 153 or control[0] == 137):
-                continue        # not pushed
-            else:
+            if (control[0] == 153 or control[0] == 137):
                 button_index = control[1]
                 for bi, i in zip(BUTTON_INDICES, range(len(BUTTON_INDICES))):
                     if button_index == bi:
@@ -76,6 +76,14 @@ def main():
                         else:
                             m.buttons[i] = 0
                         p = True
+            elif control[0] == 185 or control[0] == 233:
+               axis_index = control[1]
+               for bi, i in zip(AXIS_INDICES, range(len(AXIS_INDICES))):
+                  if axis_index == bi:
+                     m.axes[i] = control[2] / 127.0
+                     p = True
+            else:
+               continue
       if p:
          pub.publish(m)
          p = False

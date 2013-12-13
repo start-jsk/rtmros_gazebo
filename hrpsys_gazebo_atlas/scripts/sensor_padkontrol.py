@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from subprocess import check_call
+
 import roslib
 import rospy
 
@@ -12,6 +14,7 @@ from sensor_msgs.msg import Joy
 
 
 def joyCB(msg):
+    print msg
     if msg.buttons[0] == 1:
         headPub.publish(Empty())
     elif msg.buttons[1] == 1:
@@ -22,6 +25,11 @@ def joyCB(msg):
         lFishPub.publish(Empty())
     elif msg.buttons[4] == 1:
         rFishPub.publish(Empty())
+    elif msg.buttons[5] == 1:
+        check_call(["xterm"])
+    elif msg.buttons[6] == 1:
+        check_call(["xterm"])
+      
 
 
 rospy.init_node("sensor_padkontrol")
