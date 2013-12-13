@@ -27,6 +27,7 @@
 (setq *touch-it-goal-new-p* t)
 (setq *touch-it-force-reference* nil)
 (setq *touch-it-iteration-count* 0)
+(setq *touch-it-iteration-div* 0)
 
 (defun touch-it-preempt-cb (server goal)
   ;; does not support distinghushing between goal, cancel everything always
@@ -107,12 +108,17 @@
 		    (send *ri* :state :absolute-force-vector arm)
 		  #f(0 0 0))))
       (setq *touch-it-iteration-count* 0)
+      (let* ((pos-crnt (send *atlas* arm :end-coords :worldpos))
+	     (pos-dest (send tc :worldpos))
+	     (tmp-dist (norm (v- pos-crnt pos-dest))))
+	(setq *touch-it-iteration-div* (+ (/ tmp-dist 50) 1)))
       )
 
     (warning-message 1 "[touch_it] arm=~A ik-type=~A axis=~A !~%" arm ik-type axis)
     (setq touch-flag (touch-it-control-proc tc :arm arm :ik-type ik-type
 					    :f-orig *touch-it-force-reference*
 					    :i *touch-it-iteration-count*
+					    :div *touch-it-iteration-div*
 					    :axis axis))
     (incf *touch-it-iteration-count*)
     ;; set result
