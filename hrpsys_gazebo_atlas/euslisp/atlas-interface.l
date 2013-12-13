@@ -403,7 +403,7 @@
    (send self :bdi_footstep
          (send robot :go-pos-params->footstep-list (* x 1000) (* y 1000) theta)
          :step-duration step-duration :swing-height swing-height))
-  (:teleport-to (&optional coords pose &key keep-effort)
+  (:teleport-to (&optional coords pose keep-effort set-user-pinned)
    (unix::usleep (* 100 1000))
    (send self :atlas-mode "harnessed")
    (send self :set-simulation-mode :mode :freeze :effort (if keep-effort nil 0))
@@ -424,8 +424,13 @@
    (unix::usleep (* 10 1000))
    (when coords
      (ros::publish "atlas/set_pose" (ros::coords->tf-pose coords)))
-   (unix::usleep (* 200 1000))
-   (send self :set-simulation-mode :mode :stand :effort (if keep-effort nil 0)))
+   (cond (set-user-pinned
+	  (unix::usleep (* 200 1000))
+	  (send self :atlas-mode "pinned")
+	  (send self :set-simulation-mode :mode :user :effort (if keep-effort nil 255)))
+	 (t
+	  (unix::usleep (* 200 1000))
+	  (send self :set-simulation-mode :mode :stand :effort (if keep-effort nil 0)))))
   ;;(:hand-move-joint
   ;;(arm av &optional (tm 1000))
   ;;)
