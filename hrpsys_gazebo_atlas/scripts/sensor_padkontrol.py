@@ -24,7 +24,7 @@ def joyCB(msg):
     elif msg.buttons[4] == 1:
         rFishPub.publish(Empty())
     elif msg.buttons[7] == 1:
-        touchItPub.publish(Float64(msg.axes[0] * 100.0))
+        touchItPub.publish(Float64(msg.axes[0] * 101.0 - 1))
     # elif msg.buttons[5] == 1:
     #     check_call(["xterm"])
     # elif msg.buttons[6] == 1:
