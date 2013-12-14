@@ -82,7 +82,8 @@
         (if (and (boundp '*ri*) *ri*) (real2model)))
     ;;(send *atlas* :reset-pose))
     ;;(send *atlas* :reset-manip-pose))
-    (send *irtviewer* :draw-objects)
+    (when (and (boundp '*irtviewer*) *irtviewer*)
+      (send *irtviewer* :draw-objects))
     (send* tc :rpy (car (rpy-angle (send (send *atlas* arm :end-coords) :worldrot))))
 
     ;; control
@@ -175,13 +176,13 @@
   (ros::ros-warn "touchit ri=~a" *ri*)
   (send *atlas* :newcoords (make-coords))
 
-  (send *irtviewer* :title (format nil "~a : ~a" "TouchIt!" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME")))
-  (cond ((substringp "ocs" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
-	 (send *irtviewer* :change-background #f(0.2 0.2 0.8)))
-	(t
-	 (send *irtviewer* :change-background #f(0.5 0.5 0.9))))
-
-  (send *irtviewer* :draw-objects)
+  (when (and (boundp '*irtviewer*) *irtviewer*)
+    (send *irtviewer* :title (format nil "~a : ~a" "TouchIt!" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME")))
+    (cond ((substringp "ocs" (unix:getenv "TOUCH_IT_ACTION_TOPIC_NAME"))
+	   (send *irtviewer* :change-background #f(0.2 0.2 0.8)))
+	  (t
+	   (send *irtviewer* :change-background #f(0.5 0.5 0.9))))
+    (send *irtviewer* :draw-objects))
 
   (ros::ros-warn "~%")
   (ros::ros-warn "[touch_it] touch_it_action_node started !~%")

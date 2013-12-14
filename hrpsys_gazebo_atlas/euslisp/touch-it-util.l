@@ -27,7 +27,8 @@
   (send *atlas* :rarm :move-end-rot 90 :x :local)
   (send *atlas* :rarm :move-end-pos #f(0 0 150) :world :rotation-axis :z :revert-if-fail t)
   (send *atlas* :rarm :move-end-rot -15 :y :local :revert-if-fail nil)
-  (send *irtviewer* :draw-objects)
+  (when (and (boundp '*irtviewer*) *irtviewer*)
+    (send *irtviewer* :draw-objects))
   (when (and (boundp '*ri*) *ri*)
     (model2real :time 3000 :wait t))
   (my-wait)
@@ -38,7 +39,8 @@
   ()
   (send *atlas* :old-reset-manip-pose)
   (send *atlas* :rarm :move-end-pos #f(0 0 -200))
-  (send *irtviewer* :draw-objects)
+  (when (and (boundp '*irtviewer*) *irtviewer*)
+    (send *irtviewer* :draw-objects))
   (when (and (boundp '*ri*) *ri*)
     (model2real :time 3000 :wait t))
   (my-wait)
@@ -195,10 +197,12 @@
 	  (progn
 	    (ros::ros-warn "[touch_it] sending to dummy robot")
 	    (unix:usleep (* 20 1000))))
-	(send *irtviewer* :draw-objects)
+	(when (and (boundp '*irtviewer*) *irtviewer*)
+	  (send *irtviewer* :draw-objects))
 	)
       )                                 ;touch-it-loop
-    (send *irtviewer* :draw-objects)
+    (when (and (boundp '*irtviewer*) *irtviewer*)
+      (send *irtviewer* :draw-objects))
     touch-flag
     ))
 
