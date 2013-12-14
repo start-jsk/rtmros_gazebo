@@ -6,9 +6,9 @@
 (defun init-touch-it-without-server
   (&key (real t))
   (cond ((and real (not (and (boundp '*ri*) *ri*)))
-         (atlas-init-ex :set-reset-pose nil :real t))
+         (atlas-init-ex :set-reset-pose nil :real t :view nil))
         ((not (and (boundp '*atlas*) *atlas*))
-         (atlas-init-ex :set-reset-pose nil :real nil)
+         (atlas-init-ex :set-reset-pose nil :real nil :view nil)
 	 (send *atlas* :reset-manip-pose)))
   (setq *do-not-start-ik-server* t)
   (load "package://hrpsys_gazebo_atlas/euslisp/atlas-eus-ik.l")
