@@ -979,7 +979,7 @@
 (defvar *use-fullbody* nil)
 (defvar *use-torso* nil)
 (defvar *translation-axis* t)
-(defvar *rotation-axis* t)
+(defvar *rotation-axis* nil)
 (defvar *tmp-rotation-axis* t) ;;turn nil when center sphere was moved
 (defvar *publish-ik* nil)
 (defvar *orgin-key* :rarm)
