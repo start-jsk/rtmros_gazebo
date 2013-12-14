@@ -81,10 +81,10 @@
 (defun touch-it-control-proc
   (tc &key
       (arm :rarm)
-      (ik-type arm)
       (i 0)
       (f-orig nil)
-      (axis :z)
+      (ik-type arm)
+      (axis nil)
       (div 30)
       (thre 20))
   ;; calculate target
