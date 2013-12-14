@@ -14,7 +14,7 @@
   (load "package://hrpsys_gazebo_atlas/euslisp/atlas-eus-ik.l")
   ;; (setq *do-not-start-touch-it* t)
   ;; (load "package://hrpsys_gazebo_atlas/euslisp/touch-it-server.l")
-  (switch-end-coords :id 1)
+  (switch-end-coords :id 2)
   (when (and (boundp '*ri*) *ri*)
     (send *ri* :set-interpolation-mode ":linear"))
   (ros::ros-warn "[touch_it] init-touchit-without-server done with real ~A" real)
