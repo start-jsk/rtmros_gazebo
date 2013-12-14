@@ -100,7 +100,7 @@
 	      (list (max 1 (* 0.99 (norm (send move-coords :worldpos))))
 		    5 5)
 	      (list (max (deg2rad 3)
-			 (* 0.99 (norm
+			 (* 0.9 (norm
 				 (coerce
 				  (car (send move-coords :rpy-angle))
 				  float-vector))))
@@ -1235,10 +1235,9 @@
 	  now-from-pelvis goal-from-pelvis))
 	(setq log-string
 	      (format nil
-		      "[pos-controller] :dif-pos ~A, :dif-rot ~A, :sleep ~A "
+		      ":dif-pos ~A, :dif-rot ~A, :sleep ~A "
 		      (mapcar #'norm move) (mapcar #'norm rot) *ik-stop*))
-	(format t log-string)
-	(publish-touchit-status log-string)
+	(format t "[pos-controller] ~A" log-string)
 	(if (and (not non-stop)
 		 (< (apply #'max (mapcar #'norm move)) 10)
 		 (< (apply #'max (mapcar #'norm rot)) (deg2rad 5)))
@@ -1277,6 +1276,7 @@
 	  (setq max-rstep
 		(min (deg2rad 180)
 		     (* max-rstep 2)))
+	  (publish-touchit-status (format nil "IK SUCCESS / ~A" log-string))
 	  (if *publish-ik*
 	      (publish-joint-states :real? nil)))
 	 (t ;(evenp (random 2))
@@ -1284,6 +1284,7 @@
 		(max 1 (/ max-step 2.0)))
 	  (setq max-rstep
 		(max (deg2rad 1) (/ max-rstep 2.0)))
+	  (publish-touchit-status (format nil "IK FAIL / ~A" log-string))
 	  ;; (mapcar
 	  ;;  #'(lambda (j)
 	  ;;      (send j :joint-angle
