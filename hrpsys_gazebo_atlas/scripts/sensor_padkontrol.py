@@ -41,6 +41,8 @@ rhandPub = rospy.Publisher("/rhand_snap/snapshot", Empty)
 lFishPub = rospy.Publisher("/lfisheys_snap/snapshot", Empty)
 rFishPub = rospy.Publisher("/rfisheys_snap/snapshot", Empty)
 touchItPub = rospy.Publisher("/touchit/thre", Float64)
+toggleIkModePub = rospy.Publisher("/jsk_interactive_marker_manipulation/toggle_ik_mode", Empty)
+toggleStartIkPub = rospy.Publisher("/jsk_interactive_marker_manipulation/toggle_start_ik", Empty)
 
 rospy.spin()
 
