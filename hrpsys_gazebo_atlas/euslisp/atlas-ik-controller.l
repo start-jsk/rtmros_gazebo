@@ -97,10 +97,10 @@
 	      (list rotation-axis t t)
 	      10
 	      update-convex
-	      (list (max 1 (* 0.9 (norm (send move-coords :worldpos))))
+	      (list (max 1 (* 0.99 (norm (send move-coords :worldpos))))
 		    5 5)
-	      (list (max (deg2rad 5)
-			 (* 0.9 (norm
+	      (list (max (deg2rad 3)
+			 (* 0.99 (norm
 				 (coerce
 				  (car (send move-coords :rpy-angle))
 				  float-vector))))
@@ -162,6 +162,16 @@
 			       (send *robot* :worldcoords))))
 		  *success-state-collection*)
 		 0 500)))
+      ;; (cond
+      ;;  ((eq rotation-axis nil)
+      ;; 	(send *target-coords*
+      ;; 	      :newcoords
+      ;; 	      (make-coords
+      ;; 	       :pos (copy-object (send *target-coords* :worldpos))
+      ;; 	       :rot (copy-object
+      ;; 		     (send (tf-model-end-coords) :worldrot))))
+      ;; 	(send *target-coords* :worldcoords)
+      ;; 	(publish-target-arrow-obj)))
       (send *robot* :angle-vector)
       )
      (t (format log-stream "failed!~%") nil))))
@@ -763,22 +773,53 @@
 	)
        )
       )
-    (cond
-     ((equal (send msg :type) jsk_interactive_marker::MarkerPose::*SPHERE_MARKER*)
-      (setq *tmp-rotation-axis* nil)
-      )
-     (t
-      (setq *tmp-rotation-axis* t)
-      ))
     (send *target-coords* :move-to
 	  (send *robot* :worldcoords) :world)
     (send *target-coords* :transform cds)
+    (cond
+     ((equal (send msg :type) jsk_interactive_marker::MarkerPose::*SPHERE_MARKER*)
+      (setq *tmp-rotation-axis* nil))
+     (t
+      (setq *tmp-rotation-axis* t)))
     (when (boundp '*irtviewer*)
       (send *irtviewer* :draw-objects))
     )
   (publish-arrow-tf)
   (ros::ros-error "~A" *origin-coords*)
   )
+
+(defun tf-end-coords
+  (&optional (arm :rarm))
+  (let* ((from-frame "pelvis")
+	 (to-frame (if (eq arm :rarm) "right_grasp_frame" "left_grasp_frame"))
+	 (trans (send *tfl* :lookup-transform ;pelvis -> grasp_frame
+		      from-frame to-frame (ros::time 0.0))))
+    (cond
+     (trans
+      (send trans :transform
+	    (send (make-coords) :transformation ;origin -> pelvis
+		  (send *robot* :copy-worldcoords))
+	    :world)
+      trans)
+     (t (send *robot* arm :end-coords :copy-worldcoords)))))
+
+(defun tf-model-end-coords
+  (&key
+   (robot *robot*)
+   (limb :rarm)
+   )
+  (let* ((real-end-coords (tf-end-coords limb))
+	 (real2model (send (copy-object
+			    (send
+			     (send *real-robot* limb :end-coords :parent)
+			     :worldcoords))
+			   :transformation
+			   (copy-object
+			    (send
+			     (send *real-robot* limb :end-coords :parent)
+			     :worldcoords)))))
+    (send real-end-coords :transform real2model)
+    real-end-coords))
 
 (defun set-origin
   ()
@@ -790,21 +831,9 @@
 (defun set-origin-to-hand
   (&optional (arm :rarm))
   (realmodel2model)
-  (let ((from-frame "pelvis")
-	(to-frame (if (eq arm :rarm) "right_grasp_frame" "left_grasp_frame")))
-    (let ((trans (send *tfl* :lookup-transform ;pelvis -> grasp_frame
-		       from-frame to-frame (ros::time 0.0))))
-      (if trans
-	  (progn
-	    (send trans :transform
-		  (send (make-coords) :transformation ;origin -> pelvis
-			(send *robot* :copy-worldcoords))
-		  :world)
-	    (send *target-coords* :move-to trans :world))
-	(send *target-coords* :move-to
-	      (send *robot* arm :end-coords :worldcoords)
-	      :world)
-	)))
+  (send *target-coords* :move-to
+	(tf-end-coords arm)
+	:world)
   (set-origin)
   (set-marker-pose-robot (send *target-coords* :worldcoords))
   )
@@ -1094,6 +1123,7 @@
   (let (ret move rot buf tmp str)
     (do-until-key
      (bench
+      (send (tf-model-end-coords) :draw-on :flush t :color #F(1 0 0) :size 1000)
       (if (and (not non-stop)
 	       (< (decf cnt) 0)) (return-from nil nil))
       (do-until-key
@@ -1218,6 +1248,15 @@
 		(max 1 (/ max-step 2.0)))
 	  (setq max-rstep
 		(max (deg2rad 1) (/ max-rstep 2.0)))
+	  (mapcar
+	   #'(lambda (j)
+	       (send j :joint-angle
+		     (+ (send j :joint-angle)
+			(* (- (* 2 (random 0.05)) 0.05)
+			   (- (send j :max-angle)
+			      (send j :min-angle))))))
+	   (if (find-method *robot* *move-limb*)
+	       (send *robot* *move-limb* :joint-list)))
 	  ;; (setq tmp (call-ik-server
 	  ;; 	   :real? real?
 	  ;; 	   :real-feedback? real-feedback?
