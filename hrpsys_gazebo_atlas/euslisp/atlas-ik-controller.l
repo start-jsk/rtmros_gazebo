@@ -1116,6 +1116,7 @@
    ;;
    (max-step 1000)
    (max-rstep (deg2rad 180))
+   log-string
    )
   (if return?
       (setq return?
@@ -1200,9 +1201,12 @@
 	       (send now-from-pelvis :difference-rotation
 		     goal-from-pelvis)))
 	  now-from-pelvis goal-from-pelvis))
-	(format t
-		"[pos-controller] :dif-pos ~A, :dif-rot ~A, :sleep ~A "
-		(mapcar #'norm move) (mapcar #'norm rot) *ik-stop*)
+	(setq log-string
+	      (format nil
+		      "[pos-controller] :dif-pos ~A, :dif-rot ~A, :sleep ~A "
+		      (mapcar #'norm move) (mapcar #'norm rot) *ik-stop*))
+	(format t log-string)
+	(publish-touchit-status log-string)
 	(if (and (not non-stop)
 		 (< (apply #'max (mapcar #'norm move)) 10)
 		 (< (apply #'max (mapcar #'norm rot)) (deg2rad 5)))
