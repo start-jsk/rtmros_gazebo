@@ -147,9 +147,9 @@
 
 (defun touchit-thre-cb (msg)
   (let* ((val (send msg :data)))
-    (when (and (>= val 0) (<= val 100))
-      (setq *touchit-thre* val)
-      )))
+    (when (numberp val)
+      (setq *touchit-thre* (max (min val 100) -1)))
+    ))
 
 
 (unless (boundp '*do-not-start-touch-it*)
