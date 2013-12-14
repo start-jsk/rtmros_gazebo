@@ -162,16 +162,17 @@
 			       (send *robot* :worldcoords))))
 		  *success-state-collection*)
 		 0 500)))
-      ;; (cond
-      ;;  ((eq rotation-axis nil)
-      ;; 	(send *target-coords*
-      ;; 	      :newcoords
-      ;; 	      (make-coords
-      ;; 	       :pos (copy-object (send *target-coords* :worldpos))
-      ;; 	       :rot (copy-object
-      ;; 		     (send (tf-model-end-coords) :worldrot))))
-      ;; 	(send *target-coords* :worldcoords)
-      ;; 	(publish-target-arrow-obj)))
+      (cond
+       ((eq rotation-axis nil)
+      	(send *target-coords*
+      	      :newcoords
+      	      (make-coords
+      	       :pos (copy-object (send *target-coords* :worldpos))
+      	       :rot (copy-object
+      		     (send (tf-model-end-coords) :worldrot))))
+      	(send *target-coords* :worldcoords)
+	(set-marker-pose-robot (send *target-coords* :worldcoords))))
+      (send (tf-model-end-coords) :draw-on :flush t :color #F(1 0 0) :size 1000)
       (send *robot* :angle-vector)
       )
      (t (format log-stream "failed!~%") nil))))
@@ -1156,7 +1157,6 @@
   (let (ret move rot buf tmp str)
     (do-until-key
      (bench
-      (send (tf-model-end-coords) :draw-on :flush t :color #F(1 0 0) :size 1000)
       (if (and (not non-stop)
 	       (< (decf cnt) 0)) (return-from nil nil))
       (do-until-key
@@ -1284,15 +1284,15 @@
 		(max 1 (/ max-step 2.0)))
 	  (setq max-rstep
 		(max (deg2rad 1) (/ max-rstep 2.0)))
-	  (mapcar
-	   #'(lambda (j)
-	       (send j :joint-angle
-		     (+ (send j :joint-angle)
-			(* (- (* 2 (random 0.05)) 0.05)
-			   (- (send j :max-angle)
-			      (send j :min-angle))))))
-	   (if (find-method *robot* *move-limb*)
-	       (send *robot* *move-limb* :joint-list)))
+	  ;; (mapcar
+	  ;;  #'(lambda (j)
+	  ;;      (send j :joint-angle
+	  ;; 	     (+ (send j :joint-angle)
+	  ;; 		(* (- (* 2 (random 0.05)) 0.05)
+	  ;; 		   (- (send j :max-angle)
+	  ;; 		      (send j :min-angle))))))
+	  ;;  (if (find-method *robot* *move-limb*)
+	  ;;      (send *robot* *move-limb* :joint-list)))
 	  ;; (setq tmp (call-ik-server
 	  ;; 	   :real? real?
 	  ;; 	   :real-feedback? real-feedback?
