@@ -104,11 +104,14 @@
       )
 
     (warning-message 1 "[touch_it] arm=~A ik-type=~A axis=~A !~%" arm ik-type axis)
-    (setq touch-flag (touch-it-control-proc tc :arm arm :ik-type ik-type
+    (setq touch-flag (touch-it-control-proc tc
+					    :arm arm
+					    ;; :ik-type ik-type
 					    :f-orig *touch-it-force-reference*
 					    :i *touch-it-iteration-count*
 					    :div *touch-it-iteration-div*
-					    :axis axis :thre *touchit-thre*))
+					    ;; :axis axis
+					    :thre *touchit-thre*))
     (incf *touch-it-iteration-count*)
     ;; set result
     (setq msg (send server :result))
