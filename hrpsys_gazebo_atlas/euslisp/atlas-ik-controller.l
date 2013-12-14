@@ -977,7 +977,7 @@
 (send *origin-coords* :translate #f(500 0 0))
 (defvar *old-coords* (send *target-coords* :copy-worldcoords))
 (defvar *use-fullbody* nil)
-(defvar *use-torso* t)
+(defvar *use-torso* nil)
 (defvar *translation-axis* t)
 (defvar *rotation-axis* nil)
 (defvar *tmp-rotation-axis* t) ;;turn nil when center sphere was moved
