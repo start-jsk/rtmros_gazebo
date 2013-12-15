@@ -35,10 +35,31 @@
     )
   )
 
+(defun move-rleg-ankle-p
+  (msg)
+  (real2model)
+  (send *atlas* :rleg :ankle-p :joint-angle (send msg :data))
+  (model2real :time 4000)
+  )
+
+(defun move-lleg-ankle-p
+  (msg)
+  (real2model)
+  (send *atlas* :lleg :ankle-p :joint-angle (send msg :data))
+  (model2real :time 4000)
+  )
+
 (setq server-nodename "jsk_model_marker_interface")
 
 (ros::subscribe (format nil "~A/atlas/joint_states_ri_move" server-nodename)
 		sensor_msgs::JointState #'joint-state-callback)
+
+(ros::subscribe (format nil "~A/atlas/rleg_ankle_p" server-nodename)
+		std_msgs::float32 #'move-rleg-ankle-p)
+
+(ros::subscribe (format nil "~A/atlas/lleg_ankle_p" server-nodename)
+		std_msgs::float32 #'move-lleg-ankle-p)
+
 
 (ros::rate 30)
 
