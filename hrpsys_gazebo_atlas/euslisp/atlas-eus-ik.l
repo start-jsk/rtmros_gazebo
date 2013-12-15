@@ -120,9 +120,9 @@
 	     :collision? t
 	     :centroid-thre 1e+10000
 	     ;:stop 100
-	     :dif-pos-ratio 1.0
-	     :dif-rot-ratio 0.00500
-	     :manipulability-gain 0.00500
+	     ;;:dif-pos-ratio 1.0
+	     ;;:dif-rot-ratio 0.00500
+	     ;;:manipulability-gain 0.00500
 	     :thre '(5 5 5)
 	     :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 1))
 	     :rotation-axis '(t t t))))))
@@ -251,7 +251,8 @@
           ;;              (send goal :pose :orientation :w)))
           ;; (print (list 'goal-in-pelvis goal-in-pelvis))
           ;; (print (list 'goal-in-world goal-in-world))
-          ik-ret)
+          (vectorp ik-ret))
+	;;(format t "[ik-server] SUCCESS!!~%")
         (send res :error_code :val moveit_msgs::MoveItErrorCodes::*SUCCESS*)
 	(send *viewer* :draw-objects)
         (send res :solution :joint_state :name
@@ -259,9 +260,7 @@
         (send res :solution :joint_state :position
               (map float-vector #'deg2rad (send *atlas* :angle-vector)))
         res)
-       (t
-        (format t "ik unresolved~%" q)
-        res)))))
+       (t res)))))
 
 (defun start-ik-server
   nil

@@ -95,11 +95,11 @@
 	     (list
 	      (list translation-axis t t)
 	      (list rotation-axis t t)
-	      10
+	      15
 	      update-convex
-	      (list (max 1 (* 0.99 (norm (send move-coords :worldpos))))
+	      (list (max (* 0.9 1) (* 0.9 (norm (send move-coords :worldpos))))
 		    5 5)
-	      (list (max (deg2rad 3)
+	      (list (max (* 0.9 (deg2rad 1))
 			 (* 0.9 (norm
 				 (coerce
 				  (car (send move-coords :rpy-angle))
@@ -1281,19 +1281,20 @@
 	      (publish-joint-states :real? nil)))
 	 (t ;(evenp (random 2))
 	  (setq max-step
-		(max 1 (/ max-step 2.0)))
+		(max 10 (/ max-step 2.0)))
 	  (setq max-rstep
-		(max (deg2rad 1) (/ max-rstep 2.0)))
+		(max (deg2rad 10) (/ max-rstep 2.0)))
 	  (publish-touchit-status (format nil "IK FAIL / ~A" log-string))
 	  ;; (mapcar
 	  ;;  #'(lambda (j)
 	  ;;      (send j :joint-angle
 	  ;; 	     (+ (send j :joint-angle)
-	  ;; 		(* (- (* 2 (random 0.05)) 0.05)
+	  ;; 		(* (- (* 2 (random 0.01)) 0.01)
 	  ;; 		   (- (send j :max-angle)
 	  ;; 		      (send j :min-angle))))))
 	  ;;  (if (find-method *robot* *move-limb*)
 	  ;;      (send *robot* *move-limb* :joint-list)))
+	  ;; (send *viewer* :draw-objects)
 	  ;; (setq tmp (call-ik-server
 	  ;; 	   :real? real?
 	  ;; 	   :real-feedback? real-feedback?

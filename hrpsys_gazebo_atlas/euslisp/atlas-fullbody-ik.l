@@ -375,6 +375,7 @@
     ;;
     (cond
      ((and (not collision?) (vectorp ret))
+      (format t "[ik-main] success !!~%")
       (fix-centroid-object)
       (send *irtviewer* :draw-objects)
       (cond
