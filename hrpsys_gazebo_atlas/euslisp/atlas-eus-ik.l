@@ -120,9 +120,9 @@
 	     :collision? t
 	     :centroid-thre 1e+10000
 	     ;:stop 100
-	     ;;:dif-pos-ratio 1.0
-	     ;;:dif-rot-ratio 0.00500
-	     ;;:manipulability-gain 0.00500
+	     :dif-pos-ratio 1.0
+	     :dif-rot-ratio 0.00500
+	     :manipulability-gain 0.00500
 	     :thre '(5 5 5)
 	     :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 1))
 	     :rotation-axis '(t t t))))))

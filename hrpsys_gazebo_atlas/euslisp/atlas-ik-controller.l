@@ -97,7 +97,8 @@
 	      (list rotation-axis t t)
 	      15
 	      update-convex
-	      (list (max (* 0.9 1) (* 0.9 (norm (send move-coords :worldpos))))
+	      (list (max (* 0.9 1)
+			 (* 0.9 (norm (send move-coords :worldpos))))
 		    5 5)
 	      (list (max (* 0.9 (deg2rad 1))
 			 (* 0.9 (norm
