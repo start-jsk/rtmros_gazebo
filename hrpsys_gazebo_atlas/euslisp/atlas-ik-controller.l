@@ -59,6 +59,7 @@
    (rotation-axis
     (if *tmp-rotation-axis* *rotation-axis* nil)
     )
+   (revert-if-fail t)
    (update-convex t)
    &allow-other-keys
    )
@@ -91,7 +92,7 @@
 	    (mapcar
 	     #'(lambda (key val) (format nil "~A ~A " key val))
 	     '(:translation-axis :rotation-axis :stop :update-convex
-	       :thre :rthre)
+	       :thre :rthre :revert-if-fail)
 	     (list
 	      (list translation-axis t t)
 	      (list rotation-axis t t)
@@ -106,6 +107,7 @@
 				  (car (send move-coords :rpy-angle))
 				  float-vector))))
 		    (deg2rad 5) (deg2rad 5))
+	      revert-if-fail
 	      ))
 	    (list ")"))))
     ;;
@@ -1147,6 +1149,7 @@
    (cnt 1000)
    (non-stop t)
    (return? nil)
+   (revert-if-fail t)
    ;;
    (max-step 1000)
    (max-rstep (deg2rad 180))
@@ -1266,6 +1269,7 @@
 			 :pos move
 			 :rpy (reverse rot))
 			:rotate? :x
+			:revert-if-fail revert-if-fail
 			:log-stream nil
 			)))
 	 target-limb move rot)
@@ -1277,6 +1281,7 @@
 	  (setq max-rstep
 		(min (deg2rad 180)
 		     (* max-rstep 2)))
+	  (setq revert-if-fail t)
 	  (publish-touchit-status (format nil "IK SUCCESS / ~A" log-string))
 	  (if *publish-ik*
 	      (publish-joint-states :real? nil)))
@@ -1285,6 +1290,7 @@
 		(max 10 (/ max-step 2.0)))
 	  (setq max-rstep
 		(max (deg2rad 10) (/ max-rstep 2.0)))
+	  (setq revert-if-fail t)
 	  (publish-touchit-status (format nil "IK FAIL / ~A" log-string))
 	  ;; (mapcar
 	  ;;  #'(lambda (j)
