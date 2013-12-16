@@ -39,7 +39,7 @@ wmctrl -ir $IMAGE_VIEW2_RFISH_SNAP_WID -e 1,1280,290,320,240
 IMAGE_GUI_WID=`getWID image_gui hrpsys`
 wmctrl -ir $IMAGE_GUI_WID -e 1,0,560,320,400
 
-IMAGE_ROI_WID=`getWID image_view roi`
+IMAGE_ROI_WID=`getWID lib/image_view roi`
 wmctrl -ir $IMAGE_ROI_WID -e 1,320,560,320,240
 
 wmctrl -r 'I1:bashI' -e 1,960,0,320,240
