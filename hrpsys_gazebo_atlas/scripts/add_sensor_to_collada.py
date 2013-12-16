@@ -163,7 +163,7 @@ if __name__ == '__main__':
     plst = doc.getElementsByTagName('articulated_system')
     target_articulated_system = None
     for p in plst:
-        if p.hasAttribute('id') and p.getAttribute('id') == 'robot0_motion':
+        if p.hasAttribute('id') and p.getAttribute('id').find('_motion') != -1:
             target_articulated_system = p
 
     if library_sensors_node != None and target_articulated_system != None:
