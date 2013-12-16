@@ -66,7 +66,8 @@ def add_sensor (doc, name, parent_link, sensor_type, translate = None, rotate = 
     for f in doc.getElementsByTagName('library_kinematics_models')[0].getElementsByTagName("technique_common")[0].getElementsByTagName("link"):
         if f.getAttribute("name") == parent_link:
             tmp_parent_link = f.getAttribute("sid");
-    tmp.setAttribute('link', 'kmodel0/%s'%tmp_parent_link)
+    kmodel_id = doc.getElementsByTagName('library_kinematics_models')[0].getElementsByTagName("kinematics_model")[0].getAttribute("id")
+    tmp.setAttribute('link', '%s/%s'%(kmodel_id,tmp_parent_link))
     if translate == None:
         tl = doc.createElement('translate')
         if name == "lhsensor":
