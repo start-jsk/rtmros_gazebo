@@ -165,10 +165,10 @@ def initialize_for_add_sensor ():
     for p in plst:
         if p.hasAttribute('id') and p.getAttribute('id').find('_motion') != -1:
             target_articulated_system = p
+    return library_sensors_node != None and target_articulated_system != None
 
 if __name__ == '__main__':
-    initialize_for_add_sensor()
-    if library_sensors_node != None and target_articulated_system != None:
+    if initialize_for_add_sensor():
         ## now added sensors are hard coded....
         add_sensor(doc, 'lhsensor', 'l_hand', 'force')
         add_sensor(doc, 'rhsensor', 'r_hand', 'force')
