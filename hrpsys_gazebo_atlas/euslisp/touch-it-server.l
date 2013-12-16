@@ -60,19 +60,16 @@
     (warning-message 4 "[touch_it] callback function was called !~%")
 
     ;; recieve arguments
-    (warning-message 4 "[touch_it] original pose timestamp is ~a!~%"
-                     (send goal :goal :target_pose :header :stamp))
+    ;; (warning-message 4 "[touch_it] original pose timestamp is ~a!~%"
+    ;;                  (send goal :goal :target_pose :header :stamp))
     (send goal :goal :target_pose :header :stamp (ros::time 0)) ;; This is a bug.
-    (warning-message 4 "[touch_it] overwrite pose timestamp is ~a!~%"
-                     (send goal :goal :target_pose :header :stamp))
+    ;; (warning-message 4 "[touch_it] overwrite pose timestamp is ~a!~%"
+    ;;                  (send goal :goal :target_pose :header :stamp))
     (setq tc (send *tf* :transform-pose "/pelvis" pose-stamped))
 
-    (warning-message 1 "[touch_it] goal pose is ~a !~%" pose)
-    (warning-message 1 "[touch_it] pos = (~a, ~a, ~a)~%"
-                     (send pos :x) (send pos :y) (send pos :z))
-    (warning-message 1 "[touch_it] ori = (~a, ~a, ~a, ~a)~%"
-                     (send ori :w) (send ori :x) (send ori :y) (send ori :z))
-    (warning-message 1 "[touch_it] sequence is ~a !~%" seq)
+    (warning-message 1 "[touch_it] pos = (~a, ~a, ~a)  ori = (~a, ~a, ~a, ~a)~%"
+                     (send pos :x) (send pos :y) (send pos :z) (send ori :w) (send ori :x) (send ori :y) (send ori :z))
+    (warning-message 1 "[touch_it] sequence is ~a~%" seq)
 
     (cond ((substringp "larm" (string ik-type)) (setq arm :larm))
           ((substringp "rarm" (string ik-type)) (setq arm :rarm)))
@@ -87,7 +84,7 @@
     (send* tc :rpy (car (rpy-angle (send (send *atlas* arm :end-coords) :worldrot))))
 
     ;; control
-    (warning-message 1 "[touch_it] tc is ~a !~%" tc)
+    (warning-message 1 "[touch_it] tc is ~a~%" tc)
 
     ;; initialize global variables if needed
     (when *touch-it-goal-new-p*
@@ -104,7 +101,7 @@
 	(setq *touch-it-iteration-div* (+ (/ tmp-dist 50) 1)))
       )
 
-    (warning-message 1 "[touch_it] arm=~A ik-type=~A axis=~A !~%" arm ik-type axis)
+    (warning-message 1 "[touch_it] arm=~A ik-type=~A axis=~A ! # ik-type and axis are ignored ~%" arm ik-type axis)
     (setq touch-flag (touch-it-control-proc tc
 					    :arm arm
 					    ;; :ik-type ik-type
@@ -127,12 +124,12 @@
            ;; not sending goal yet, we will solve IK on the next iteratoin (:worker method calls :execution-cb)
            )
           ((eq touch-flag :arrived-at-goal)
-           (warning-message 1 "[touch_it] IK finished~%")
+           (warning-message 1 "[touch_it] finish ! reached !~%")
            (send server :set-aborted msg)
            (setq *touch-it-goal-new-p* t)
            )
           ((eq touch-flag :touched)
-           (warning-message 1 "[touch_it] touched!~%")
+           (warning-message 1 "[touch_it] finish ! touched !~%")
 	   (send server :set-succeeded msg)
 	   (when (and (boundp '*ri*) *ri*)
 	     (real2model)

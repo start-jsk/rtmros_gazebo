@@ -18,7 +18,7 @@
   (&optional (order (scale 0.001 (float-vector 479.364 -800.006 378.368)))
 	     (ik-type 3)
 	     (frame_id "/pelvis"))
-  (let (goal res)
+  (let (goal)
     ;; set request
     (if (not (boundp '*c*))
         (setq *c* (instance ros::simple-action-client :init
@@ -49,28 +49,14 @@
 
     ;; check the result
     (send *c* :wait-for-result)
-    ;; (warning-message 2 "[touch_it_client] result1: ~a ~%" (send *c* :get-result))
-    (setq res (send *c* :get-state))
-    ;; (warning-message 2 "[touch_it_client] result2: ~a ~%" res)
-    res))
+    (send *c* :get-state)))
 
-(warning-message 1 "~%")
-(warning-message 1 "[touch_it_client] touch_it_action_client_node started !~%")
+(let (res)
+  (warning-message 1 "~%")
+  (warning-message 1 "[touch_it_client] touch_it_action_client_node started !~%")
 
-(setq res (touch-it-client (scale 0.001 (float-vector 479.364 0 378.368))))
-(warning-message 1 "[touch_it_client] result: ~a~%" res)
-(setq res (touch-it-client (scale 0.001 (float-vector 479.364 -800.006 378.368))))
-(warning-message 1 "[touch_it_client] result: ~a~%" res)
-(exit 0)
-
-;; (let ((count 0))
-;;   (do-until-key
-;;    (warning-message 4 "[touch_it_client] loop: ~A/~A~%" count 1000)
-;;    (incf count)
-;;    (when (> count 1000)
-;;      (exit 0))
-;;    (setq res (touch-it-client))
-;;    (warning-message 1 "[touch_it_client] result: ~a~%" res))
-;;   (exit 0)
-;;   )
-
+  (setq res (touch-it-client (scale 0.001 (float-vector 479.364 0 378.368))))
+  (warning-message 1 "[touch_it_client] result: ~a~%" res)
+  (setq res (touch-it-client (scale 0.001 (float-vector 479.364 -800.006 378.368))))
+  (warning-message 1 "[touch_it_client] result: ~a~%" res)
+  (exit 0))
