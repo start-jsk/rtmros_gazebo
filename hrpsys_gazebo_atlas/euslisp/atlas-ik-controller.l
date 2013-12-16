@@ -847,10 +847,10 @@
      (trans
       (send trans :transform
 	    (send (make-coords) :transformation ;origin -> pelvis
-		  (send *robot* :copy-worldcoords))
+		  (send *real-robot* :copy-worldcoords))
 	    :world)
       trans)
-     (t (send *robot* arm :end-coords :copy-worldcoords)))))
+     (t (send *real-robot* arm :end-coords :copy-worldcoords)))))
 
 (defun tf-model-end-coords
   (&key
@@ -858,17 +858,17 @@
    (limb :rarm)
    )
   (let* ((real-end-coords (tf-end-coords limb))
-	 (real2model (send (copy-object
-			    (send
-			     (send *real-robot* limb :end-coords :parent)
-			     :worldcoords))
-			   :transformation
-			   (copy-object
-			    (send
-			     (send *real-robot* limb :end-coords :parent)
-			     :worldcoords)))))
-    (send real-end-coords :transform real2model)
-    real-end-coords))
+	 (wrist2end (send (copy-object
+			   (send
+			    (send *real-robot* limb :end-coords :parent)
+			    :worldcoords))
+			  :transformation
+			  real-end-coords)))
+    (send (copy-object
+	   (send
+	    (send *robot* limb :end-coords :parent)
+	    :worldcoords))
+	  :transform wrist2end :local)))
 
 (defun set-origin
   ()
@@ -1272,8 +1272,9 @@
 	  now-from-pelvis goal-from-pelvis))
 	(setq log-string
 	      (format nil
-		      ":dif-pos ~A, :dif-rot ~A, :sleep ~A "
-		      (mapcar #'norm move) (mapcar #'norm rot) *ik-stop*))
+		      ":dif-pos ~4,2f :dif-rot ~4,2f"
+		      (car (mapcar #'norm move))
+		      (car (mapcar #'norm rot))))
 	(format t "[pos-controller] ~A" log-string)
 	(if (and (not non-stop)
 		 (< (apply #'max (mapcar #'norm move)) 10)
@@ -1315,7 +1316,7 @@
 		(min (deg2rad 180)
 		     (* max-rstep 2)))
 	  (setq revert-if-fail t)
-	  (publish-touchit-status (format nil "IK SUCCESS / ~A" log-string))
+	  (publish-touchit-status (format nil "~%IK SUCC / ~A" log-string))
 	  (if *publish-ik*
 	      (publish-joint-states :real? nil)))
 	 (t ;(evenp (random 2))
@@ -1324,7 +1325,7 @@
 	  (setq max-rstep
 		(max (deg2rad 10) (/ max-rstep 2.0)))
 	  (setq revert-if-fail t)
-	  (publish-touchit-status (format nil "IK FAIL / ~A" log-string))
+	  (publish-touchit-status (format nil "~%IK FAIL / ~A" log-string))
 	  ;; (mapcar
 	  ;;  #'(lambda (j)
 	  ;;      (send j :joint-angle
