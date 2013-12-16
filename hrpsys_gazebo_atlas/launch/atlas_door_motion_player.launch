@@ -11,13 +11,22 @@
 	name="door_foot" output="screen">
     <rosparam param="foot_list">
       - pose:
-          position: {x: -0.523, y: 0.27, z: 0}
-          orientation: {x: 0, y: 0, z: 0.642788, w: 0.766}
+          position: {x: -0.643, y: 0.401, z: 0}
+          orientation: {x: 0, y: 0, z: 0.258819, w: 0.965926}
         leg: "right"
       - pose:
-          position: {x: -0.747, y: 0.31, z: 0}
-          orientation: {x: 0, y: 0, z: 0.642788, w: 0.766}
+          position: {x: -0.756, y: 0.598, z: 0}
+          orientation: {x: 0, y: 0, z: 0.258819, w: 0.965926}
         leg: "left"
+
+      <!-- - pose: -->
+      <!--     position: {x: -0.523, y: 0.27, z: 0} -->
+      <!--     orientation: {x: 0, y: 0, z: 0.642788, w: 0.766} -->
+      <!--   leg: "right" -->
+      <!-- - pose: -->
+      <!--     position: {x: -0.747, y: 0.31, z: 0} -->
+      <!--     orientation: {x: 0, y: 0, z: 0.642788, w: 0.766} -->
+      <!--   leg: "left" -->
 
       - pose:
           position: {x: -0.523, y: 0.31, z: 0}
