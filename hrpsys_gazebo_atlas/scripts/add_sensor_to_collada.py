@@ -136,8 +136,8 @@ def add_sensor (doc, name, parent_link, sensor_type, translate = None, rotate = 
 
         targetNode.appendChild(sen)
 
-if __name__ == '__main__':
-    global sensor_num, library_sensors_node, target_articulated_system
+def initialize_for_add_sensor ():
+    global sensor_num, library_sensors_node, target_articulated_system, doc
     global force_sensor_num, gyro_sensor_num, acc_sensor_num
     argvs = sys.argv
     argc = len(argvs)
@@ -166,6 +166,8 @@ if __name__ == '__main__':
         if p.hasAttribute('id') and p.getAttribute('id').find('_motion') != -1:
             target_articulated_system = p
 
+if __name__ == '__main__':
+    initialize_for_add_sensor()
     if library_sensors_node != None and target_articulated_system != None:
         ## now added sensors are hard coded....
         add_sensor(doc, 'lhsensor', 'l_hand', 'force')
