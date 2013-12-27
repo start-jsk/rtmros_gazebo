@@ -28,7 +28,7 @@ topic
                        :ducation duration
                        )))
     (ros::service-call "/gazebo/apply_body_wrench" srv)))
-(defun clear_body_wrenches (body_name)
+(defun gazebo-clear-body-wrenches (body_name)
   (let ((srv (instance gazebo_msgs::BodyRequestRequest :init
                        :body_name body_name)))
     (ros::service-call "/gazebo/clear_body_wrench" srv)))
@@ -44,7 +44,7 @@ topic
                        :ducation duration
                        )))
     (ros::service-call "/gazebo/apply_joint_effort" srv)))
-(defun clear_body_wrenches (joint_name)
+(defun gazebo-clear-joint-forces (joint_name)
   (let ((srv (instance gazebo_msgs::JointRequestRequest :init
                        :joint_name joint_name)))
     (ros::service-call "/gazebo/clear_joint_forces" srv)))
@@ -213,7 +213,7 @@ topic
 (defun hrpsys-servo-on ()
   (send *ri* :RobotHardwareService_power :name "all" :ss 0)
   (unix::usleep (* 1000 1000))
-  (send *ri* :RobotHardwareService_goActual)
+  (send *ri* :StateHolderService_goActual)
   (unix::usleep (* 2 1000 1000))
   (send *ri* :RobotHardwareService_servo :name "all" :ss 0)
   )
@@ -241,7 +241,6 @@ topic
       (reduce #'(lambda (x y) (concatenate string y newline x)) str)
       )
     ))
-
 
 ;; hrpsys_gazebo_general
 (defun gazebo-reset-joint-reference (robotname &optional (wait nil))
