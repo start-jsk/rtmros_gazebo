@@ -6,7 +6,7 @@
   <arg name="LOOPBACK" default="false" />
   <!-- ROBOT instance name (name_space) -->
   <arg name="ROBOT_INSTANCE_NAME" default="$(arg ROBOT_TYPE)" />
-
+  <arg name="USE_INSTANCE_NAME" default="false" />
   <arg name="GAZEBO_MODEL_DIR" value="$(find hrpsys_gazebo_tutorials)/robot_models/$(arg ROBOT_TYPE)" />
   <arg name="CONF_FILE" value="$(arg GAZEBO_MODEL_DIR)/hrpsys/$(arg ROBOT_TYPE).conf" />
 
@@ -29,9 +29,9 @@
 
   <!--env name="HRPSYS_GAZEBO_IOB_NAME" value="hrpsys_gazebo_iob" /-->
   <!--env name="HRPSYS_GAZEBO_CONFIGURATION" value="hrpsys_gazebo_configuration" /-->
-  <env name="HRPSYS_GAZEBO_ROBOTNAME" value="$(arg ROBOT_INSTANCE_NAME)" />
+  <env if="$(arg USE_INSTANCE_NAME)"
+       name="HRPSYS_GAZEBO_ROBOTNAME" value="$(arg ROBOT_INSTANCE_NAME)" />
 
-  <param name="hrpsys_gazebo_iob" value="$(arg CONFIG_NAME)"/>
   <!-- end of hrpsys_gazebo settings -->
 
   <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
@@ -62,4 +62,6 @@
     <arg name="USE_SOFTERRORLIMIT" default="true" />
     <arg name="USE_IMAGESENSOR" default="false" />
   </include>
+
+  <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="gazebo_robot_dashboard" />
 </launch>
