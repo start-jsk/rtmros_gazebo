@@ -30,7 +30,7 @@ macro (generate_gazebo_urdf_file _robot_name)
   set(ROBOT ${_robot_name})
   string(TOLOWER ${_robot_name} _sname)
   configure_file(${PROJECT_SOURCE_DIR}/scripts/default_robot_hrpsys_bringup.launch.in ${PROJECT_SOURCE_DIR}/build/${_sname}_hrpsys_bringup.launch)
-  configure_file(${PROJECT_SOURCE_DIR}/scripts/default_gazebo_robot_no_controllers.launch.in ${PROJECT_SOURCE_DIR}/build/gazebo_${_sname}_no_controllers.launch)
+  configure_file(${PROJECT_SOURCE_DIR}/scripts/default_gazebo_robot_no_controllers.launch.in ${PROJECT_SOURCE_DIR}/launch/gazebo_${_sname}_no_controllers.launch)
   list(APPEND compile_robots ${_robot_name}_compile)
 endmacro()
 
