@@ -1,0 +1,11 @@
+<launch>
+  <arg name="SYNCHRONIZED" default="false" />
+
+  <rosparam command="load"
+            file="$(find hrpsys_ros_bridge_tutorials)/models/@ROBOT@_controller_config.yaml" />
+
+  <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
+    <arg name="ROBOT_TYPE" value="@ROBOT@" />
+    <arg name="SYNCHRONIZED" value="$(arg SYNCHRONIZED)" />
+  </include>
+</launch>
