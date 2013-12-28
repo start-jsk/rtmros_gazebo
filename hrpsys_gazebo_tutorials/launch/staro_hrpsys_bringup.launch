@@ -3,6 +3,6 @@
   <!--           file="$(find jsk_hrpsys_ros_bridge)/models/STARO_controller_config.yaml" /> -->
 
   <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
-    <arg name="ROBOT_NAME" value="STARO" />
+    <arg name="ROBOT_TYPE" value="STARO" />
   </include>
 </launch>
