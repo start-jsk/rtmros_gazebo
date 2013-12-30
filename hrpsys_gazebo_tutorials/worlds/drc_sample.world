@@ -26,22 +26,22 @@
     <!-- A ground plane -->
 
     <include>
-      <uri>model://drc_practice_hand_wheel_valve_wall</uri>
-      <pose>0 0 0 0 0 0</pose>
+      <uri>model://wheel_valve_wall</uri>
+      <pose>1.2 0 0 0 0 3.14</pose>
     </include>
 
     <include>
-      <uri>model://drc_practice_wheel_valve_wall</uri>
+      <uri>model://empty_wall</uri>
       <pose>1.21 1.21 0 0 0 4.71</pose>
     </include>
 
     <include>
-      <uri>model://drc_practice_handle_wheel_valve_wall</uri>
+      <uri>model://empty_wall</uri>
       <pose>0 1.22 0 0 0 6.28</pose>
     </include>
 
     <include>
-      <uri>model://drc_practice_wheel_valve_large_wall</uri>
+      <uri>model://empty_wall</uri>
       <pose>-0.01 0.01 0 0 0 7.85</pose>
     </include>
 
