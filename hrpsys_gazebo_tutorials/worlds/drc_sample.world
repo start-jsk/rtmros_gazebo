@@ -45,6 +45,18 @@
       <pose>-0.01 0.01 0 0 0 7.85</pose>
     </include>
 
+
+    <include>
+      <uri>model://table</uri>
+      <static>true</static>
+      <pose>3.5 0 0 0 0 1.57</pose>
+    </include>
+    <include>
+      <uri>model://cordless_drill</uri>
+      <pose>3.5 0 1.0 0 0 1.57</pose>
+    </include>
+
+
     <include>
       <uri>model://ground_plane</uri>
     </include>
