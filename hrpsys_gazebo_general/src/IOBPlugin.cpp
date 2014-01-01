@@ -287,24 +287,38 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
     this->robotState.position.resize(this->joints.size());
     this->robotState.velocity.resize(this->joints.size());
     this->robotState.effort.resize(this->joints.size());
-    this->robotState.kp_position.resize(this->joints.size());
-    this->robotState.ki_position.resize(this->joints.size());
-    this->robotState.kd_position.resize(this->joints.size());
-    this->robotState.kp_velocity.resize(this->joints.size());
-    this->robotState.i_effort_min.resize(this->joints.size());
-    this->robotState.i_effort_max.resize(this->joints.size());
+    if (!this->use_velocity_feedback) {
+      // for effort feedback
+      this->robotState.kp_position.resize(this->joints.size());
+      this->robotState.ki_position.resize(this->joints.size());
+      this->robotState.kd_position.resize(this->joints.size());
+      this->robotState.kp_velocity.resize(this->joints.size());
+      this->robotState.i_effort_min.resize(this->joints.size());
+      this->robotState.i_effort_max.resize(this->joints.size());
+    } else {
+      // for velocity feedback
+      this->robotState.kpv_position.resize(this->joints.size());
+      this->robotState.kpv_velocity.resize(this->joints.size());
+    }
   }
 
   {
     this->jointCommand.position.resize(this->joints.size());
     this->jointCommand.velocity.resize(this->joints.size());
     this->jointCommand.effort.resize(this->joints.size());
-    this->jointCommand.kp_position.resize(this->joints.size());
-    this->jointCommand.ki_position.resize(this->joints.size());
-    this->jointCommand.kd_position.resize(this->joints.size());
-    this->jointCommand.kp_velocity.resize(this->joints.size());
-    this->jointCommand.i_effort_min.resize(this->joints.size());
-    this->jointCommand.i_effort_max.resize(this->joints.size());
+    if (!this->use_velocity_feedback) {
+      // for effort feedback
+      this->jointCommand.kp_position.resize(this->joints.size());
+      this->jointCommand.ki_position.resize(this->joints.size());
+      this->jointCommand.kd_position.resize(this->joints.size());
+      this->jointCommand.kp_velocity.resize(this->joints.size());
+      this->jointCommand.i_effort_min.resize(this->joints.size());
+      this->jointCommand.i_effort_max.resize(this->joints.size());
+    } else {
+      // for velocity feedback
+      this->robotState.kpv_position.resize(this->joints.size());
+      this->robotState.kpv_velocity.resize(this->joints.size());
+    }
 
     this->ZeroJointCommand();
   }
@@ -318,13 +332,18 @@ void IOBPlugin::ZeroJointCommand() {
     this->jointCommand.position[i] = 0;
     this->jointCommand.velocity[i] = 0;
     this->jointCommand.effort[i] = 0;
-    // store these directly on altasState, more efficient for pub later
-    this->robotState.kp_position[i] = 0;
-    this->robotState.ki_position[i] = 0;
-    this->robotState.kd_position[i] = 0;
-    this->robotState.kp_velocity[i] = 0;
-    this->robotState.i_effort_min[i] = 0;
-    this->robotState.i_effort_max[i] = 0;
+    if (!this->use_velocity_feedback) {
+      // store these directly on altasState, more efficient for pub later
+      this->robotState.kp_position[i] = 0;
+      this->robotState.ki_position[i] = 0;
+      this->robotState.kd_position[i] = 0;
+      this->robotState.kp_velocity[i] = 0;
+      this->robotState.i_effort_min[i] = 0;
+      this->robotState.i_effort_max[i] = 0;
+    } else {
+      this->robotState.kpv_position[i] = 0;
+      this->robotState.kpv_velocity[i] = 0;
+    }
   }
   this->jointCommand.desired_controller_period_ms = 0;
 }
@@ -337,43 +356,52 @@ void IOBPlugin::LoadPIDGainsFromParameter() {
     std::string joint_ns(namestr);
     joint_ns += ("/gains/" + this->joints[i]->GetName() + "/");
 
-    // this is so ugly
-    double p_val = 0, i_val = 0, d_val = 0, i_clamp_val = 0, vp_val = 0;
-    std::string p_str = std::string(joint_ns)+"p";
-    std::string i_str = std::string(joint_ns)+"i";
-    std::string d_str = std::string(joint_ns)+"d";
-    std::string i_clamp_str = std::string(joint_ns)+"i_clamp";
-    std::string vp_str = std::string(joint_ns)+"vp";
+    if (this->use_velocity_feedback) {
+      double p_v_val, vp_v_val;
+      std::string p_v_str = std::string(joint_ns)+"p_v";
+      std::string vp_v_str = std::string(joint_ns)+"vp_v";
+      if (!this->rosNode->getParam(p_v_str, p_v_val)) {
+        ROS_WARN("IOBPlugin: couldn't find a P_V param for %s", joint_ns.c_str());
+      }
+      if (!this->rosNode->getParam(vp_v_str, vp_v_val)) {
+        ROS_WARN("IOBPlugin: couldn't find a VP_V param for %s", joint_ns.c_str());
+      }
 
-    if (!this->rosNode->getParam(p_str, p_val)) {
-      ROS_WARN("IOBPlugin: couldn't find a P param for %s", joint_ns.c_str());
-    }
-    if (!this->rosNode->getParam(i_str, i_val)) {
-      ROS_WARN("IOBPlugin: couldn't find a I param for %s", joint_ns.c_str());
-    }
-    if (!this->rosNode->getParam(d_str, d_val)) {
-      ROS_WARN("IOBPlugin: couldn't find a D param for %s", joint_ns.c_str());
-    }
-    if (!this->rosNode->getParam(i_clamp_str, i_clamp_val)) {
-      ROS_WARN("IOBPlugin: couldn't find a I_CLAMP param for %s", joint_ns.c_str());
-    }
-    if (!this->rosNode->getParam(vp_str, vp_val)) {
-      ROS_WARN("IOBPlugin: couldn't find a VP param for %s", joint_ns.c_str());
-    }
+      this->robotState.kpv_position[i] = p_v_val;
+      this->robotState.kpv_velocity[i] = vp_v_val;
+    } else {
+      // this is so ugly
+      double p_val = 0, i_val = 0, d_val = 0, i_clamp_val = 0, vp_val = 0;
+      std::string p_str = std::string(joint_ns)+"p";
+      std::string i_str = std::string(joint_ns)+"i";
+      std::string d_str = std::string(joint_ns)+"d";
+      std::string i_clamp_str = std::string(joint_ns)+"i_clamp";
+      std::string vp_str = std::string(joint_ns)+"vp";
 
-    double pv_val;
-    std::string pv_str = std::string(joint_ns)+"p_v";
-    if (!this->rosNode->getParam(pv_str, pv_val)) {
-      ROS_WARN("IOBPlugin: couldn't find a P_V param for %s", joint_ns.c_str());
-    }
+      if (!this->rosNode->getParam(p_str, p_val)) {
+        ROS_WARN("IOBPlugin: couldn't find a P param for %s", joint_ns.c_str());
+      }
+      if (!this->rosNode->getParam(i_str, i_val)) {
+        ROS_WARN("IOBPlugin: couldn't find a I param for %s", joint_ns.c_str());
+      }
+      if (!this->rosNode->getParam(d_str, d_val)) {
+        ROS_WARN("IOBPlugin: couldn't find a D param for %s", joint_ns.c_str());
+      }
+      if (!this->rosNode->getParam(i_clamp_str, i_clamp_val)) {
+        ROS_WARN("IOBPlugin: couldn't find a I_CLAMP param for %s", joint_ns.c_str());
+      }
+      if (!this->rosNode->getParam(vp_str, vp_val)) {
+        ROS_WARN("IOBPlugin: couldn't find a VP param for %s", joint_ns.c_str());
+      }
 
-    // store these directly on altasState, more efficient for pub later
-    this->robotState.kp_position[i]  =  p_val;
-    this->robotState.ki_position[i]  =  i_val;
-    this->robotState.kd_position[i]  =  d_val;
-    this->robotState.i_effort_min[i] = -i_clamp_val;
-    this->robotState.i_effort_max[i] =  i_clamp_val;
-    this->robotState.kp_velocity[i]  =  vp_val;
+      // store these directly on altasState, more efficient for pub later
+      this->robotState.kp_position[i]  =  p_val;
+      this->robotState.ki_position[i]  =  i_val;
+      this->robotState.kd_position[i]  =  d_val;
+      this->robotState.i_effort_min[i] = -i_clamp_val;
+      this->robotState.i_effort_max[i] =  i_clamp_val;
+      this->robotState.kp_velocity[i]  =  vp_val;
+    }
   }
 }
 
@@ -463,49 +491,65 @@ void IOBPlugin::SetJointCommand_impl(const JointCommand &_msg) {
       " elements effort[%ld] than expected[%ld]",
       _msg.effort.size(), this->jointCommand.effort.size());
 
-  // the rest are stored in robotState for publication
-  if (_msg.kp_position.size() == this->robotState.kp_position.size())
-    std::copy(_msg.kp_position.begin(), _msg.kp_position.end(), this->robotState.kp_position.begin());
-  else
-    ROS_DEBUG("JointCommand message contains different number of"
-      " elements kp_position[%ld] than expected[%ld]",
-      _msg.kp_position.size(), this->robotState.kp_position.size());
+  if (!this->use_velocity_feedback) {
+    // the rest are stored in robotState for publication
+    if (_msg.kp_position.size() == this->robotState.kp_position.size())
+      std::copy(_msg.kp_position.begin(), _msg.kp_position.end(), this->robotState.kp_position.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+                " elements kp_position[%ld] than expected[%ld]",
+                _msg.kp_position.size(), this->robotState.kp_position.size());
 
-  if (_msg.ki_position.size() == this->robotState.ki_position.size())
-    std::copy(_msg.ki_position.begin(), _msg.ki_position.end(), this->robotState.ki_position.begin());
-  else
-    ROS_DEBUG("JointCommand message contains different number of"
-      " elements ki_position[%ld] than expected[%ld]",
-      _msg.ki_position.size(), this->robotState.ki_position.size());
+    if (_msg.ki_position.size() == this->robotState.ki_position.size())
+      std::copy(_msg.ki_position.begin(), _msg.ki_position.end(), this->robotState.ki_position.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+                " elements ki_position[%ld] than expected[%ld]",
+                _msg.ki_position.size(), this->robotState.ki_position.size());
 
-  if (_msg.kd_position.size() == this->robotState.kd_position.size())
-    std::copy(_msg.kd_position.begin(), _msg.kd_position.end(), this->robotState.kd_position.begin());
-  else
-    ROS_DEBUG("JointCommand message contains different number of"
-      " elements kd_position[%ld] than expected[%ld]",
-      _msg.kd_position.size(), this->robotState.kd_position.size());
+    if (_msg.kd_position.size() == this->robotState.kd_position.size())
+      std::copy(_msg.kd_position.begin(), _msg.kd_position.end(), this->robotState.kd_position.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+                " elements kd_position[%ld] than expected[%ld]",
+                _msg.kd_position.size(), this->robotState.kd_position.size());
 
-  if (_msg.kp_velocity.size() == this->robotState.kp_velocity.size())
-    std::copy(_msg.kp_velocity.begin(), _msg.kp_velocity.end(), this->robotState.kp_velocity.begin());
-  else
-    ROS_DEBUG("JointCommand message contains different number of"
-      " elements kp_velocity[%ld] than expected[%ld]",
-      _msg.kp_velocity.size(), this->robotState.kp_velocity.size());
+    if (_msg.kp_velocity.size() == this->robotState.kp_velocity.size())
+      std::copy(_msg.kp_velocity.begin(), _msg.kp_velocity.end(), this->robotState.kp_velocity.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+                " elements kp_velocity[%ld] than expected[%ld]",
+                _msg.kp_velocity.size(), this->robotState.kp_velocity.size());
 
-  if (_msg.i_effort_min.size() == this->robotState.i_effort_min.size())
-    std::copy(_msg.i_effort_min.begin(), _msg.i_effort_min.end(), this->robotState.i_effort_min.begin());
-  else
-    ROS_DEBUG("JointCommand message contains different number of"
-      " elements i_effort_min[%ld] than expected[%ld]",
-      _msg.i_effort_min.size(), this->robotState.i_effort_min.size());
+    if (_msg.i_effort_min.size() == this->robotState.i_effort_min.size())
+      std::copy(_msg.i_effort_min.begin(), _msg.i_effort_min.end(), this->robotState.i_effort_min.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+                " elements i_effort_min[%ld] than expected[%ld]",
+                _msg.i_effort_min.size(), this->robotState.i_effort_min.size());
 
-  if (_msg.i_effort_max.size() == this->robotState.i_effort_max.size())
-    std::copy(_msg.i_effort_max.begin(), _msg.i_effort_max.end(), this->robotState.i_effort_max.begin());
-  else
-    ROS_DEBUG("JointCommand message contains different number of"
-      " elements i_effort_max[%ld] than expected[%ld]",
-      _msg.i_effort_max.size(), this->robotState.i_effort_max.size());
+    if (_msg.i_effort_max.size() == this->robotState.i_effort_max.size())
+      std::copy(_msg.i_effort_max.begin(), _msg.i_effort_max.end(), this->robotState.i_effort_max.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+                " elements i_effort_max[%ld] than expected[%ld]",
+                _msg.i_effort_max.size(), this->robotState.i_effort_max.size());
+  } else {
+    // use velocity feedback
+    if (_msg.kpv_position.size() == this->robotState.kpv_position.size())
+      std::copy(_msg.kpv_position.begin(), _msg.kpv_position.end(), this->robotState.kpv_position.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+                " elements kpv_position[%ld] than expected[%ld]",
+                _msg.kpv_position.size(), this->robotState.kpv_position.size());
 
+    if (_msg.kpv_velocity.size() == this->robotState.kpv_velocity.size())
+      std::copy(_msg.kpv_velocity.begin(), _msg.kpv_velocity.end(), this->robotState.kpv_velocity.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+                " elements kpv_velocity[%ld] than expected[%ld]",
+                _msg.kpv_velocity.size(), this->robotState.kpv_velocity.size());
+  }
   this->jointCommand.desired_controller_period_ms =
     _msg.desired_controller_period_ms;
 }

@@ -24,6 +24,7 @@ static ros::Publisher pub_joint_command;
 static ros::Subscriber sub_robot_state;
 static bool iob_synchronized;
 static bool start_robothw = false;
+static bool use_velocity_feedback = false;
 
 static JointCommand jointcommand;
 static JointCommand initial_jointcommand;
@@ -369,13 +370,6 @@ int write_command_angles(const double *angles)
         send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
       } else {
         servo_on = false;
-        send_com.position[i] = 0;
-        send_com.velocity[i] = 0;
-        //send_com.effort[i] = 0;
-        send_com.kp_position[i] = 0;
-        send_com.ki_position[i] = 0;
-        send_com.kd_position[i] = 0;
-        send_com.kp_velocity[i]  = 0;
       }
     }
 
@@ -410,8 +404,12 @@ int read_pgain(int id, double *gain)
     std::cerr << ";;; read pgain: " << id << " failed." << std::endl;
   }else{
     int iid = JOINT_ID_MODEL2REAL(id);
-    *(gain) = jointcommand.kp_position[iid] / initial_jointcommand.kp_position[iid];
-    //std::cerr << ";;; read gain: " << id << " = " << *gain << std::endl;
+    if (!use_velocity_feedback) {
+      *(gain) = jointcommand.kp_position[iid] / initial_jointcommand.kp_position[iid];
+      //std::cerr << ";;; read gain: " << id << " = " << *gain << std::endl;
+    } else {
+
+    }
   }
   return TRUE;
 }
@@ -423,9 +421,12 @@ int write_pgain(int id, double gain)
     std::cerr << ";;; write pgain: " << id << " failed." << std::endl;
   }else{
     int iid = JOINT_ID_MODEL2REAL(id);
-    jointcommand.kp_position[iid] =
-      gain * initial_jointcommand.kp_position[iid];
-    //std::cerr << ";;; write pgain: " << id << " = " << gain << std::endl;
+    if(!use_velocity_feedback) {
+      jointcommand.kp_position[iid] = gain * initial_jointcommand.kp_position[iid];
+      //std::cerr << ";;; write pgain: " << id << " = " << gain << std::endl;
+    } else {
+
+    }
   }
   return TRUE;
 }
@@ -706,7 +707,14 @@ int open_iob(void)
     } else {
       ROS_DEBUG("[iob] %s/joint_id_list is nothing", controller_name.c_str());
     }
-
+    if (rosnode->hasParam(controller_name + "/use_velocity_feedback")) {
+        bool ret;
+        rosnode->getParam(controller_name + "/use_velocity_feedback", ret);
+        use_velocity_feedback = ret;
+        if(ret) {
+          ROS_INFO("[iob] use_velocity_feedback");
+        }
+    }
     XmlRpc::XmlRpcValue param_val;
     std::vector<std::string> joint_lst;
     rosnode->getParam(controller_name + "/joints", param_val);
@@ -739,47 +747,58 @@ int open_iob(void)
     initial_jointcommand.velocity.resize(n);
     //initial_jointcommand.effort.resize(n);
     initial_jointcommand.effort.resize(0);
-    initial_jointcommand.kp_position.resize(n);
-    initial_jointcommand.ki_position.resize(n);
-    initial_jointcommand.kd_position.resize(n);
-    initial_jointcommand.kp_velocity.resize(n);
-    initial_jointcommand.i_effort_min.resize(n);
-    initial_jointcommand.i_effort_max.resize(n);
+
+    if(!use_velocity_feedback) {
+      initial_jointcommand.kp_position.resize(n);
+      initial_jointcommand.ki_position.resize(n);
+      initial_jointcommand.kd_position.resize(n);
+      initial_jointcommand.kp_velocity.resize(n);
+      initial_jointcommand.i_effort_min.resize(n);
+      initial_jointcommand.i_effort_max.resize(n);
+    } else {
+      initial_jointcommand.kpv_position.resize(n);
+      initial_jointcommand.kpv_velocity.resize(n);
+    }
 
     for (unsigned int i = 0; i < joint_lst.size(); ++i) {
       std::string joint_ns(controller_name);
       joint_ns += ("/gains/" + joint_lst[i] + "/");
 
-      double p_val = 0, i_val = 0, d_val = 0, i_clamp_val = 0, vp_val = 0;
-      std::string p_str = std::string(joint_ns)+"p";
-      std::string i_str = std::string(joint_ns)+"i";
-      std::string d_str = std::string(joint_ns)+"d";
-      std::string i_clamp_str = std::string(joint_ns)+"i_clamp";
-      std::string vp_str = std::string(joint_ns)+"vp";
-      if (!rosnode->getParam(p_str, p_val)) {
-        ROS_WARN("[iob] couldn't find a P param for %s", joint_ns.c_str());
+      if (!use_velocity_feedback) {
+        double p_val = 0, i_val = 0, d_val = 0, i_clamp_val = 0, vp_val = 0;
+        std::string p_str = std::string(joint_ns)+"p";
+        std::string i_str = std::string(joint_ns)+"i";
+        std::string d_str = std::string(joint_ns)+"d";
+        std::string i_clamp_str = std::string(joint_ns)+"i_clamp";
+        std::string vp_str = std::string(joint_ns)+"vp";
+        if (!rosnode->getParam(p_str, p_val)) {
+          ROS_WARN("[iob] couldn't find a P param for %s", joint_ns.c_str());
+        }
+        if (!rosnode->getParam(i_str, i_val)) {
+          ROS_WARN("[iob] couldn't find a I param for %s", joint_ns.c_str());
+        }
+        if (!rosnode->getParam(d_str, d_val)) {
+          ROS_WARN("[iob] couldn't find a D param for %s", joint_ns.c_str());
+        }
+        if (!rosnode->getParam(i_clamp_str, i_clamp_val)) {
+          ROS_WARN("[iob] couldn't find a I_CLAMP param for %s", joint_ns.c_str());
+        }
+        if (!rosnode->getParam(vp_str, vp_val)) {
+          ROS_WARN("[iob] couldn't find a VP param for %s", joint_ns.c_str());
+        }
+        // store these directly on altasState, more efficient for pub later
+        initial_jointcommand.kp_position[i] = p_val;
+        initial_jointcommand.ki_position[i] = i_val;
+        initial_jointcommand.kd_position[i] = d_val;
+        initial_jointcommand.i_effort_min[i] = -i_clamp_val;
+        initial_jointcommand.i_effort_max[i] = i_clamp_val;
+        initial_jointcommand.velocity[i]     = 0;
+        //initial_jointcommand.effort[i]       = 0;
+        initial_jointcommand.kp_velocity[i]  = vp_val;
+      } else {
+        // velocity feedback
+
       }
-      if (!rosnode->getParam(i_str, i_val)) {
-        ROS_WARN("[iob] couldn't find a I param for %s", joint_ns.c_str());
-      }
-      if (!rosnode->getParam(d_str, d_val)) {
-        ROS_WARN("[iob] couldn't find a D param for %s", joint_ns.c_str());
-      }
-      if (!rosnode->getParam(i_clamp_str, i_clamp_val)) {
-        ROS_WARN("[iob] couldn't find a I_CLAMP param for %s", joint_ns.c_str());
-      }
-      if (!rosnode->getParam(vp_str, vp_val)) {
-        ROS_WARN("[iob] couldn't find a VP param for %s", joint_ns.c_str());
-      }
-      // store these directly on altasState, more efficient for pub later
-      initial_jointcommand.kp_position[i] = p_val;
-      initial_jointcommand.ki_position[i] = i_val;
-      initial_jointcommand.kd_position[i] = d_val;
-      initial_jointcommand.i_effort_min[i] = -i_clamp_val;
-      initial_jointcommand.i_effort_max[i] = i_clamp_val;
-      initial_jointcommand.velocity[i]     = 0;
-      //initial_jointcommand.effort[i]       = 0;
-      initial_jointcommand.kp_velocity[i]  = vp_val;
     }
 
     initial_jointcommand.desired_controller_period_ms =
