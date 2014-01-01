@@ -574,7 +574,13 @@ void IOBPlugin::UpdateStates() {
     }
     {
       boost::mutex::scoped_lock lock(this->mutex);
-      this->UpdatePIDControl((curTime - this->lastControllerUpdateTime).Double());
+      if (this->use_velocity_feedback) {
+        // velocity control
+        this->UpdatePID_Velocity_Control((curTime - this->lastControllerUpdateTime).Double());
+      } else {
+        // effort control
+        this->UpdatePIDControl((curTime - this->lastControllerUpdateTime).Double());
+      }
     }
     this->lastControllerUpdateTime = curTime;
   }
@@ -630,7 +636,10 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
     this->robotState.position[i] = this->joints[i]->GetAngle(0).Radian();
     this->robotState.velocity[i] = this->joints[i]->GetVelocity(0);
-    //this->robotState.effort[i]   =
+    if (this->use_velocity_feedback) {
+      // not implemented yet on gazebo ???
+      this->robotState.effort[i] = this->joints[i]->GetForce(0);
+    }
   }
 
   // force sensors
@@ -690,6 +699,42 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
       this->robotState.Imus[i].orientation.z = imuRot.z;
       this->robotState.Imus[i].orientation.w = imuRot.w;
     }
+  }
+}
+
+void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
+
+  /// update pid with feedforward force
+  for (unsigned int i = 0; i < this->joints.size(); ++i) {
+
+    // truncate joint position within range of motion
+    double positionTarget = math::clamp(this->jointCommand.position[i],
+                                        static_cast<double>(this->joints[i]->GetLowStop(0).Radian()),
+                                        static_cast<double>(this->joints[i]->GetHighStop(0).Radian()));
+
+    double q_p = positionTarget - this->robotState.position[i];
+
+    if (!math::equal(_dt, 0.0))
+      this->errorTerms[i].d_q_p_dt = (q_p - this->errorTerms[i].q_p) / _dt;
+
+    this->errorTerms[i].q_p = q_p;
+
+    this->errorTerms[i].qd_p =
+      this->jointCommand.velocity[i] - this->robotState.velocity[i];
+
+    double j_velocity =
+      static_cast<double>(this->robotState.kpv_position[i]) * this->errorTerms[i].q_p +
+      static_cast<double>(this->robotState.kpv_velocity[i]) * this->errorTerms[i].qd_p;
+
+    // update max force
+    this->joints[i]->SetMaxForce(0, this->joints[i]->GetEffortLimit(0));
+#if 0
+    ROS_INFO("%d %f %f %f %f %f",
+             i, this->joints[i]->GetMaxForce(0),
+             j_velocity, q_p, positionTarget, robotState.position[i]);
+#endif
+    // apply velocity to joint
+    this->joints[i]->SetVelocity(0, j_velocity);
   }
 }
 

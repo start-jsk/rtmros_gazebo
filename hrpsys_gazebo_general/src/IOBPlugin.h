@@ -67,6 +67,7 @@ namespace gazebo
     void LoadPIDGainsFromParameter();
     void ZeroJointCommand();
     void UpdatePIDControl(double _dt);
+    void UpdatePID_Velocity_Control(double _dt);
 
     void GetIMUState(const common::Time &_curTime);
     void GetForceTorqueSensorState(const common::Time &_curTime);
