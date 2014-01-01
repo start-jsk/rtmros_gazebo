@@ -45,17 +45,31 @@
       <pose>-0.01 0.01 0 0 0 7.85</pose>
     </include>
 
-
+    <!-- drill -->
     <include>
       <uri>model://table</uri>
       <static>true</static>
-      <pose>3.5 0 0 0 0 1.57</pose>
+      <pose>3.0 0.8 0 0 0 1.57</pose>
     </include>
     <include>
       <uri>model://cordless_drill</uri>
-      <pose>3.5 0 1.0 0 0 1.57</pose>
+      <pose>3.0 0.8 1.0 0 0 1.57</pose>
     </include>
 
+    <!-- hose -->
+    <include>
+      <uri>model://table</uri>
+      <static>true</static>
+      <pose>0.5 3.0 0 0 0 0</pose>
+    </include>
+    <include>
+      <uri>model://vrc_firehose_long</uri>
+      <pose>1.1 2.8 1.1 0 0 3.14</pose>
+    </include>
+    <include>
+      <uri>model://vrc_standpipe</uri>
+      <pose>1.0 1.8 1.2 -1.5707 0 3.14</pose>
+    </include>
 
     <include>
       <uri>model://ground_plane</uri>
