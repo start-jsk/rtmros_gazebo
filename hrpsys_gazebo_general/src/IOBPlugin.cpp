@@ -287,6 +287,9 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
     this->robotState.position.resize(this->joints.size());
     this->robotState.velocity.resize(this->joints.size());
     this->robotState.effort.resize(this->joints.size());
+    // for reference
+    this->robotState.ref_position.resize(this->joints.size());
+    this->robotState.ref_velocity.resize(this->joints.size());
     if (!this->use_velocity_feedback) {
       // for effort feedback
       this->robotState.kp_position.resize(this->joints.size());
@@ -316,8 +319,8 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       this->jointCommand.i_effort_max.resize(this->joints.size());
     } else {
       // for velocity feedback
-      this->robotState.kpv_position.resize(this->joints.size());
-      this->robotState.kpv_velocity.resize(this->joints.size());
+      this->jointCommand.kpv_position.resize(this->joints.size());
+      this->jointCommand.kpv_velocity.resize(this->joints.size());
     }
 
     this->ZeroJointCommand();
@@ -700,6 +703,13 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
       this->robotState.Imus[i].orientation.w = imuRot.w;
     }
   }
+  {
+    boost::mutex::scoped_lock lock(this->mutex);
+    for (unsigned int i = 0; i < this->joints.size(); ++i) {
+      this->robotState.ref_position[i] = this->jointCommand.position[i];
+      this->robotState.ref_velocity[i] = this->jointCommand.velocity[i];
+    }
+  }
 }
 
 void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
@@ -722,16 +732,20 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
     this->errorTerms[i].qd_p =
       this->jointCommand.velocity[i] - this->robotState.velocity[i];
 
+    double max_vel = this->joints[i]->GetVelocityLimit(0);
     double j_velocity =
       static_cast<double>(this->robotState.kpv_position[i]) * this->errorTerms[i].q_p +
       static_cast<double>(this->robotState.kpv_velocity[i]) * this->errorTerms[i].qd_p;
 
     // update max force
     this->joints[i]->SetMaxForce(0, this->joints[i]->GetEffortLimit(0));
+    // clamp max velocity
+    j_velocity = math::clamp(j_velocity, -max_vel, max_vel);
 #if 0
-    ROS_INFO("%d %f %f %f %f %f",
+    ROS_INFO("%d %f / %f %f %f %f",
              i, this->joints[i]->GetMaxForce(0),
-             j_velocity, q_p, positionTarget, robotState.position[i]);
+             j_velocity, positionTarget, robotState.position[i],
+             this->robotState.kpv_position[i]);
 #endif
     // apply velocity to joint
     this->joints[i]->SetVelocity(0, j_velocity);
