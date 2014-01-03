@@ -60,6 +60,8 @@ static int num_of_substeps = 1;
 #define JOINT_ID_MODEL2REAL(id) joint_id_model2real(id)
 #define NUM_OF_REAL_JOINT (joint_real2model_vec.size())
 
+#define USE_SERVO_ON 0
+
 static std::map<int, int> joint_model2real_map;
 static std::vector<int>   joint_real2model_vec;
 
@@ -78,11 +80,11 @@ static inline void tick_service_command()
 {
   // tick gazebo ...
   hrpsys_gazebo_msgs::SyncCommandRequest req;
-  req.joint_command = jointcommand;
+  // req.joint_command = jointcommand; // do not need, because just tick gazebo time
   hrpsys_gazebo_msgs::SyncCommandResponse res;
-  //std::cerr << "[iob] service call" << std::endl;
+  std::cerr << "[iob] service call" << std::endl;
   serv_command.call(req, res);
-  //std::cerr << "[iob] service returned" << std::endl;
+  std::cerr << "[iob] service returned" << std::endl;
   js = res.robot_state;
 }
 
@@ -365,17 +367,23 @@ int write_command_angles(const double *angles)
     send_com.header.stamp = ros::Time::now();
 
     for (int i=0; i<NUM_OF_REAL_JOINT; i++) {
+#if USE_SERVO_ON
       if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
         send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
         send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
       } else {
         servo_on = false;
       }
+#else
+      send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
+      send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
+#endif
     }
 
     if (iob_synchronized) {
       hrpsys_gazebo_msgs::SyncCommandRequest req;
       if (servo_on) {
+        std::cerr << "[iob] servo on" << std::endl;
         req.joint_command = send_com;
       }
       hrpsys_gazebo_msgs::SyncCommandResponse res;
@@ -385,9 +393,13 @@ int write_command_angles(const double *angles)
       js = res.robot_state;
       init_sub_flag = true;
     } else {
+#if USE_SERVO_ON
       if(servo_on) {
         pub_joint_command.publish(send_com);
       }
+#else
+      pub_joint_command.publish(send_com);
+#endif
       ros::spinOnce();
     }
     if (!start_robothw) {
@@ -597,6 +609,9 @@ int read_temperature(int id, double *v)
 
 int write_servo(int id, int com)
 {
+  std::cerr << "servo: id: " << id;
+  std::cerr << "(" << servo.size() << ")";
+  std::cerr << " - " << com << std::endl;
     servo[id] = com;
     return TRUE;
 }
@@ -797,7 +812,17 @@ int open_iob(void)
         initial_jointcommand.kp_velocity[i]  = vp_val;
       } else {
         // velocity feedback
-
+        double p_v_val = 0, vp_v_val = 0;
+        std::string p_v_str  = std::string(joint_ns) + "p_v";
+        std::string vp_v_str = std::string(joint_ns) + "vp_v";
+        if (!rosnode->getParam(p_v_str, p_v_val)) {
+          ROS_WARN("[iob] couldn't find a P_V param for %s", joint_ns.c_str());
+        }
+        if (!rosnode->getParam(vp_v_str, vp_v_val)) {
+          ROS_WARN("[iob] couldn't find a VP_V param for %s", joint_ns.c_str());
+        }
+        initial_jointcommand.kpv_position[i] = p_v_val;
+        initial_jointcommand.kpv_velocity[i] = vp_v_val;
       }
     }
 
