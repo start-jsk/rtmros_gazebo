@@ -11,6 +11,7 @@
   <url>http://ros.org/wiki/hrpsys_gazebo_msgs</url>
 
   <depend package="geometry_msgs" />
+  <depend package="sensor_msgs" />
 </package>
 
 

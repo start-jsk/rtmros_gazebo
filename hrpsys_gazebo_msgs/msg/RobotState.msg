@@ -4,6 +4,9 @@ float64[] position
 float64[] velocity
 float64[] effort
 
+float64[] ref_position
+float64[] ref_velocity
+
 float32[] kp_position
 float32[] ki_position
 float32[] kd_position
