@@ -449,8 +449,12 @@ int read_dgain(int id, double *gain)
     //
   }else{
     int iid = JOINT_ID_MODEL2REAL(id);
-    *(gain) = jointcommand.kd_position[iid] / initial_jointcommand.kd_position[iid];
-    //std::cerr << ";;; read dgain: " << id << " = " << *gain << std::endl;
+    if (!use_velocity_feedback) {
+      *(gain) = jointcommand.kd_position[iid] / initial_jointcommand.kd_position[iid];
+      //std::cerr << ";;; read dgain: " << id << " = " << *gain << std::endl;
+    } else {
+
+    }
   }
   return TRUE;
 }
@@ -461,9 +465,13 @@ int write_dgain(int id, double gain)
     //
   }else{
     int iid = JOINT_ID_MODEL2REAL(id);
-    jointcommand.kd_position[iid] =
-      gain * initial_jointcommand.kd_position[iid];
-    //std::cerr << ";;; write dgain: " << id << " = " << gain << std::endl;
+    if (!use_velocity_feedback) {
+      jointcommand.kd_position[iid] =
+        gain * initial_jointcommand.kd_position[iid];
+      //std::cerr << ";;; write dgain: " << id << " = " << gain << std::endl;
+    } else {
+
+    }
   }
   return TRUE;
 }
