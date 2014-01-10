@@ -82,9 +82,9 @@ static inline void tick_service_command()
   hrpsys_gazebo_msgs::SyncCommandRequest req;
   // req.joint_command = jointcommand; // do not need, because just tick gazebo time
   hrpsys_gazebo_msgs::SyncCommandResponse res;
-  std::cerr << "[iob] service call" << std::endl;
+  // std::cerr << "[iob] tick srv c" << std::endl;
   serv_command.call(req, res);
-  std::cerr << "[iob] service returned" << std::endl;
+  // std::cerr << "[iob] tick srv r" << std::endl;
   js = res.robot_state;
 }
 
@@ -383,23 +383,18 @@ int write_command_angles(const double *angles)
     if (iob_synchronized) {
       hrpsys_gazebo_msgs::SyncCommandRequest req;
       if (servo_on) {
-        std::cerr << "[iob] servo on" << std::endl;
         req.joint_command = send_com;
       }
       hrpsys_gazebo_msgs::SyncCommandResponse res;
-      //std::cerr << "[iob] service call" << std::endl;
+      // std::cerr << "[iob] srv c" << std::endl;
       serv_command.call(req, res);
-      //std::cerr << "[iob] service returned" << std::endl;
+      // std::cerr << "[iob] srv r" << std::endl;
       js = res.robot_state;
       init_sub_flag = true;
     } else {
-#if USE_SERVO_ON
       if(servo_on) {
         pub_joint_command.publish(send_com);
       }
-#else
-      pub_joint_command.publish(send_com);
-#endif
       ros::spinOnce();
     }
     if (!start_robothw) {
