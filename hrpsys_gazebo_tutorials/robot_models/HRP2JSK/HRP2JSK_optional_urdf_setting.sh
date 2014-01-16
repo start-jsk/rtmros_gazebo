@@ -19,3 +19,6 @@ sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
 
 # if you want to simulate self collision, uncomment the following line. (robot motion becomes unstable.)
 # sed -i -e "s@</mu2>@</mu2>\n    <selfCollide>true</selfCollide>@g" ${OUTPUT_FILE}
+
+# overwrite velocity limit because collada2urdf doesn't reflect the velocity limit of collada model.
+sed -i -e 's@velocity="0.5"@velocity="10.0"@g' ${OUTPUT_FILE}
