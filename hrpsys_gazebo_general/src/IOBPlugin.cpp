@@ -88,9 +88,9 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       if (this->rosNode->hasParam(pname)) {
         bool ret;
         this->rosNode->getParam(pname, ret);
-        this->use_velocity_feedback = ret;
         ROS_WARN("override use_veolcity_feedback at %d by %d",
                  this->use_velocity_feedback, ret);
+        this->use_velocity_feedback = ret;
       }
     }
     XmlRpc::XmlRpcValue param_val;
