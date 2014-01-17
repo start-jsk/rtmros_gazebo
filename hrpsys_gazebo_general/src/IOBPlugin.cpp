@@ -734,6 +734,7 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
 
     double max_vel = this->joints[i]->GetVelocityLimit(0);
     double j_velocity =
+      this->jointCommand.velocity[i] +
       static_cast<double>(this->robotState.kpv_position[i]) * this->errorTerms[i].q_p +
       static_cast<double>(this->robotState.kpv_velocity[i]) * this->errorTerms[i].qd_p;
 
