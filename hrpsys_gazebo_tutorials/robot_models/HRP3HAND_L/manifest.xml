@@ -1,12 +1,12 @@
 <?xml version='1.0'?>
 <model>
-  <name>HRP2JSKNT</name>
+  <name>HRP3HAND_L</name>
   <version>0.1.0</version>
   <author>
     <name>Yohei Kakiuchi</name>
     <email>youhei@jsk.t.u-tokyo.ac.jp</email>
   </author>
-  <sdf>HRP2JSKNT.urdf</sdf>
+  <sdf>HRP3HAND_L.urdf</sdf>
   <description>
     auto generated file ...
   </description>
