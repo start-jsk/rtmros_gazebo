@@ -62,18 +62,18 @@ hrpsys_gazebo_configuration:
     LARM_JOINT5:  {p:  40000, d:   0.8, i: 0.0, i_clamp: 0.0, p_v: 200.0}
     LARM_JOINT6:  {p:  40000, d:   0.8, i: 0.0, i_clamp: 0.0, p_v: 200.0}
     LARM_JOINT7:  {p:  40000, d:   0.8, i: 0.0, i_clamp: 0.0, p_v: 200.0}
-    RLEG_JOINT0:  {p: 150000, d:   2.0, i: 0.0, i_clamp: 0.0, p_v: 250.0}
-    RLEG_JOINT1:  {p: 200000, d:   4.0, i: 0.0, i_clamp: 0.0, vp: 4.0, p_v: 250.0}
-    RLEG_JOINT2:  {p: 380000, d:  15.0, i: 0.0, i_clamp: 0.0, vp: 4.0, p_v: 250.0}
-    RLEG_JOINT3:  {p: 340000, d:  12.5, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 250.0}
-    RLEG_JOINT4:  {p: 280000, d:  10.0, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 250.0}
-    RLEG_JOINT5:  {p: 200000, d:   2.0, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 250.0}
-    LLEG_JOINT0:  {p: 150000, d:   2.0, i: 0.0, i_clamp: 0.0, p_v: 250.0}
-    LLEG_JOINT1:  {p: 200000, d:   4.0, i: 0.0, i_clamp: 0.0, vp: 4.0, p_v: 250.0}
-    LLEG_JOINT2:  {p: 380000, d:  15.0, i: 0.0, i_clamp: 0.0, vp: 4.0, p_v: 250.0}
-    LLEG_JOINT3:  {p: 340000, d:  12.5, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 250.0}
-    LLEG_JOINT4:  {p: 280000, d:  10.0, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 250.0}
-    LLEG_JOINT5:  {p: 200000, d:   4.0, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 250.0}
+    RLEG_JOINT0:  {p: 150000, d:   2.0, i: 0.0, i_clamp: 0.0, p_v: 350.0}
+    RLEG_JOINT1:  {p: 200000, d:   4.0, i: 0.0, i_clamp: 0.0, vp: 4.0, p_v: 350.0}
+    RLEG_JOINT2:  {p: 380000, d:  15.0, i: 0.0, i_clamp: 0.0, vp: 4.0, p_v: 350.0}
+    RLEG_JOINT3:  {p: 340000, d:  12.5, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 350.0}
+    RLEG_JOINT4:  {p: 280000, d:  10.0, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 350.0}
+    RLEG_JOINT5:  {p: 200000, d:   2.0, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 350.0}
+    LLEG_JOINT0:  {p: 150000, d:   2.0, i: 0.0, i_clamp: 0.0, p_v: 350.0}
+    LLEG_JOINT1:  {p: 200000, d:   4.0, i: 0.0, i_clamp: 0.0, vp: 4.0, p_v: 350.0}
+    LLEG_JOINT2:  {p: 380000, d:  15.0, i: 0.0, i_clamp: 0.0, vp: 4.0, p_v: 350.0}
+    LLEG_JOINT3:  {p: 340000, d:  12.5, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 350.0}
+    LLEG_JOINT4:  {p: 280000, d:  10.0, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 350.0}
+    LLEG_JOINT5:  {p: 200000, d:   4.0, i: 0.0, i_clamp: 0.0, vp: 2.0, p_v: 350.0}
 #   force_torque_sensors:
 #     - rfsensor
 #     - lfsensor
