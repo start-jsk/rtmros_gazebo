@@ -9,7 +9,7 @@ sed -i -e 's@</robot>@  <gazebo>\n    <plugin filename="libIOBPlugin.so" name="h
 sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
 
 # overwrite inertia because original value is too small
-for l in $(grep -n "inertia " HRP3HAND_R.urdf | cut -f1 -d:)
+for l in `grep -n "inertia " ${OUTPUT_FILE} | cut -f1 -d:`
 do
-  sed -i "${l}c\      <inertia ixx=\"1\" ixy=\"0\" ixz=\"0\" iyy=\"1\" iyz=\"0\" izz=\"1\"/>" HRP3HAND_R.urdf
+  sed -i "${l}c\      <inertia ixx=\"1\" ixy=\"0\" ixz=\"0\" iyy=\"1\" iyz=\"0\" izz=\"1\"/>" ${OUTPUT_FILE}
 done
