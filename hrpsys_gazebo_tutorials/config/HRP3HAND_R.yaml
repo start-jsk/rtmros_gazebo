@@ -9,17 +9,17 @@ hrpsys_gazebo_configuration:
   joint_id_list: [0, 1, 2, 3, 4, 5]
 # joints list used in gazebo, sizeof(joint_id_list) == sizeof(joints)
   joints:
-    - L_INDEXMP_R
-    - L_INDEXMP_P
-    - L_INDEXPIP_R
-    - L_MIDDLEPIP_R
-    - L_THUMBCM_Y
-    - L_THUMBCM_P
+    - R_INDEXMP_R
+    - R_INDEXMP_P
+    - R_INDEXPIP_R
+    - R_MIDDLEPIP_R
+    - R_THUMBCM_Y
+    - R_THUMBCM_P
 ## jointid:
   gains:
-    L_INDEXMP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    L_INDEXMP_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    L_INDEXPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    L_MIDDLEPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    L_THUMBCM_Y: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    L_THUMBCM_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
+    R_INDEXMP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
+    R_INDEXMP_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
+    R_INDEXPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
+    R_MIDDLEPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
+    R_THUMBCM_Y: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
+    R_THUMBCM_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
