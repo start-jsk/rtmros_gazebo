@@ -8,3 +8,10 @@ sed -i -e 's@</robot>@  <gazebo>\n    <plugin filename="libIOBPlugin.so" name="h
 # continuous joint not working in GAZEBO
 sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
 
+# overwrite inertia because original value is too small
+for l in $(grep -n "inertia " HRP3HAND_L.urdf | cut -f1 -d:)
+do
+  sed -i "${l}c\      <inertia ixx=\"1\" ixy=\"0\" ixz=\"0\" iyy=\"1\" iyz=\"0\" izz=\"1\"/>" HRP3HAND_L.urdf
+done
+
+
