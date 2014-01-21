@@ -1,7 +1,8 @@
 #!/bin/bash
 
-#. ~/.bashrc
-#roscd hrpsys_gazebo_tutorials/robot_models/HRP2JSKNT_with_HRP3HAND/
+PS1=1
+. /home/murooka/.bashrc
+roscd hrpsys_gazebo_tutorials/robot_models/HRP2JSKNT_with_HRP3HAND/
 rm -rf HRP2JSKNT_modified_for_hrp3hand.urdf HRP2JSKNT_with_HRP3HAND.urdf
 cp ../HRP2JSKNT/HRP2JSKNT.urdf ./HRP2JSKNT_modified_for_hrp3hand.urdf
 
