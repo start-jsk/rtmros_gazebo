@@ -24,18 +24,14 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
     this->controller_name = _sdf->Get<std::string>("controller");
   }
 
-  this->robot_name = "default";
+  this->robot_name = _parent->GetScopedName();
   if (_sdf->HasElement("robotname")) {
     this->robot_name = _sdf->Get<std::string>("robotname");
+    ROS_WARN("USE ROBOT NAME from URDF: %s, scoped name(%s)",
+             this->robot_name.c_str()
+             _parent->GetScopedName().c_str());
   }
-  if (this->robot_name != _parent->GetScopedName()) {
-    // ROS_WARN("USE INSTANCE NAME: %s of type(%s)",
-    //          _parent->GetScopedName().c_str(),
-    //          this->robot_name.c_str());
-    // // use instance name
-    // this->robot_name = _parent->GetScopedName();
-    this->controller_name = this->robot_name + "/" + this->controller_name;
-  }
+  this->controller_name = this->robot_name + "/" + this->controller_name;
 
   this->use_synchronized_command = false;
   if (_sdf->HasElement("synchronized_command")) {
