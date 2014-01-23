@@ -28,7 +28,7 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   if (_sdf->HasElement("robotname")) {
     this->robot_name = _sdf->Get<std::string>("robotname");
     ROS_WARN("USE ROBOT NAME from URDF: %s, scoped name(%s)",
-             this->robot_name.c_str()
+             this->robot_name.c_str(),
              _parent->GetScopedName().c_str());
   }
   this->controller_name = this->robot_name + "/" + this->controller_name;
