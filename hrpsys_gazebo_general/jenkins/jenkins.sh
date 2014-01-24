@@ -18,6 +18,7 @@ cd ..
 
 #
 sudo apt-get update
+sudo apt-get install drcsim
 rosdep update
 rosdep install --from-paths src --ignore-src --rosdistro ${DISTRO} -y -r
 sudo apt-get install -y ros-${DISTRO}-hrpsys-ros-bridge ## this should installed as rosdep install command
