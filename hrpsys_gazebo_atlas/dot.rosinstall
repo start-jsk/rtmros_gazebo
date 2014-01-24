@@ -5,6 +5,10 @@
 - git:
     uri: https://github.com/ros-perception/pcl_msgs.git
     local-name: pcl_msgs
+# jsk-ros-eus/baxtereus depends on this
+- git:
+   uri: http://github.com/RethinkRobotics/baxter_common.git
+   local-name: RethinkRobotics/baxter_common
 - svn: 
     uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk
     local-name: jsk-ros-pkg
