@@ -3,6 +3,7 @@
             file="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNTS_controller_config.yaml" />
 
   <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
+    <arg name="USE_INSTANCE_NAME" value="true" />
     <arg name="ROBOT_TYPE" value="HRP2JSKNTS" />
   </include>
 </launch>

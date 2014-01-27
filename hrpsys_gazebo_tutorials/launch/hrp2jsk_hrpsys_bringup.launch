@@ -15,5 +15,6 @@
 
   <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
     <arg name="ROBOT_TYPE" value="HRP2JSK" />
+    <arg name="USE_INSTANCE_NAME" value="true" />
   </include>
 </launch>

@@ -1,0 +1,11 @@
+<launch>
+  <rosparam command="load"
+            file="$(find hrpsys_gazebo_tutorials)/config/HRP2JSKNT_controller_config_for_moveit.yaml" />
+  <!-- <rosparam command="load" -->
+  <!--           file="$(find hrpsys_ros_bridge_tutorials)/models/HRP2JSKNT_controller_config.yaml" /> -->
+
+  <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
+    <arg name="ROBOT_TYPE" value="HRP2JSKNT" />
+    <arg name="USE_INSTANCE_NAME" value="true" />
+  </include>
+</launch>

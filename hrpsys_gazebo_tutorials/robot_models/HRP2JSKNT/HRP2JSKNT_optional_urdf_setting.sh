@@ -21,8 +21,8 @@ sed -i -e '/<collision>/{N;N;N;s@<collision>\n      <origin xyz="0 0 0" rpy="0 -
 sed -i -e '/<collision>/{N;N;N;s@<collision>\n      <origin xyz="0 0 0" rpy="0 -0 0"/>\n      <geometry>\n        <mesh filename="package://HRP2JSKNT/meshes/RLEG_LINK5_mesh.dae" scale="1 1 1" />@<collision>\n      <origin xyz="0.054 -0.010 -0.070" rpy="0 -0 0"/>\n      <geometry>\n        <box size="0.2412 0.138 0.07"/>@;}' ${OUTPUT_FILE}
 
 ## delete toe link collision
-sed -i -e 's@    <collision>\n      <origin xyz="0 0 0" rpy="0 -0 0"/>\n      <geometry>\n        <mesh filename="package://HRP2JSKNT/meshes/LARM_LINK6_mesh.dae" scale="1 1 1" />\n      </geometry>\n    </collision>@@g' ${OUTPUT_FILE}
-sed -i -e 's@    <collision>\n      <origin xyz="0 0 0" rpy="0 -0 0"/>\n      <geometry>\n        <mesh filename="package://HRP2JSKNT/meshes/RARM_LINK6_mesh.dae" scale="1 1 1" />\n      </geometry>\n    </collision>@@g' ${OUTPUT_FILE}
+sed -i -e 's@    <collision>\n      <origin xyz="0.115 0 -0.074" rpy="0 -0 0"/>\n      <geometry>\n        <mesh filename="package://HRP2JSKNT/meshes/LLEG_LINK6_mesh.dae" scale="1 1 1" />\n      </geometry>\n    </collision>@@g' ${OUTPUT_FILE}
+sed -i -e 's@    <collision>\n      <origin xyz="0.115 0 -0.074" rpy="0 -0 0"/>\n      <geometry>\n        <mesh filename="package://HRP2JSKNT/meshes/RLEG_LINK6_mesh.dae" scale="1 1 1" />\n      </geometry>\n    </collision>@@g' ${OUTPUT_FILE}
 
 # continuous joint not working in GAZEBO
 sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
