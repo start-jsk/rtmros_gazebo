@@ -1,0 +1,11 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="HRP2JSKNT" >
+  <xacro:include filename="$(find hrpsys_gazebo_tutorials)/robot_models/HRP2JSKNT/HRP2JSKNT_only_body.urdf" />
+  <xacro:include filename="$(find hrpsys_gazebo_tutorials)/robot_models/HRP3HAND_L/HRP3HAND_L.urdf" />
+  <xacro:include filename="$(find hrpsys_gazebo_tutorials)/robot_models/HRP3HAND_R/HRP3HAND_R.urdf" />
+  <include filename="$(find hector_sensors_description)/urdf/asus_camera.urdf.xacro" />
+  <xacro:asus_camera name="xtion" parent="HEAD_LINK1">
+    <origin xyz="0.1120 0.0 0.1255" rpy="0 0 0"/>
+    <!-- origin is calculated from -->
+    <!-- (send (send (send *hrp2jsknt* :head_link1_lk) :worldcoords) :transformation (midcoords 0.5 (send *hrp2jsknt* :camera_l) (send *hrp2jsknt* :camera_r))) -->
+  </xacro:asus_camera>
+</robot>
