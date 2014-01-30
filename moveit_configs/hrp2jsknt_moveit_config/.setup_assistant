@@ -1,7 +1,7 @@
 moveit_setup_assistant_config:
   URDF:
-    package: HRP2JSKNT_with_HRP3HAND
-    relative_path: HRP2JSKNT_with_HRP3HAND.urdf
+    package: HRP2JSKNT
+    relative_path: HRP2JSKNT.urdf
   SRDF:
     relative_path: config/HRP2JSKNT.srdf
   CONFIG:

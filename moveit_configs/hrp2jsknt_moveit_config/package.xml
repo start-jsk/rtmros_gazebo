@@ -16,8 +16,8 @@
 
   <run_depend>moveit_ros_move_group</run_depend>
   <run_depend>xacro</run_depend>
-  <build_depend>HRP2JSKNT_with_HRP3HAND</build_depend>
-  <run_depend>HRP2JSKNT_with_HRP3HAND</run_depend>
+  <build_depend>HRP2JSKNT</build_depend>
+  <run_depend>HRP2JSKNT</run_depend>
 
 
   <buildtool_depend>catkin</buildtool_depend>
