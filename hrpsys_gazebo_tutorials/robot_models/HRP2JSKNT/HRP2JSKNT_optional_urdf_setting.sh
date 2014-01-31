@@ -49,3 +49,8 @@ rosrun xacro xacro.py `echo ${OUTPUT_FILE} | sed "s/.urdf/.urdf.xacro/g"` > ${OU
 
 # delete Kinect link visual and collision
 sed -i -e '/<visual>/{N;N;N;N;N;N;N;N;N;N;N;s@<visual>\n      <origin rpy="0 0 0" xyz="0 0 0"/>\n      <geometry>\n        <mesh filename="package://hector_sensors_description/meshes/asus_camera/asus_camera_simple.dae"/>\n      </geometry>\n    </visual>\n    <collision>\n      <origin rpy="0 0 0" xyz="0 0 0"/>\n      <geometry>\n        <box size="0.035 0.185 0.025"/>\n      </geometry>\n    </collision>@@;}' ${OUTPUT_FILE}
+
+sed -i -e 's@</robot>@  <link name="RARM_EEF_PARENT" />\n  <link name="RARM_EEF_CHILD" />\n  <joint name="rarm_eef_1" type="fixed">\n    <origin rpy="0 1.5708 0" xyz="-0.0042 0.0392 -0.1245"/>\n    <parent link="RARM_LINK6"/>\n    <child link="RARM_EEF_PARENT"/>\n  </joint>\n  <joint name="rarm_eef_2" type="fixed">\n    <origin rpy="0 0 0" xyz="0 0 0"/>\n    <parent link="RARM_EEF_PARENT"/>\n    <child link="RARM_EEF_CHILD"/>\n  </joint>\n  <link name="LARM_EEF_PARENT" />\n  <link name="LARM_EEF_CHILD" />\n  <joint name="larm_eef_1" type="fixed">\n    <origin rpy="0 1.5708 0" xyz="-0.0042 -0.0392 -0.1245"/>\n    <parent link="LARM_LINK6"/>\n    <child link="LARM_EEF_PARENT"/>\n  </joint>\n  <joint name="larm_eef_2" type="fixed">\n    <origin rpy="0 0 0" xyz="0 0 0"/>\n    <parent link="LARM_EEF_PARENT"/>\n    <child link="LARM_EEF_CHILD"/>\n  </joint>\n</robot>@g' ${OUTPUT_FILE}
+
+
+
