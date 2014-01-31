@@ -8,6 +8,12 @@ sed -i -e 's@</robot>@  <gazebo>\n    <plugin filename="libIOBPlugin.so" name="h
 # continuous joint not working in GAZEBO
 sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
 
+## add IMU sensor (TODO: sensors should be added when converting from collada file)
+sed -i -e 's@</robot>@  <gazebo reference="CHEST_LINK1" >\n    <sensor name="waist_imu" type="imu">\n      <always_on>1</always_on>\n      <update_rate>1000.0</update_rate>\n      <imu>\n        <noise>\n          <type>gaussian</type>\n          <rate>\n            <mean>0.0</mean>\n            <stddev>2e-4</stddev>\n            <bias_mean>0.0000075</bias_mean>\n            <bias_stddev>0.0000008</bias_stddev>\n          </rate>\n          <accel>\n            <mean>0.0</mean>\n            <stddev>1.7e-2</stddev>\n            <bias_mean>0.1</bias_mean>\n            <bias_stddev>0.001</bias_stddev>\n          </accel>\n        </noise>\n      </imu>\n    </sensor>\n  </gazebo>\n</robot>@g' ${OUTPUT_FILE}
+
+## add force sensors (TODO: sensors should be added when converting from collada file)
+sed -i -e 's@</robot>@  <gazebo reference="LLEG_JOINT5">\n    <provideFeedback>1</provideFeedback>\n  </gazebo>\n  <gazebo reference="RLEG_JOINT5">\n    <provideFeedback>1</provideFeedback>\n  </gazebo>\n  <gazebo reference="LARM_JOINT6">\n    <provideFeedback>1</provideFeedback>\n  </gazebo>\n  <gazebo reference="RARM_JOINT6">\n    <provideFeedback>1</provideFeedback>\n  </gazebo>\n</robot>@g' ${OUTPUT_FILE}
+
 # overwrite mass and inertia which have invalid settings.
 sed -i -e 's@<mass value="0" />@<mass value="0.1" />@g' ${OUTPUT_FILE}
 sed -i -e 's@<inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>@<inertia ixx="0.01" ixy="0" ixz="0" iyy="0.01" iyz="0" izz="0.01"/>@g' ${OUTPUT_FILE}
@@ -40,7 +46,7 @@ sed -i -e "${L_START},${L_END}d" ${OUTPUT_FILE}
 sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
 
 # overwrite velocity limit because collada2urdf doesn't reflect the velocity limit of collada model.
-sed -i -e 's@velocity="0.5"@velocity="10.0"@g' ${OUTPUT_FILE}
+sed -i -e 's@velocity="0.5"@velocity="1000.0"@g' ${OUTPUT_FILE}
 sed -i -e 's@effort="100"@effort="1000"@g' ${OUTPUT_FILE}
 
 # generate URDF with xacro

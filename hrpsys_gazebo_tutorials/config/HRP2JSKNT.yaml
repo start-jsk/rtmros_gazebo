@@ -79,19 +79,20 @@ hrpsys_gazebo_configuration:
     RLEG_JOINT4: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 350.0}
     RLEG_JOINT5: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 350.0}
     RLEG_JOINT6: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 250.0}
-##
+
   force_torque_sensors:
+    - rfsensor
     - lfsensor
-    - rfsensor 
+    - rhsensor
     - lhsensor
-    - rhsensor 
   force_torque_sensors_config:
-    lfsensor: {joint_name: 'LLEG_JOINT6', frame_id: 'LLEG_LINK6'}
-    rfsensor: {joint_name: 'RLEG_JOINT6', frame_id: 'RLEG_LINK6'}
-    lhsensor: {joint_name: 'LARM_JOINT6', frame_id: 'LARM_LINK6'}
-    rhsensor: {joint_name: 'RARM_JOINT6', frame_id: 'RARM_LINK6'}
-##
+## TODO: add translation and rotation
+    lfsensor: {joint_name: 'LLEG_JOINT5', frame_id: 'LLEG_LINK5', translation: [0, 0, -0.105], rotation: [1, 0, 0, 0]}
+    rfsensor: {joint_name: 'RLEG_JOINT5', frame_id: 'RLEG_LINK5', translation: [0, 0, -0.105], rotation: [1, 0, 0, 0]}
+    lhsensor: {joint_name: 'LARM_JOINT6', frame_id: 'LARM_LINK6', translation: [0, 0, -0.0775], rotation: [1, 0, 0, 0]}
+    rhsensor: {joint_name: 'RARM_JOINT6', frame_id: 'RARM_LINK6', translation: [0, 0, -0.0775], rotation: [1, 0, 0, 0]}
   imu_sensors:
     - imu_sensor0
-  imu_sensors:
-    imu_sensor0: {name: 'waist_imu', link_name: 'CHEST_LINK0', frame_id: 'WAIST_LINK0'}
+  imu_sensors_config:
+## TODO: add translation and rotation
+    imu_sensor0: {ros_name: 'waist_imu', link_name: 'CHEST_LINK1', frame_id: 'CHEST_LINK1'}
