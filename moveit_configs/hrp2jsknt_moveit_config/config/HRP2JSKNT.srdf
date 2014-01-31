@@ -17,6 +17,7 @@
         <joint name="LARM_JOINT4" />
         <joint name="LARM_JOINT5" />
         <joint name="LARM_JOINT6" />
+        <joint name="larm_eef_1" />
     </group>
     <group name="left_arm_torso">
         <joint name="LARM_JOINT0" />
@@ -28,6 +29,7 @@
         <joint name="LARM_JOINT6" />
         <joint name="CHEST_JOINT0" />
         <joint name="CHEST_JOINT1" />
+        <joint name="larm_eef_1" />
     </group>
     <group name="head">
         <joint name="HEAD_JOINT0" />
@@ -41,6 +43,7 @@
         <joint name="RARM_JOINT4" />
         <joint name="RARM_JOINT5" />
         <joint name="RARM_JOINT6" />
+        <joint name="rarm_eef_1" />
     </group>
     <group name="right_arm_torso">
         <joint name="RARM_JOINT0" />
@@ -52,22 +55,7 @@
         <joint name="RARM_JOINT6" />
         <joint name="CHEST_JOINT0" />
         <joint name="CHEST_JOINT1" />
-    </group>
-    <group name="left_gripper">
-        <link name="L_INDEXMP_R_LINK" />
-        <link name="L_INDEXMP_P_LINK" />
-        <link name="L_INDEXPIP_R_LINK" />
-        <link name="L_MIDDLEPIP_R_LINK" />
-        <link name="L_THUMBCM_Y_LINK" />
-        <link name="L_THUMBCM_P_LINK" />
-    </group>
-    <group name="right_gripper">
-        <link name="R_INDEXMP_R_LINK" />
-        <link name="R_INDEXMP_P_LINK" />
-        <link name="R_INDEXPIP_R_LINK" />
-        <link name="R_MIDDLEPIP_R_LINK" />
-        <link name="R_THUMBCM_Y_LINK" />
-        <link name="R_THUMBCM_P_LINK" />
+        <joint name="rarm_eef_1" />
     </group>
     <group name="full_body">
         <joint name="virtual_joint" />
@@ -115,6 +103,12 @@
         <joint name="RLEG_JOINT4" />
         <joint name="RLEG_JOINT5" />
         <joint name="RLEG_JOINT6" />
+    </group>
+    <group name="LARM_EEF">
+        <link name="LARM_EEF_CHILD" />
+    </group>
+    <group name="RARM_EEF">
+        <link name="RARM_EEF_CHILD" />
     </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="reset_left_arm" group="left_arm">
@@ -208,8 +202,8 @@
         <joint name="R_THUMBCM_Y" value="0" />
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="left_eef" parent_link="LARM_LINK6" group="left_gripper" />
-    <end_effector name="right_eef" parent_link="RARM_LINK6" group="right_gripper" />
+    <end_effector name="right_eef" parent_link="RARM_EEF_PARENT" group="RARM_EEF" />
+    <end_effector name="left_eef" parent_link="LARM_EEF_PARENT" group="LARM_EEF" />
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="virtual_joint" type="floating" parent_frame="odom" child_link="BODY" />
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
