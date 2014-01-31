@@ -68,3 +68,26 @@
 (warn "(send *ri* :get-state :larm)~%")
 
 
+
+
+(defun send-hand-pose
+  (hpose &optional l/r)
+  (cond ((or (equal l/r :lhand) (equal l/r :larm))
+	 (send *ri* :hand-angle-vector (send (send *hrp2* :hand :larm) hpose) :larm))
+	((or (equal l/r :rhand) (equal l/r :rarm))
+	 (send *ri* :hand-angle-vector (send (send *hrp2* :hand :rarm) hpose) :rarm))
+	(t
+	 (send *ri* :hand-angle-vector (send (send *hrp2* :hand :larm) hpose) :larm)
+	 (send *ri* :hand-angle-vector (send (send *hrp2* :hand :rarm) hpose) :rarm))))
+
+(defun close-hand-pose
+  (&optional l/r)
+  (send-hand-pose :close-pose l/r))
+
+(defun init-hand-pose
+  (&optional l/r)
+  (send-hand-pose :init-pose l/r))
+
+(defun hook-hand-pose
+  (&optional l/r)
+  (send-hand-pose :hook-pose2 l/r))
