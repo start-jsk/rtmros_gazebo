@@ -61,11 +61,11 @@
 	 (concatenate float-vector (mapcar #'rad2deg (concatenate cons (send msg :position)))))
    ))
 
-(warn "~%")
-(warn "(send *ri* (list (float-vector 10 20 30 40 50 60) (float-vector 50 40 30 20 10 0)))")
-(warn "(send *ri* :get-state)~%")
-(warn "(send *ri* #f(10 20 30 40 50 60) :larm)")
-(warn "(send *ri* :get-state :larm)~%")
+;;(warn "~%")
+;;(warn "(send *ri* (list (float-vector 10 20 30 40 50 60) (float-vector 50 40 30 20 10 0)))")
+;;(warn "(send *ri* :get-state)~%")
+;;(warn "(send *ri* #f(10 20 30 40 50 60) :larm)")
+;;(warn "(send *ri* :get-state :larm)~%")
 
 
 
