@@ -1,6 +1,5 @@
 (ros::load-ros-manifest "hrpsys_gazebo_msgs")
 
-
 (defmethod hrp2jsknt-interface
   (:init-hand
    ()
@@ -22,7 +21,23 @@
 	  (elt (send hcp :get-state) 1))
 	 (t
 	  (send hcp :get-state))
-	 )))
+	 ))
+  (:hand-effort-vector
+   (ef &optional l/r)
+   (cond ((or (equal l/r :lhand) (equal l/r :larm))
+	  (send hcp :send-effort-command (list ef nil)))
+	 ((or (equal l/r :rhand) (equal l/r :rarm))
+	  (send hcp :send-effort-command (list nil ef)))
+	 (t
+	  (send hcp :send-effort-command (list ef ef)))
+	 ))
+  (:start-grasp
+   (&optional l/r)
+   (send self :hand-effort-vector (float-vector 0 -25 25 0 25 25) l/r))
+  (:stop-grasp
+   (&optional l/r)
+   (send self :hand-effort-vector (float-vector 0 0 0 0 0 0) l/r)
+   ))
 
 (defclass hand-command-publisher-class
   :super propertied-object
@@ -41,10 +56,24 @@
    (let* ((left-av (elt av-list 0))
 	  (right-av (elt av-list 1)))
      (setq msg (instance hrpsys_gazebo_msgs::JointCommand :init))
-     (send msg :position (concatenate float-vector (mapcar #'deg2rad (concatenate cons left-av))))
+     (when left-av
+       (send msg :position (concatenate float-vector (mapcar #'deg2rad (concatenate cons left-av)))))
      (ros::publish "/HRP3HAND_L/joint_command" msg)
-     (send msg :position (concatenate float-vector (mapcar #'deg2rad (concatenate cons right-av))))
-     (ros::publish "/HRP3HAND_R/joint_command" msg))
+     (when right-av
+       (send msg :position (concatenate float-vector (mapcar #'deg2rad (concatenate cons right-av))))
+       (ros::publish "/HRP3HAND_R/joint_command" msg)))
+   )
+  (:send-effort-command
+   (ef-list)
+   (let* ((left-ef (elt ef-list 0))
+	  (right-ef (elt ef-list 1)))
+     (setq msg (instance hrpsys_gazebo_msgs::JointCommand :init))
+     (when left-ef
+       (send msg :effort left-ef)
+       (ros::publish "/HRP3HAND_L/joint_command" msg))
+     (when right-ef
+       (send msg :effort right-ef)
+       (ros::publish "/HRP3HAND_R/joint_command" msg)))
    )
   (:get-state
    ()
@@ -64,7 +93,7 @@
 ;;(warn "~%")
 ;;(warn "(send *ri* (list (float-vector 10 20 30 40 50 60) (float-vector 50 40 30 20 10 0)))")
 ;;(warn "(send *ri* :get-state)~%")
-;;(warn "(send *ri* #f(10 20 30 40 50 60) :larm)")
+;;(warn "(send *ri* :hand-angle-vector #f(10 20 30 40 50 60) :larm)")
 ;;(warn "(send *ri* :get-state :larm)~%")
 
 
@@ -80,14 +109,31 @@
 	 (send *ri* :hand-angle-vector (send (send *hrp2* :hand :larm) hpose) :larm)
 	 (send *ri* :hand-angle-vector (send (send *hrp2* :hand :rarm) hpose) :rarm))))
 
-(defun close-hand-pose
-  (&optional l/r)
-  (send-hand-pose :close-pose l/r))
-
 (defun init-hand-pose
   (&optional l/r)
   (send-hand-pose :init-pose l/r))
 
+(defun open-hand-pose
+  (&optional l/r)
+  (send-hand-pose :open-pose l/r))
+
+(defun close-hand-pose
+  (&optional l/r)
+  (send-hand-pose :close-pose l/r))
+
 (defun hook-hand-pose
   (&optional l/r)
-  (send-hand-pose :hook-pose2 l/r))
+  (send-hand-pose :hook-pose l/r))
+
+(defun grasp-hand-pose
+  (&optional l/r)
+  (send-hand-pose :grasp-pose l/r))
+
+
+(defun start-grasp
+  (&optional l/r)
+  (send *ri* :start-grasp l/r))
+
+(defun stop-grasp
+  (&optional l/r)
+  (send *ri* :stop-grasp l/r))

@@ -15,7 +15,8 @@
 	(setq *hrp2jsknt* (instance hrp2jsknt-robot :init)))))
   (setq *hrp2* *hrp2jsknt*)
   (setq *robot* *hrp2jsknt*)
-  (objects (list *hrp2*)))
+  (objects (list *hrp2*))
+  (send *irtviewer* :change-background #f(1 1 1)))
 
 (defun reset-pose
   (&key (wait-time 2000) (wait? t))
