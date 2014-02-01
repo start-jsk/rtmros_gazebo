@@ -17,9 +17,9 @@ hrpsys_gazebo_configuration:
     - R_MIDDLEPIP_R
 ## jointid:
   gains:
-    R_INDEXMP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    R_INDEXMP_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    R_INDEXPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    R_MIDDLEPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    R_THUMBCM_Y: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
-    R_THUMBCM_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 100.0}
+    R_INDEXMP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    R_INDEXMP_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    R_INDEXPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    R_MIDDLEPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    R_THUMBCM_Y: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    R_THUMBCM_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}

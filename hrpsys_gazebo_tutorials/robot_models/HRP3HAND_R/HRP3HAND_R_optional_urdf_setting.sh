@@ -11,5 +11,5 @@ sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
 # overwrite inertia because original value is too small
 for l in `grep -n "inertia " ${OUTPUT_FILE} | cut -f1 -d:`
 do
-  sed -i "${l}c\      <inertia ixx=\"1\" ixy=\"0\" ixz=\"0\" iyy=\"1\" iyz=\"0\" izz=\"1\"/>" ${OUTPUT_FILE}
+  sed -i "${l}c\      <inertia ixx=\"1e-02\" ixy=\"0\" ixz=\"0\" iyy=\"1e-02\" iyz=\"0\" izz=\"1e-02\"/>" ${OUTPUT_FILE}
 done
