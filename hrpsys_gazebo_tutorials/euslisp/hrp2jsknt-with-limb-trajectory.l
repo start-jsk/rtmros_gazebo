@@ -1,6 +1,3 @@
-(load "package://jsk_hrpsys_ros_bridge/euslisp/hrp2jsknt-interface.l")
-(load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-utils.l")
-
 (defmethod hrp2jsknt-interface
   (:init
    ()
