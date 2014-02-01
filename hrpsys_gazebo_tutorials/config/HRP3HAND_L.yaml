@@ -1,6 +1,6 @@
 hrpsys_gazebo_configuration:
 ## velocity feedback for joint control, use parameter gains/joint_name/p_v
-  use_velocity_feedback: true
+#  use_velocity_feedback: true
 ## synchronized hrpsys and gazebo
 # use_synchronized_command: false
 # name of robot (using for namespace)
@@ -17,9 +17,9 @@ hrpsys_gazebo_configuration:
     - L_MIDDLEPIP_R
 ## jointid:
   gains:
-    L_INDEXMP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
-    L_INDEXMP_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
-    L_INDEXPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
-    L_MIDDLEPIP_R: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
-    L_THUMBCM_Y: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
-    L_THUMBCM_P: {p: 700.0, d:   0.075, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    L_INDEXMP_R:   {p: 10.0, d:   0.01, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    L_INDEXMP_P:   {p: 10.0, d:   0.01, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    L_INDEXPIP_R:  {p: 10.0, d:   0.01, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    L_MIDDLEPIP_R: {p: 10.0, d:   0.01, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    L_THUMBCM_Y:   {p: 10.0, d:   0.01, i: 0.0, i_clamp: 0.0, p_v: 10.0}
+    L_THUMBCM_P:   {p: 10.0, d:   0.01, i: 0.0, i_clamp: 0.0, p_v: 10.0}
