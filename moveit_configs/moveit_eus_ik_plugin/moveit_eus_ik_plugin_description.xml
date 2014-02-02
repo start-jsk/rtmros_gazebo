@@ -1,0 +1,6 @@
+<?xml version='1.0' encoding='ASCII'?>
+<library path="lib/libeus_kinematics_plugin">
+  <class name="moveit_eus_ik_plugin/EusKinematicsPlugin" type="eus_kinematics::EusKinematicsPlugin" base_class_type="kinematics::KinematicsBase">
+    <description>plugin for eus kinematics</description>
+  </class>
+</library>
