@@ -1,3 +1,4 @@
 #!/bin/bash
 
-$(rospack find hrpsys_gazebo_tutorials)/robot_models/install_robot_common.sh HRP4C
+$(rospack find hrpsys_gazebo_tutorials)/robot_models/install_robot_common.sh HRP4C || exit 1
+exit 0

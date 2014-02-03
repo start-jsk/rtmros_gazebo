@@ -1,5 +1,11 @@
 #!/bin/bash
 
+function error {
+    exit 1
+}
+trap error ERR
+
+
 # usage
 # ./install_robot.sh ROBOT_NAME (model directory) (output directory)
 
@@ -19,6 +25,10 @@ fi
 OUTPUT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}.urdf
 SED_SCRIPT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}_optional_urdf_setting.sh
 
+if [ ! -e ${INPUT_DIR}/${ROBOT_NAME}.dae ]; then
+    echo -e "\e[31m[WARNING] ${INPUT_DIR}/${ROBOT_NAME}.dae not found\e[m"
+    exit 0
+fi
 if [ ! -e ${OUTPUT_FILE} ]; then
 ##
     mkdir -p ${OUTPUT_DIR}/meshes
