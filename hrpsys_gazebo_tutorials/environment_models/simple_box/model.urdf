@@ -25,18 +25,18 @@
     <mu1>2.0</mu1>
     <mu2>2.0</mu2>
   </gazebo>
-  <gazebo>
-    <plugin filename="libAddForcePlugin.so" name="simple_box_add_force_plugin" >
-      <objname>simple_box</objname>
-      <linkname>nil_link</linkname>
-    </plugin>
-    <plugin filename="libGetVelPlugin.so" name="simple_box_get_vel_plugin" >
-      <objname>simple_box</objname>
-      <linkname>nil_link</linkname>
-    </plugin>
-    <plugin filename="libSetVelPlugin.so" name="simple_box_set_vel_plugin" >
-      <objname>simple_box</objname>
-      <linkname>nil_link</linkname>
-    </plugin>
-  </gazebo>
+  <!-- <gazebo> -->
+  <!--   <plugin filename="libAddForcePlugin.so" name="simple_box_add_force_plugin" > -->
+  <!--     <objname>simple_box</objname> -->
+  <!--     <linkname>nil_link</linkname> -->
+  <!--   </plugin> -->
+  <!--   <plugin filename="libGetVelPlugin.so" name="simple_box_get_vel_plugin" > -->
+  <!--     <objname>simple_box</objname> -->
+  <!--     <linkname>nil_link</linkname> -->
+  <!--   </plugin> -->
+  <!--   <plugin filename="libSetVelPlugin.so" name="simple_box_set_vel_plugin" > -->
+  <!--     <objname>simple_box</objname> -->
+  <!--     <linkname>nil_link</linkname> -->
+  <!--   </plugin> -->
+  <!-- </gazebo> -->
 </robot>
