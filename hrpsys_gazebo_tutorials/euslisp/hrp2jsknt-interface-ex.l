@@ -1,4 +1,4 @@
-(load "package://jsk_hrpsys_ros_bridge/euslisp/hrp2jsknt-interface.l")
+(load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-interface.l")
 (load "package://hrpsys_ros_bridge_tutorials/euslisp/hrp2jsknt-utils.l")
 
 (load "package://hrpsys_gazebo_tutorials/euslisp/hand-command-publisher.l")
@@ -31,3 +31,8 @@
   (send *ri* :angle-vector (send *robot* pose) wait-time)
   (when wait? (send *ri* :wait-interpolation)))
 
+
+
+(defun model2real
+  ()
+  (send *ri* :angle-vector (send *robot* :angle-vector)))
