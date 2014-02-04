@@ -4,7 +4,7 @@
 (load "package://hrpsys_gazebo_tutorials/euslisp/hand-command-publisher.l")
 (load "package://hrpsys_gazebo_tutorials/euslisp/hrp2jsknt-with-limb-trajectory.l")
 
-(defun init
+(defun init-hrp2jsknt-ex
   (&key (real t))
   (cond
    (real
@@ -17,6 +17,9 @@
   (setq *robot* *hrp2jsknt*)
   (objects (list *hrp2*))
   (send *irtviewer* :change-background #f(1 1 1)))
+(defun init
+  (&key (real t))
+  (hrp2jsknt-init-ex :real real))
 
 (defun reset-pose
   (&key (wait-time 2000) (wait? t))
