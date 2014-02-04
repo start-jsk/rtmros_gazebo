@@ -4,7 +4,7 @@
 (load "package://hrpsys_gazebo_tutorials/euslisp/hand-command-publisher.l")
 (load "package://hrpsys_gazebo_tutorials/euslisp/hrp2jsknt-with-limb-trajectory.l")
 
-(defun init-hrp2jsknt-ex
+(defun hrp2jsknt-init-ex
   (&key (real t))
   (cond
    (real
