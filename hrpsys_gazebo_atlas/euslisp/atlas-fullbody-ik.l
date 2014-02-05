@@ -1,7 +1,7 @@
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
 
-(defvar *foot-convex*)
-(defvar *centroid-object*)
+(defvar *foot-convex* (make-coords))
+(defvar *centroid-object* (make-coords))
 (defvar *success-state-collection*)
 (defvar *fix-limb-coords*)
 
@@ -80,7 +80,7 @@
 
 (defun convex-pos-list
   nil
-  (if (and (boundp '*foot-convex*) *foot-convex*)
+  (if (and (boundp '*foot-convex*) (find-method *foot-convex* :faces))
       (union
        (send
 	(find-if
@@ -252,8 +252,10 @@
      (apply #'v+
 	    (mapcar
 	     #'(lambda (k)
-		 (send *robot* k :end-coords
-		       :worldpos))
+		 (if (send *robot* k)
+		     (send *robot* k :end-coords
+			   :worldpos)
+		   (send (make-coords) :worldpos)))
 	     '(:rleg :lleg)))))
    (additional-weight-list
     (mapcar
@@ -295,15 +297,17 @@
      #'append
      (mapcar
       #'(lambda (l)
-	  (list (list l (send *robot* :utorso_lk))
-		(list l (send *robot* :r_uleg_lk))
-		(list l (send *robot* :l_uleg_lk))))
+	  (remove-if 
+	   #'null
+	  (list (if (find-method *robot* :utorso_lk) (list l (send *robot* :utorso_lk)))
+		(if (find-method *robot* :r_uleg_lk) (list l (send *robot* :r_uleg_lk)))
+		(if (find-method *robot* :l_uleg_lk) (list l (send *robot* :l_uleg_lk))))))
       (remove-if
        #'(lambda (l)
 	   (or (eq (send l :parent)
-		   (send *robot* :utorso_lk))
+		   (if (find-method *robot* :utorso_lk) (send *robot* :utorso_lk)))
 	       (eq (send (send l :parent) :parent)
-		   (send *robot* :utorso_lk))))
+		   (if (find-method *robot* :utorso_lk) (send *robot* :utorso_lk)))))
        (apply
 	#'append
 	(mapcar
