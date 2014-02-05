@@ -9,6 +9,12 @@ catkin_package(
     LIBRARIES # TODO
 )
 
+install(PROGRAMS robot_models/install_robot_common.sh 
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/robot_models/)
+install(FILES setup.sh
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY euslisp worlds launch config environment_models DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
 macro (generate_gazebo_urdf_file _robot_name)
   set(_out_dir "${PROJECT_SOURCE_DIR}/robot_models/${_robot_name}")
   set(_out_urdf_file "${_out_dir}/${_robot_name}.urdf")
@@ -27,6 +33,7 @@ macro (generate_gazebo_urdf_file _robot_name)
     configure_file(${PROJECT_SOURCE_DIR}/scripts/default_gazebo_robot_no_controllers.launch.in ${PROJECT_SOURCE_DIR}/launch/gazebo_${_sname}_no_controllers.launch)
   endif()
   list(APPEND compile_robots ${_robot_name}_compile)
+  install(DIRECTORY ${_out_dir} DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/robot_models/)
 endmacro()
 
 generate_gazebo_urdf_file(SampleRobot)
