@@ -1,6 +1,14 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_tutorials)
 
+find_package(catkin REQUIRED COMPONENTS)
+catkin_package(
+    DEPENDS collada_tools
+    CATKIN-DEPENDS # euslisp TODO
+    INCLUDE_DIRS # TODO include
+    LIBRARIES # TODO
+)
+
 macro (generate_gazebo_urdf_file _robot_name)
   set(_out_dir "${PROJECT_SOURCE_DIR}/robot_models/${_robot_name}")
   set(_out_urdf_file "${_out_dir}/${_robot_name}.urdf")
