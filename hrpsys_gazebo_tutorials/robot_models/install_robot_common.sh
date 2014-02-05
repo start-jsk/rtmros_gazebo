@@ -32,7 +32,11 @@ fi
 if [ ! -e ${OUTPUT_FILE} ]; then
 ##
     mkdir -p ${OUTPUT_DIR}/meshes
-    rosrun collada_tools collada_to_urdf ${INPUT_DIR}/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://hrpsys_gazebo_tutorials/robot_models/${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
+    if [ ${ROS_DISTRO} == "groovy" ]; then
+	rosrun collada_tools collada_to_urdf ${INPUT_DIR}/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://hrpsys_gazebo_tutorials/robot_models/${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
+    elif [ ${ROS_DISTRO} == "hydro" ]; then
+	~/ros_catkin_ws/hydro/build/collada_to_urdf ${INPUT_DIR}/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://hrpsys_gazebo_tutorials/robot_models/${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
+    fi
     # if [ ${ROS_DISTRO} == "groovy" ]; then
     # 	rosrun collada_tools collada_to_urdf ${INPUT_DIR}/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
     # elif [ ${ROS_DISTRO} == "hydro" ]; then
