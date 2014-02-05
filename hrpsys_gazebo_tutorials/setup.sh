@@ -1,9 +1,16 @@
-if [ ! -e /usr/share/drcsim/setup.sh ]; then
-    echo -e "\e[31mdrcsim should be installed for using hrpsys_gazebo\e[m"
-    echo -e "\e[31msee http://gazebosim.org/wiki/DRC/Install\e[m"
-    return
+if [ ${ROS_DISTRO} == "groovy" ]; then
+    if [ ! -e /usr/share/drcsim/setup.sh ]; then
+	echo -e "\e[31mdrcsim should be installed for using hrpsys_gazebo\e[m"
+	echo -e "\e[31msee http://gazebosim.org/wiki/DRC/Install\e[m"
+	return
+    fi
+elif [ ${ROS_DISTRO} == "hydro" ]; then
+    if [ ! -e `rospack find drcsim_gazebo`/../drcsim/setup.sh ]; then
+	echo -e "\e[31mdrcsim should be installed for using hrpsys_gazebo\e[m"
+	echo -e "\e[31msee http://gazebosim.org/wiki/DRC/Install\e[m"
+	return
+    fi
 fi
-
 ROS_PACKAGE_PATH_ORG=$ROS_PACKAGE_PATH
 
 unset GAZEBO_MODEL_PATH
@@ -11,8 +18,13 @@ unset GAZEBO_RESOURCE_PATH
 unset GAZEBO_MASTER_URI
 unset GAZEBO_PLUGIN_PATH
 unset GAZEBO_MODEL_DATABASE_URI
-#source install/share/drcsim/setup.sh
-source /usr/share/drcsim/setup.sh
+
+if [ ${ROS_DISTRO} == "groovy" ]; then
+    source /usr/share/drcsim/setup.sh
+elif [ ${ROS_DISTRO} == "hydro" ]; then
+    source `rospack find drcsim_gazebo`/../drcsim/setup.sh
+fi
+
 
 ## append original package path because /opt/ros/groovy/setup.sh have been called in drcsim/setup.sh
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH_ORG:$ROS_PACKAGE_PATH
