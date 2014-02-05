@@ -1,7 +1,7 @@
 if [ ! -e /usr/share/drcsim/setup.sh ]; then
     echo -e "\e[31mdrcsim should be installed for using hrpsys_gazebo\e[m"
     echo -e "\e[31msee http://gazebosim.org/wiki/DRC/Install\e[m"
-    exit 1
+    return
 fi
 
 ROS_PACKAGE_PATH_ORG=$ROS_PACKAGE_PATH
@@ -11,6 +11,7 @@ unset GAZEBO_RESOURCE_PATH
 unset GAZEBO_MASTER_URI
 unset GAZEBO_PLUGIN_PATH
 unset GAZEBO_MODEL_DATABASE_URI
+#source install/share/drcsim/setup.sh
 source /usr/share/drcsim/setup.sh
 
 ## append original package path because /opt/ros/groovy/setup.sh have been called in drcsim/setup.sh
@@ -22,7 +23,11 @@ export ROS_PACKAGE_PATH=`echo $(echo $ROS_PACKAGE_PATH | sed -e "s/:/\n/g" | awk
 pkgdir=`rospack find hrpsys_gazebo_general`
 tpkgdir=`rospack find hrpsys_gazebo_tutorials`
 drcdir=`rospack find drcsim_model_resources`
-hectdir=`rosstack find hector_models`
+if [ ${ROS_DISTRO} == "groovy" ]; then
+    hectdir=`rosstack find hector_models` # for groovy
+elif [ ${ROS_DISTRO} == "hydro" ]; then
+    hectdir=`rospack find hector_models` # for hydro
+fi
 
 if [ -e ${pkgdir} -a -e ${tpkgdir} ]; then
     for dname in `find ${tpkgdir}/robot_models -mindepth 1 -maxdepth 1 -type d -regex '.*[^\.svn]'`; do export ROS_PACKAGE_PATH=${dname}:$ROS_PACKAGE_PATH; done
