@@ -13,6 +13,7 @@
 
   <run_depend>hrpsys_ros_bridge_tutorials</run_depend>
   <run_depend>hrpsys_gazebo_general</run_depend>
+  <run_depend>collada_tools</run_depend>
 
 </package>
 
