@@ -8,5 +8,6 @@
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>hrpsys_ros_bridge</build_depend>
   <build_depend>hrpsys_gazebo_general</build_depend>
+  <build_depend>collada_tools</build_depend>
 </package>
 
