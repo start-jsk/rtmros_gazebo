@@ -1,0 +1,12 @@
+<package>
+  <name>hrpsys_gazebo_tutorials</name>
+  <version>0.1.0</version>
+  <description>hrpsys_gazebo_tutorials</description>
+  <maintainer email="youhei@jsk.t.u-tokyo.ac.jp">Yohei Kakiuchi</maintainer>
+  <license>BSD</license>
+  <author email="youhei@jsk.t.u-tokyo.ac.jp">Yohei Kakiuchi</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>hrpsys_ros_bridge</build_depend>
+  <build_depend>hrpsys_gazebo_general</build_depend>
+</package>
+
