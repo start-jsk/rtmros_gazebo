@@ -1,4 +1,5 @@
-DRCSIM_SETUP_SH=/usr/share/drcsim/setup.sh
+#DRCSIM_SETUP_SH=/usr/share/drcsim/setup.sh
+DRCSIM_SETUP_SH=/usr/share/gazebo/setup.sh
 
 if [ ! -e $DRCSIM_SETUP_SH ]; then
     echo -e "\e[31mdrcsim should be installed for using hrpsys_gazebo\e[m"
