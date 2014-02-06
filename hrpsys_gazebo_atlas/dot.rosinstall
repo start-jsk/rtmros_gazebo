@@ -15,6 +15,9 @@
 - svn:
     uri: https://rtm-ros-robotics.googlecode.com/svn/trunk/rtmros_gazebo
     local-name: rtm-ros-robotics/rtmros_gazebo
+- svn:
+    uri: https://rtm-ros-robotics.googlecode.com/svn/trunk/rtmros_tutorials
+    local-name: rtm-ros-robotics/rtmros_tutorials
 - git:
     uri: https://github.com/YoheiKakiuchi/moveit_robots.git
     local-name: moveit_robots
