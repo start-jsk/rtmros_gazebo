@@ -37,5 +37,6 @@ if [ -e ${pkgdir} -a -e ${tpkgdir} ]; then
 #    export ROS_PACKAGE_PATH=${pkgdir}/ros:$ROS_PACKAGE_PATH
     export GAZEBO_RESOURCE_PATH=${tpkgdir}/worlds:$GAZEBO_RESOURCE_PATH
     export GAZEBO_MODEL_PATH=${tpkgdir}/robot_models:${tpkgdir}/environment_models:$GAZEBO_MODEL_PATH:${drcdir}/gazebo_models/environments:${hectdir}:${tpkgdir}/..
-    export GAZEBO_PLUGIN_PATH=${pkgdir}/plugins:$GAZEBO_PLUGIN_PATH
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${pkgdir}/plugins
+    # export GAZEBO_PLUGIN_PATH=${pkgdir}/plugins:$GAZEBO_PLUGIN_PATH
 fi
