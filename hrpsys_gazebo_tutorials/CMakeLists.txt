@@ -21,6 +21,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 #set the default path for built libraries to the "lib" directory
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
+
 macro (generate_gazebo_urdf_file _robot_name)
   set(_out_dir "${PROJECT_SOURCE_DIR}/robot_models/${_robot_name}")
   set(_out_urdf_file "${_out_dir}/${_robot_name}.urdf")
@@ -29,7 +30,7 @@ macro (generate_gazebo_urdf_file _robot_name)
   add_custom_command(OUTPUT ${_out_dir}/hrpsys
     COMMAND mkdir ${_out_dir}/hrpsys)
   add_custom_command(OUTPUT ${_out_urdf_file}
-    COMMAND ${_out_dir}/install_robot.sh
+    COMMAND ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_robot_name}
     DEPENDS ${_out_dir}/hrpsys ${_out_dir}/meshes)
   add_custom_target(${_robot_name}_compile DEPENDS ${_out_urdf_file})
   set(ROBOT ${_robot_name})
