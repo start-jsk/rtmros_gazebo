@@ -6,12 +6,15 @@ find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 
 catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 
+find_package(PkgConfig)
+pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
+
 ## Build hrpsys for gazebo
-# execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f Makefile.hrpsys-base
-#                 RESULT_VARIABLE _make_failed)
-# if (_make_failed)
-#   message(FATAL_ERROR "Build of hrpsys failed")
-# endif(_make_failed)
+execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f Makefile.hrpsys-base INSTALL_PREFIX_PATH=${PROJECT_SOURCE_DIR} OPENRTM_DIR=${openrtm_aist_PREFIX}/lib/openrtm_aist HRPSYS_BASE_SOURCE=${hrpsys_SOURCE_DIR}/build/hrpsys-base-source
+  RESULT_VARIABLE _make_failed)
+if (_make_failed)
+  message(FATAL_ERROR "Build of hrpsys/iob failed")
+endif(_make_failed)
 
 ## Gazebo plugins
 include (FindPkgConfig)
