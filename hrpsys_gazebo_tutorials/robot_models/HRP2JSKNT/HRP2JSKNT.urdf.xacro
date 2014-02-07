@@ -2,5 +2,4 @@
   <xacro:include filename="$(find hrpsys_gazebo_tutorials)/robot_models/HRP2JSKNT/HRP2JSKNT_only_body.urdf" />
   <xacro:include filename="$(find hrpsys_gazebo_tutorials)/robot_models/HRP3HAND_L/HRP3HAND_L.urdf" />
   <xacro:include filename="$(find hrpsys_gazebo_tutorials)/robot_models/HRP3HAND_R/HRP3HAND_R.urdf" />
-  <include filename="$(find hector_sensors_description)/urdf/asus_camera.urdf.xacro" />
 </robot>
