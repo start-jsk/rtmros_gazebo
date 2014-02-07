@@ -28,6 +28,12 @@ else
     COLLADA_TO_URDF=`rospack find collada_tools`/bin/collada_to_urdf
 fi
 
+if [ $# -gt 4 ]; then
+    ADDITIONAL_ROS_PACKAGE_PATH=$5
+else
+    ADDITIONAL_ROS_PACKAGE_PATH=
+fi
+
 OUTPUT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}.urdf
 SED_SCRIPT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}_optional_urdf_setting.sh
 
@@ -45,7 +51,7 @@ if [ ! -e ${OUTPUT_FILE} ]; then
     # 	rosrun collada_urdf collada_to_urdf ${INPUT_DIR}/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
     # fi
 ## execute sed
-    ${SED_SCRIPT_FILE} ${OUTPUT_FILE}
+    ${SED_SCRIPT_FILE} ${OUTPUT_FILE} ${ADDITIONAL_ROS_PACKAGE_PATH}
 fi
 
 if [ ! -e ${OUTPUT_DIR}/hrpsys ]; then
