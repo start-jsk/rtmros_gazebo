@@ -4,14 +4,11 @@ project(hrpsys_gazebo_general)
 
 find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 
-catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs)
-
 find_package(PkgConfig)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
-
+catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 ## Build hrpsys for gazebo
-message("cmake -E chdir ${PROJECT_SOURCE_DIR} make -f ${PROJECT_SOURCE_DIR}/Makefile.hrpsys-base INSTALL_PREFIX_PATH=${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general OPENRTM_DIR=${openrtm_aist_PREFIX}/lib/openrtm_aist HRPSYS_BASE_SOURCE=${hrpsys_SOURCE_DIR}/build/hrpsys-base-source CATKIN_INCLUDE_DIRS=${catkin_INCLUDE_DIRS} installed")
-execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f ${PROJECT_SOURCE_DIR}/Makefile.hrpsys-base INSTALL_PREFIX_PATH=${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general OPENRTM_DIR=${openrtm_aist_PREFIX}/lib/openrtm_aist HRPSYS_BASE_SOURCE=${hrpsys_SOURCE_DIR}/build/hrpsys-base-source CATKIN_INCLUDE_DIRS=${catkin_INCLUDE_DIRS} installed
+execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f ${PROJECT_SOURCE_DIR}/Makefile.hrpsys-base INSTALL_PREFIX_PATH=${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general OPENRTM_DIR=${openrtm_aist_PREFIX}/lib/openrtm_aist HRPSYS_BASE_SOURCE=${hrpsys_SOURCE_DIR}/build/hrpsys-base-source CATKIN_INCLUDE_DIRS=${hrpsys_gazebo_msgs_INCLUDE_DIRS} installed
   RESULT_VARIABLE _make_failed)
 if (_make_failed)
   message(FATAL_ERROR "Build of hrpsys/iob failed")
@@ -42,3 +39,4 @@ add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
 install(DIRECTORY
   ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
