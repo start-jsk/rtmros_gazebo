@@ -1,6 +1,5 @@
 all: installed
 
-SVN_DIR = `rospack build hrpsys`/build/hrpsys-base
 CMAKE_PKG_CONFIG_PATH=`rospack find openrtm_aist`/lib/pkgconfig:`rospack find openhrp3`/lib/pkgconfig:$(PKG_CONFIG_PATH)
 INSTALL_PREFIX_PATH=`rospack find hrpsys_gazebo_general`
 OPENRTM_DIR=`rospack find openrtm_aist`
@@ -14,6 +13,7 @@ installed:
         -DCOMPILE_JAVA_STUFF=OFF \
 	-DENABLE_INSTALL_RPATH=ON \
 	-DENABLE_INSTALL_RPATH_TO_SELF=ON \
+	-DCATKIN_INCLUDE_DIRS=${CATKIN_INCLUDE_DIRS} \
 	-DLIBIO_DIR=${CURDIR}/iob \
 	${HRPSYS_BASE_SOURCE} && \
 	(cd idl && make -j`grep -c processor /proc/cpuinfo` && make install ) && \
