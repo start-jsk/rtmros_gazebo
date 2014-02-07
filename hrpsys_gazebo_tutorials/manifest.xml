@@ -18,6 +18,4 @@
   <depend package="collada_urdf_jsk_patch" />
 
   <depend package="hrpsys_ros_bridge_tutorials" />
-
-  <depend package="hector_sensors_description" />
 </package>
