@@ -1,0 +1,9 @@
+- git:
+    uri: https://github.com/start-jsk/openrtm_common
+    local-name: rtm-ros-robotics/openrtm_common
+- git:
+    uri: https://github.com/start-jsk/rtmros_common
+    local-name: rtm-ros-robotics/rtmros_common
+- svn:
+    url: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/jsk_model_tools
+    local-name: jsk-ros-pkg/jsk_model_tools
