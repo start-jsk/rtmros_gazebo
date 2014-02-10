@@ -29,7 +29,6 @@
   <build_depend>collada_urdf_jsk_patch</build_depend>
   <build_depend>resized_image_transport</build_depend>
   <build_depend>hrpsys_gazebo_general</build_depend>
-  <build_depend>atlas_description</build_depend>
   <build_depend>laser_assembler</build_depend>
 
   <run_depend>roseus</run_depend>
