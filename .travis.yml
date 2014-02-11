@@ -50,7 +50,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   # fix hrpsys_ros_bridge until 1.0.6 is out
   #
   - wget https://raw.github.com/start-jsk/rtmros_common/master/hrpsys_ros_bridge/cmake/compile_robot_model.cmake
-  - sudo cp compile_robot_model.cmake /opt/ros/hydro/share/hrpsys_ros_bridge/cmake
+  - sudo cp compile_robot_model.cmake /opt/ros/$ROS_DISTRO/share/hrpsys_ros_bridge/cmake
   - sudo sed -i 's@hrpsys_ros_bridge-msg-extras.cmake@hrpsys_ros_bridge-msg-extras.cmake;compile_robot_model.cmake@' /opt/ros/$ROS_DISTRO/share/hrpsys_ros_bridge/cmake/hrpsys_ros_bridgeConfig.cmake
   #
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
