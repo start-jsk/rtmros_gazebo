@@ -44,6 +44,8 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   - wstool set rtm-ros-robotics/rtmros_tutorials https://github.com/start-jsk/rtmros_tutorials --git -y
   # hrpsys_gazebo_atlas depends on laser_assembler/AssembleScan2.srv
   - wstool set ros-perception/laser_assembler https://github.com/ros-perception/laser_assembler.git --git -y
+  - wstool set ros-perception/laser_filters https://github.com/ros-perception/laser_filters.git --git -y
+  - wstool set ros/filters https://github.com/ros/filters.git --git -y
   # currently we need hrpsys source to build gazebo(https://github.com/start-jsk/rtmros_gazebo/blob/master/hrpsys_gazebo_general/catkin.cmake#L13), this must be fixed...
   - wstool set rtm-ros-robotics/openrtm_common/hrpsys https://github.com/start-jsk/hrpsys --git -y
   - wstool update
