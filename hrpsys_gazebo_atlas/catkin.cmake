@@ -108,9 +108,13 @@ include_directories(${catkin_INCLUDE_DIRS})
 link_directories(${catkin_LIBRARY_DIRS})
 
 ## laser assember is not catkinized
-include_directories(/opt/ros/groovy/stacks/laser_assembler/srv_gen/cpp/include/)
-add_executable(atlas_laser_snapshotter src/atlas_laser_snapshotter.cpp)
-target_link_libraries(atlas_laser_snapshotter ${catkin_LIBRARIES})
+if (EXISTS /opt/ros/groovy/stacks/laser_assembler/srv_gen/)
+  include_directories(/opt/ros/groovy/stacks/laser_assembler/srv_gen/cpp/include/)
+  add_executable(atlas_laser_snapshotter src/atlas_laser_snapshotter.cpp)
+  target_link_libraries(atlas_laser_snapshotter ${catkin_LIBRARIES})
+else()
+  message(AUTHOR_WARNING "sudo apt-get install ros-groovy-laser-assembler to install laser_assembler")
+endif()
 
 ## pr2_controller_manager is not catkinized
 # include_directories(/opt/ros/groovy/stacks/pr2_mechanism/pr2_controller_manager/include)
