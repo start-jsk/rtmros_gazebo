@@ -17,7 +17,7 @@ notifications:
     on_failure: change #[always|never|change] # default: always
 before_install: # Use this to prepare the system to install prerequisites or dependencies
   # Define some config vars
-  - export ROS_DISTRO=hydro
+  - export ROS_DISTRO=groovy
   - export CI_SOURCE_PATH=$(pwd)
   - export REPOSITORY_NAME=${PWD##*/}
   - echo "Testing branch $TRAVIS_BRANCH of $REPOSITORY_NAME"
@@ -49,7 +49,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   #
   # fix hrpsys_ros_bridge until 1.0.6 is out
   #
-  - https://raw.github.com/start-jsk/rtmros_common/master/hrpsys_ros_bridge/cmake/compile_robot_model.cmake
+  - wget https://raw.github.com/start-jsk/rtmros_common/master/hrpsys_ros_bridge/cmake/compile_robot_model.cmake
   - sudo cp compile_robot_model.cmake /opt/ros/hydro/share/hrpsys_ros_bridge/cmake
   - sudo sed -i 's@hrpsys_ros_bridge-msg-extras.cmake@hrpsys_ros_bridge-msg-extras.cmake;compile_robot_model.cmake@' /opt/ros/$ROS_DISTRO/share/hrpsys_ros_bridge/cmake/hrpsys_ros_bridgeConfig.cmake
   #
