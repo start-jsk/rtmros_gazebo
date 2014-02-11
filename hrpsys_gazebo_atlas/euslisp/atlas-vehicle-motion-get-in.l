@@ -351,7 +351,7 @@
 	   :rotation-axis '(t t t nil)
 	   :thre '(5 5 10 10)
 	   :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 2) (deg2rad 2))
-	   ;; :target-centroid-pos (send (send (send (send *atlas* :foot-midcoords) :copy-worldcoords) :translate #f(10 -30 0)) :pos) ;; hogehoge
+	   ;; :target-centroid-pos (send (send (send (send *atlas* :foot-midcoords) :copy-worldcoords) :translate #f(10 -30 0)) :pos) ;; 
 	   :target-centroid-pos (send (send (send (send *atlas* :foot-midcoords) :copy-worldcoords) :translate #f(20 -20 0)) :pos)
 	   :centroid-thre 500)))
   (send *irtviewer* :draw-objects)
@@ -379,7 +379,7 @@
 	   :rotation-axis '(t t t nil)
 	   :thre '(5 5 10 10)
 	   :rthre (list (deg2rad 1) (deg2rad 1) (deg2rad 2) (deg2rad 2))
-	   ;; :target-centroid-pos (send (send (send (send *atlas* :foot-midcoords) :copy-worldcoords) :translate #f(10 -30 0)) :pos) ;; hogehoge
+	   ;; :target-centroid-pos (send (send (send (send *atlas* :foot-midcoords) :copy-worldcoords) :translate #f(10 -30 0)) :pos) ;; 
 	   :target-centroid-pos (send (send (send (send *atlas* :foot-midcoords) :copy-worldcoords) :translate #f(20 -20 0)) :pos)
 	   :centroid-thre 500)))
   (send *irtviewer* :draw-objects)
@@ -425,7 +425,7 @@
   (when wait (my-wait))
   (let* ((tc (list 
 	      (send (send *atlas* :rleg :end-coords :copy-worldcoords) :translate #f(100 -150 25) :local)
-	      ;; (send (send *atlas* :rleg :end-coords :copy-worldcoords) :translate #f(100 -125 25) :local) ;; hogehoge
+	      ;; (send (send *atlas* :rleg :end-coords :copy-worldcoords) :translate #f(100 -125 25) :local) ;; 
 	      nil
 	      nil
 	      (send (send (send *atlas* :worldcoords) :copy-worldcoords) :translate #f(0 300 0) :world))))

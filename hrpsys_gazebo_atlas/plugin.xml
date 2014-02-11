@@ -3,48 +3,48 @@
          type="hrpsys_gazebo_atlas.triangle.TriangleGUI"
          base_class_type="rqt_gui_py::Plugin">
     <description>
-      hogehogehoge
+      Triangle GUI
     </description>
     <qtgui>
-      <label>Hoge</label>
+      <label>Triangle GUI</label>
       <icon type="theme">utilities-system-monitor</icon>
-      <statustip>hogehoge</statustip>
+      <statustip>triagnle gui</statustip>
     </qtgui>
   </class>
   <class name="rqt_hrpsys_rosping"
          type="hrpsys_gazebo_atlas.ping.PingGUI"
          base_class_type="rqt_gui_py::Plugin">
     <description>
-      hogehogehoge
+      rosping GUI
     </description>
     <qtgui>
-      <label>Hoge</label>
+      <label>rosping GUI</label>
       <icon type="theme">utilities-system-monitor</icon>
-      <statustip>hogehoge</statustip>
+      <statustip>rosping gui</statustip>
     </qtgui>
   </class>
   <class name="rqt_hrpsys_imagesnapshot"
          type="hrpsys_gazebo_atlas.image_snapshot.ImageSnapShotGUI"
          base_class_type="rqt_gui_py::Plugin">
     <description>
-      hogehogehoge
+      ImageSnapShot GUI
     </description>
     <qtgui>
-      <label>Hoge</label>
+      <label>ImageSnapShot GUI</label>
       <icon type="theme">utilities-system-monitor</icon>
-      <statustip>hogehoge</statustip>
+      <statustip>image snapshot gui</statustip>
     </qtgui>
   </class>
   <class name="rqt_hrpsys_eus"
          type="hrpsys_gazebo_atlas.eus_gui.EusGUI"
          base_class_type="rqt_gui_py::Plugin">
     <description>
-      hogehogehoge
+      Hrpsys Eus GUI
     </description>
     <qtgui>
-      <label>Hoge</label>
+      <label>HrpsysEus GUI</label>
       <icon type="theme">utilities-system-monitor</icon>
-      <statustip>hogehoge</statustip>
+      <statustip>hrpsys eus gui </statustip>
     </qtgui>
   </class>
 </library>

@@ -417,7 +417,7 @@
   (let ((command (send msg :data))
 	(move))
     (if (zerop (length command))
-	(setq command "hoge"))
+	(setq command "sample_command"))
     (setq move
 	  (scale
 	   5
@@ -639,7 +639,7 @@
    (move-step
     (let ((index -1))
       (mapcar
-       #'(lambda (hoge)
+       #'(lambda ()
 	   (if (eq (incf index) base-id)
 	       (deg2rad 1) 0))
        (make-list 3))))
@@ -1286,7 +1286,7 @@ roseus atlas-dual-arm-ik.l
 ;;      (cons 10000
 ;;	    (cdr
 ;;	     (mapcar
-;;	      #'(lambda (hoge) 500)
+;;	      #'(lambda () 500)
 ;;	      *success-state-collection*))))
 
 (load "ssc-dual-20131120-2.l")

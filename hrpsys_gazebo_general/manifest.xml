@@ -10,6 +10,9 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/hrpsys_gazebo_general</url>
 
+  <rosdep name="hrpsys_ros_bridge" />
+
   <depend package="hrpsys_ros_bridge" />
   <depend package="hrpsys_gazebo_msgs" />
+
 </package>

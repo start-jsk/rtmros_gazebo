@@ -335,7 +335,7 @@
 	    (if back-centroid
 		(list :rarm-2 :rleg-2 :larm-2 :lleg-2)
 	      (list :rarm :rleg :larm :lleg))))
-   (move (mapcar #'(lambda (hoge) #F(0 0 0)) target-keys))
+   (move (mapcar #'(lambda () #F(0 0 0)) target-keys))
    (debug-view :no-message)
    (centroid-thre (* (length target-keys) 10))
    (end-coords *atlas-anima-endcoords*)
