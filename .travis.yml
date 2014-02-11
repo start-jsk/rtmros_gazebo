@@ -41,6 +41,7 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   - cd ~/ros/ws_$REPOSITORY_NAME/src
   - wstool init .
   - wstool set jsk-ros-pkg/jsk_model_tools https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/jsk_model_tools --svn -y
+  - wstool set rtm-ros-robotics/rtmros_tutorials https://github.com/start-jsk/rtmros_tutorials --git -y
   - wstool update
   - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
   - cd ../
