@@ -10,7 +10,7 @@ catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 
 ## Build hrpsys for gazebo
 add_custom_command(OUTPUT ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
-  COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f ${PROJECT_SOURCE_DIR}/Makefile.hrpsys-base INSTALL_PREFIX_PATH=${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general OPENRTM_DIR=${openrtm_aist_PREFIX}/lib/openrtm_aist HRPSYS_BASE_SOURCE=${hrpsys_SOURCE_DIR}/build/hrpsys-base-source CATKIN_INCLUDE_DIRS=${hrpsys_gazebo_msgs_INCLUDE_DIRS} CMAKE_PKG_CONFIG_PATH=${CATKIN_DEVEL_PREFIX}/lib/pkgconfig installed
+  COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f ${PROJECT_SOURCE_DIR}/Makefile.hrpsys-base INSTALL_PREFIX_PATH=${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general OPENRTM_DIR=${openrtm_aist_PREFIX}/lib/openrtm_aist HRPSYS_BASE_SOURCE=${hrpsys_SOURCE_DIR}/build/hrpsys-base-source CATKIN_INCLUDE_DIRS=${hrpsys_gazebo_msgs_INCLUDE_DIRS} CMAKE_PKG_CONFIG_PATH=${CATKIN_DEVEL_PREFIX}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH} installed
   DEPENDS)
 add_custom_target(hrpsys_gazebo_general_iob ALL
   DEPENDS ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib)
