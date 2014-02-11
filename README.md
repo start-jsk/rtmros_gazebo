@@ -1,6 +1,6 @@
-rtmros_hironx  [![Build Status](https://travis-ci.org/start-jsk/rtmros_hironx.png)](https://travis-ci.org/start-jsk/rtmros_hironx)
+rtmros_gazebo  [![Build Status](https://travis-ci.org/start-jsk/rtmros_gazebo.png)](https://travis-ci.org/start-jsk/rtmros_gazebo)
 -------------
 
-The rtmros_hironx package
+gazebo simulation for rtmros robots
 
 
