@@ -70,7 +70,7 @@
 	    (step (float-vector (/ 305 (tan (deg2rad 60))) 0 305))
 	    (cnt 9))
 	(mapcar
-	 #'(lambda (hoge)
+	 #'(lambda (dummy)
 	     (setq now (v+ now step))
 	     (decf cnt)
 	     (mapcar
@@ -100,7 +100,7 @@
 	(send rot :rotate (deg2rad 30) :x)
 	(send rot :rotate (deg2rad 90) :z)
 	(mapcar
-	 #'(lambda (hoge)
+	 #'(lambda (dummy)
 	     (setq now (v+ now step))
 	     (make-coords
 	      :pos now

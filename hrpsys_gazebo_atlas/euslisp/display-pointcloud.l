@@ -8,7 +8,6 @@
 
 (defun get-callback (msg)
   (print "get-pointcloud")
-  (setq hoge msg)
   (setq *eus-pc* (make-eus-pointcloud-from-ros-msg msg :remove-nan t))
   (format t "~A points" (car (array-dimensions (send *eus-pc* :points))))
   (objects (list *eus-pc*))

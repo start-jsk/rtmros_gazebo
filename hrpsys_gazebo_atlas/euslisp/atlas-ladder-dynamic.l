@@ -202,7 +202,7 @@
 	    (step (float-vector (/ 305 (tan (deg2rad 60))) 0 305))
 	    (cnt 9))
 	(mapcar
-	 #'(lambda (hoge)
+	 #'(lambda ()
 	     (setq now (v+ now step))
 	     (decf cnt)
 	     (mapcar

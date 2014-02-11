@@ -26,7 +26,6 @@
 	(nan (sqrt -1))
 	)
     (send js-decompressed :header (send msg :header))
-    (setq hoge msg)
     (dotimes (i (length (send msg :position)))
       (setq joint-angle (elt (send msg :position) i))
       (setq joint-name (elt atlas-joint-name-list i))

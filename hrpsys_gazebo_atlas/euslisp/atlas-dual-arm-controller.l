@@ -306,7 +306,7 @@
   (let ((command (send msg :data))
 	(move))
     (if (zerop (length command))
-	(setq command "hoge"))
+	(setq command "sample_command"))
     (setq move
 	  (scale
 	   5

@@ -15,7 +15,6 @@
 	(js-compressed (instance sensor_msgs::JointState :init))
 	joint-indexes joint-index joint-angles joint-name
 	)
-    (setq hoge msg)
     (send js-compressed :header (send msg :header))
     (dotimes (i (length (send msg :name)))
       (setq joint-index (get-joint-index (elt (send msg :name) i)))

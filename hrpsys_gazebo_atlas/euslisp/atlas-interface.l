@@ -505,7 +505,7 @@
   (&optional (mode "Stand"))
   (let ((msg (instance std_msgs::String :init :data mode)))
     (ros::publish "atlas/control_mode" msg)
-    (warn ";; send_atlas_control_mode is deprecated! use (send *ri* :set-simulation-mode :mode :hogehoge) instead~%")))
+    (warn ";; send_atlas_control_mode is deprecated! use (send *ri* :set-simulation-mode :mode :mode_name) instead~%")))
 
 ;; do not use in Qualification
 (defun send_atlas_mode
