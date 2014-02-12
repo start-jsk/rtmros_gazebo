@@ -26,9 +26,9 @@ export ROS_PACKAGE_PATH=`echo $(echo $ROS_PACKAGE_PATH | sed -e "s/:/\n/g" | awk
 pkgdir=`rospack find hrpsys_gazebo_general`
 tpkgdir=`rospack find hrpsys_gazebo_tutorials`
 drcdir=`rospack find drcsim_model_resources`
-if [ ${ROS_DISTRO} == "groovy" ]; then
+if [ "${ROS_DISTRO}" = "groovy" ]; then
     hectdir=`rosstack find hector_models` # for groovy
-elif [ ${ROS_DISTRO} == "hydro" ]; then
+elif [ "${ROS_DISTRO}" = "hydro" ]; then
     hectdir=`rospack find hector_models` # for hydro
 fi
 
