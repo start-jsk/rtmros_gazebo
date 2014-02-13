@@ -25,15 +25,13 @@ install(DIRECTORY euslisp worlds launch config environment_models DESTINATION ${
 macro (generate_gazebo_urdf_file _robot_name)
   set(_out_dir "${PROJECT_SOURCE_DIR}/robot_models/${_robot_name}")
   set(_out_urdf_file "${_out_dir}/${_robot_name}.urdf")
-  find_package(hrpsys_ros_bridge_tutorials)
-  find_package(hrpsys_gazebo_tutorials)
   add_custom_command(OUTPUT ${_out_dir}/meshes
     COMMAND mkdir ${_out_dir}/meshes)
   add_custom_command(OUTPUT ${_out_dir}/hrpsys
     COMMAND mkdir ${_out_dir}/hrpsys)
   add_custom_command(OUTPUT ${_out_urdf_file}
     COMMAND ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_robot_name} ${hrpsys_ros_bridge_tutorials_SOURCE_DIR}/models  ${hrpsys_gazebo_tutorials_SOURCE_DIR}/robot_models/${_robot_name} ${collada_tools_PREFIX}/lib/collada_tools/collada_to_urdf ${PROJECT_SOURCE_DIR}/..
-    DEPENDS ${_out_dir}/hrpsys ${_out_dir}/meshes)
+    DEPENDS ${_out_dir}/hrpsys ${_out_dir}/meshes ${collada_tools_PREFIX}/lib/collada_tools/collada_to_urdf)
   add_custom_target(${_robot_name}_compile DEPENDS ${_out_urdf_file})
   set(ROBOT ${_robot_name})
   string(TOLOWER ${_robot_name} _sname)
