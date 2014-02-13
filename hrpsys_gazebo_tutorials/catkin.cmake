@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_tutorials)
 
 #find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge_tutorials collada_tools euscollada)
-find_package(catkin REQUIRED COMPONENTS collada_tools euscollada)
+find_package(catkin REQUIRED COMPONENTS collada_tools euscollada hrpsys_ros_bridge)
 
 find_package(PkgConfig)
 pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
@@ -10,7 +10,7 @@ pkg_check_modules(hrpsys hrpsys-base REQUIRED)
 
 catkin_package(
     DEPENDS openhrp3 hrpsys#
-    CATKIN_DEPENDS collada_tools euscollada
+    CATKIN_DEPENDS collada_tools euscollada hrpsys_ros_bridge
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
