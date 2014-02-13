@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_tutorials)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge_tutorials collada_tools)
+find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge_tutorials collada_tools euscollada)
 catkin_package(
     DEPENDS #
-    CATKIN-DEPENDS collada_tools hrpsys_ros_bridge_tutorials
+    CATKIN-DEPENDS collada_tools hrpsys_ros_bridge_tutorials euscollada
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )

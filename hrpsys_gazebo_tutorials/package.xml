@@ -10,7 +10,9 @@
   <build_depend>hrpsys_ros_bridge_tutorials</build_depend>
   <build_depend>hrpsys_gazebo_general</build_depend>
   <build_depend>collada_tools</build_depend>
+  <build_depend>euscollada</build_depend>
 
+  <run_depend>euscollada</run_depend>
   <run_depend>hrpsys_ros_bridge_tutorials</run_depend>
   <run_depend>hrpsys_gazebo_general</run_depend>
   <run_depend>collada_tools</run_depend>
