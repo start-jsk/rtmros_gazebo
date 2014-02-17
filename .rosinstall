@@ -19,4 +19,11 @@
 - git:
     uri: https://github.com/start-jsk/rtmros_common
     local-name: rtm-ros-robotics/rtmros_common
+- git:
+    uri: https://github.com/start-jsk/rtmros_tutorials
+    local-name: rtm-ros-robotics/rtmros_tutorials
+ - git:
+    uri: https://github.com/start-jsk/rtmros_gazebo
+    local-name: rtm-ros-robotics/rtmros_gazebo
+    
  
