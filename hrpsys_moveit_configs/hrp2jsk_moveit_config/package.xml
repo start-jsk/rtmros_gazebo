@@ -14,11 +14,13 @@
   <url type="bugtracker">https://github.com/ros-planning/moveit_setup_assistant/issues</url>
   <url type="repository">https://github.com/ros-planning/moveit_setup_assistant</url>
 
-  <run_depend>moveit_ros_move_group</run_depend>
   <run_depend>xacro</run_depend>
-  <build_depend>HRP2JSK</build_depend>
-  <run_depend>HRP2JSK</run_depend>
-
+  <run_depend>moveit_ros_move_group</run_depend>
+  <run_depend>moveit_commander</run_depend>
+  <run_depend>moveit_resources</run_depend>
+  <run_depend>moveit_docs</run_depend>
+  <run_depend>moveit_planners</run_depend>
+  <run_depend>moveit_plugins</run_depend>
 
   <buildtool_depend>catkin</buildtool_depend>
   

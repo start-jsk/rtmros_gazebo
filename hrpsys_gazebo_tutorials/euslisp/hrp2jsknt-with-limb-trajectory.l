@@ -1,3 +1,5 @@
+(ros::load-ros-manifest "control_msgs")
+
 (defmethod hrp2jsknt-interface
   (:init
    ()
