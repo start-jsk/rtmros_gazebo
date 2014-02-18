@@ -19,7 +19,7 @@ install(PROGRAMS robot_models/install_robot_common.sh
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/robot_models/)
 install(FILES setup.sh
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-install(DIRECTORY euslisp worlds launch config environment_models DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+install(DIRECTORY euslisp worlds launch scripts config environment_models DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
   PATTERN ".svn" EXCLUDE)
 
 macro (generate_gazebo_urdf_file _robot_name)
