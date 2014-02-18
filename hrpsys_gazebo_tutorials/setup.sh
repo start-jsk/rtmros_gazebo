@@ -35,4 +35,4 @@ if [ -e ${pkgdir} -a -e ${tpkgdir} ]; then
     # export GAZEBO_PLUGIN_PATH=${pkgdir}/plugins:$GAZEBO_PLUGIN_PATH
 fi
 
-rospack find drcsim_model_resources > /dev/null 2>&1 && export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_APTH:`rospack find drcsim_model_resources`/gazebo_models/environments
+rospack find drcsim_model_resources > /dev/null 2>&1 && export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:`rospack find drcsim_model_resources`/gazebo_models/environments
