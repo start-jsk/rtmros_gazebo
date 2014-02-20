@@ -115,7 +115,7 @@
       (warn "[ERROR] room (~a) is not room the model.~%" name)
       (return-from generate-room-models))
     ;; convert room models
-    (dolist (r (list "SampleRobot" "HRP2JSK"))
+    (dolist (r (list "SampleRobot" "HRP2JSK" "HRP2JSKNT" "HRP2JSKNTS"))
       (eus2urdf-room-for-gazebo room :robot-name r
                                 :make-static t :make-fixed t :make-world-file t :make-launch-file t))
     ))
