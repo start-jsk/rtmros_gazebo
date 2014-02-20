@@ -23,6 +23,16 @@
     <include>
       <uri>model://sun</uri>
     </include>
+    <light type="directional" name="my_light">
+      <pose>0 0 30 0 0 0</pose>
+      <diffuse>.9 .9 .9 1</diffuse>
+      <specular>.1 .1 .1 1</specular>
+      <attenuation>
+	<range>20</range>
+      </attenuation>
+      <direction>0 0 -1</direction>
+      <cast_shadows>true</cast_shadows>
+    </light>
     <!-- A ground plane -->
     <include>
       <uri>model://ground_plane</uri>

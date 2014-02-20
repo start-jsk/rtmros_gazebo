@@ -1,0 +1,21 @@
+<launch>
+  <node pkg="nodelet" type="nodelet" name="pcl_divider_nodelet_manager" args="manager"
+        output="screen" alaunch-prefix="xterm -e gdb --args" />
+  <group ns="pcl_divider_nodelet">
+      <node pkg="nodelet" type="nodelet"
+          name="voxelgrid_filterz"
+          args="load pcl/VoxelGrid /pcl_divider_nodelet_manager"
+          output="screen" clear_params="true">
+      <remap from="~input" to="/xtion/depth/points" />
+      <rosparam>
+        filter_field_name: "z"
+        filter_limit_min: -5.00
+        filter_limit_max: 2.00
+        filter_limit_negative: false
+        input_frame: "/odom"
+        output_frame: "/odom"
+        leaf_size: 0.2
+      </rosparam>
+    </node>
+  </group>
+</launch>
