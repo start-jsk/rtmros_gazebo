@@ -132,6 +132,9 @@
    (send self :reset-force)
    (send self :set-pose))
   )
+(warn "~%(setq *gp* (init-gazebo-plugin \"simple_box\"))~%")
+(warn "~%(send *gp* :add-force #f(50 0 0))~%")
+(warn "~%(send *gp* :set-vel #f(0.5 0 0) #f(0 0 0))~%")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
