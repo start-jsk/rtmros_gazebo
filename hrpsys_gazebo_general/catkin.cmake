@@ -33,17 +33,17 @@ link_directories( ${GAZEBO_LIBRARY_DIRS} )
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/plugins)
 
-if ($ENV{ROS_DISTRO} STREQUAL "groovy")
-  add_library(IOBPlugin src/IOBPlugin.cpp)
-  add_library(SetVelPlugin src/SetVelPlugin.cpp)
-  add_dependencies(hrpsys_gazebo_general_iob hrpsys_gazebo_msgs_gencpp)
-  add_dependencies(IOBPlugin hrpsys_gazebo_msgs_gencpp)
-  add_dependencies(SetVelPlugin hrpsys_gazebo_msgs_gencpp)
-  add_library(AddForcePlugin src/AddForcePlugin.cpp)
-  add_library(GetVelPlugin src/GetVelPlugin.cpp)
-  add_dependencies(AddForcePlugin hrpsys_gazebo_msgs_gencpp)
-  add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
-endif()
+#if ($ENV{ROS_DISTRO} STREQUAL "groovy")
+add_library(IOBPlugin src/IOBPlugin.cpp)
+add_library(SetVelPlugin src/SetVelPlugin.cpp)
+add_dependencies(hrpsys_gazebo_general_iob hrpsys_gazebo_msgs_gencpp)
+add_dependencies(IOBPlugin hrpsys_gazebo_msgs_gencpp)
+add_dependencies(SetVelPlugin hrpsys_gazebo_msgs_gencpp)
+add_library(AddForcePlugin src/AddForcePlugin.cpp)
+add_library(GetVelPlugin src/GetVelPlugin.cpp)
+add_dependencies(AddForcePlugin hrpsys_gazebo_msgs_gencpp)
+add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
+#endif()
 
 install(DIRECTORY
   ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
