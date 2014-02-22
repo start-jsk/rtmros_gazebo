@@ -11,8 +11,8 @@
     uri: https://github.com/start-jsk/rtshell_core 
     local-name: rtm-ros-robotics/openrtm_common/rtshell_core
 - svn:
-    uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/jsk_model_tools
-    local-name: set jsk-ros-pkg/jsk_model_tools
+    uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk
+    local-name: jsk-ros-pkg
 - git:
     uri: https://github.com/ros-perception/laser_assembler
     local-name: ros-perception/laser_assembler
