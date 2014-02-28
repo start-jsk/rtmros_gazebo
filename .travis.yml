@@ -41,22 +41,22 @@ install: # Use this to install any prerequisites or dependencies necessary to ru
   - mkdir -p ~/ros/ws_$REPOSITORY_NAME/src
   - cd ~/ros/ws_$REPOSITORY_NAME/src
   - wstool init .
+  - wstool set jsk-ros-pkg/euslisp https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/euslisp --svn -y
+  - wstool set jsk-ros-pkg/roseus https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/roseus --svn -y
   - wstool set jsk-ros-pkg/jsk_model_tools https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/jsk_model_tools --svn -y
-  - wstool set rtm-ros-robotics/rtmros_tutorials https://github.com/start-jsk/rtmros_tutorials --git -y
+  - wstool set openrtm_aist_core https://github.com/start-jsk/openrtm_aist_core --git -y
+  - wstool set openhrp3 https://github.com/start-jsk/openhrp3 --git -y
   # currently we need hrpsys source to build gazebo(https://github.com/start-jsk/rtmros_gazebo/blob/master/hrpsys_gazebo_general/catkin.cmake#L13), this must be fixed...
-  - wstool set rtm-ros-robotics/openrtm_common/hrpsys https://github.com/start-jsk/hrpsys --git -y
+  - wstool set hrpsys https://github.com/start-jsk/hrpsys --git -y
+  - wstool set rtmros_common https://github.com/start-jsk/rtmros_common --git -y
+  - wstool set rtm-ros-robotics/rtmros_tutorials https://github.com/start-jsk/rtmros_tutorials --git -y
+  - wstool set ros-perception/laser_assembler https://github.com/ros-perception/laser_assembler --git -y
+  - wstool set ros-visualization/view_controller_msgs https://github.com/ros-visualization/view_controller_msgs.git --git -y
   - wstool update
   - ln -s $CI_SOURCE_PATH . # Link the repo we are testing to the new workspace
   - cd ../
   # Install dependencies for source repos
   - rosdep install -r -n --from-paths src --ignore-src --rosdistro $ROS_DISTRO -y
-  #
-  # fix hrpsys_ros_bridge until 1.0.6 is out
-  #
-  - wget https://raw.github.com/start-jsk/rtmros_common/master/hrpsys_ros_bridge/cmake/compile_robot_model.cmake
-  - sudo cp compile_robot_model.cmake /opt/ros/$ROS_DISTRO/share/hrpsys_ros_bridge/cmake
-  - sudo sed -i 's@hrpsys_ros_bridge-msg-extras.cmake@hrpsys_ros_bridge-msg-extras.cmake;compile_robot_model.cmake@' /opt/ros/$ROS_DISTRO/share/hrpsys_ros_bridge/cmake/hrpsys_ros_bridgeConfig.cmake
-  #
 before_script: # Use this to prepare your build for testing e.g. copy database configurations, environment variables, etc.
   - source /opt/ros/$ROS_DISTRO/setup.bash
 script: # All commands must exit with code 0 on success. Anything else is considered failure.
