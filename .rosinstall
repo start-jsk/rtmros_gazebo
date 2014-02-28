@@ -20,6 +20,9 @@
     uri: https://github.com/ros-visualization/view_controller_msgs.git
     local-name: ros-visualization/view_controller_msgs
 - git:
+    uri: https://github.com/RethinkRobotics/baxter_common.git
+    local-name: RethinkRobotics/baxter_common
+- git:
     uri: https://github.com/start-jsk/rtmros_common
     local-name: rtm-ros-robotics/rtmros_common
 - git:
