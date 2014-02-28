@@ -13,6 +13,8 @@ add_custom_command(OUTPUT ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
   COMMAND cmake -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/iob
   COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob cmake ${PROJECT_SOURCE_DIR}/iob -DCATKIN_INCLUDE_DIRS="${catkin_INCLUDE_DIRS}"
   COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob make -j1
+  COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
+  COMMAND cmake -E copy  ${CMAKE_CURRENT_BINARY_DIR}/iob/libhrpIo.so ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
   DEPENDS ${PROJECT_SOURCE_DIR}/iob/iob.cpp
 )
 add_custom_target(hrpsys_gazebo_general_iob ALL
