@@ -28,6 +28,7 @@
    (send self :init-add-force)
    (send self :init-set-vel)
    (send self :init-get-vel)
+   (send self :init-set-vel)
    (send self :update))
   (:update ()
 	   (ros::spin-once))
@@ -100,6 +101,7 @@
    ()
    (ros::roseus "SetVelEus")
    (ros::advertise (format nil "~a~a" objname "/SetVelPlugin/PoseCommand") geometry_msgs::pose 1)
+   (ros::advertise (format nil "~a~a" objname "/SetVelPlugin/VelCommand") geometry_msgs::twist 1)
    (ros::rate 100))
   (:set-pose
    (&optional (_c (make-coords)))
@@ -115,11 +117,24 @@
      (send msg :orientation :y (elt quat 2))
      (send msg :orientation :z (elt quat 3))
      (ros::publish (format nil "~a~a" objname "/SetVelPlugin/PoseCommand") msg)))
+  (:set-vel
+   (_v &optional (_w (float-vector 0 0 0)))
+   (let* ((msg (instance geometry_msgs::twist :init)))
+     (send msg :linear :x (elt _v 0))
+     (send msg :linear :y (elt _v 1))
+     (send msg :linear :z (elt _v 2))
+     (send msg :angular :x (elt _w 0))
+     (send msg :angular :y (elt _w 1))
+     (send msg :angular :z (elt _w 2))
+     (ros::publish (format nil "~a~a" objname "/SetVelPlugin/VelCommand") msg)))
   (:reset-world
    ()
    (send self :reset-force)
    (send self :set-pose))
   )
+;;(warn "~%(setq *gp* (init-gazebo-plugin \"simple_box\"))")
+;;(warn "~%(send *gp* :add-force #f(50 0 0))")
+;;(warn "~%(send *gp* :set-vel #f(0.5 0 0) #f(0 0 0))")
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
