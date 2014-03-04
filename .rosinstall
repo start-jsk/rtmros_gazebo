@@ -43,12 +43,6 @@
     uri: https://github.com/jsk-ros-pkg/openrave_planning
     local-name: jsk-ros-pkg/openrave_planning
 - git:
-    uri: https://github.com/jsk-ros-pkg/openrave_planning
-    local-name: jsk-ros-pkg/openrave_planning
-- git:
-    uri: https://github.com/jsk-ros-pkg/jsk_visualization
-    local-name: jsk-ros-pkg/jsk_visualization
-- git:
     uri: https://github.com/jsk-ros-pkg/jsk_visualization
     local-name: jsk-ros-pkg/jsk_visualization
 - git:
@@ -63,9 +57,6 @@
 - git:
     uri: https://github.com/jsk-ros-pkg/jsk_recognition
     local-name: jsk-ros-pkg/jsk_recognition
-- git:
-    uri: https://github.com/jsk-ros-pkg/jsk_pr2eus
-    local-name: jsk-ros-pkg/jsk_pr2eus
 - git:
     uri: https://github.com/jsk-ros-pkg/jsk_pr2eus
     local-name: jsk-ros-pkg/jsk_pr2eus
