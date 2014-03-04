@@ -10,9 +10,6 @@
 - git:
     uri: https://github.com/start-jsk/rtshell_core 
     local-name: rtm-ros-robotics/openrtm_common/rtshell_core
-- svn:
-    uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk
-    local-name: jsk-ros-pkg
 - git:
     uri: https://github.com/ros-perception/laser_assembler
     local-name: ros-perception/laser_assembler
@@ -31,5 +28,56 @@
 - git:
     uri: https://github.com/start-jsk/rtmros_gazebo
     local-name: rtm-ros-robotics/rtmros_gazebo
-    
- 
+##
+## jsk ros packages => move to github
+##
+#  jsk-ros-pkg old repository
+#- svn:
+#    uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk
+#    local-name: jsk-ros-pkg
+# jsk-ros-pkg new repository
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_common
+    local-name: jsk-ros-pkg/jsk_common
+- git:
+    uri: https://github.com/jsk-ros-pkg/openrave_planning
+    local-name: jsk-ros-pkg/openrave_planning
+- git:
+    uri: https://github.com/jsk-ros-pkg/openrave_planning
+    local-name: jsk-ros-pkg/openrave_planning
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_visualization
+    local-name: jsk-ros-pkg/jsk_visualization
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_visualization
+    local-name: jsk-ros-pkg/jsk_visualization
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_smart_apps
+    local-name: jsk-ros-pkg/jsk_smart_apps
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_roseus
+    local-name: jsk-ros-pkg/jsk_roseus
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_robot
+    local-name: jsk-ros-pkg/jsk_robot
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_recognition
+    local-name: jsk-ros-pkg/jsk_recognition
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_pr2eus
+    local-name: jsk-ros-pkg/jsk_pr2eus
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_pr2eus
+    local-name: jsk-ros-pkg/jsk_pr2eus
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_planning
+    local-name: jsk-ros-pkg/jsk_planning
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_model_tools
+    local-name: jsk-ros-pkg/jsk_model_tools
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_demos
+    local-name: jsk-ros-pkg/jsk_demos
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_control
+    local-name: jsk-ros-pkg/jsk_control
