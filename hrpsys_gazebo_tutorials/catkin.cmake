@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_tutorials)
 
 #find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge_tutorials collada_tools euscollada)
-find_package(catkin REQUIRED COMPONENTS collada_tools euscollada hrpsys_ros_bridge)
+find_package(catkin REQUIRED COMPONENTS collada_tools euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials)
 
 find_package(PkgConfig)
 pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
@@ -10,7 +10,7 @@ pkg_check_modules(hrpsys hrpsys-base REQUIRED)
 
 catkin_package(
     DEPENDS openhrp3 hrpsys#
-    CATKIN_DEPENDS collada_tools euscollada hrpsys_ros_bridge
+    CATKIN_DEPENDS collada_tools euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
@@ -32,9 +32,12 @@ macro (generate_gazebo_urdf_file _robot_name)
     COMMAND mkdir ${_out_dir}/meshes)
   add_custom_command(OUTPUT ${_out_dir}/hrpsys
     COMMAND mkdir ${_out_dir}/hrpsys)
-  add_custom_command(OUTPUT ${_out_urdf_file}
-    COMMAND ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_robot_name} ${hrpsys_ros_bridge_tutorials_SOURCE_DIR}/models  ${hrpsys_gazebo_tutorials_SOURCE_DIR}/robot_models/${_robot_name} ${collada_tools_PREFIX}/lib/collada_tools/collada_to_urdf ${PROJECT_SOURCE_DIR}/..
-    DEPENDS ${_out_dir}/hrpsys ${_out_dir}/meshes ${collada_tools_PREFIX}/lib/collada_tools/collada_to_urdf ${hrpsys_ros_bridge_tutorials_SOURCE_DIR}/models/${_robot_name}.dae)
+  message("urdf input -- ${hrpsys_ros_bridge_tutorials_SOURCE_DIR}/models/${_robot_name}.dae")
+  # ${compile_robots} is a global target used in compile_robot_model.cmake of hrpsys_ros_bridge.
+  # this dependency means that run install_robot_common.sh after executing all of ${compile_robots}.
+    add_custom_command(OUTPUT ${_out_urdf_file}
+      COMMAND ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_robot_name} ${hrpsys_ros_bridge_tutorials_SOURCE_DIR}/models  ${hrpsys_gazebo_tutorials_SOURCE_DIR}/robot_models/${_robot_name} ${collada_tools_PREFIX}/lib/collada_tools/collada_to_urdf ${PROJECT_SOURCE_DIR}/..
+      DEPENDS ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_out_dir}/hrpsys ${_out_dir}/meshes ${collada_tools_PREFIX}/lib/collada_tools/collada_to_urdf ${compile_robots})
   add_custom_target(${_robot_name}_compile DEPENDS ${_out_urdf_file})
   set(ROBOT ${_robot_name})
   string(TOLOWER ${_robot_name} _sname)
@@ -42,7 +45,7 @@ macro (generate_gazebo_urdf_file _robot_name)
   if(NOT EXISTS ${PROJECT_SOURCE_DIR}/launch/gazebo_${_sname}_no_controllers.launch)
     configure_file(${PROJECT_SOURCE_DIR}/scripts/default_gazebo_robot_no_controllers.launch.in ${PROJECT_SOURCE_DIR}/launch/gazebo_${_sname}_no_controllers.launch)
   endif()
-  list(APPEND compile_robots ${_robot_name}_compile)
+  list(APPEND compile_urdf_robots ${_robot_name}_compile)
   install(DIRECTORY ${_out_dir} DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/robot_models/ PATTERN ".svn" EXCLUDE)
 endmacro()
 
@@ -56,4 +59,4 @@ generate_gazebo_urdf_file(STARO)
 generate_gazebo_urdf_file(HRP4C)
 
 
-add_custom_target(all_robots_compile ALL DEPENDS ${compile_robots})
+add_custom_target(all_robots_compile ALL DEPENDS ${compile_urdf_robots})
