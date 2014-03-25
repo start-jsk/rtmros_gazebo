@@ -7,7 +7,7 @@ trap error ERR
 
 
 # usage
-# ./install_robot.sh ROBOT_NAME (model directory) (output directory)
+# ./install_robot_common.sh ROBOT_NAME (model directory) (output directory) (collada_to_urdf_binary) (additional_ros_package_path)
 
 ROBOT_NAME=$1
 if [ $# -gt 1 ]; then
