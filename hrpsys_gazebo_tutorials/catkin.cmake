@@ -10,9 +10,6 @@ pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
 pkg_check_modules(hrpsys hrpsys-base REQUIRED)
 
 
-unset(hrpsys_LIBRARIES CACHE)
-unset(openhrp3_LIBRARIES CACHE)
-
 catkin_package(
     DEPENDS openhrp3 hrpsys
     CATKIN_DEPENDS collada_tools euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials
