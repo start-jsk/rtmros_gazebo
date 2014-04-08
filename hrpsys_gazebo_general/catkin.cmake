@@ -6,12 +6,13 @@ find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 
 find_package(PkgConfig)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
+pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
 catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 
 ## Build only iob
 add_custom_command(OUTPUT ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
   COMMAND cmake -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/iob
-  COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob cmake ${PROJECT_SOURCE_DIR}/iob -DCATKIN_INCLUDE_DIRS="${catkin_INCLUDE_DIRS}"
+  COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob cmake ${PROJECT_SOURCE_DIR}/iob -DCATKIN_INCLUDE_DIRS="${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhrp3_INCLUDE_DIRS}"
   COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob make -j1
   COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
   COMMAND cmake -E copy  ${CMAKE_CURRENT_BINARY_DIR}/iob/libhrpIo.so ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
@@ -40,8 +41,8 @@ else()
   message(FATAL_ERROR "pkg-config is required; please install it")
 endif()
 
-include_directories( ${GAZEBO_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
-link_directories( ${GAZEBO_LIBRARY_DIRS} )
+include_directories( ${GAZEBO_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhrp3_INCLUDE_DIRS})
+link_directories( ${GAZEBO_LIBRARY_DIRS} ${openhrp3_LIBRARY_DIRS})
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/plugins)
 
