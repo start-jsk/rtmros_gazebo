@@ -1,43 +1,57 @@
 #!/usr/bin/env python
-import roslib; roslib.load_manifest('hrpsys')
-import OpenRTM_aist.RTM_IDL # for catkin
-import sys
+
+import imp  ## for rosbuild
+try:
+    imp.find_module("hrpsys")
+except:
+    import roslib; roslib.load_manifest("hrpsys")
 
 import hrpsys
 from hrpsys.hrpsys_config import *
 import OpenHRP
 
 class ATLASHrpsysConfigurator(HrpsysConfigurator):
-    Groups = [['torso', ['back_bkz', 'back_bky', 'back_bkx']],
-              ['head', ['neck_ry']],
-              ['rarm', ['r_arm_shy', 'r_arm_shx', 'r_arm_ely', 'r_arm_elx', 'r_arm_wry', 'r_arm_wrx']],
-              ['larm', ['l_arm_shy', 'l_arm_shx', 'l_arm_ely', 'l_arm_elx', 'l_arm_wry', 'l_arm_wrx']],
-              ['lleg', ['l_leg_hpz', 'l_leg_hpx', 'l_leg_hpy', 'l_leg_kny', 'l_leg_aky', 'l_leg_akx']],
-              ['rleg', ['r_leg_hpz', 'r_leg_hpx', 'r_leg_hpy', 'r_leg_kny', 'r_leg_aky', 'r_leg_akx']]]
+#    tjc = None
 
     def connectComps(self):
         HrpsysConfigurator.connectComps(self)
-        # connect for kf rtc dummy rpy
-        s_acc=filter(lambda s : s.type == 'Acceleration', self.sensors)
-        if (len(s_acc)>0) and self.rh.port(s_acc[0].name) != None: # check existence of sensor ;; currently original HRP4C.xml has different naming rule of gsensor and gyrometer
-            disconnectPorts(self.rh.port(s_acc[0].name), self.kf.port('acc'))
-        s_rate=filter(lambda s : s.type == 'RateGyro', self.sensors)
-        if (len(s_rate)>0) and self.rh.port(s_rate[0].name) != None: # check existence of sensor ;; currently original HRP4C.xml has different naming rule of gsensor and gyrometer
-            disconnectPorts(self.rh.port(s_rate[0].name), self.kf.port("rate"))
-            connectPorts(self.rh.port(s_rate[0].name), self.kf.port("rpyIn"))
-
-        # delete co, when use collisoin detector is not used
-#        disconnectPorts(self.rh.port("q"), self.co.port("qCurrent"))
-#        disconnectPorts(self.st.port("q"), self.co.port("qRef"))
-#        disconnectPorts(self.co.port("q"), self.el.port("qRef"))
-
-        # delete co, and input current angle, to use collisoin detector just for checking
-        #disconnectPorts(self.rh.port("q"), self.co.port("qCurrent"))
-        disconnectPorts(self.st.port("q"), self.co.port("qRef"))
-        disconnectPorts(self.co.port("q"), self.el.port("qRef"))
-        connectPorts(self.rh.port("q"), self.co.port("qRef"))
         #
-        connectPorts(self.st.port("q"), self.el.port("qRef"))
+        #disconnectPorts(self.st.port("q"),  self.co.port("qRef"))
+        #disconnectPorts(self.el.port("q"),  self.rh.port("qRef"))
+        #connectPorts(self.st.port("q"),  self.rh.port("qRef"))
+        #connectPorts(self.st.port("q"), self.rh.port("qRef"))
+        #self.tjc = self.createComp("TendonJointController", "tjc")
+        #connectPorts(self.st.port("q"),  self.tjc.port("qRef"))
+        #connectPorts(self.tjc.port("q"),  self.rh.port("qRef"))
+
+    def getRTCList(self):
+#        return [self.rh, self.seq, self.sh, self.tf, self.kf, self.afs, self.ic, self.abc, self.log]
+#        return [self.rh, self.seq, self.sh, self.fk, self.tf, self.kf, self.vs, self.afs, self.ic, self.abc, self.st, self.log]
+        #return [self.rh, self.seq, self.sh, self.fk, self.tf, self.kf, self.vs, self.afs, self.ic, self.abc, self.st, self.tjc, self.log]
+        #return [self.rh, self.seq, self.sh, self.fk, self.tf, self.kf, self.vs, self.afs, self.ic, self.abc, self.st, self.tjc, self.log]
+        #return [self.rh, self.seq, self.sh, self.fk, self.tf, self.kf, self.vs, self.afs, self.ic, self.abc, self.st, self.log]
+        return [
+            ['seq', "SequencePlayer"],
+            ['sh', "StateHolder"],
+            ['fk', "ForwardKinematics"],
+            ['tf', "TorqueFilter"],
+            ['kf', "KalmanFilter"],
+            ['vs', "VirtualForceSensor"],
+            ['afs', "AbsoluteForceSensor"],
+            ['ic', "ImpedanceController"],
+            ['abc', "AutoBalancer"],
+            ['st', "Stabilizer"],
+            #['co', "CollisionDetector"],
+            #['el', "SoftErrorLimiter"],
+            ['log', "DataLogger"]
+            ]
+        
+
+    def init(self, robotname="Robot", url=""):
+        HrpsysConfigurator.init(self, robotname, url)
+        time.sleep(6)
+        rh_svc = narrow(self.rh.service("service0"), "RobotHardwareService")
+        rh_svc.setServoErrorLimit("all", 0); # disable RobotHardware Joint Error check
 
     def setSelfGroups(self):
         '''
@@ -60,20 +74,8 @@ class ATLASHrpsysConfigurator(HrpsysConfigurator):
 
     def setupLogger(self):
         HrpsysConfigurator.setupLogger(self)
-        self.connectLoggerPort(self.rh, 'q', 'command')
-
-#    # delete co
-#    def getRTCList(self):
-#        return [self.rh, self.seq, self.sh, self.tf, self.kf, self.vs, self.ic, self.abc, self.st, self.el, self.log]
-
-#    def activateComps(self):
-#        HrpsysConfigurator.activateComps(self)
-#        # stop co
-#        self.co.stop()
-
-    def init(self, robotname="Robot", url=""):
-        HrpsysConfigurator.init(self, robotname, url)
+        #default = 4000 too shoort!
+        self.log_svc.maxLength(400000)
 
 if __name__ == '__main__':
-    shcf=ATLASHrpsysConfigurator()
-    shcf.init(sys.argv[1], sys.argv[2])
+    ATLASHrpsysConfigurator().init(sys.argv[1], sys.argv[2])
