@@ -1,24 +1,30 @@
 - git:
-    uri: https://github.com/start-jsk/openrtm_aist_core.git
+    uri: https://github.com/start-jsk/openrtm_aist_core
     local-name: rtm-ros-robotics/openrtm_common/openrtm_aist_core
 - git:
-    uri: https://github.com/start-jsk/openhrp3.git
+    uri: https://github.com/start-jsk/openhrp3
     local-name: rtm-ros-robotics/openrtm_common/openhrp3
 - git:
-    uri: https://github.com/start-jsk/hrpsys.git
+    uri: https://github.com/start-jsk/hrpsys
     local-name: rtm-ros-robotics/openrtm_common/hrpsys
 - git:
-    uri: https://github.com/start-jsk/rtshell_core.git
+    uri: https://github.com/start-jsk/rtshell_core 
     local-name: rtm-ros-robotics/openrtm_common/rtshell_core
 - git:
-    uri: https://github.com/start-jsk/rtmros_common.git
-    local-name: rtm-ros-robotics/rtmros_common
-- git:
-    uri: https://github.com/start-jsk/rtmros_tutorials.git
-    local-name: rtm-ros-robotics/rtmros_tutorials
-- git:
-    uri: https://github.com/jsk-ros-pkg/jsk_model_tools.git
+    uri: https://github.com/jsk-ros-pkg/jsk_model_tools
     local-name: jsk-ros-pkg/jsk_model_tools
 - git:
-    uri: https://github.com/jsk-ros-pkg/jsk_roseus.git
+    uri: https://github.com/jsk-ros-pkg/jsk_roseus
     local-name: jsk-ros-pkg/jsk_roseus
+- svn:
+    uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/openrave_planning/collada_robots
+    local-name: jsk-ros-pkg/collada_robots
+- git:
+    uri: https://github.com/start-jsk/rtmros_common
+    local-name: rtm-ros-robotics/rtmros_common
+- git:
+    uri: https://github.com/start-jsk/rtmros_tutorials
+    local-name: rtm-ros-robotics/rtmros_tutorials
+- git:
+    uri: https://github.com/start-jsk/rtmros_gazebo
+    local-name: rtm-ros-robotics/rtmros_gazebo
