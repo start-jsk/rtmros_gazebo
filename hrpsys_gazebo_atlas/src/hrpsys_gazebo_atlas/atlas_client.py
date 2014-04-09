@@ -1,6 +1,11 @@
 #!/usr/bin/env python
-import roslib;roslib.load_manifest("hrpsys")
-#import sys; sys.path.insert (0, roslib.packages.get_pkg_dir('hrpsys_tools')+'/scripts');
+
+import imp  ## for rosbuild
+try:
+    imp.find_module("hrpsys")
+except:
+    import roslib; roslib.load_manifest("hrpsys")
+
 import hrpsys
 from hrpsys.hrpsys_config import *
 import OpenHRP
