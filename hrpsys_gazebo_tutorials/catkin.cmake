@@ -17,6 +17,10 @@ catkin_package(
     LIBRARIES # TODO
 )
 
+if(NOT hrpsys_ros_bridge_tutorials_SOURCE_DIR)
+  set(hrpsys_ros_bridge_tutorials_SOURCE_DIR `rospack find hrpsys_ros_bridge_tutorials`)
+endif()
+
 install(PROGRAMS robot_models/install_robot_common.sh 
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/robot_models/)
 install(FILES setup.sh
