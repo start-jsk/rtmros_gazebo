@@ -18,7 +18,10 @@ catkin_package(
 )
 
 if(NOT hrpsys_ros_bridge_tutorials_SOURCE_DIR)
-  set(hrpsys_ros_bridge_tutorials_SOURCE_DIR `rospack find hrpsys_ros_bridge_tutorials`)
+  execute_process(
+    COMMAND rospack find hrpsys_ros_bridge_tutorials
+    OUTPUT_VARIABLE hrpsys_ros_bridge_tutorials_SOURCE_DIR)
+  string(REGEX REPLACE "\n" "" hrpsys_ros_bridge_tutorials_SOURCE_DIR ${hrpsys_ros_bridge_tutorials_SOURCE_DIR})
 endif()
 
 install(PROGRAMS robot_models/install_robot_common.sh 
