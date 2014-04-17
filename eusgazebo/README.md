@@ -1,3 +1,8 @@
+# EusGazebo
+
+Integration of Euslisp and Gazebo simulation.
+You can use Gazebo simulation more interactively from Euslisp interpreter.
+
 ### Usage
 ```lisp
 
