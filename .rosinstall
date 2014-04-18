@@ -11,6 +11,9 @@
     uri: https://github.com/start-jsk/rtshell_core 
     local-name: rtm-ros-robotics/openrtm_common/rtshell_core
 - git:
+    uri: https://github.com/jsk-ros-pkg/jsk_common
+    local-name: jsk-ros-pkg/jsk_common
+- git:
     uri: https://github.com/jsk-ros-pkg/jsk_model_tools
     local-name: jsk-ros-pkg/jsk_model_tools
 - git:
