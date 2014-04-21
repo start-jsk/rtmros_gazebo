@@ -94,20 +94,6 @@ compile_collada_model(${atlas_v3_dae}
   )
 endif()
 
-## ALL
-list(GET compile_robots 0 compile_robot)
-list(LENGTH compile_robots compile_robots_num)
-if (compile_robots_num GREATER 0)
-list(REMOVE_AT compile_robots 0)
-add_custom_target(openhrp_robots ALL)
-add_dependencies(openhrp_robots ${compile_robot})
-foreach(compile_target ${compile_robots})
-  add_dependencies(${compile_robot} ${compile_target})
-  list(GET compile_robots 0 compile_robot)
-  list(REMOVE_AT compile_robots 0)
-endforeach(compile_target ${compile_robots})
-endif (compile_robots_num GREATER 0)
-#
 # set(atlas_dae  "${PROJECT_SOURCE_DIR}/models/atlas.dae")
 # set(atlas_eus  "${PROJECT_SOURCE_DIR}/models/atlas.l")
 # set(atlas_yaml "${PROJECT_SOURCE_DIR}/models/atlas.yaml")

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_tutorials)
 
 #find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge_tutorials collada_tools euscollada)
-find_package(catkin REQUIRED COMPONENTS collada_tools euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials hrpsys)
+find_package(catkin REQUIRED COMPONENTS collada_tools euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials)
 
 set(PKG_CONFIG_PATH ${hrpsys_PREFIX}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH})
 find_package(PkgConfig)
@@ -10,15 +10,19 @@ pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
 pkg_check_modules(hrpsys hrpsys-base REQUIRED)
 
 
-unset(hrpsys_LIBRARIES CACHE)
-unset(openhrp3_LIBRARIES CACHE)
-
 catkin_package(
-    DEPENDS openhrp3 hrpsys
+    DEPENDS
     CATKIN_DEPENDS collada_tools euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
+
+if(NOT hrpsys_ros_bridge_tutorials_SOURCE_DIR)
+  execute_process(
+    COMMAND rospack find hrpsys_ros_bridge_tutorials
+    OUTPUT_VARIABLE hrpsys_ros_bridge_tutorials_SOURCE_DIR)
+  string(REGEX REPLACE "\n" "" hrpsys_ros_bridge_tutorials_SOURCE_DIR ${hrpsys_ros_bridge_tutorials_SOURCE_DIR})
+endif()
 
 install(PROGRAMS robot_models/install_robot_common.sh 
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/robot_models/)
