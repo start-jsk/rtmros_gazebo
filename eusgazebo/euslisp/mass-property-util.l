@@ -16,7 +16,7 @@
 	 )
     (dolist (link (send obj :links))
       (let* ((link-weight (slot link bodyset-link 'weight))
-	     (link-inertia (slot (car (send obj :links)) bodyset-link 'inertia-tensor))
+	     (link-inertia (slot link bodyset-link 'inertia-tensor))
 	     (link-inertia-diag (mapcar #'(lambda (i) (elt (matrix-row link-inertia i) i)) (list 0 1 2))))
 	;; overwrite mass if too small
 	(when (< link-weight link-weight-min)
