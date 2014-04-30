@@ -36,6 +36,7 @@
 
   <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
     <arg name="USE_RTCD" value="true" />
+    <arg name="hrpsys_preload_rtc" default="libhrpIo.so,RobotHardware.so,hrpEC.so"/>
     <arg name="hrpsys_load_path" default="$(find hrpsys_gazebo_general)/lib,$(find hrpsys)/lib"/>
     <arg name="RobotHardware_conf" default='$(arg GAZEBO_MODEL_DIR)/hrpsys/$(arg ROBOT_TYPE).RobotHardware.conf'/>
     <arg name="PROJECT_FILE" value="$(arg GAZEBO_MODEL_DIR)/hrpsys/$(arg ROBOT_TYPE)_nosim.xml" />
