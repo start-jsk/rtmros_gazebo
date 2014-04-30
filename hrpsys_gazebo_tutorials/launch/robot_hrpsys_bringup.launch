@@ -35,6 +35,7 @@
   <!-- end of hrpsys_gazebo settings -->
 
   <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
+
     <arg name="USE_RTCD" value="true" />
     <arg name="hrpsys_preload_rtc" default="libhrpIo.so,RobotHardware.so,hrpEC.so"/>
     <arg name="hrpsys_load_path" default="$(find hrpsys_gazebo_general)/lib,$(find hrpsys)/lib"/>
@@ -46,6 +47,7 @@
     <!--arg name="HRPSYS_PY_PKG" value="hrpsys_gazebo_tutorials"/>
     <arg name="HRPSYS_PY_NAME" value="sample_hrpsys.py"/-->
     <arg name="hrpsys_periodic_rate" value="$(arg HRPSYS_RATE)" />
+    <!--arg name="RTCD_LAUNCH_PREFIX" value="strace" /-->
     <!--arg name="RTCD_LAUNCH_PREFIX" value="xterm -e gdb ++args" /-->
   </include>
 
