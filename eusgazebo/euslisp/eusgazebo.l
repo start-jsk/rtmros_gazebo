@@ -115,15 +115,21 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; apply eus state to gazebo
   (:eus2gzb
-   (&optional model)
+   (&key obj set-vel)
 
-   (cond (model
-	  (let* ((msg (instance gazebo_msgs::ModelState :init)))
-	    (send msg :model_name (send model :get :gazebo-model-name))
-	    (send msg :pose (coords->pose (send model :copy-worldcoords)))
+   (cond (obj
+	  (let* ((msg (instance gazebo_msgs::ModelState :init))
+		 (dir (list :x :y :z)))
+	    (send msg :model_name (send obj :get :gazebo-model-name))
+	    (send msg :pose (coords->pose (send obj :copy-worldcoords)))
+	    (when set-vel
+	      (mapcar #'(lambda (dir val) (send msg :twist :linear dir val))
+		      dir (concatenate cons (send obj :get :linear-vel)))
+	      (mapcar #'(lambda (dir val) (send msg :twist :angular dir val))
+		      dir (concatenate cons (send obj :get :angular-vel))))
 	    (ros::publish "/gazebo/set_model_state" msg)))
 	 (t ;; call for all drawed objects
-	  (dolist (model model-list) (send self :eus2gzb model))))
+	  (dolist (model model-list) (send self :eus2gzb :obj model :set-vel set-vel))))
    )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; apply gazebo state to eus
