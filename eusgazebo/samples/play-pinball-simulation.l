@@ -62,11 +62,11 @@
    ;; eus2gzb
    (send *bar1* :rotate (deg2rad 4) :y :local)
    (send *bar2* :rotate (deg2rad -4) :y :local)
-   (send *eusgazebo-server* :eus2gzb *bar1*)
-   (send *eusgazebo-server* :eus2gzb *bar2*)
+   (send *eusgazebo-server* :eus2gzb :obj *bar1*)
+   (send *eusgazebo-server* :eus2gzb :obj *bar2*)
    (when (< (elt (send *ball* :worldpos) 2) 1000)
      (send *ball* :newcoords (make-coords :pos #f(-4000 0 5000) :rpy (list 0 0 0)))
-     (send *eusgazebo-server* :eus2gzb *ball*))
+     (send *eusgazebo-server* :eus2gzb :obj *ball*))
 
    ;; view
    (x::window-main-one)

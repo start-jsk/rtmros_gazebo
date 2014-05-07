@@ -33,25 +33,13 @@
     ;; set eus model pose
     (send *top1* :newcoords (make-coords :pos #f(2000 0 1000) :rpy (list 0 0 0)))
     (send *top2* :newcoords (make-coords :pos #f(-2000 0 1000) :rpy (list 0 0 0)))
- 
 
-    ;; apply eus pose to gazebo
- ;  (send *eusgazebo-server* :eus2gzb)
+    (send *top1* :put :linear-vel (float-vector -1 0 0))
+    (send *top1* :put :angular-vel (float-vector 0 0 200))
+    (send *top2* :put :linear-vel (float-vector 1 0 0))
+    (send *top2* :put :angular-vel (float-vector 0 0 60))
 
-
-    (let* ((msg (instance gazebo_msgs::ModelState :init)))
-      (send msg :model_name (send *top1* :get :gazebo-model-name))
-      (send msg :pose (coords->pose (send *top1* :copy-worldcoords)))
-      (send msg :twist :linear :x -1)
-      (send msg :twist :angular :z 200) 
-      (ros::publish "/gazebo/set_model_state" msg))
-
-    (let* ((msg (instance gazebo_msgs::ModelState :init)))
-      (send msg :model_name (send *top2* :get :gazebo-model-name))
-      (send msg :pose (coords->pose (send *top2* :copy-worldcoords)))
-      (send msg :twist :linear :x 1)
-      (send msg :twist :angular :z 60) 
-      (ros::publish "/gazebo/set_model_state" msg))
+    (send *eusgazebo-server* :eus2gzb :set-vel t)
   
     ;; unpause simulation
     (send *eusgazebo-server* :unpause-sim)
