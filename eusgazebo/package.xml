@@ -15,9 +15,11 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <build_depend>roseus</build_depend>
-  <build_depend>collada_tools</build_depend>
+  <build_depend>collada_urdf_jsk_patch</build_depend>
+  <build_depend>gazebo_msgs</build_depend>
 
   <run_depend>roseus</run_depend>
-  <run_depend>collada_tools</run_depend>
+  <run_depend>collada_urdf_jsk_patch</run_depend>
+  <run_depend>gazebo_msgs</run_depend>
 
 </package>
