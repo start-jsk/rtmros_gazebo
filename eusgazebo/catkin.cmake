@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(eusgazebo)
 
-catkin_package()
+find_package(catkin REQUIRED COMPONENTS message_generation gazebo_msgs rostest)
 
-find_package(catkin REQUIRED COMPONENTS rostest)
+catkin_package(CATKIN_DEPENDS message_runtime gazebo_msgs)
 
 ## Install ##
 install(DIRECTORY euslisp test scripts samples
