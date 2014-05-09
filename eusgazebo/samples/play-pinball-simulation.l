@@ -6,8 +6,8 @@
 
   ;; make and view eus model
   (load "package://eusgazebo/samples/ground-plane-object.l")
-  (load "package://eusgazebo/samples/simple-ball-object.l")
   (load "package://eusgazebo/samples/domino-cube-object.l")
+  (load "models/simple-ball-object.l")
   (setq *floar* (ground-plane))
   (setq *ball* (simple-ball))
   (setq *bar1* (domino-cube))
