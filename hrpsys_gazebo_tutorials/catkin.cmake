@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_tutorials)
 
-#find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge_tutorials collada_tools euscollada)
-find_package(catkin REQUIRED COMPONENTS collada_tools euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials)
+find_package(catkin REQUIRED COMPONENTS collada_urdf_jsk_patch euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials)
 
 set(PKG_CONFIG_PATH ${hrpsys_PREFIX}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH})
 find_package(PkgConfig)
@@ -12,10 +11,17 @@ pkg_check_modules(hrpsys hrpsys-base REQUIRED)
 
 catkin_package(
     DEPENDS
-    CATKIN_DEPENDS collada_tools euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials
+    CATKIN_DEPENDS collada_urdf_jsk_patch euscollada hrpsys_ros_bridge hrpsys_ros_bridge_tutorials
     INCLUDE_DIRS # TODO include
     LIBRARIES # TODO
 )
+
+if(NOT hrpsys_ros_bridge_tutorials_SOURCE_DIR)
+  execute_process(
+    COMMAND rospack find hrpsys_ros_bridge_tutorials
+    OUTPUT_VARIABLE hrpsys_ros_bridge_tutorials_SOURCE_DIR)
+  string(REGEX REPLACE "\n" "" hrpsys_ros_bridge_tutorials_SOURCE_DIR ${hrpsys_ros_bridge_tutorials_SOURCE_DIR})
+endif()
 
 install(PROGRAMS robot_models/install_robot_common.sh 
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/robot_models/)
@@ -38,8 +44,8 @@ macro (generate_gazebo_urdf_file _robot_name)
   # ${compile_robots} is a global target used in compile_robot_model.cmake of hrpsys_ros_bridge.
   # this dependency means that run install_robot_common.sh after executing all of ${compile_robots}.
     add_custom_command(OUTPUT ${_out_urdf_file}
-      COMMAND ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_robot_name} ${hrpsys_ros_bridge_tutorials_SOURCE_DIR}/models  ${hrpsys_gazebo_tutorials_SOURCE_DIR}/robot_models/${_robot_name} ${collada_tools_PREFIX}/lib/collada_tools/collada_to_urdf ${PROJECT_SOURCE_DIR}/..
-      DEPENDS ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_out_dir}/hrpsys ${_out_dir}/meshes ${collada_tools_PREFIX}/lib/collada_tools/collada_to_urdf ${compile_robots})
+      COMMAND ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_robot_name} ${hrpsys_ros_bridge_tutorials_SOURCE_DIR}/models  ${hrpsys_gazebo_tutorials_SOURCE_DIR}/robot_models/${_robot_name} ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/collada_to_urdf ${PROJECT_SOURCE_DIR}/..
+      DEPENDS ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_out_dir}/hrpsys ${_out_dir}/meshes ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/collada_to_urdf ${compile_robots})
   add_custom_target(${_robot_name}_compile DEPENDS ${_out_urdf_file})
   set(ROBOT ${_robot_name})
   string(TOLOWER ${_robot_name} _sname)

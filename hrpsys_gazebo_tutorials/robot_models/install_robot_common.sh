@@ -25,7 +25,7 @@ fi
 if [ $# -gt 3 ]; then
     COLLADA_TO_URDF=$4
 else
-    COLLADA_TO_URDF=`rospack find collada_tools`/bin/collada_to_urdf
+    COLLADA_TO_URDF=rosrun\ collada_urdf\ collada_to_urdf
 fi
 
 if [ $# -gt 4 ]; then
