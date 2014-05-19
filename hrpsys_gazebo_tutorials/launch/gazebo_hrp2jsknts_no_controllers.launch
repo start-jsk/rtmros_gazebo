@@ -14,4 +14,9 @@
     <!-- <arg name="ROBOT_MODEL" value="$(find hrpsys_gazebo_tutorials)/robot_models/HRP2JSKNTS/HRP2JSKNTS.urdf" /> -->
     <arg name="SYNCHRONIZED" value="$(arg SYNCHRONIZED)" />
   </include>
+
+  <rosparam command="load"
+	    file="$(find hrpsys_gazebo_tutorials)/config/HRP3HAND_L.yaml" ns="HRP3HAND_L" />
+  <rosparam command="load"
+	    file="$(find hrpsys_gazebo_tutorials)/config/HRP3HAND_R.yaml" ns="HRP3HAND_R" />
 </launch>
