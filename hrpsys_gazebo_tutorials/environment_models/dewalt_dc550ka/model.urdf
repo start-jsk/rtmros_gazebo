@@ -35,7 +35,7 @@
     </inertial>
   </link>
   <gazebo reference="nil_link">
-    <mu1>0.9</mu1>
-    <mu2>0.9</mu2>
+    <mu1>9.0</mu1>
+    <mu2>9.0</mu2>
   </gazebo>
 </robot>
