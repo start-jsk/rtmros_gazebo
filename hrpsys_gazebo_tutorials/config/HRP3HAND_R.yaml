@@ -1,4 +1,7 @@
 hrpsys_gazebo_configuration:
+  publish_joint_state:
+    topic: /joint_states
+    step: 25
 ## velocity feedback for joint control, use parameter gains/joint_name/p_v
 #  use_velocity_feedback: true
 ## synchronized hrpsys and gazebo
