@@ -1,0 +1,8 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: HRP2JSKNTS
+    relative_path: HRP2JSKNTS.urdf
+  SRDF:
+    relative_path: config/HRP2JSKNTS.srdf
+  CONFIG:
+    generated_timestamp: 1391145118
