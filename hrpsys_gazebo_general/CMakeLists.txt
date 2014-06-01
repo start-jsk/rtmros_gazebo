@@ -32,12 +32,21 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 #rosbuild_link_boost(${PROJECT_NAME} thread)
 #target_link_libraries(example ${PROJECT_NAME})
 
-## Build hrpsys for gazebo
-execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f Makefile.hrpsys-base
-                RESULT_VARIABLE _make_failed)
-if (_make_failed)
-  message(FATAL_ERROR "Build of hrpsys failed")
-endif(_make_failed)
+rosbuild_find_ros_package(openrtm_aist)
+rosbuild_find_ros_package(openhrp3)
+rosbuild_find_ros_package(hrpsys)
+rosbuild_find_ros_package(hrpsys_gazebo_msgs)
+find_package(Eigen REQUIRED)
+## Build only iob
+add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/share/hrpsys_gazebo_general/lib/RobotHardware.so
+  COMMAND cmake -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/iob
+  COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob cmake ${PROJECT_SOURCE_DIR}/iob -DCMAKE_INSTALL_PREFIX=${PROJECT_SOURCE_DIR} -DCATKIN_INCLUDE_DIRS="${Eigen_INCLUDE_DIRS};${openrtm_aist_PACKAGE_PATH}/include/openrtm-1.1;${openrtm_aist_PACKAGE_PATH}/include/openrtm-1.1/rtm/idl;${openrtm_aist_PACKAGE_PATH}/include/coil-1.1;${openhrp3_PACKAGE_PATH}/include/OpenHRP-3.1;${hrpsys_gazebo_msgs_PACKAGE_PATH}/msg_gen/cpp/include;${hrpsys_gazebo_msgs_PACKAGE_PATH}/srv_gen/cpp/include" -DRobotHardware_PACKAGE_PATH=${hrpsys_PACKAGE_PATH}/lib
+  COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob make -j1
+  COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob make -j1 install
+  DEPENDS ${PROJECT_SOURCE_DIR}/iob/iob.cpp
+)
+add_custom_target(hrpsys_gazebo_general_iob ALL
+  DEPENDS ${PROJECT_SOURCE_DIR}/share/hrpsys_gazebo_general/lib/RobotHardware.so)
 
 ## Gazebo plugins
 include (FindPkgConfig)
