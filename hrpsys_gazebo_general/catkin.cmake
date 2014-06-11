@@ -58,6 +58,26 @@ add_dependencies(AddForcePlugin hrpsys_gazebo_msgs_gencpp)
 add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
 #endif()
 
+# move libhrpIo.so
+# lib -> {source}/lib
+if(NOT EXISTS ${PROJECT_SOURCE_DIR}/lib/)
+  execute_process(
+    COMMAND cmake -E make_directory ${PROJECT_SOURCE_DIR}/lib/
+    RESULT_VARIABLE _make_failed)
+  if (_make_failed)
+    message(FATAL_ERROR "make_directory ${PROJECT_SOURCE_DIR}/lib/ failed: ${_make_failed}")
+  endif(_make_failed)
+endif()
+if(EXISTS ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib/libhrpIo.so)
+  execute_process(
+    COMMAND cmake -E rename ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib/libhrpIo.so ${PROJECT_SOURCE_DIR}/lib/libhrpIo.so
+    RESULT_VARIABLE _rename_failed)
+  message("move libhrpIo.so ${PROJECT_SOURCE_DIR}/lib/libhrpIo.so")
+  if (_rename_failed)
+    message(FATAL_ERROR "Move libhrpIo.so failed: ${_rename_failed}")
+  endif(_rename_failed)
+endif()
+
 install(DIRECTORY
   ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
