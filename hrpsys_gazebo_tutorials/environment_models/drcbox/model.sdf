@@ -1,0 +1,150 @@
+<?xml version="1.0" ?>
+<sdf version="1.4">
+  <model name="drcbox">
+
+    <include>
+      <uri>model://drcbox-drcbox-base-0</uri>
+      <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+      <name>drcbox-drcbox-base-0</name>
+    </include>
+
+    <include>
+      <uri>model://drcbox-valve-small-0</uri>
+      <pose>0.25 0.385 0.98 1.5708 0.0 -1.5708</pose>
+      <name>drcbox-valve-small-0</name>
+    </include>
+
+    <include>
+      <uri>model://drcbox-valve-large-0</uri>
+      <pose>0.2 -0.01 1.175 0.0 -1.5708 0.0</pose>
+      <name>drcbox-valve-large-0</name>
+    </include>
+
+    <include>
+      <uri>model://drcbox-valve-bar-0</uri>
+      <pose>0.25 -0.38 0.98 0.0 -1.5708 0.0</pose>
+      <name>drcbox-valve-bar-0</name>
+    </include>
+
+    <include>
+      <uri>model://drcbox-drill-wall-0</uri>
+      <pose>0.5 -0.44 0.5 0.0 0.0 1.5708</pose>
+      <name>drcbox-drill-wall-0</name>
+    </include>
+
+    <include>
+      <uri>model://drcbox-drill-table-0</uri>
+      <pose>1.015 -0.4 0.96 0.0 0.0 1.5708</pose>
+      <name>drcbox-drill-table-0</name>
+    </include>
+
+    <include>
+      <uri>model://drcbox-hose-y-joint-0</uri>
+      <pose>0.225 0.45 0.91 -1.5708 1.5708 0.0</pose>
+      <name>drcbox-hose-y-joint-0</name>
+    </include>
+
+    <include>
+      <uri>model://drcbox-hose-reel-0</uri>
+      <pose>0.765 0.475 0.93 0.0 0.0 0.0</pose>
+      <name>drcbox-hose-reel-0</name>
+    </include>
+
+    <joint name="drcbox-drcbox-base-0-joint" type="revolute">
+      <parent>world</parent>
+      <child>drcbox-drcbox-base-0::nil_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="drcbox-valve-small-0-joint" type="revolute">
+      <parent>drcbox-drcbox-base-0::nil_link</parent>
+      <child>drcbox-valve-small-0::CRANK-ROOT-LINK_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="drcbox-valve-large-0-joint" type="revolute">
+      <parent>drcbox-drcbox-base-0::nil_link</parent>
+      <child>drcbox-valve-large-0::CRANK-ROOT-LINK_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="drcbox-valve-bar-0-joint" type="revolute">
+      <parent>drcbox-drcbox-base-0::nil_link</parent>
+      <child>drcbox-valve-bar-0::CRANK-ROOT-LINK_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="drcbox-drill-wall-0-joint" type="revolute">
+      <parent>drcbox-drcbox-base-0::nil_link</parent>
+      <child>drcbox-drill-wall-0::nil_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="drcbox-drill-table-0-joint" type="revolute">
+      <parent>drcbox-drcbox-base-0::nil_link</parent>
+      <child>drcbox-drill-table-0::nil_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="drcbox-hose-y-joint-0-joint" type="revolute">
+      <parent>drcbox-drcbox-base-0::nil_link</parent>
+      <child>drcbox-hose-y-joint-0::nil_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <joint name="drcbox-hose-reel-0-joint" type="revolute">
+      <parent>drcbox-drcbox-base-0::nil_link</parent>
+      <child>drcbox-hose-reel-0::ROOT-LINK_link</child>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+      </axis>
+    </joint>
+
+  </model>
+</sdf>
