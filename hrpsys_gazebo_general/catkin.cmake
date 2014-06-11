@@ -19,6 +19,7 @@ set(ROBOTHARDWARE_SOURCE ${hrpsys_SOURCE_DIR}/src/rtc/RobotHardware)
 add_subdirectory(iob)
 
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/lib/RobotHardware_gazebo.so
+   COMMAND cmake -E make_directory ${PROJECT_SOURCE_DIR}/lib
    COMMAND cmake -E rename ${CATKIN_DEVEL_PREFIX}/lib/RobotHardware_gazebo.so ${PROJECT_SOURCE_DIR}/lib/RobotHardware_gazebo.so
    DEPENDS RobotHardware_gazebo)
 add_custom_target(hrpsys_gazebo_general_iob ALL
