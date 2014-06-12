@@ -1,31 +1,27 @@
-#cmake_minimum_required(VERSION 2.4.6)
-#include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+add_definitions(-DHRPSYS_PACKAGE_VERSION=\"\\"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}\\"\")
 
-set(target hrpIo)
+# hrpIo
+add_library(hrpIo_gazebo SHARED iob.cpp)
 
-#rosbuild_find_ros_package(hrpsys)
-if(NOT CATKIN_INCLUDE_DIRS)
-  execute_process(
-    COMMAND rospack find hrpsys
-    OUTPUT_VARIABLE hrpsys_PACKAGE_PATH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
-
-  execute_process(
-    COMMAND rospack find hrpsys_gazebo_msgs
-    OUTPUT_VARIABLE hrpsys_gazebo_msgs_PACKAGE_PATH
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+if (NOT APPLE AND NOT QNXNTO)
+   target_link_libraries(hrpIo_gazebo rt)
 endif()
 
-string (REGEX REPLACE " " ";" LIST_CATKIN_INCLUDE_DIRS "${CATKIN_INCLUDE_DIRS}")
-include_directories(BEFORE ${LIST_CATKIN_INCLUDE_DIRS};${hrpsys_PACKAGE_PATH}/include;${hrpsys_gazebo_msgs_PACKAGE_PATH}/msg_gen/cpp/include;${hrpsys_gazebo_msgs_PACKAGE_PATH}/srv_gen/cpp/include)
-link_directories("/opt/ros/$ENV{ROS_DISTRO}/lib")
-add_library(${target} SHARED iob.cpp)
-target_link_libraries(${target} rt roscpp rostime)
-target_link_libraries(${target} rt)
+target_link_libraries(hrpIo_gazebo roscpp rostime)
 
-install(TARGETS ${target}
+# RobotHardware
+set(comp_source  ${ROBOTHARDWARE_SOURCE}/robot.cpp ${ROBOTHARDWARE_SOURCE}/RobotHardware.cpp ${ROBOTHARDWARE_SOURCE}/RobotHardwareService_impl.cpp)
+set(libs hrpIo_gazebo hrpModel-3.1 hrpCollision-3.1 hrpUtil-3.1 hrpsysBaseStub)
+
+add_library(RobotHardware_gazebo SHARED ${comp_source})
+
+target_link_libraries(RobotHardware_gazebo  ${libs})
+set_target_properties(RobotHardware_gazebo PROPERTIES PREFIX "")
+
+add_executable(RobotHardwareComp_gazebo ${ROBOTHARDWARE_SOURCE}/RobotHardwareComp.cpp ${comp_source})
+target_link_libraries(RobotHardwareComp_gazebo ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil)
+
+install(TARGETS RobotHardware_gazebo RobotHardwareComp_gazebo hrpIo_gazebo
   RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
   LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
 )
