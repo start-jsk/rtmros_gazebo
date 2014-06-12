@@ -37,7 +37,7 @@ class ATLASHrpsysConfigurator(HrpsysConfigurator):
             ['tf', "TorqueFilter"],
             ['kf', "KalmanFilter"],
             ['vs', "VirtualForceSensor"],
-            ['afs', "AbsoluteForceSensor"],
+            ['rmfo', "RemoveForceSensorLinkOffset"],
             ['ic', "ImpedanceController"],
             ['abc', "AutoBalancer"],
             ['st', "Stabilizer"],

@@ -29,6 +29,7 @@
     <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
     <arg name="USE_ROBOTHARDWARE" value="true" />
     <arg name="USE_DIAGNOSTICS" value="false" />
+    <arg name="USE_COLLISIONCHECK" value="false" />
   </include>
   <!-- start diagnostics -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_diagnostics.launch">
