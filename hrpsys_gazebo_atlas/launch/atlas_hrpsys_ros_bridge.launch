@@ -2,7 +2,8 @@
 <launch>
   <arg name="USE_ROBOTHARDWARE" default="false"/>
   <arg name="ROBOT_NAME" default="atlas" />
-    <arg name="USE_DIAGNOSTICS" default="false" />
+  <arg name="USE_DIAGNOSTICS" default="false" />
+  <arg name="USE_COLLISIONCHECK" default="false" />
 
   <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" >
     <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
@@ -15,5 +16,6 @@
 
     <arg name="USE_ROBOTHARDWARE" value="$(arg USE_ROBOTHARDWARE)" />
     <arg name="USE_DIAGNOSTICS" value="$(arg USE_DIAGNOSTICS)" />
+    <arg name="USE_COLLISIONCHECK" value="$(arg USE_COLLISIONCHECK)" />
   </include>
 </launch>
