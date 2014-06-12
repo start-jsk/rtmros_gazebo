@@ -2,9 +2,18 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description)
+find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description message_generation)
 
-catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description)
+add_message_files(
+  DIRECTORY msg
+  FILES JointStateCompressed.msg TrianglePoints.msg
+)
+
+generate_messages(
+  DEPENDENCIES geometry_msgs actionlib_msgs
+)
+
+catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description message_runtime)
 
 
 if(EXISTS ${hrpsys_ros_bridge_SOURCE_DIR})
