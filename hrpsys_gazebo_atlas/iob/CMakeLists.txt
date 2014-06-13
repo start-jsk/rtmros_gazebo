@@ -11,7 +11,7 @@ target_link_libraries(hrpIo_atlas roscpp rostime)
 
 # RobotHardware
 set(comp_source  ${ROBOTHARDWARE_SOURCE}/robot.cpp ${ROBOTHARDWARE_SOURCE}/RobotHardware.cpp ${ROBOTHARDWARE_SOURCE}/RobotHardwareService_impl.cpp)
-set(libs hrpIo hrpModel-3.1 hrpCollision-3.1 hrpUtil-3.1 hrpsysBaseStub)
+set(libs hrpIo_atlas hrpModel-3.1 hrpCollision-3.1 hrpUtil-3.1 hrpsysBaseStub)
 
 add_library(RobotHardware_atlas SHARED ${comp_source})
 
