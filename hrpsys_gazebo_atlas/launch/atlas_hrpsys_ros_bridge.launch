@@ -2,8 +2,11 @@
 <launch>
   <arg name="USE_ROBOTHARDWARE" default="false"/>
   <arg name="ROBOT_NAME" default="atlas" />
+  <arg name="USE_WALKING" default="true" />
+  <arg name="USE_IMPEDANCECONTROLLER" default="true" />
   <arg name="USE_DIAGNOSTICS" default="false" />
   <arg name="USE_COLLISIONCHECK" default="false" />
+  <arg name="USE_SOFTERRORLIMIT" default="false" />
 
   <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" >
     <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" />
@@ -17,5 +20,8 @@
     <arg name="USE_ROBOTHARDWARE" value="$(arg USE_ROBOTHARDWARE)" />
     <arg name="USE_DIAGNOSTICS" value="$(arg USE_DIAGNOSTICS)" />
     <arg name="USE_COLLISIONCHECK" value="$(arg USE_COLLISIONCHECK)" />
+    <arg name="USE_SOFTERRORLIMIT" value="$(arg USE_SOFTERRORLIMIT)" />
+    <arg name="USE_WALKING" value="$(arg USE_WALKING)" />
+    <arg name="USE_IMPEDANCECONTROLLER" value="$(arg USE_IMPEDANCECONTROLLER)" />
   </include>
 </launch>
