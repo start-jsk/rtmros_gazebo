@@ -49,6 +49,7 @@ static ros::Time last_callback_time;
 
 #if 0
 Collada Robot Model (MODEL)
+// This order comes from order of <attachment_full joint joint="***"> tag in hrpsys_gazebo_atlas/models/atlas_v3.dae
  [0] back_bkz
  [1] back_bky
  [2] back_bkx
@@ -97,6 +98,7 @@ Collada Robot Model (MODEL)
 [45] r_leg_akx
 
 gazebo robot model (REAL)
+//This order comes from ros topic atlas/joint_states/name
 'back_bkz'
 'back_bky'
 'back_bkx'
