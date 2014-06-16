@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
-#include "iob.h"
+#include "io/iob.h"
 
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
@@ -80,19 +80,21 @@ Collada Robot Model (MODEL)
 [28] r_arm_wrx
 [29] r_situational_awareness_camera_joint
 [30] r_situational_awareness_camera_optical_frame_joint
-[31] imu_joint
-[32] l_leg_hpz
-[33] l_leg_hpx
-[34] l_leg_hpy
-[35] l_leg_kny
-[36] l_leg_aky
-[37] l_leg_akx
-[38] r_leg_hpz
-[39] r_leg_hpx
-[40] r_leg_hpy
-[41] r_leg_kny
-[42] r_leg_aky
-[43] r_leg_akx
+[31] rear_situational_awareness_camera_joint
+[32] rear_situational_awareness_camera_optical_frame_joint
+[33] imu_joint
+[34] l_leg_hpz
+[35] l_leg_hpx
+[36] l_leg_hpy
+[37] l_leg_kny
+[38] l_leg_aky
+[39] l_leg_akx
+[40] r_leg_hpz
+[41] r_leg_hpx
+[42] r_leg_hpy
+[43] r_leg_kny
+[44] r_leg_aky
+[45] r_leg_akx
 
 gazebo robot model (REAL)
 'back_bkz'
@@ -129,7 +131,7 @@ gazebo robot model (REAL)
 #define JOINT_ID_MODEL2REAL(id) joint_id_model2real(id)
 #define NUM_OF_REAL_JOINT sizeof(joint_id_real2model)/sizeof(joint_id_real2model[0])
 /* for atlas_v3 */
-static int joint_id_real2model[] = {0, 1, 2, 11, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 3, 4, 5, 6, 7, 8, 23, 24, 25, 26, 27, 28};
+static int joint_id_real2model[] = {0, 1, 2, 11, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 3, 4, 5, 6, 7, 8, 23, 24, 25, 26, 27, 28};
 /* for atlas (old model without backpack) */
 // static int joint_id_real2model[] = {0, 1, 2, 9, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26};
 
