@@ -476,14 +476,13 @@ int write_command_angles(const double *angles)
       if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
         send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
         send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
-        // send_com.kp_velocity[i]  = 50;
-	if(i == 8 || i == 9 || i == 14 || i == 15) {
-	  send_com.kp_velocity[i]  = 0;
-	} else {
-	  send_com.kp_velocity[i]  = 50;
-	}
+        if(atlas_name == ATLAS_V3 && (i == 8 || i == 9 || i == 14 || i == 15)) {
+          send_com.kp_velocity[i]  = 0;
+        } else {
+          send_com.kp_velocity[i]  = 50;
+        }
       } else {
-	servo_on = false;
+        servo_on = false;
         send_com.position[i] = 0;
         send_com.velocity[i] = 0;
         send_com.effort[i] = 0;
