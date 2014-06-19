@@ -12,6 +12,8 @@
 (setq ros::*compile-message* t)
 (ros::roseus-add-msgs "visualization_msgs")
 (ros::roseus-add-msgs "sensor_msgs")
+(ros::load-ros-manifest "sandia_hand_msgs")
+(ros::load-ros-manifest "atlas_msgs")
 ;;(ros::roseus-add-msgs "geometry_msgs")
 (setq ros::*compile-message* nil)
 
