@@ -1,0 +1,96 @@
+(require :atlas "package://hrpsys_gazebo_atlas/models/atlas_v3.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-interface.l")
+
+;; controller setting
+(defmethod atlas-interface
+  (:larm-controller ()
+   (list
+    (list
+     (cons :controller-action "larm_controller/follow_joint_trajectory_action")
+     (cons :controller-state "larm_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "l_arm_shy" "l_arm_shx" "l_arm_ely" "l_arm_elx" "l_arm_wry" "l_arm_wrx")))))
+  (:rarm-controller ()
+   (list
+    (list
+     (cons :controller-action "rarm_controller/follow_joint_trajectory_action")
+     (cons :controller-state "rarm_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "r_arm_shy" "r_arm_shx" "r_arm_ely" "r_arm_elx" "r_arm_wry" "r_arm_wrx")))))
+  (:lleg-controller ()
+   (list
+    (list
+     (cons :controller-action "lleg_controller/follow_joint_trajectory_action")
+     (cons :controller-state "lleg_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "l_leg_hpz" "l_leg_hpx" "l_leg_hpy" "l_leg_kny" "l_leg_aky" "l_leg_akx")))))
+  (:rleg-controller ()
+   (list
+    (list
+     (cons :controller-action "rleg_controller/follow_joint_trajectory_action")
+     (cons :controller-state "rleg_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "r_leg_hpz" "r_leg_hpx" "r_leg_hpy" "r_leg_kny" "r_leg_aky" "r_leg_akx")))))
+  (:head-controller ()
+   (list
+    (list
+     (cons :controller-action "head_controller/follow_joint_trajectory_action")
+     (cons :controller-state "head_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "neck_ry")))))
+  (:torso-controller ()
+   (list
+    (list
+     (cons :controller-action "torso_controller/follow_joint_trajectory_action")
+     (cons :controller-state "torso_controller/state")
+     (cons :action-type control_msgs::FollowJointTrajectoryAction)
+     (cons :joint-names (list "back_bkz" "back_bky" "back_bkx")))))
+  (:default-controller ()
+   (append
+    (send self :larm-controller)
+    (send self :rarm-controller)
+    (send self :lleg-controller)
+    (send self :rleg-controller)
+    (send self :head-controller)
+    (send self :torso-controller)
+    )))
+
+(defun atlas-set-servo-gain-by-torque-limit
+  (&optional (deg 1) (limb :all))
+  (if (not (memq limb '(:all :torso :head :lleg :rleg :larm :rarm :legs :arms)))
+      (ros::ros-error "atlas-set-servo-gain-by-torque-limit failed, unknown limb ~A" limb))
+  (when (or (equal limb :all) (equal limb :torso))
+    (send *ri* :set-servo-gain-percentage "back_bkz"  (/ 35528  deg))
+    (send *ri* :set-servo-gain-percentage "back_bky"  (/ 296    deg))
+    (send *ri* :set-servo-gain-percentage "back_bkx"  (/ 572    deg)))
+  (when (or (equal limb :all) (equal limb :head))
+    (send *ri* :set-servo-gain-percentage "neck_ry"   (/ 1432   deg)))
+  (when (or (equal limb :all) (equal limb :lleg) (equal limb :legs))
+    (send *ri* :set-servo-gain-percentage "l_leg_hpz" (/ 126051 deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_hpx" (/ 10313  deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_hpy" (/ 745    deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_kny" (/ 1261   deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_aky" (/ 4456   deg))
+    (send *ri* :set-servo-gain-percentage "l_leg_akx" (/ 1719   deg)))
+  (when (or (equal limb :all) (equal limb :rleg) (equal limb :legs))
+    (send *ri* :set-servo-gain-percentage "r_leg_hpz" (/ 126051 deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_hpx" (/ 10313  deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_hpy" (/ 745    deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_kny" (/ 1261   deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_aky" (/ 4456   deg))
+    (send *ri* :set-servo-gain-percentage "r_leg_akx" (/ 1719   deg)))
+  (when (or (equal limb :all) (equal limb :larm) (equal limb :arms))
+    (send *ri* :set-servo-gain-percentage "l_arm_shy" (/ 607    deg))
+    (send *ri* :set-servo-gain-percentage "l_arm_shx" (/ 974    deg))
+    (send *ri* :set-servo-gain-percentage "l_arm_ely" (/ 3266   deg))
+    (send *ri* :set-servo-gain-percentage "l_arm_elx" (/ 3266   deg))
+    (send *ri* :set-servo-gain-percentage "l_arm_wry" (/ 13063  deg))
+    (send *ri* :set-servo-gain-percentage "l_arm_wrx" (/ 3438   deg)))
+  (when (or (equal limb :all) (equal limb :rarm) (equal limb :arms))
+    (send *ri* :set-servo-gain-percentage "r_arm_shy" (/ 607    deg))
+    (send *ri* :set-servo-gain-percentage "r_arm_shx" (/ 974    deg))
+    (send *ri* :set-servo-gain-percentage "r_arm_ely" (/ 3266   deg))
+    (send *ri* :set-servo-gain-percentage "r_arm_elx" (/ 3266   deg))
+    (send *ri* :set-servo-gain-percentage "r_arm_wry" (/ 13063  deg))
+    (send *ri* :set-servo-gain-percentage "r_arm_wrx" (/ 3438   deg)))
+  )

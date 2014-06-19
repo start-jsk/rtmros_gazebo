@@ -1,4 +1,5 @@
-(require :atlas "package://hrpsys_gazebo_atlas/models/atlas_v3.l")
+(unless (boundp 'atlas-robot)
+  (require :atlas "package://hrpsys_gazebo_atlas/models/atlas_v3.l"))
 ;; (require :atlas "package://hrpsys_gazebo_atlas/models/atlas.l") ;; for atlas old model (without backpack)
 (require :sandia_hand_left  "package://hrpsys_gazebo_atlas/models/sandia_hand_left.l")
 (require :sandia_hand_right "package://hrpsys_gazebo_atlas/models/sandia_hand_right.l")

@@ -45,3 +45,4 @@ controller_configuration:
     controller_name: /head_controller
     joint_list:
       - neck_ry
+iob_atlas_name: atlas_v3

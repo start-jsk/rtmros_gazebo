@@ -5,6 +5,7 @@
   <arg name="SIMULATOR_NAME" default="RobotHardware0" />
   <arg name="CONF_FILE" default="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).conf" />
   <arg name="USE_LIMB_TRAJECTORY" default="true" />
+  <arg name="CONTROLLER_CONFIG_FILE" default="$(find hrpsys_gazebo_atlas)/config/atlas_v3_controller_config.yaml" />
 
   <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
     <arg name="USE_RTCD" value="true" />
@@ -22,7 +23,7 @@
 
   <rosparam if="$(arg USE_LIMB_TRAJECTORY)"
             command="load"
-            file="$(find hrpsys_gazebo_atlas)/config/atlas_v3_controller_config.yaml" />
+            file="$(arg CONTROLLER_CONFIG_FILE)" />
 
   <!-- hrpsys_ros_bridge -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
