@@ -86,7 +86,7 @@
      (setf (get robot :footstep-parameter)
            '(:default-half-offset #f(0.0 100.0 0.0) :forward-offset-length 180.0 :outside-offset-length 85.0 :rotate-rad 40.0))
      (setq walk-seq 0)
-     ;;(send self :set-recommended-walk-params)
+     (send self :set-recommended-walk-params)
      (setq vel-x-ratio 1.0 vel-y-ratio 1.0 vel-th-ratio 15.0)
 
      ;; additional filtered force sensor
@@ -405,10 +405,9 @@
    (send self :set-auto-balancer-param
          :default-zmp-offsets (list (float-vector 40 0 0) (float-vector 40 0 0)))
    (send self :set-st-param
-         :k-tpcc-p #f(2.5 2.5)
-         :k-tpcc-x #f(5 5)
-         ;;:k-brot-p #f(0.4 0.4)
-	 :k-brot-p #f(5 5)
+         :k-tpcc-p #f(1.5 1.5)
+         :k-tpcc-x #f(4 4)
+	 :k-brot-p #f(0.0 0.0)
          :k-brot-tc #f(0.1 0.1))
    (send self :set-gait-generator-param
          :default-double-support-ratio 0.2
