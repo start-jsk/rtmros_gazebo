@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <iostream>
+#include <string>
 #include <cstdlib>
 #include <cstring>
 #include <vector>
@@ -48,6 +49,7 @@ static ros::Time last_callback_time;
 #define CHECK_ATTITUDE_SENSOR_ID(id) if ((id) < 0 || (id) >= number_of_attitude_sensors()) return E_ID
 
 #if 0
+// atals_v3
 Collada Robot Model (MODEL)
 // This order comes from order of <attachment_full joint joint="***"> tag in hrpsys_gazebo_atlas/models/atlas_v3.dae
  [0] back_bkz
@@ -129,18 +131,65 @@ gazebo robot model (REAL)
 'r_arm_wrx'
 #endif
 
-#define JOINT_ID_REAL2MODEL(id) joint_id_real2model[id]
-#define JOINT_ID_MODEL2REAL(id) joint_id_model2real(id)
-#define NUM_OF_REAL_JOINT sizeof(joint_id_real2model)/sizeof(joint_id_real2model[0])
+#define JOINT_ID_REAL2MODEL(id) get_joint_id_real2model(id)
+#define JOINT_ID_MODEL2REAL(id) get_joint_id_model2real(id)
+#define NUM_OF_REAL_JOINT get_num_of_real_joint()
+/* for atlas_v0 (old model without backpack) */
+static int joint_id_real2model_atlas_v0[] = {0, 1, 2, 9, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26};
 /* for atlas_v3 */
-static int joint_id_real2model[] = {0, 1, 2, 11, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 3, 4, 5, 6, 7, 8, 23, 24, 25, 26, 27, 28};
-/* for atlas (old model without backpack) */
-// static int joint_id_real2model[] = {0, 1, 2, 9, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 3, 4, 5, 6, 7, 8, 21, 22, 23, 24, 25, 26};
+static int joint_id_real2model_atlas_v3[] = {0, 1, 2, 11, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 3, 4, 5, 6, 7, 8, 23, 24, 25, 26, 27, 28};
+/* robot idx */
+enum AtlasName {ATLAS_V0, ATLAS_V3, UNKNOWN};
+static enum AtlasName atlas_name = UNKNOWN;
 
-static int joint_id_model2real(int id)
+static void update_atlas_name()
+{
+  std::string iob_atlas_name_value;
+  rosnode->getParam("iob_atlas_name", iob_atlas_name_value);
+  if (iob_atlas_name_value == "atlas_v0") {
+    ROS_WARN_STREAM("atlas_name is ATLAS_V0");
+    atlas_name = ATLAS_V0;
+  } else if (iob_atlas_name_value == "atlas_v3") {
+    atlas_name = ATLAS_V3;
+    ROS_WARN_STREAM("atlas_name is ATLAS_V3");
+  } else {
+    ROS_WARN_STREAM("atlas_name is INVALID");
+  }
+}
+
+static int get_joint_id_real2model(int id)
+{
+  if (atlas_name == UNKNOWN) {
+    update_atlas_name();
+  }
+
+  if (atlas_name == ATLAS_V0) {
+    return joint_id_real2model_atlas_v0[id];
+  } else if(atlas_name == ATLAS_V3) {
+    return joint_id_real2model_atlas_v3[id];
+  } else {
+    return -1;
+  }
+}
+static int get_num_of_real_joint()
+{
+  if (atlas_name == UNKNOWN) {
+    update_atlas_name();
+  }
+
+  if (atlas_name == ATLAS_V0) {
+    return sizeof(joint_id_real2model_atlas_v0)/sizeof(joint_id_real2model_atlas_v0[0]);
+  } else if(atlas_name == ATLAS_V3) {
+    return sizeof(joint_id_real2model_atlas_v3)/sizeof(joint_id_real2model_atlas_v3[0]);
+  } else {
+    return -1;
+  }
+}
+
+static int get_joint_id_model2real(int id)
 {
   for (int i = 0; i < NUM_OF_REAL_JOINT; i++){
-    if (joint_id_real2model[i] == id){
+    if (get_joint_id_real2model(i) == id){
       return i;
     }
   }
@@ -427,14 +476,13 @@ int write_command_angles(const double *angles)
       if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
         send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
         send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
-        // send_com.kp_velocity[i]  = 50;
-	if(i == 8 || i == 9 || i == 14 || i == 15) {
-	  send_com.kp_velocity[i]  = 0;
-	} else {
-	  send_com.kp_velocity[i]  = 50;
-	}
+        if(atlas_name == ATLAS_V3 && (i == 8 || i == 9 || i == 14 || i == 15)) {
+          send_com.kp_velocity[i]  = 0;
+        } else {
+          send_com.kp_velocity[i]  = 50;
+        }
       } else {
-	servo_on = false;
+        servo_on = false;
         send_com.position[i] = 0;
         send_com.velocity[i] = 0;
         send_com.effort[i] = 0;
