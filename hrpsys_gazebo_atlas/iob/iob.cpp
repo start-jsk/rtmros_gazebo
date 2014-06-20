@@ -49,6 +49,80 @@ static ros::Time last_callback_time;
 #define CHECK_ATTITUDE_SENSOR_ID(id) if ((id) < 0 || (id) >= number_of_attitude_sensors()) return E_ID
 
 #if 0
+// atlas_v0
+Collada Robot Model (MODEL)
+// This order comes from order of <attachment_full joint joint="***"> tag in hrpsys_gazebo_atlas/models/atlas.dae
+ [0] back_lbz
+ [1] back_mby
+ [2] back_ubx
+ [3] l_arm_usy
+ [4] l_arm_shx
+ [5] l_arm_ely
+ [6] l_arm_elx
+ [7] l_arm_uwy
+ [8] l_arm_mwx
+ [9] neck_ay
+[10] center_bottom_led_frame_joint
+[11] center_top_led_frame_joint
+[12] head_imu_joint
+[13] hokuyo_joint
+[14] head_hokuyo_joint
+[15] left_camera_frame_joint
+[16] left_camera_optical_frame_joint
+[17] left_led_frame_joint
+[18] right_camera_frame_joint
+[19] right_camera_optical_frame_joint
+[20] right_led_frame_joint
+[21] r_arm_usy
+[22] r_arm_shx
+[23] r_arm_ely
+[24] r_arm_elx
+[25] r_arm_uwy
+[26] r_arm_mwx
+[27] imu_joint
+[28] l_leg_uhz
+[29] l_leg_mhx
+[30] l_leg_lhy
+[31] l_leg_kny
+[32] l_leg_uay
+[33] l_leg_lax
+[34] r_leg_uhz
+[35] r_leg_mhx
+[36] r_leg_lhy
+[37] r_leg_kny
+[38] r_leg_uay
+[39] r_leg_lax
+gazebo robot model (REAL)
+//This order comes from ros topic atlas/joint_states/name
+'back_lbz'
+'back_mby'
+'back_ubx'
+'neck_ay'
+'l_leg_uhz'
+'l_leg_mhx'
+'l_leg_lhy'
+'l_leg_kny'
+'l_leg_uay'
+'l_leg_lax'
+'r_leg_uhz'
+'r_leg_mhx'
+'r_leg_lhy'
+'r_leg_kny'
+'r_leg_uay'
+'r_leg_lax'
+'l_arm_usy'
+'l_arm_shx'
+'l_arm_ely'
+'l_arm_elx'
+'l_arm_uwy'
+'l_arm_mwx'
+'r_arm_usy'
+'r_arm_shx'
+'r_arm_ely'
+'r_arm_elx'
+'r_arm_uwy'
+'r_arm_mwx'
+
 // atals_v3
 Collada Robot Model (MODEL)
 // This order comes from order of <attachment_full joint joint="***"> tag in hrpsys_gazebo_atlas/models/atlas_v3.dae
@@ -153,7 +227,7 @@ static void update_atlas_name()
     atlas_name = ATLAS_V3;
     ROS_WARN_STREAM("atlas_name is ATLAS_V3");
   } else {
-    ROS_WARN_STREAM("atlas_name is INVALID");
+    ROS_ERROR_STREAM("atlas_name is INVALID");
   }
 }
 
@@ -476,10 +550,14 @@ int write_command_angles(const double *angles)
       if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
         send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
         send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
-        if(atlas_name == ATLAS_V3 && (i == 8 || i == 9 || i == 14 || i == 15)) {
-          send_com.kp_velocity[i]  = 0;
-        } else {
-          send_com.kp_velocity[i]  = 50;
+        if(atlas_name == ATLAS_V3) {
+          if(i == 8 || i == 9 || i == 14 || i == 15) {
+            send_com.kp_velocity[i]  = 0;
+          } else {
+            send_com.kp_velocity[i]  = 50;
+          }
+        } else if(atlas_name == ATLAS_V0) {
+          send_com.kp_velocity[i]  = 100;
         }
       } else {
         servo_on = false;
@@ -738,79 +816,74 @@ int open_iob(void)
     // http://gazebosim.org/wiki/Tutorials/drcsim/2.2/sending_joint_controller_commands_over_ros
     // Hardcoded List of Joint Names
     // List of joint names in the Atlas robot. Note the order must not change for this function to work correctly.
-    /* for atlas_v3 */
+    if (atlas_name == UNKNOWN) {
+      update_atlas_name();
+    }
+
     std::vector<std::string> names;
-    names.push_back("atlas::back_bkz"); // 0
-    names.push_back("atlas::back_bky"); // 1
-    names.push_back("atlas::back_bkx"); // 2
-    names.push_back("atlas::neck_ry"); // 9
-    names.push_back("atlas::l_leg_hpz"); // 28
-    names.push_back("atlas::l_leg_hpx"); // 29
-    names.push_back("atlas::l_leg_hpy"); // 30
+    if (atlas_name == ATLAS_V0) {
+    /* for atlas_v0 (old model without backpack) */
+    names.push_back("atlas::back_lbz"); // 0
+    names.push_back("atlas::back_mby"); // 1
+    names.push_back("atlas::back_ubx"); // 2
+    names.push_back("atlas::neck_ay"); // 9
+    names.push_back("atlas::l_leg_uhz"); // 28
+    names.push_back("atlas::l_leg_mhx"); // 29
+    names.push_back("atlas::l_leg_lhy"); // 30
     names.push_back("atlas::l_leg_kny"); // 31
-    names.push_back("atlas::l_leg_aky"); // 32
-    names.push_back("atlas::l_leg_akx"); // 33
-    names.push_back("atlas::r_leg_hpz"); // 34
-    names.push_back("atlas::r_leg_hpx"); // 35
-    names.push_back("atlas::r_leg_hpy"); // 36
+    names.push_back("atlas::l_leg_uay"); // 32
+    names.push_back("atlas::l_leg_lax"); // 33
+    names.push_back("atlas::r_leg_uhz"); // 34
+    names.push_back("atlas::r_leg_mhx"); // 35
+    names.push_back("atlas::r_leg_lhy"); // 36
     names.push_back("atlas::r_leg_kny"); // 37
-    names.push_back("atlas::r_leg_aky"); // 38
-    names.push_back("atlas::r_leg_akx"); // 39
-    names.push_back("atlas::l_arm_shy"); // 3
+    names.push_back("atlas::r_leg_uay"); // 38
+    names.push_back("atlas::r_leg_lax"); // 39
+    names.push_back("atlas::l_arm_usy"); // 3
     names.push_back("atlas::l_arm_shx"); // 4
     names.push_back("atlas::l_arm_ely"); // 5
     names.push_back("atlas::l_arm_elx"); // 6
-    names.push_back("atlas::l_arm_wry"); // 7
-    names.push_back("atlas::l_arm_wrx"); // 8
-    names.push_back("atlas::r_arm_shy"); // 21
+    names.push_back("atlas::l_arm_uwy"); // 7
+    names.push_back("atlas::l_arm_mwx"); // 8
+    names.push_back("atlas::r_arm_usy"); // 21
     names.push_back("atlas::r_arm_shx"); // 22
     names.push_back("atlas::r_arm_ely"); // 23
     names.push_back("atlas::r_arm_elx"); // 24
-    names.push_back("atlas::r_arm_wry"); // 25
-    names.push_back("atlas::r_arm_wrx"); // 26
-
-    /* for atlas (old model without backpack) */
-    // names.push_back("atlas::back_lbz"); // 0
-    // names.push_back("atlas::back_mby"); // 1
-    // names.push_back("atlas::back_ubx"); // 2
-    // names.push_back("atlas::neck_ay"); // 9
-    // names.push_back("atlas::l_leg_uhz"); // 28
-    // names.push_back("atlas::l_leg_mhx"); // 29
-    // names.push_back("atlas::l_leg_lhy"); // 30
-    // names.push_back("atlas::l_leg_kny"); // 31
-    // names.push_back("atlas::l_leg_uay"); // 32
-    // names.push_back("atlas::l_leg_lax"); // 33
-    // names.push_back("atlas::r_leg_uhz"); // 34
-    // names.push_back("atlas::r_leg_mhx"); // 35
-    // names.push_back("atlas::r_leg_lhy"); // 36
-    // names.push_back("atlas::r_leg_kny"); // 37
-    // names.push_back("atlas::r_leg_uay"); // 38
-    // names.push_back("atlas::r_leg_lax"); // 39
-    // names.push_back("atlas::l_arm_usy"); // 3
-    // names.push_back("atlas::l_arm_shx"); // 4
-    // names.push_back("atlas::l_arm_ely"); // 5
-    // names.push_back("atlas::l_arm_elx"); // 6
-    // names.push_back("atlas::l_arm_uwy"); // 7
-    // names.push_back("atlas::l_arm_mwx"); // 8
-    // names.push_back("atlas::r_arm_usy"); // 21
-    // names.push_back("atlas::r_arm_shx"); // 22
-    // names.push_back("atlas::r_arm_ely"); // 23
-    // names.push_back("atlas::r_arm_elx"); // 24
-    // names.push_back("atlas::r_arm_uwy"); // 25
-    // names.push_back("atlas::r_arm_mwx"); // 26
-
-    //names.push_back("atlas::center_bottom_led_frame_joint"); // 10
-    //names.push_back("atlas::center_top_led_frame_joint"); // 11
-    //names.push_back("atlas::head_imu_joint"); // 12
-    //names.push_back("atlas::hokuyo_joint"); // 13
-    //names.push_back("atlas::head_hokuyo_joint"); // 14
-    //names.push_back("atlas::left_camera_frame_joint"); // 15
-    //names.push_back("atlas::left_camera_optical_frame_joint"); // 16
-    //names.push_back("atlas::left_led_frame_joint"); // 17
-    //names.push_back("atlas::right_camera_frame_joint"); // 18
-    //names.push_back("atlas::right_camera_optical_frame_joint"); // 19
-    //names.push_back("atlas::right_led_frame_joint"); // 20
-    //names.push_back("atlas::imu_joint"); // 27
+    names.push_back("atlas::r_arm_uwy"); // 25
+    names.push_back("atlas::r_arm_mwx"); // 26
+    } else if (atlas_name == ATLAS_V3) {
+      /* for atlas_v3 */
+      names.push_back("atlas::back_bkz"); // 0
+      names.push_back("atlas::back_bky"); // 1
+      names.push_back("atlas::back_bkx"); // 2
+      names.push_back("atlas::neck_ry"); // 9
+      names.push_back("atlas::l_leg_hpz"); // 28
+      names.push_back("atlas::l_leg_hpx"); // 29
+      names.push_back("atlas::l_leg_hpy"); // 30
+      names.push_back("atlas::l_leg_kny"); // 31
+      names.push_back("atlas::l_leg_aky"); // 32
+      names.push_back("atlas::l_leg_akx"); // 33
+      names.push_back("atlas::r_leg_hpz"); // 34
+      names.push_back("atlas::r_leg_hpx"); // 35
+      names.push_back("atlas::r_leg_hpy"); // 36
+      names.push_back("atlas::r_leg_kny"); // 37
+      names.push_back("atlas::r_leg_aky"); // 38
+      names.push_back("atlas::r_leg_akx"); // 39
+      names.push_back("atlas::l_arm_shy"); // 3
+      names.push_back("atlas::l_arm_shx"); // 4
+      names.push_back("atlas::l_arm_ely"); // 5
+      names.push_back("atlas::l_arm_elx"); // 6
+      names.push_back("atlas::l_arm_wry"); // 7
+      names.push_back("atlas::l_arm_wrx"); // 8
+      names.push_back("atlas::r_arm_shy"); // 21
+      names.push_back("atlas::r_arm_shx"); // 22
+      names.push_back("atlas::r_arm_ely"); // 23
+      names.push_back("atlas::r_arm_elx"); // 24
+      names.push_back("atlas::r_arm_wry"); // 25
+      names.push_back("atlas::r_arm_wrx"); // 26
+    } else {
+      ROS_ERROR_STREAM("atlas_name is INVALID");
+    }
     unsigned int n = names.size();
 
     jointcommands.position.resize(n);
@@ -849,11 +922,15 @@ int open_iob(void)
         jointcommands.velocity[i]     = 0;
         jointcommands.effort[i]       = 0;
         // jointcommands.kp_velocity[i]  = 50;
-	if(i == 8 || i == 9 || i == 14 || i == 15) {
-	  jointcommands.kp_velocity[i]  = 0;
-	} else {
-	  jointcommands.kp_velocity[i]  = 50;
-	}
+        if(atlas_name == ATLAS_V3) {
+          if(i == 8 || i == 9 || i == 14 || i == 15) {
+            jointcommands.kp_velocity[i]  = 0;
+          } else {
+            jointcommands.kp_velocity[i]  = 50;
+          }
+        } else if(atlas_name == ATLAS_V0) {
+          jointcommands.kp_velocity[i]  = 100;
+        }
     }
     jointcommands.desired_controller_period_ms = static_cast<unsigned int>(g_period_ns * 1e-6);
     //
