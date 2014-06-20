@@ -52,7 +52,3 @@ add_dependencies(AddForcePlugin hrpsys_gazebo_msgs_gencpp)
 add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
 #endif()
 
-install(DIRECTORY
-  ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
