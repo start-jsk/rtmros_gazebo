@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<robot name="basket-robot"
+       xmlns:xi="http://www.w3.org/2001/XInclude"
+       xmlns:gazebo="http://playerstage.sourceforge.net/gazebo/xmlschema/#gz"
+       xmlns:model="http://playerstage.sourceforge.net/gazebo/xmlschema/#model"
+       xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:body="http://playerstage.sourceforge.net/gazebo/xmlschema/#body"
+       xmlns:geom="http://playerstage.sourceforge.net/gazebo/xmlschema/#geom"
+       xmlns:joint="http://playerstage.sourceforge.net/gazebo/xmlschema/#joint"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       xmlns:rendering="http://playerstage.sourceforge.net/gazebo/xmlschema/#rendering"
+       xmlns:renderable="http://playerstage.sourceforge.net/gazebo/xmlschema/#renderable"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:physics="http://playerstage.sourceforge.net/gazebo/xmlschema/#physics">
+  <gazebo>
+    <static>false</static>
+  </gazebo>
+  <link name="BOX_link">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://basket/meshes/BOX_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://basket/meshes/BOX_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="2" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-02" ixy="0" ixz="0" iyy="1e-02" iyz="0" izz="1e-02"/>
+    </inertial>
+  </link>
+  <gazebo reference="BOX_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="RIGHT_link">
+    <visual>
+      <origin xyz="0 0.055 0.255" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://basket/meshes/RIGHT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0.055 0.255" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://basket/meshes/RIGHT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="RIGHT_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <link name="LEFT_link">
+    <visual>
+      <origin xyz="0 -0.055 0.255" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://basket/meshes/LEFT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.055 0.255" rpy="0 -0 0"/>
+      <geometry>
+        <mesh filename="model://basket/meshes/LEFT_link_mesh.dae" scale="1 1 1" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.1" />
+      <origin xyz="0 0 0" rpy="0 -0 0"/>
+      <inertia ixx="1e-03" ixy="0" ixz="0" iyy="1e-03" iyz="0" izz="1e-03"/>
+    </inertial>
+  </link>
+  <gazebo reference="LEFT_link">
+    <mu1>0.9</mu1>
+    <mu2>0.9</mu2>
+  </gazebo>
+  <joint name="HANDLE-HINGE1" type="revolute">
+    <parent link="BOX_link"/>
+    <child  link="RIGHT_link"/>
+    <origin xyz="0 0.055 0.255" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="0" upper="3.14159" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="HANDLE-HINGE1_trans" >
+    <actuator name="HANDLE-HINGE1_motor" />
+    <joint name="HANDLE-HINGE1" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="HANDLE-HINGE1">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+  <joint name="HANDLE-HINGE2" type="revolute">
+    <parent link="BOX_link"/>
+    <child  link="LEFT_link"/>
+    <origin xyz="0 -0.055 0.255" rpy="0 -0 0 "/>
+    <axis   xyz="1 0 0"/>
+    <limit lower="-3.14159" upper="0" effort="100" velocity="0.5" />
+    <dynamics damping="0.2" friction="0" />
+  </joint>
+  <transmission type="pr2_mechanism_model/SimpleTransmission" name="HANDLE-HINGE2_trans" >
+    <actuator name="HANDLE-HINGE2_motor" />
+    <joint name="HANDLE-HINGE2" />
+    <mechanicalReduction>1</mechanicalReduction>
+  </transmission>
+  <gazebo reference="HANDLE-HINGE2">
+    <cfmDamping>0.4</cfmDamping>
+  </gazebo>
+</robot>
