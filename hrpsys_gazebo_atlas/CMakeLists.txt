@@ -59,6 +59,7 @@ compile_collada_model(${atlas_dae}
   --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
   --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
   --conf-file-option "abc_end_effectors: :rarm,r_arm_mwx,back_ubx, :larm,l_arm_mwx,back_ubx, :rleg,r_leg_lax,pelvis, :lleg,l_leg_lax,pelvis,"
+  --conf-file-option "end_effectors: :rarm,r_arm_mwx,back_ubx,0.0,-0.195946,0.04135,0.710565,-0.497543,-0.497543,1.90602, :larm,l_arm_mwx,back_ubx,0.0,0.195946,0.04135,-0.710565,-0.497543,0.497543,1.90602, :rleg,r_leg_lax,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0, :lleg,l_leg_lax,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0,"
   --proj-file-root-option "0,0,1.0,0,0,1,0"
   )
 endif()
