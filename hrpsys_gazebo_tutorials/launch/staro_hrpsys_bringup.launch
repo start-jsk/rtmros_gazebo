@@ -5,5 +5,6 @@
   <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
     <arg name="ROBOT_TYPE" value="STARO" />
     <arg name="USE_INSTANCE_NAME" value="true" />
+    <arg name="HRPSYS_PY_NAME" value="staro_unstable_hrpsys_config.py" />
   </include>
 </launch>
