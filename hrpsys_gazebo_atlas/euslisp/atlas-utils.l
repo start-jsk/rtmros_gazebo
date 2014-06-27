@@ -14,20 +14,11 @@
 	       (cons :torso 2.0) ;; 1.0
 	       (cons :arms 4.0) ;; 1.0
 	       (cons :head 5.0))))
-  (if real
-      (unless (boundp '*atlas-init-called*)
-        (setq *atlas-init-called* t)
-        (atlas-init :set-reset-pose set-reset-pose :set-user-mode nil))
-    (if (not (boundp '*atlas*)) (setq *atlas* (atlas-with-hand))))
-  ;; fix end-coords when generate euslisp 
-  ;; (unless (boundp '*translated-atlas-arm-end-coords*)
-  ;;   (setq *translated-atlas-arm-end-coords* t)
-  ;;   (send (send *atlas* :larm :end-coords) :translate #f(0 125 0) :local)
-  ;;   (send (send *atlas* :rarm :end-coords) :translate #f(0 -125 0) :local)
-  ;;   (send (send (send (send *atlas* :larm :end-coords)
-  ;;                     :rotate (deg2rad -20) :x) :translate #f(0 0 -30) :local) :translate #f(0 -20 0) :local)
-  ;;   (send (send (send (send *atlas* :rarm :end-coords)
-  ;;                     :rotate (deg2rad 20) :x) :translate #f(0 0 -30) :local) :translate #f(0 20 0) :local))
+  (cond (real
+         (atlas-init :set-reset-pose set-reset-pose :set-user-mode nil))
+        ((not (boundp '*atlas*))
+         (setq *atlas* (atlas-with-hand))))
+
   (when real
     (mapcar
      #'(lambda (k)
@@ -35,7 +26,8 @@
 	  (cdr k) (car k)))
      servo-gain)
     (set-hand-kp 10.0)
-    (load-imp-offset-atlas))
+    (load-imp-offset-atlas)
+    (send *ri* :init-hand))
   (setq *robot* *atlas*)
   (when view (objects (list *atlas*)))
   t)

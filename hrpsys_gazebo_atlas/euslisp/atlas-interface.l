@@ -1,46 +1,19 @@
 (require :rtm-ros-robotics-interface "package://hrpsys_ros_bridge/euslisp/rtm-ros-robot-interface.l")
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-model.l")
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-applications.l")
-(load "package://hrpsys_gazebo_atlas/euslisp/sandia-hand-interface.l")
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-utils.l")
 (load "package://hrpsys_gazebo_atlas/euslisp/atlas-impedance-calib.l")
+
 
 (ros::load-ros-manifest "hrpsys_gazebo_atlas")
 
 ;; load compiled messages
-(setq ros::*compile-message* t)
+;;(setq ros::*compile-message* t)
 (ros::roseus-add-msgs "visualization_msgs")
 (ros::roseus-add-msgs "sensor_msgs")
 (ros::load-ros-manifest "sandia_hand_msgs")
 (ros::load-ros-manifest "atlas_msgs")
-;;(ros::roseus-add-msgs "geometry_msgs")
-(setq ros::*compile-message* nil)
-
-;; mask vectors / reference atlas_msgs::AtlasState
-(unless (constantp '*torso-mask-vector*)
-  (defconstant *torso-mask-vector*
-    (float-vector 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)))
-(unless (constantp '*head-mask-vector*)
-  (defconstant *head-mask-vector*
-    (float-vector 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)))
-(unless (constantp '*lleg-mask-vector*)
-  (defconstant *lleg-mask-vector*
-    (float-vector 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0)))
-(unless (constantp '*rleg-mask-vector*)
-  (defconstant *rleg-mask-vector*
-    (float-vector 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0)))
-(unless (constantp '*larm-mask-vector*)
-  (defconstant *larm-mask-vector*
-    (float-vector 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 0 0 0 0 0 0)))
-(unless (constantp '*rarm-mask-vector*)
-  (defconstant *rarm-mask-vector*
-    (float-vector 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1)))
-(unless (constantp '*manip-mask-vector*)
-  (defconstant *manip-mask-vector*
-    (float-vector 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1)))
-(unless (constantp '*stand-mask-vector*)
-  (defconstant *stand-mask-vector*
-    (float-vector 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0 0 0 0 0 0 0 0 0)))
+;;(setq ros::*compile-message* nil)
 
 (ros::roseus "atlas_interface")
 
@@ -1083,3 +1056,5 @@
     (ros::ros-warn "atlas-v3 is used as default")
     (atlas-v3-specific-setting)
     ))
+
+(load "package://hrpsys_gazebo_atlas/euslisp/sandia-hand-command-publisher.l")

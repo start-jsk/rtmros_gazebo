@@ -34,6 +34,14 @@
     )
   *atlas*)
 
+(defmethod atlas-robot
+  (:lhand
+   ()
+   (send self :get :lhand-model))
+  (:rhand
+   ()
+   (send self :get :rhand-model)))
+
 ;; hand pose
 (dolist (ahand '(sandia_hand_left-robot sandia_hand_right-robot))
   (let ((hand-pose-def-macros
