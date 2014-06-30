@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
 find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description message_generation)
+catkin_python_setup()
 
 add_message_files(
   DIRECTORY msg

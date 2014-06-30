@@ -53,6 +53,7 @@
   <run_depend>message_runtime</run_depend>
 
   <export>
-
+    <rqt_gui plugin="${prefix}/plugin.xml"/>
   </export>
+
 </package>
