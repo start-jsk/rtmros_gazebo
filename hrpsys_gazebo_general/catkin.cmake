@@ -25,7 +25,7 @@ include_directories(${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhr
 link_directories(${CATKIN_DEVEL_PREFIX}/lib ${hrpsys_PREFIX}/lib ${openhrp3_LIBRARY_DIRS} /opt/ros/$ENV{ROS_DISTRO}/lib/)
 add_subdirectory(iob)
 
-add_custom_target(hrpsys_gazebo_general_iob ALL DEPENDS RobotHardware_gazebo)
+add_custom_target(hrpsys_gazebo_general_iob ALL DEPENDS RobotHardware_gazebo hrpsys_gazebo_msgs_gencpp)
 
 ## Gazebo plugins
 include (FindPkgConfig)
