@@ -400,6 +400,15 @@
 	       :vel-y-ratio vel-y-ratio
 	       :vel-th-ratio vel-th-ratio)
    )
+  (:start-impedance
+   (limb &rest args &key (m-p 200) (d-p 2000) (k-p 2000) &allow-other-keys)
+   (send-super* :start-impedance
+		limb
+		:m-p m-p
+		:d-p d-p
+		:k-p k-p
+		args)
+   )
   )
 ;;
 (defmethod atlas-robot
