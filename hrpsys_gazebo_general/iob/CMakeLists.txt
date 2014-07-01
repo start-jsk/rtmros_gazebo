@@ -2,6 +2,7 @@ add_definitions(-DHRPSYS_PACKAGE_VERSION=\"\\"${CPACK_PACKAGE_VERSION_MAJOR}.${C
 
 # hrpIo
 add_library(hrpIo_gazebo SHARED iob.cpp)
+add_dependencies(hrpIo_gazebo hrpsys_gazebo_msgs_gencpp)
 
 if (NOT APPLE AND NOT QNXNTO)
    target_link_libraries(hrpIo_gazebo rt)
