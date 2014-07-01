@@ -45,7 +45,7 @@ macro (generate_gazebo_urdf_file _robot_name)
   # this dependency means that run install_robot_common.sh after executing all of ${compile_robots}.
     add_custom_command(OUTPUT ${_out_urdf_file}
       COMMAND ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_robot_name} ${hrpsys_ros_bridge_tutorials_SOURCE_DIR}/models  ${hrpsys_gazebo_tutorials_SOURCE_DIR}/robot_models/${_robot_name} ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/collada_to_urdf ${PROJECT_SOURCE_DIR}/..
-      DEPENDS ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_out_dir}/hrpsys ${_out_dir}/meshes ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/collada_to_urdf ${compile_robots})
+      DEPENDS ${PROJECT_SOURCE_DIR}/robot_models/install_robot_common.sh ${_out_dir}/hrpsys ${_out_dir}/meshes ${compile_robots})
   add_custom_target(${_robot_name}_compile DEPENDS ${_out_urdf_file})
   set(ROBOT ${_robot_name})
   string(TOLOWER ${_robot_name} _sname)
