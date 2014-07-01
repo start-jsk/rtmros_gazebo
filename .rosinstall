@@ -14,6 +14,9 @@
     uri: https://github.com/jsk-ros-pkg/jsk_common
     local-name: jsk-ros-pkg/jsk_common
 - git:
+    uri: https://github.com/jsk-ros-pkg/jsk_recognition
+    local-name: jsk-ros-pkg/jsk_recognition
+- git:
     uri: https://github.com/jsk-ros-pkg/jsk_model_tools
     local-name: jsk-ros-pkg/jsk_model_tools
 - git:
