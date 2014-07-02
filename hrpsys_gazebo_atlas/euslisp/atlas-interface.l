@@ -22,55 +22,55 @@
   :slots (l_hand_grasp_pub r_hand_grasp_pub bdi-action walk-seq vel-x-ratio vel-y-ratio vel-th-ratio))
 (defmethod atlas-interface
   (:init (&optional (qualify nil))
-   (prog1 (send-super :init :robot atlas-robot)
-     ;; add controllers
-     (dolist (l (list
-                 (cons :larm-controller "larm_controller/follow_joint_trajectory_action")
-                 (cons :rarm-controller "rarm_controller/follow_joint_trajectory_action")))
-       (let ((type (car l))
-             (name (cdr l))
-             action)
-         (setq action (find-if #'(lambda (ac) (string= name (send ac :name)))
-                               controller-actions))
-         (setf (gethash type controller-table) (list action))
-         ))
+         (prog1 (send-super :init :robot atlas-robot)
+           ;; add controllers
+           (dolist (l (list
+                       (cons :larm-controller "larm_controller/follow_joint_trajectory_action")
+                       (cons :rarm-controller "rarm_controller/follow_joint_trajectory_action")))
+             (let ((type (car l))
+                   (name (cdr l))
+                   action)
+               (setq action (find-if #'(lambda (ac) (string= name (send ac :name)))
+                                     controller-actions))
+               (setf (gethash type controller-table) (list action))
+               ))
 
-     (setq l_hand_grasp_pub (ros::advertise "/sandia_hands/l_hand/simple_grasp"
-                                            sandia_hand_msgs::SimpleGrasp 1)
-           r_hand_grasp_pub (ros::advertise "/sandia_hands/r_hand/simple_grasp"
-                                            sandia_hand_msgs::SimpleGrasp 1))
-     (ros::advertise "atlas/control_mode" std_msgs::String 1)
-     (ros::advertise "atlas/atlas_sim_interface_command"
-                     atlas_msgs::AtlasSimInterfaceCommand 1)
-     (ros::subscribe "atlas/atlas_sim_interface_state"
-                     atlas_msgs::AtlasSimInterfaceState #'send self :sim-interface-state-cb)
-     ;; (ros::subscribe "pointcloud_screenpoint_nodelet/output_point"
-     ;;   geometry_msgs::PointStamped #'send self :point-stamped-cb)
-     ;; do not use in Qualification
-     (unless qualify
-       (ros::advertise "atlas/mode" std_msgs::String 1)
-       (ros::advertise "atlas/set_pose" geometry_msgs::Pose 1))
-     ;; action lib / needs node of atlas_msgs/actionlib_server
-     (setq bdi-action
-           (instance ros::simple-action-client :init
-                     "atlas/bdi_control" atlas_msgs::WalkDemoAction))
-     (send bdi-action :wait-for-server 3)
-     (setf (get robot :footstep-parameter)
-           '(:default-half-offset #f(0.0 100.0 0.0) :forward-offset-length 180.0 :outside-offset-length 85.0 :rotate-rad 40.0))
-     (setq walk-seq 0)
-     (send self :set-recommended-walk-params)
-     (setq vel-x-ratio 1.0 vel-y-ratio 1.0 vel-th-ratio 15.0)
+           (setq l_hand_grasp_pub (ros::advertise "/sandia_hands/l_hand/simple_grasp"
+                                                  sandia_hand_msgs::SimpleGrasp 1)
+                 r_hand_grasp_pub (ros::advertise "/sandia_hands/r_hand/simple_grasp"
+                                                  sandia_hand_msgs::SimpleGrasp 1))
+           (ros::advertise "atlas/control_mode" std_msgs::String 1)
+           (ros::advertise "atlas/atlas_sim_interface_command"
+                           atlas_msgs::AtlasSimInterfaceCommand 1)
+           (ros::subscribe "atlas/atlas_sim_interface_state"
+                           atlas_msgs::AtlasSimInterfaceState #'send self :sim-interface-state-cb)
+           ;; (ros::subscribe "pointcloud_screenpoint_nodelet/output_point"
+           ;;   geometry_msgs::PointStamped #'send self :point-stamped-cb)
+           ;; do not use in Qualification
+           (unless qualify
+             (ros::advertise "atlas/mode" std_msgs::String 1)
+             (ros::advertise "atlas/set_pose" geometry_msgs::Pose 1))
+           ;; action lib / needs node of atlas_msgs/actionlib_server
+           (setq bdi-action
+                 (instance ros::simple-action-client :init
+                           "atlas/bdi_control" atlas_msgs::WalkDemoAction))
+           (send bdi-action :wait-for-server 3)
+           (setf (get robot :footstep-parameter)
+                 '(:default-half-offset #f(0.0 100.0 0.0) :forward-offset-length 180.0 :outside-offset-length 85.0 :rotate-rad 40.0))
+           (setq walk-seq 0)
+           (send self :set-recommended-walk-params)
+           (setq vel-x-ratio 1.0 vel-y-ratio 1.0 vel-th-ratio 15.0)
 
-     ;; additional filtered force sensor
-     (ros::subscribe "rhand_filtered_wrench_handframe"
-                     geometry_msgs::WrenchStamped
-                     #'send self :rtmros-force-sensor-callback
-                     :filtered-rhsensor :groupname groupname)
-     (ros::subscribe "lhand_filtered_wrench_handframe"
-                     geometry_msgs::WrenchStamped
-                     #'send self :rtmros-force-sensor-callback
-                     :filtered-lhsensor :groupname groupname)
-     ))
+           ;; additional filtered force sensor
+           (ros::subscribe "rhand_filtered_wrench_handframe"
+                           geometry_msgs::WrenchStamped
+                           #'send self :rtmros-force-sensor-callback
+                           :filtered-rhsensor :groupname groupname)
+           (ros::subscribe "lhand_filtered_wrench_handframe"
+                           geometry_msgs::WrenchStamped
+                           #'send self :rtmros-force-sensor-callback
+                           :filtered-lhsensor :groupname groupname)
+           ))
   (:filtered-force-vector
    (&optional (limb))
    (send self :tmp-force-moment-vector :force limb "filtered"))
@@ -116,32 +116,32 @@
    (if (member (string-left-trim "/" (send (send msg :header) :frame_id))
                (send-all (send *atlas* :links) :name)
                :test #'equal)
-   (let* ((frame-id (send (send msg :header) :frame_id))
-	  (point (send msg :point))
-	  (frame (read-from-string (format nil ":~a" (string-left-trim "/" frame-id))))
-	  (pos (scale 1000 (float-vector (send point :x) (send point :y) (send point :z)))))
-     (print frame)
-     (send *atlas* :angle-vector (send self :state :potentio-vector))
-     (send self :put :point
-	   (send (send *atlas* :worldcoords) :inverse-transform-vector (send (send (send *atlas* frame) :copy-worldcoords) :transform-vector pos)))
-     )))
+       (let* ((frame-id (send (send msg :header) :frame_id))
+              (point (send msg :point))
+              (frame (read-from-string (format nil ":~a" (string-left-trim "/" frame-id))))
+              (pos (scale 1000 (float-vector (send point :x) (send point :y) (send point :z)))))
+         (print frame)
+         (send *atlas* :angle-vector (send self :state :potentio-vector))
+         (send self :put :point
+               (send (send *atlas* :worldcoords) :inverse-transform-vector (send (send (send *atlas* frame) :copy-worldcoords) :transform-vector pos)))
+         )))
   (:wait-for-start-bdi-walk (&optional (timeout 5.0))
-   (send self :wait-for-start-behavior 4 timeout))
+                            (send self :wait-for-start-behavior 4 timeout))
   (:wait-for-bdi-walk (&optional (timeout 5.0))
-   (send self :wait-for-finish-behavior 4 timeout))
+                      (send self :wait-for-finish-behavior 4 timeout))
   (:wait-for-start-behavior (&optional (behav 5) (timeout 5.0))
-   (ros::spin-once)
-   (while (and (not (equal (send self :get :current-behavior) behav))
-               (> timeout 0.0))
-     (ros::spin-once)
-     (unix::usleep (* 100 1000))
-     (decf timeout 0.1)
-     ))
+                            (ros::spin-once)
+                            (while (and (not (equal (send self :get :current-behavior) behav))
+                                        (> timeout 0.0))
+                              (ros::spin-once)
+                              (unix::usleep (* 100 1000))
+                              (decf timeout 0.1)
+                              ))
   (:wait-for-finish-behavior (&optional (behav 5))
-   (ros::spin-once)
-   (while (equal (send self :get :current-behavior) behav)
-     (ros::spin-once)
-     ))
+                             (ros::spin-once)
+                             (while (equal (send self :get :current-behavior) behav)
+                               (ros::spin-once)
+                               ))
   (:grasp
    (value &optional (arm :arms))
    (let ((msg (instance sandia_hand_msgs::SimpleGrasp :init :name "cylindrical" :closed_amount value)))
@@ -162,7 +162,7 @@
    ()
    (ros::spin-once)
    (let* ((cb (send self :get :current-behavior))
-	  ret)
+          ret)
      (cond
       ((equal cb atlas_msgs::AtlasSimInterfaceCommand::*STAND*) (setq ret :stand))
       ((equal cb atlas_msgs::AtlasSimInterfaceCommand::*FREEZE*) (setq ret :freeze))
@@ -178,19 +178,19 @@
    (ros::spin-once)
    (if limb
        (apply #'subseq (concatenate cons (send self :get :k-effort))
-	      (case limb (:torso '(0 3)) (:head '(3 4)) (:lleg '(4 10)) (:rleg '(10 16)) (:larm '(16 22)) (:rarm '(22 28))))
+              (case limb (:torso '(0 3)) (:head '(3 4)) (:lleg '(4 10)) (:rleg '(10 16)) (:larm '(16 22)) (:rarm '(22 28))))
      (concatenate cons (send self :get :k-effort))))
   (:set-k-effort
    (&optional (e 0) (limb :all))
    (cond ((equal limb :all) (send self :set-simulation-mode :mode (send self :get-control-mode) :effort e))
-	 ((equal limb :arms) (send self :set-k-effort e :larm) (send self :set-k-effort e :rarm))
-	 ((equal limb :legs) (send self :set-k-effort e :lleg) (send self :set-k-effort e :rleg))
-	 (t
-	  (let* ((idx (case limb (:torso '(0 3)) (:head '(3 4)) (:lleg '(4 10)) (:rleg '(10 16)) (:larm '(16 22)) (:rarm '(22 28))))
-		 (tmp-effort (send self :get-k-effort)))
-	    (dotimes (i (- (elt idx 1) (elt idx 0)))
-	      (setf (elt tmp-effort (+ (elt idx 0) i)) e))
-	    (send self :set-simulation-mode :mode (send self :get-control-mode) :effort tmp-effort)))))
+         ((equal limb :arms) (send self :set-k-effort e :larm) (send self :set-k-effort e :rarm))
+         ((equal limb :legs) (send self :set-k-effort e :lleg) (send self :set-k-effort e :rleg))
+         (t
+          (let* ((idx (case limb (:torso '(0 3)) (:head '(3 4)) (:lleg '(4 10)) (:rleg '(10 16)) (:larm '(16 22)) (:rarm '(22 28))))
+                 (tmp-effort (send self :get-k-effort)))
+            (dotimes (i (- (elt idx 1) (elt idx 0)))
+              (setf (elt tmp-effort (+ (elt idx 0) i)) e))
+            (send self :set-simulation-mode :mode (send self :get-control-mode) :effort tmp-effort)))))
   (:set-simulation-mode
    (&rest args &key (effort 255) (sleep 0.5) (mode :user) (effort-mask)
           &allow-other-keys)
@@ -296,81 +296,81 @@
        (send bdi-action :send-goal walk-goal)
        )))
   (:bdi_step_static (cds &key (l/r :lleg) ((:index idx) 0))
-   (let ((walk-goal (send bdi-action :make-goal-instance))
-         (goal (instance atlas_msgs::WalkDemoGoal :init))
-         (k-effort (instantiate string 28)))
-    (send goal :behavior atlas_msgs::WalkDemoGoal::*STEP*)
-    ;;(send goal :step_params :use_demo_walk t)
-    (send goal :step_params :desired_step :step_index idx)
-    (send goal :step_params :desired_step :foot_index
-          (case l/r (:lleg 0) (t 1)))  ;; :lleg -> 0 / :rleg -> 1
-    (send goal :step_params :desired_step :duration 0.63) ;; not used??
-    (send goal :step_params :desired_step :swing_height 0.3) ;; not used??
-    (send goal :step_params :desired_step :pose (ros::coords->tf-pose cds))
+                    (let ((walk-goal (send bdi-action :make-goal-instance))
+                          (goal (instance atlas_msgs::WalkDemoGoal :init))
+                          (k-effort (instantiate string 28)))
+                      (send goal :behavior atlas_msgs::WalkDemoGoal::*STEP*)
+                      ;;(send goal :step_params :use_demo_walk t)
+                      (send goal :step_params :desired_step :step_index idx)
+                      (send goal :step_params :desired_step :foot_index
+                            (case l/r (:lleg 0) (t 1)))  ;; :lleg -> 0 / :rleg -> 1
+                      (send goal :step_params :desired_step :duration 0.63) ;; not used??
+                      (send goal :step_params :desired_step :swing_height 0.3) ;; not used??
+                      (send goal :step_params :desired_step :pose (ros::coords->tf-pose cds))
 
-    ;; (fill k-effort 0)
-    (ros::spin-once)
-    (setq k-effort (send self :get :k-effort))
-    (send goal :k_effort k-effort)
-    (send walk-goal :header :seq 1)
-    (send walk-goal :header :stamp (ros::time-now))
-    (send goal :header :stamp (send walk-goal :header :stamp))
-    (send walk-goal :goal_id :stamp (send walk-goal :header :stamp))
-    (send walk-goal :goal goal)
-    (send bdi-action :send-goal walk-goal)
-    ))
+                      ;; (fill k-effort 0)
+                      (ros::spin-once)
+                      (setq k-effort (send self :get :k-effort))
+                      (send goal :k_effort k-effort)
+                      (send walk-goal :header :seq 1)
+                      (send walk-goal :header :stamp (ros::time-now))
+                      (send goal :header :stamp (send walk-goal :header :stamp))
+                      (send walk-goal :goal_id :stamp (send walk-goal :header :stamp))
+                      (send walk-goal :goal goal)
+                      (send bdi-action :send-goal walk-goal)
+                      ))
   (:bdi-go-pos (x y &optional (theta 0) &key (r robot) (step-duration 0.63) (swing-height 0.3))
                ;; x [m],  y[m], theta [deg]
-   (send self :bdi_footstep
-         (send robot :go-pos-params->footstep-list (* x 1000) (* y 1000) theta)
-         :step-duration step-duration :swing-height swing-height))
+               (send self :bdi_footstep
+                     (send robot :go-pos-params->footstep-list (* x 1000) (* y 1000) theta)
+                     :step-duration step-duration :swing-height swing-height))
   (:teleport-to (&optional coords pose keep-effort set-user-pinned)
-   (unix::usleep (* 100 1000))
-   (send self :atlas-mode "harnessed")
-   (send self :set-simulation-mode :mode :freeze :effort (if keep-effort nil 0))
-   (cond
-    ((and pose (float-vector-p pose))
-     (send robot :angle-vector pose)
-     (send self :angle-vector (send robot :angle-vector) 2000)
-     (send *ri* :set-simulation-mode :mode :stand-prep :effort (if keep-effort nil 0)))
-    ((and pose (keywordp pose))
-     (send robot pose)
-     (send self :angle-vector (send robot :angle-vector) 2000)
-     (send *ri* :set-simulation-mode :mode :stand-prep :effort (if keep-effort nil 0)))
-    (t
-     (send *ri* :set-simulation-mode :mode :stand-prep :effort (if keep-effort nil 0))
-     ))
-   (unix::usleep (* 3 1000 1000))
-   (send self :atlas-mode "nominal")
-   (unix::usleep (* 10 1000))
-   (when coords
-     (ros::publish "atlas/set_pose" (ros::coords->tf-pose coords)))
-   (cond (set-user-pinned
-	  (unix::usleep (* 200 1000))
-	  (send self :atlas-mode "pinned")
-	  (send self :set-simulation-mode :mode :user :effort (if keep-effort nil 255)))
-	 (t
-	  (unix::usleep (* 200 1000))
-	  (send self :set-simulation-mode :mode :stand :effort (if keep-effort nil 0)))))
+                (unix::usleep (* 100 1000))
+                (send self :atlas-mode "harnessed")
+                (send self :set-simulation-mode :mode :freeze :effort (if keep-effort nil 0))
+                (cond
+                 ((and pose (float-vector-p pose))
+                  (send robot :angle-vector pose)
+                  (send self :angle-vector (send robot :angle-vector) 2000)
+                  (send *ri* :set-simulation-mode :mode :stand-prep :effort (if keep-effort nil 0)))
+                 ((and pose (keywordp pose))
+                  (send robot pose)
+                  (send self :angle-vector (send robot :angle-vector) 2000)
+                  (send *ri* :set-simulation-mode :mode :stand-prep :effort (if keep-effort nil 0)))
+                 (t
+                  (send *ri* :set-simulation-mode :mode :stand-prep :effort (if keep-effort nil 0))
+                  ))
+                (unix::usleep (* 3 1000 1000))
+                (send self :atlas-mode "nominal")
+                (unix::usleep (* 10 1000))
+                (when coords
+                  (ros::publish "atlas/set_pose" (ros::coords->tf-pose coords)))
+                (cond (set-user-pinned
+                       (unix::usleep (* 200 1000))
+                       (send self :atlas-mode "pinned")
+                       (send self :set-simulation-mode :mode :user :effort (if keep-effort nil 255)))
+                      (t
+                       (unix::usleep (* 200 1000))
+                       (send self :set-simulation-mode :mode :stand :effort (if keep-effort nil 0)))))
   ;;(:hand-move-joint
   ;;(arm av &optional (tm 1000))
   ;;)
   (:hand (arm &rest args)
-   (let (hr ret)
-     (case arm
-       (:larm
-        (setq hr (get self :lhand-controller))
-        (setq ret (forward-message-to hr args)))
-       (:rarm
-        (setq hr (get self :rhand-controller))
-        (setq ret (forward-message-to hr args)))
-       (:both
-        (setq hr (get self :lhand-controller))
-        (push (forward-message-to hr args) ret)
-        (setq hr (get self :rhand-controller))
-        (push (forward-message-to hr args) ret))
-       )
-     ret))
+         (let (hr ret)
+           (case arm
+             (:larm
+              (setq hr (get self :lhand-controller))
+              (setq ret (forward-message-to hr args)))
+             (:rarm
+              (setq hr (get self :rhand-controller))
+              (setq ret (forward-message-to hr args)))
+             (:both
+              (setq hr (get self :lhand-controller))
+              (push (forward-message-to hr args) ret)
+              (setq hr (get self :rhand-controller))
+              (push (forward-message-to hr args) ret))
+             )
+           ret))
   ;; hrpsys-base walk param
   (:set-recommended-walk-params
    ()
@@ -379,15 +379,15 @@
    (send self :set-st-param
          :k-tpcc-p #f(1.5 1.5)
          :k-tpcc-x #f(4 4)
-	 :k-brot-p #f(0.0 0.0)
+         :k-brot-p #f(0.0 0.0)
          :k-brot-tc #f(0.1 0.1))
    (send self :set-gait-generator-param
          :default-double-support-ratio 0.2
          :default-step-time 1.0
          :default-step-height 0.1
          ;;:stride-parameter #f(0.25 0.05 10)
-	 :stride-parameter #f(0.25 0.05 30)
-	 )
+         :stride-parameter #f(0.25 0.05 30)
+         )
    )
   (:set-vel-param
    (xx yy th)
@@ -395,39 +395,39 @@
   (:cmd-vel-cb
    (msg)
    (send-super :cmd-vel-cb
-	       msg
-	       :vel-x-ratio vel-x-ratio
-	       :vel-y-ratio vel-y-ratio
-	       :vel-th-ratio vel-th-ratio)
+               msg
+               :vel-x-ratio vel-x-ratio
+               :vel-y-ratio vel-y-ratio
+               :vel-th-ratio vel-th-ratio)
    )
   (:start-impedance
-    (limb &rest args &key (m-p 200) (d-p 2000) (k-p 2000) &allow-other-keys)
-    (send-super* :start-impedance
-                 limb
-                 :m-p m-p
-                 :d-p d-p
-                 :k-p k-p
-                 args)
-    )
+   (limb &rest args &key (m-p 200) (d-p 2000) (k-p 2000) &allow-other-keys)
+   (send-super* :start-impedance
+                limb
+                :m-p m-p
+                :d-p d-p
+                :k-p k-p
+                args)
+   )
   )
 ;;
 (defmethod atlas-robot
   (:hand (arm &rest args)
-   (let (hr ret)
-     (case arm
-       (:larm
-        (setq hr (get self :lhand-model))
-        (setq ret (forward-message-to hr args)))
-       (:rarm
-        (setq hr (get self :rhand-model))
-        (setq ret (forward-message-to hr args)))
-       (:both
-        (setq hr (get self :lhand-model))
-        (push (forward-message-to hr args) ret)
-        (setq hr (get self :rhand-model))
-        (push (forward-message-to hr args) ret))
-       )
-     ret))
+         (let (hr ret)
+           (case arm
+             (:larm
+              (setq hr (get self :lhand-model))
+              (setq ret (forward-message-to hr args)))
+             (:rarm
+              (setq hr (get self :rhand-model))
+              (setq ret (forward-message-to hr args)))
+             (:both
+              (setq hr (get self :lhand-model))
+              (push (forward-message-to hr args) ret)
+              (setq hr (get self :rhand-model))
+              (push (forward-message-to hr args) ret))
+             )
+           ret))
   )
 
 (defun send_atlas_control_mode
@@ -474,15 +474,15 @@
   (&key (no-gen nil) (fname nil))
   (let (pattern-list
         (fname (if fname fname
-		 (format nil "~A/atlas-walk-pattern"
-			 (ros::resolve-ros-path "package://hrpsys_gazebo_atlas/build")))))
+                 (format nil "~A/atlas-walk-pattern"
+                         (ros::resolve-ros-path "package://hrpsys_gazebo_atlas/build")))))
     (unless no-gen
       (format t ";; generate pattern~%")
       (setq pattern-list
-	    (send *atlas* :calc-walk-pattern-from-footstep-list
-		  (send *atlas* :go-pos-params->footstep-list
-			500 150 45) ;; x[mm] y[mm] th[rad]
-		  :debug-view :no-message :dt 0.01))
+            (send *atlas* :calc-walk-pattern-from-footstep-list
+                  (send *atlas* :go-pos-params->footstep-list
+                        500 150 45) ;; x[mm] y[mm] th[rad]
+                  :debug-view :no-message :dt 0.01))
       (format t ";; dump pattern file~%")
       (send *ri* :dump-seq-pattern-file pattern-list fname))
     (format t ";; load pattern file~%")
@@ -528,18 +528,18 @@
          (path
           (mapcar
            #'(lambda (msg)
-	       (let (coords)
-		 (setq coords (make-coords :pos (float-vector
-						 (* 1000 (send msg :pose :x))
-						 (* 1000 (send msg :pose :y)) 0)))
-		 (send coords :rotate (send msg :pose :theta) :z)
-		 (setq coords (send start :transformation coords))
-		 (send coords :put :l/r
-		       (cond
-			((= (send msg :leg) humanoid_nav_msgs::StepTarget::*left*) :lleg)
-			((= (send msg :leg) humanoid_nav_msgs::StepTarget::*right*) :rleg)))
-		 coords
-		 ))
+               (let (coords)
+                 (setq coords (make-coords :pos (float-vector
+                                                 (* 1000 (send msg :pose :x))
+                                                 (* 1000 (send msg :pose :y)) 0)))
+                 (send coords :rotate (send msg :pose :theta) :z)
+                 (setq coords (send start :transformation coords))
+                 (send coords :put :l/r
+                       (cond
+                        ((= (send msg :leg) humanoid_nav_msgs::StepTarget::*left*) :lleg)
+                        ((= (send msg :leg) humanoid_nav_msgs::StepTarget::*right*) :rleg)))
+                 coords
+                 ))
            (send res :footsteps))))
     ;; append first 1 or 2 step(s)
     path))
@@ -553,7 +553,7 @@
   (if (not (boundp '*atlas*)) (setq *atlas* (atlas-with-hand)))
   ;; parameter for bdi_control
   (setf (get *atlas* :footstep-parameter)
-       '(:default-half-offset #f(0.0 100.0 0.0) :forward-offset-length 180.0 :outside-offset-length 85.0 :rotate-rad 40.0))
+        '(:default-half-offset #f(0.0 100.0 0.0) :forward-offset-length 180.0 :outside-offset-length 85.0 :rotate-rad 40.0))
   (when unset-limit
     (send *ri* :set-soft-error-limit "all" 100) ;; disable SoftErrorLimiter
     (send *ri* :set-servo-error-limit "all" 0) ;; disable RobotHardware error limit
@@ -580,7 +580,7 @@
   *ri*
   )
 #|
-  for utility
+for utility
 |#
 (defun send-pose (&optional (tm 3000))
   (send *ri* :angle-vector (send *atlas* :angle-vector) tm))
@@ -591,8 +591,8 @@
 ;;   (send *atlas* :reset-pose))
 
 #|
-  ROS-API経由でatlasのセンサ情報を取得
-  /atlas/imu/orientation x,y,z,wで読める
+ROS-API経由でatlasのセンサ情報を取得
+/atlas/imu/orientation x,y,z,wで読める
 |#
 (defun imu-init ()
   (ros::subscribe "/atlas/imu" sensor_msgs::Imu #'get_imu_quaternion 1))
@@ -645,135 +645,135 @@
 (defvar *atlas_forcetorque* nil)
 (defun get_forcetorque_sensors (msg)
   (let* ((lf (send msg :l_foot))
-     (rf (send msg :r_foot))
-     (la (send msg :l_hand))
-     (ra (send msg :r_hand))
-     (ret))
+         (rf (send msg :r_foot))
+         (la (send msg :l_hand))
+         (ra (send msg :r_hand))
+         (ret))
 
     (setq *atlas_forcetorque*
-      (list
-       (cons :l_foot
-         (float-vector (send lf :force :x)
-                   (send lf :force :y)
-                   (send lf :force :z)
-                   (send lf :torque :x)
-                   (send lf :torque :y)
-                   (send lf :torque :z)))
-       (cons :r_foot
-         (float-vector (send rf :force :x)
-                   (send rf :force :y)
-                   (send rf :force :z)
-                   (send rf :torque :x)
-                   (send rf :torque :y)
-                   (send rf :torque :z)))
-       (cons :l_hand
-         (float-vector (send la :force :x)
-                   (send la :force :y)
-                   (send la :force :z)
-                   (send la :torque :x)
-                   (send la :torque :y)
-                   (send la :torque :z)))
-       (cons :r_hand
-         (float-vector (send ra :force :x)
-                   (send ra :force :y)
-                   (send ra :force :z)
-                   (send ra :torque :x)
-                   (send ra :torque :y)
-                   (send ra :torque :z)))
-       ))))
+          (list
+           (cons :l_foot
+                 (float-vector (send lf :force :x)
+                               (send lf :force :y)
+                               (send lf :force :z)
+                               (send lf :torque :x)
+                               (send lf :torque :y)
+                               (send lf :torque :z)))
+           (cons :r_foot
+                 (float-vector (send rf :force :x)
+                               (send rf :force :y)
+                               (send rf :force :z)
+                               (send rf :torque :x)
+                               (send rf :torque :y)
+                               (send rf :torque :z)))
+           (cons :l_hand
+                 (float-vector (send la :force :x)
+                               (send la :force :y)
+                               (send la :force :z)
+                               (send la :torque :x)
+                               (send la :torque :y)
+                               (send la :torque :z)))
+           (cons :r_hand
+                 (float-vector (send ra :force :x)
+                               (send ra :force :y)
+                               (send ra :force :z)
+                               (send ra :torque :x)
+                               (send ra :torque :y)
+                               (send ra :torque :z)))
+           ))))
 
 ;; degで指定した角度でリミットトルクが出るようにゲインを設定
 #|
-  /opt/ros/groovy/share/drcsim_gazebo/config/whole_body_trajectory_controller_v3.yaml
-  gains:
-    l_leg_hpz: {p:     5.0, d:  0.01, i:   0.0, i_clamp:    0.0}
-    l_leg_hpx: {p:   100.0, d:   1.0, i:   0.0, i_clamp:    0.0}
-    l_leg_hpy: {p:  2000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
-    l_leg_kny: {p:  1000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
-    l_leg_aky: {p:   900.0, d:   2.0, i:   0.0, i_clamp:    0.0}
-    l_leg_akx: {p:   300.0, d:   1.0, i:   0.0, i_clamp:    0.0}
-    r_leg_hpz: {p:     5.0, d:  0.01, i:   0.0, i_clamp:    0.0}
-    r_leg_hpx: {p:   100.0, d:   1.0, i:   0.0, i_clamp:    0.0}
-    r_leg_hpy: {p:  2000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
-    r_leg_kny: {p:  1000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
-    r_leg_aky: {p:   900.0, d:   2.0, i:   0.0, i_clamp:    0.0}
-    r_leg_akx: {p:   300.0, d:   1.0, i:   0.0, i_clamp:    0.0}
-    l_arm_shy: {p:  2000.0, d:   3.0, i:   0.0, i_clamp:    0.0}
-    l_arm_shx: {p:  1000.0, d:  20.0, i:   0.0, i_clamp:    0.0}
-    l_arm_ely: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
-    l_arm_elx: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
-    l_arm_wry: {p:    50.0, d:   0.1, i:   0.0, i_clamp:    0.0}
-    l_arm_wrx: {p:   100.0, d:   0.2, i:   0.0, i_clamp:    0.0}
-    r_arm_shy: {p:  2000.0, d:   3.0, i:   0.0, i_clamp:    0.0}
-    r_arm_shx: {p:  1000.0, d:  20.0, i:   0.0, i_clamp:    0.0}
-    r_arm_ely: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
-    r_arm_elx: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
-    r_arm_wry: {p:    50.0, d:   0.1, i:   0.0, i_clamp:    0.0}
-    r_arm_wrx: {p:   100.0, d:   0.2, i:   0.0, i_clamp:    0.0}
-    neck_ry:   {p:    20.0, d:   1.0, i:   0.0, i_clamp:    0.0}
-    back_bkz:  {p:    20.0, d:   0.1, i:   0.0, i_clamp:    0.0}
-    back_bky:  {p:  4000.0, d:  02.0, i:   0.0, i_clamp:    0.0}
-    back_bkx:  {p:  2000.0, d:  01.0, i:   0.0, i_clamp:    0.0}
+/opt/ros/groovy/share/drcsim_gazebo/config/whole_body_trajectory_controller_v3.yaml
+gains:
+l_leg_hpz: {p:     5.0, d:  0.01, i:   0.0, i_clamp:    0.0}
+l_leg_hpx: {p:   100.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+l_leg_hpy: {p:  2000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
+l_leg_kny: {p:  1000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
+l_leg_aky: {p:   900.0, d:   2.0, i:   0.0, i_clamp:    0.0}
+l_leg_akx: {p:   300.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+r_leg_hpz: {p:     5.0, d:  0.01, i:   0.0, i_clamp:    0.0}
+r_leg_hpx: {p:   100.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+r_leg_hpy: {p:  2000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
+r_leg_kny: {p:  1000.0, d:  10.0, i:   0.0, i_clamp:    0.0}
+r_leg_aky: {p:   900.0, d:   2.0, i:   0.0, i_clamp:    0.0}
+r_leg_akx: {p:   300.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+l_arm_shy: {p:  2000.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+l_arm_shx: {p:  1000.0, d:  20.0, i:   0.0, i_clamp:    0.0}
+l_arm_ely: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+l_arm_elx: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+l_arm_wry: {p:    50.0, d:   0.1, i:   0.0, i_clamp:    0.0}
+l_arm_wrx: {p:   100.0, d:   0.2, i:   0.0, i_clamp:    0.0}
+r_arm_shy: {p:  2000.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+r_arm_shx: {p:  1000.0, d:  20.0, i:   0.0, i_clamp:    0.0}
+r_arm_ely: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+r_arm_elx: {p:   200.0, d:   3.0, i:   0.0, i_clamp:    0.0}
+r_arm_wry: {p:    50.0, d:   0.1, i:   0.0, i_clamp:    0.0}
+r_arm_wrx: {p:   100.0, d:   0.2, i:   0.0, i_clamp:    0.0}
+neck_ry:   {p:    20.0, d:   1.0, i:   0.0, i_clamp:    0.0}
+back_bkz:  {p:    20.0, d:   0.1, i:   0.0, i_clamp:    0.0}
+back_bky:  {p:  4000.0, d:  02.0, i:   0.0, i_clamp:    0.0}
+back_bkx:  {p:  2000.0, d:  01.0, i:   0.0, i_clamp:    0.0}
 
-    joint name="back_bkx"   effort="200"
-    joint name="back_bky"   effort="206.84"
-    joint name="back_bkz"   effort="124.016"
-    joint name="l_arm_elx"  effort="114"
-    joint name="l_arm_ely"  effort="114"
-    joint name="l_arm_shx"  effort="170"
-    joint name="l_arm_shy"  effort="212"
-    joint name="l_arm_wrx"  effort="60"
-    joint name="l_arm_wry"  effort="114"
-    joint name="l_leg_akx"  effort="90"
-    joint name="l_leg_aky"  effort="700"
-    joint name="l_leg_hpx"  effort="180"
-    joint name="l_leg_hpy"  effort="260"
-    joint name="l_leg_hpz"  effort="110"
-    joint name="l_leg_kny"  effort="220"
-    joint name="neck_ry"    effort="5"
-    joint name="r_arm_elx"  effort="114"
-    joint name="r_arm_ely"  effort="114"
-    joint name="r_arm_shx"  effort="170"
-    joint name="r_arm_shy"  effort="212"
-    joint name="r_arm_wrx"  effort="60"
-    joint name="r_arm_wry"  effort="114"
-    joint name="r_leg_akx"  effort="90" -> (rad2deg (* 100 (/ 90.0[Nm] 300[Nm/rad]))) -> 1718.87
-    joint name="r_leg_aky"  effort="700"
-    joint name="r_leg_hpx"  effort="180"
-    joint name="r_leg_hpy"  effort="260"
-    joint name="r_leg_hpz"  effort="110"
-    joint name="r_leg_kny"  effort="220"
+joint name="back_bkx"   effort="200"
+joint name="back_bky"   effort="206.84"
+joint name="back_bkz"   effort="124.016"
+joint name="l_arm_elx"  effort="114"
+joint name="l_arm_ely"  effort="114"
+joint name="l_arm_shx"  effort="170"
+joint name="l_arm_shy"  effort="212"
+joint name="l_arm_wrx"  effort="60"
+joint name="l_arm_wry"  effort="114"
+joint name="l_leg_akx"  effort="90"
+joint name="l_leg_aky"  effort="700"
+joint name="l_leg_hpx"  effort="180"
+joint name="l_leg_hpy"  effort="260"
+joint name="l_leg_hpz"  effort="110"
+joint name="l_leg_kny"  effort="220"
+joint name="neck_ry"    effort="5"
+joint name="r_arm_elx"  effort="114"
+joint name="r_arm_ely"  effort="114"
+joint name="r_arm_shx"  effort="170"
+joint name="r_arm_shy"  effort="212"
+joint name="r_arm_wrx"  effort="60"
+joint name="r_arm_wry"  effort="114"
+joint name="r_leg_akx"  effort="90" -> (rad2deg (* 100 (/ 90.0[Nm] 300[Nm/rad]))) -> 1718.87
+joint name="r_leg_aky"  effort="700"
+joint name="r_leg_hpx"  effort="180"
+joint name="r_leg_hpy"  effort="260"
+joint name="r_leg_hpz"  effort="110"
+joint name="r_leg_kny"  effort="220"
 
-   '(((:name 'l_leg_hpz) (:p     5.0) (:effort    110))
-     ((:name 'l_leg_hpx) (:p   100.0) (:effort    180))
-     ((:name 'l_leg_hpy) (:p  2000.0) (:effort    260))
-     ((:name 'l_leg_kny) (:p  1000.0) (:effort    220))
-     ((:name 'l_leg_aky) (:p   900.0) (:effort    700))
-     ((:name 'l_leg_akx) (:p   300.0) (:effort     90))
-     ((:name 'r_leg_hpz) (:p     5.0) (:effort    110))
-     ((:name 'r_leg_hpx) (:p   100.0) (:effort    180))
-     ((:name 'r_leg_hpy) (:p  2000.0) (:effort    260))
-     ((:name 'r_leg_kny) (:p  1000.0) (:effort    220))
-     ((:name 'r_leg_aky) (:p   900.0) (:effort    700))
-     ((:name 'r_leg_akx) (:p   300.0) (:effort     90))
-     ((:name 'l_arm_shy) (:p  2000.0) (:effort    212))
-     ((:name 'l_arm_shx) (:p  1000.0) (:effort    170))
-     ((:name 'l_arm_ely) (:p   200.0) (:effort    114))
-     ((:name 'l_arm_elx) (:p   200.0) (:effort    114))
-     ((:name 'l_arm_wry) (:p    50.0) (:effort    114))
-     ((:name 'l_arm_wrx) (:p   100.0) (:effort     60))
-     ((:name 'r_arm_shy) (:p  2000.0) (:effort    212))
-     ((:name 'r_arm_shx) (:p  1000.0) (:effort    170))
-     ((:name 'r_arm_ely) (:p   200.0) (:effort    114))
-     ((:name 'r_arm_elx) (:p   200.0) (:effort    114))
-     ((:name 'r_arm_wry) (:p    50.0) (:effort    114))
-     ((:name 'r_arm_wrx) (:p   100.0) (:effort     60))
-     ((:name 'neck_ry)   (:p    20.0) (:effort      5))
-     ((:name 'back_bkz)  (:p    20.0) (:effort    124.016))
-     ((:name 'back_bky)  (:p  4000.0) (:effort    206.84))
-     ((:name 'back_bkx)  (:p  2000.0) (:effort    200)))
+'(((:name 'l_leg_hpz) (:p     5.0) (:effort    110))
+((:name 'l_leg_hpx) (:p   100.0) (:effort    180))
+((:name 'l_leg_hpy) (:p  2000.0) (:effort    260))
+((:name 'l_leg_kny) (:p  1000.0) (:effort    220))
+((:name 'l_leg_aky) (:p   900.0) (:effort    700))
+((:name 'l_leg_akx) (:p   300.0) (:effort     90))
+((:name 'r_leg_hpz) (:p     5.0) (:effort    110))
+((:name 'r_leg_hpx) (:p   100.0) (:effort    180))
+((:name 'r_leg_hpy) (:p  2000.0) (:effort    260))
+((:name 'r_leg_kny) (:p  1000.0) (:effort    220))
+((:name 'r_leg_aky) (:p   900.0) (:effort    700))
+((:name 'r_leg_akx) (:p   300.0) (:effort     90))
+((:name 'l_arm_shy) (:p  2000.0) (:effort    212))
+((:name 'l_arm_shx) (:p  1000.0) (:effort    170))
+((:name 'l_arm_ely) (:p   200.0) (:effort    114))
+((:name 'l_arm_elx) (:p   200.0) (:effort    114))
+((:name 'l_arm_wry) (:p    50.0) (:effort    114))
+((:name 'l_arm_wrx) (:p   100.0) (:effort     60))
+((:name 'r_arm_shy) (:p  2000.0) (:effort    212))
+((:name 'r_arm_shx) (:p  1000.0) (:effort    170))
+((:name 'r_arm_ely) (:p   200.0) (:effort    114))
+((:name 'r_arm_elx) (:p   200.0) (:effort    114))
+((:name 'r_arm_wry) (:p    50.0) (:effort    114))
+((:name 'r_arm_wrx) (:p   100.0) (:effort     60))
+((:name 'neck_ry)   (:p    20.0) (:effort      5))
+((:name 'back_bkz)  (:p    20.0) (:effort    124.016))
+((:name 'back_bky)  (:p  4000.0) (:effort    206.84))
+((:name 'back_bkx)  (:p  2000.0) (:effort    200)))
 
-    (mapcar #'(lambda (param) (let ((name (cadr (assoc :name param)))(gain (cadr (assoc :p param))) (limit (cadr (assoc :effort param))) x) (setq x (rad2deg (* 100 (/ limit gain)))) (print (list name limit gain x)) x)) daa)
+(mapcar #'(lambda (param) (let ((name (cadr (assoc :name param)))(gain (cadr (assoc :p param))) (limit (cadr (assoc :effort param))) x) (setq x (rad2deg (* 100 (/ limit gain)))) (print (list name limit gain x)) x)) daa)
 |#
 
 ;; usage ;; (fix-leg-strigde (float-vector 0 20 0))
@@ -810,23 +810,23 @@
   (send *ri* :set-simulation-mode :mode :stand :effort 0)
   (unix::usleep (* 1000 1000))
   (case l/r
-   (:rleg
-    (send *ri* :bdi_step_static (make-coords :pos (float-vector step -140 0)) :l/r :rleg :index 0))
-   (:lleg
-    (send *ri* :bdi_step_static (make-coords :pos (float-vector step 140 0)) :l/r :lleg :index 0)))
+    (:rleg
+     (send *ri* :bdi_step_static (make-coords :pos (float-vector step -140 0)) :l/r :rleg :index 0))
+    (:lleg
+     (send *ri* :bdi_step_static (make-coords :pos (float-vector step 140 0)) :l/r :lleg :index 0)))
   (send *ri* :wait-for-start-behavior 5)
   (send *ri* :wait-for-finish-behavior 5)
   (case l/r
-   (:rleg
-    (send *ri* :bdi_step_static (make-coords :pos (float-vector (/ step 2) 140 0)) :l/r :lleg :index 1))
-   (:lleg
-    (send *ri* :bdi_step_static (make-coords :pos (float-vector (/ step 2) -140 0)) :l/r :rleg :index 1)))
+    (:rleg
+     (send *ri* :bdi_step_static (make-coords :pos (float-vector (/ step 2) 140 0)) :l/r :lleg :index 1))
+    (:lleg
+     (send *ri* :bdi_step_static (make-coords :pos (float-vector (/ step 2) -140 0)) :l/r :rleg :index 1)))
   )
 
 (defmethod atlas-robot
   (:pre-manip-pose ()
-   (send self :angle-vector
-         (float-vector 0.0 3.0 0.0 110.0 120.0 60.0 -70.0 45.0 0.0 -110.0 120.0 -60.0 70.0 45.0 0.0 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0)))
+                   (send self :angle-vector
+                         (float-vector 0.0 3.0 0.0 110.0 120.0 60.0 -70.0 45.0 0.0 -110.0 120.0 -60.0 70.0 45.0 0.0 28.0 -1.7 -12.5 1.7 -15.5 0.0 28.0 1.7 -12.5 -1.7 -15.5 0.0 0.0)))
   )
 (in-package "ROS")
 (defmethod ros::simple-action-client
@@ -863,197 +863,197 @@
 
 (defun atlas-v0-specific-setting
   ()
-;; controller setting
-(defmethod atlas-interface
-  (:larm-controller ()
-   (list
-    (list
-     (cons :controller-action "larm_controller/follow_joint_trajectory_action")
-     (cons :controller-state "larm_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "l_arm_usy" "l_arm_shx" "l_arm_ely" "l_arm_elx" "l_arm_uwy" "l_arm_mwx")))))
-  (:rarm-controller ()
-   (list
-    (list
-     (cons :controller-action "rarm_controller/follow_joint_trajectory_action")
-     (cons :controller-state "rarm_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "r_arm_usy" "r_arm_shx" "r_arm_ely" "r_arm_elx" "r_arm_uwy" "r_arm_mwx")))))
-  (:lleg-controller ()
-   (list
-    (list
-     (cons :controller-action "lleg_controller/follow_joint_trajectory_action")
-     (cons :controller-state "lleg_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "l_leg_uhz" "l_leg_mhx" "l_leg_lhy" "l_leg_kny" "l_leg_uay" "l_leg_lax")))))
-  (:rleg-controller ()
-   (list
-    (list
-     (cons :controller-action "rleg_controller/follow_joint_trajectory_action")
-     (cons :controller-state "rleg_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "r_leg_uhz" "r_leg_mhx" "r_leg_lhy" "r_leg_kny" "r_leg_uay" "r_leg_lax")))))
-  (:head-controller ()
-   (list
-    (list
-     (cons :controller-action "head_controller/follow_joint_trajectory_action")
-     (cons :controller-state "head_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "neck_ay")))))
-  (:torso-controller ()
-   (list
-    (list
-     (cons :controller-action "torso_controller/follow_joint_trajectory_action")
-     (cons :controller-state "torso_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "back_lbz" "back_mby" "back_ubx")))))
-  (:default-controller ()
-   (append
-    (send self :larm-controller)
-    (send self :rarm-controller)
-    (send self :lleg-controller)
-    (send self :rleg-controller)
-    (send self :head-controller)
-    (send self :torso-controller)
-    )))
-;; set servo gain
-(defun atlas-set-servo-gain-by-torque-limit
-  (&optional (deg 1) (limb :all))
-  (if (not (memq limb '(:all :torso :head :lleg :rleg :larm :rarm :legs :arms)))
-      (ros::ros-error "atlas-set-servo-gain-by-torque-limit failed, unknown limb ~A" limb))
-  (when (or (equal limb :all) (equal limb :torso))
-    (send *ri* :set-servo-gain-percentage "back_lbz"  (/ 35528  deg))
-    (send *ri* :set-servo-gain-percentage "back_mby"  (/ 296    deg))
-    (send *ri* :set-servo-gain-percentage "back_ubx"  (/ 572    deg)))
-  (when (or (equal limb :all) (equal limb :head))
-    (send *ri* :set-servo-gain-percentage "neck_ay"   (/ 1432   deg)))
-  (when (or (equal limb :all) (equal limb :lleg) (equal limb :legs))
-    (send *ri* :set-servo-gain-percentage "l_leg_uhz" (/ 126051 deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_mhx" (/ 10313  deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_lhy" (/ 745    deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_kny" (/ 1261   deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_uay" (/ 4456   deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_lax" (/ 1719   deg)))
-  (when (or (equal limb :all) (equal limb :rleg) (equal limb :legs))
-    (send *ri* :set-servo-gain-percentage "r_leg_uhz" (/ 126051 deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_mhx" (/ 10313  deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_lhy" (/ 745    deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_kny" (/ 1261   deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_uay" (/ 4456   deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_lax" (/ 1719   deg)))
-  (when (or (equal limb :all) (equal limb :larm) (equal limb :arms))
-    (send *ri* :set-servo-gain-percentage "l_arm_usy" (/ 607    deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_shx" (/ 974    deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_ely" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_elx" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_uwy" (/ 13063  deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_mwx" (/ 3438   deg)))
-  (when (or (equal limb :all) (equal limb :rarm) (equal limb :arms))
-    (send *ri* :set-servo-gain-percentage "r_arm_usy" (/ 607    deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_shx" (/ 974    deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_ely" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_elx" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_uwy" (/ 13063  deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_mwx" (/ 3438   deg)))
+  ;; controller setting
+  (defmethod atlas-interface
+    (:larm-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "larm_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "larm_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "l_arm_usy" "l_arm_shx" "l_arm_ely" "l_arm_elx" "l_arm_uwy" "l_arm_mwx")))))
+    (:rarm-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "rarm_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "rarm_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "r_arm_usy" "r_arm_shx" "r_arm_ely" "r_arm_elx" "r_arm_uwy" "r_arm_mwx")))))
+    (:lleg-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "lleg_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "lleg_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "l_leg_uhz" "l_leg_mhx" "l_leg_lhy" "l_leg_kny" "l_leg_uay" "l_leg_lax")))))
+    (:rleg-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "rleg_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "rleg_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "r_leg_uhz" "r_leg_mhx" "r_leg_lhy" "r_leg_kny" "r_leg_uay" "r_leg_lax")))))
+    (:head-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "head_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "head_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "neck_ay")))))
+    (:torso-controller ()
+                       (list
+                        (list
+                         (cons :controller-action "torso_controller/follow_joint_trajectory_action")
+                         (cons :controller-state "torso_controller/state")
+                         (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                         (cons :joint-names (list "back_lbz" "back_mby" "back_ubx")))))
+    (:default-controller ()
+                         (append
+                          (send self :larm-controller)
+                          (send self :rarm-controller)
+                          (send self :lleg-controller)
+                          (send self :rleg-controller)
+                          (send self :head-controller)
+                          (send self :torso-controller)
+                          )))
+  ;; set servo gain
+  (defun atlas-set-servo-gain-by-torque-limit
+    (&optional (deg 1) (limb :all))
+    (if (not (memq limb '(:all :torso :head :lleg :rleg :larm :rarm :legs :arms)))
+        (ros::ros-error "atlas-set-servo-gain-by-torque-limit failed, unknown limb ~A" limb))
+    (when (or (equal limb :all) (equal limb :torso))
+      (send *ri* :set-servo-gain-percentage "back_lbz"  (/ 35528  deg))
+      (send *ri* :set-servo-gain-percentage "back_mby"  (/ 296    deg))
+      (send *ri* :set-servo-gain-percentage "back_ubx"  (/ 572    deg)))
+    (when (or (equal limb :all) (equal limb :head))
+      (send *ri* :set-servo-gain-percentage "neck_ay"   (/ 1432   deg)))
+    (when (or (equal limb :all) (equal limb :lleg) (equal limb :legs))
+      (send *ri* :set-servo-gain-percentage "l_leg_uhz" (/ 126051 deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_mhx" (/ 10313  deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_lhy" (/ 745    deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_kny" (/ 1261   deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_uay" (/ 4456   deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_lax" (/ 1719   deg)))
+    (when (or (equal limb :all) (equal limb :rleg) (equal limb :legs))
+      (send *ri* :set-servo-gain-percentage "r_leg_uhz" (/ 126051 deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_mhx" (/ 10313  deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_lhy" (/ 745    deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_kny" (/ 1261   deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_uay" (/ 4456   deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_lax" (/ 1719   deg)))
+    (when (or (equal limb :all) (equal limb :larm) (equal limb :arms))
+      (send *ri* :set-servo-gain-percentage "l_arm_usy" (/ 607    deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_shx" (/ 974    deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_ely" (/ 3266   deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_elx" (/ 3266   deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_uwy" (/ 13063  deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_mwx" (/ 3438   deg)))
+    (when (or (equal limb :all) (equal limb :rarm) (equal limb :arms))
+      (send *ri* :set-servo-gain-percentage "r_arm_usy" (/ 607    deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_shx" (/ 974    deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_ely" (/ 3266   deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_elx" (/ 3266   deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_uwy" (/ 13063  deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_mwx" (/ 3438   deg)))
+    )
   )
-)
 
 (defun atlas-v3-specific-setting
   ()
-;; controller setting
-(defmethod atlas-interface
-  (:larm-controller ()
-   (list
-    (list
-     (cons :controller-action "larm_controller/follow_joint_trajectory_action")
-     (cons :controller-state "larm_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "l_arm_shy" "l_arm_shx" "l_arm_ely" "l_arm_elx" "l_arm_wry" "l_arm_wrx")))))
-  (:rarm-controller ()
-   (list
-    (list
-     (cons :controller-action "rarm_controller/follow_joint_trajectory_action")
-     (cons :controller-state "rarm_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "r_arm_shy" "r_arm_shx" "r_arm_ely" "r_arm_elx" "r_arm_wry" "r_arm_wrx")))))
-  (:lleg-controller ()
-   (list
-    (list
-     (cons :controller-action "lleg_controller/follow_joint_trajectory_action")
-     (cons :controller-state "lleg_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "l_leg_hpz" "l_leg_hpx" "l_leg_hpy" "l_leg_kny" "l_leg_aky" "l_leg_akx")))))
-  (:rleg-controller ()
-   (list
-    (list
-     (cons :controller-action "rleg_controller/follow_joint_trajectory_action")
-     (cons :controller-state "rleg_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "r_leg_hpz" "r_leg_hpx" "r_leg_hpy" "r_leg_kny" "r_leg_aky" "r_leg_akx")))))
-  (:head-controller ()
-   (list
-    (list
-     (cons :controller-action "head_controller/follow_joint_trajectory_action")
-     (cons :controller-state "head_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "neck_ry")))))
-  (:torso-controller ()
-   (list
-    (list
-     (cons :controller-action "torso_controller/follow_joint_trajectory_action")
-     (cons :controller-state "torso_controller/state")
-     (cons :action-type control_msgs::FollowJointTrajectoryAction)
-     (cons :joint-names (list "back_bkz" "back_bky" "back_bkx")))))
-  (:default-controller ()
-   (append
-    (send self :larm-controller)
-    (send self :rarm-controller)
-    (send self :lleg-controller)
-    (send self :rleg-controller)
-    (send self :head-controller)
-    (send self :torso-controller)
-    )))
-;; set servo gain
-(defun atlas-set-servo-gain-by-torque-limit
-  (&optional (deg 1) (limb :all))
-  (if (not (memq limb '(:all :torso :head :lleg :rleg :larm :rarm :legs :arms)))
-      (ros::ros-error "atlas-set-servo-gain-by-torque-limit failed, unknown limb ~A" limb))
-  (when (or (equal limb :all) (equal limb :torso))
-    (send *ri* :set-servo-gain-percentage "back_bkz"  (/ 35528  deg))
-    (send *ri* :set-servo-gain-percentage "back_bky"  (/ 296    deg))
-    (send *ri* :set-servo-gain-percentage "back_bkx"  (/ 572    deg)))
-  (when (or (equal limb :all) (equal limb :head))
-    (send *ri* :set-servo-gain-percentage "neck_ry"   (/ 1432   deg)))
-  (when (or (equal limb :all) (equal limb :lleg) (equal limb :legs))
-    (send *ri* :set-servo-gain-percentage "l_leg_hpz" (/ 126051 deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_hpx" (/ 10313  deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_hpy" (/ 745    deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_kny" (/ 1261   deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_aky" (/ 4456   deg))
-    (send *ri* :set-servo-gain-percentage "l_leg_akx" (/ 1719   deg)))
-  (when (or (equal limb :all) (equal limb :rleg) (equal limb :legs))
-    (send *ri* :set-servo-gain-percentage "r_leg_hpz" (/ 126051 deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_hpx" (/ 10313  deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_hpy" (/ 745    deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_kny" (/ 1261   deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_aky" (/ 4456   deg))
-    (send *ri* :set-servo-gain-percentage "r_leg_akx" (/ 1719   deg)))
-  (when (or (equal limb :all) (equal limb :larm) (equal limb :arms))
-    (send *ri* :set-servo-gain-percentage "l_arm_shy" (/ 607    deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_shx" (/ 974    deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_ely" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_elx" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_wry" (/ 13063  deg))
-    (send *ri* :set-servo-gain-percentage "l_arm_wrx" (/ 3438   deg)))
-  (when (or (equal limb :all) (equal limb :rarm) (equal limb :arms))
-    (send *ri* :set-servo-gain-percentage "r_arm_shy" (/ 607    deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_shx" (/ 974    deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_ely" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_elx" (/ 3266   deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_wry" (/ 13063  deg))
-    (send *ri* :set-servo-gain-percentage "r_arm_wrx" (/ 3438   deg)))
+  ;; controller setting
+  (defmethod atlas-interface
+    (:larm-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "larm_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "larm_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "l_arm_shy" "l_arm_shx" "l_arm_ely" "l_arm_elx" "l_arm_wry" "l_arm_wrx")))))
+    (:rarm-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "rarm_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "rarm_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "r_arm_shy" "r_arm_shx" "r_arm_ely" "r_arm_elx" "r_arm_wry" "r_arm_wrx")))))
+    (:lleg-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "lleg_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "lleg_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "l_leg_hpz" "l_leg_hpx" "l_leg_hpy" "l_leg_kny" "l_leg_aky" "l_leg_akx")))))
+    (:rleg-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "rleg_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "rleg_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "r_leg_hpz" "r_leg_hpx" "r_leg_hpy" "r_leg_kny" "r_leg_aky" "r_leg_akx")))))
+    (:head-controller ()
+                      (list
+                       (list
+                        (cons :controller-action "head_controller/follow_joint_trajectory_action")
+                        (cons :controller-state "head_controller/state")
+                        (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                        (cons :joint-names (list "neck_ry")))))
+    (:torso-controller ()
+                       (list
+                        (list
+                         (cons :controller-action "torso_controller/follow_joint_trajectory_action")
+                         (cons :controller-state "torso_controller/state")
+                         (cons :action-type control_msgs::FollowJointTrajectoryAction)
+                         (cons :joint-names (list "back_bkz" "back_bky" "back_bkx")))))
+    (:default-controller ()
+                         (append
+                          (send self :larm-controller)
+                          (send self :rarm-controller)
+                          (send self :lleg-controller)
+                          (send self :rleg-controller)
+                          (send self :head-controller)
+                          (send self :torso-controller)
+                          )))
+  ;; set servo gain
+  (defun atlas-set-servo-gain-by-torque-limit
+    (&optional (deg 1) (limb :all))
+    (if (not (memq limb '(:all :torso :head :lleg :rleg :larm :rarm :legs :arms)))
+        (ros::ros-error "atlas-set-servo-gain-by-torque-limit failed, unknown limb ~A" limb))
+    (when (or (equal limb :all) (equal limb :torso))
+      (send *ri* :set-servo-gain-percentage "back_bkz"  (/ 35528  deg))
+      (send *ri* :set-servo-gain-percentage "back_bky"  (/ 296    deg))
+      (send *ri* :set-servo-gain-percentage "back_bkx"  (/ 572    deg)))
+    (when (or (equal limb :all) (equal limb :head))
+      (send *ri* :set-servo-gain-percentage "neck_ry"   (/ 1432   deg)))
+    (when (or (equal limb :all) (equal limb :lleg) (equal limb :legs))
+      (send *ri* :set-servo-gain-percentage "l_leg_hpz" (/ 126051 deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_hpx" (/ 10313  deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_hpy" (/ 745    deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_kny" (/ 1261   deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_aky" (/ 4456   deg))
+      (send *ri* :set-servo-gain-percentage "l_leg_akx" (/ 1719   deg)))
+    (when (or (equal limb :all) (equal limb :rleg) (equal limb :legs))
+      (send *ri* :set-servo-gain-percentage "r_leg_hpz" (/ 126051 deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_hpx" (/ 10313  deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_hpy" (/ 745    deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_kny" (/ 1261   deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_aky" (/ 4456   deg))
+      (send *ri* :set-servo-gain-percentage "r_leg_akx" (/ 1719   deg)))
+    (when (or (equal limb :all) (equal limb :larm) (equal limb :arms))
+      (send *ri* :set-servo-gain-percentage "l_arm_shy" (/ 607    deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_shx" (/ 974    deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_ely" (/ 3266   deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_elx" (/ 3266   deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_wry" (/ 13063  deg))
+      (send *ri* :set-servo-gain-percentage "l_arm_wrx" (/ 3438   deg)))
+    (when (or (equal limb :all) (equal limb :rarm) (equal limb :arms))
+      (send *ri* :set-servo-gain-percentage "r_arm_shy" (/ 607    deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_shx" (/ 974    deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_ely" (/ 3266   deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_elx" (/ 3266   deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_wry" (/ 13063  deg))
+      (send *ri* :set-servo-gain-percentage "r_arm_wrx" (/ 3438   deg)))
+    )
   )
-)
 
 (if (boundp '*atlas-name*)
     (cond
