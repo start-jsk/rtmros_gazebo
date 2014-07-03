@@ -17,6 +17,7 @@
   (setq *robot* *hrp2jsknt*)
   (objects (list *hrp2*))
   (send *irtviewer* :change-background #f(1 1 1)))
+
 (defun init
   (&key (real t))
   (hrp2jsknt-init-ex :real real))
@@ -33,8 +34,6 @@
   (pose &key (wait-time 2000) (wait? t))
   (send *ri* :angle-vector (send *robot* pose) wait-time)
   (when wait? (send *ri* :wait-interpolation)))
-
-
 
 (defun model2real
   ()

@@ -52,7 +52,7 @@
 (defun eus2urdf-room-for-gazebo (room &key make-static make-fixed world-file-path-list)
   (let* ((room-name (string-downcase (send room :name)))
 	 (package-dir-path (string-downcase (read (piped-fork "rospack find hrpsys_gazebo_tutorials")))))
-    (dolist (obj (send room :objects))
+    (dolist (obj (append (send room :all-objects) (send room :all-walls)))
       (let* ((obj-name)
 	     (obj-cnt 0))
 	;; deal with the objects with no name. (objects with no name cause an error in converting)

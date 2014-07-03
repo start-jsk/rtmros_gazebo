@@ -13,7 +13,7 @@
 
 (require "atlas-model.l")
 (require "atlas-fullbody-ik.l")
-(require "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser-settings.l")
+(require "package://hrpsys_gazebo_atlas/euslisp/atlas-joint-state-compresser/atlas-joint-state-compresser-settings.l")
 (require "models/arrow-object.l")
 (require "atlas-end-coords.l")
 (require "package://roseus/euslisp/actionlib.l")

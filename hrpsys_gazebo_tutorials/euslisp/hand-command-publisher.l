@@ -39,6 +39,45 @@
      (&optional l/r)
      (send self :hand-effort-vector (float-vector 0 0 0 0 0 0) l/r)
      )))
+(when (boundp 'hrp2jsknts-interface)
+  (defmethod hrp2jsknts-interface
+    (:init-hand
+     ()
+     (setq hcp (instance hand-command-publisher-class :init)))
+    (:hand-angle-vector
+     (av &optional l/r)
+     (cond ((or (equal l/r :lhand) (equal l/r :larm))
+	    (send hcp :send-command (list av nil)))
+	   ((or (equal l/r :rhand) (equal l/r :rarm))
+	    (send hcp :send-command (list nil av)))
+	   (t
+	    (send hcp :send-command av))
+	   ))
+    (:hand-angle-state-vector
+     (&optional l/r)
+     (cond ((or (equal l/r :lhand) (equal l/r :larm))
+	    (elt (send hcp :get-state) 0))
+	   ((or (equal l/r :rhand) (equal l/r :rarm))
+	    (elt (send hcp :get-state) 1))
+	   (t
+	    (send hcp :get-state))
+	   ))
+    (:hand-effort-vector
+     (ef &optional l/r)
+     (cond ((or (equal l/r :lhand) (equal l/r :larm))
+	    (send hcp :send-effort-command (list ef nil)))
+	   ((or (equal l/r :rhand) (equal l/r :rarm))
+	    (send hcp :send-effort-command (list nil ef)))
+	   (t
+	    (send hcp :send-effort-command (list ef ef)))
+	   ))
+    (:start-grasp
+     (&optional l/r)
+     (send self :hand-effort-vector (float-vector 0 -25 25 0 25 25) l/r))
+    (:stop-grasp
+     (&optional l/r)
+     (send self :hand-effort-vector (float-vector 0 0 0 0 0 0) l/r)
+     )))
 ;;(warn "~%")
 ;;(warn "(send *ri* (list (float-vector 10 20 30 40 50 60) (float-vector 50 40 30 20 10 0)))")
 ;;(warn "(send *ri* :get-state)~%")
@@ -64,8 +103,8 @@
 	  (right-av (elt av-list 1)))
      (setq msg (instance hrpsys_gazebo_msgs::JointCommand :init))
      (when left-av
-       (send msg :position (concatenate float-vector (mapcar #'deg2rad (concatenate cons left-av)))))
-     (ros::publish "/HRP3HAND_L/joint_command" msg)
+       (send msg :position (concatenate float-vector (mapcar #'deg2rad (concatenate cons left-av))))
+       (ros::publish "/HRP3HAND_L/joint_command" msg))
      (when right-av
        (send msg :position (concatenate float-vector (mapcar #'deg2rad (concatenate cons right-av))))
        (ros::publish "/HRP3HAND_R/joint_command" msg)))

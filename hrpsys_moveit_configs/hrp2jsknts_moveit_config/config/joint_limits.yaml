@@ -1,0 +1,221 @@
+joint_limits:
+  RARM_JOINT5:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LARM_JOINT6:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  R_THUMBCM_P:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  RARM_JOINT2:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  L_MIDDLEPIP_R:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  L_INDEXMP_R:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  RLEG_JOINT4:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LLEG_JOINT2:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  R_THUMBCM_Y:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  LARM_JOINT5:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  HEAD_JOINT0:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  RLEG_JOINT5:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  RLEG_JOINT0:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  RARM_JOINT6:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  R_INDEXMP_P:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  RLEG_JOINT2:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  R_MIDDLEPIP_R:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  RARM_JOINT1:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  L_THUMBCM_Y:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  LARM_JOINT1:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  L_INDEXPIP_R:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  RARM_JOINT3:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  HEAD_JOINT1:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LARM_JOINT3:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LLEG_JOINT4:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  L_INDEXMP_P:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  LLEG_JOINT0:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  RARM_JOINT4:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LLEG_JOINT5:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  RLEG_JOINT6:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  CHEST_JOINT1:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  CHEST_JOINT0:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  R_INDEXMP_R:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  LARM_JOINT0:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  RARM_JOINT0:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LLEG_JOINT1:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LARM_JOINT4:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  RLEG_JOINT1:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LLEG_JOINT6:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  LLEG_JOINT3:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  L_THUMBCM_P:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  RLEG_JOINT3:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2
+  R_INDEXPIP_R:
+    has_velocity_limits: true
+    max_velocity: 0.5
+    has_acceleration_limits: true
+    max_acceleration: 0.1
+  LARM_JOINT2:
+    has_velocity_limits: true
+    max_velocity: 10
+    has_acceleration_limits: true
+    max_acceleration: 2

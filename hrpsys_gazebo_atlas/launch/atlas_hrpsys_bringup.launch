@@ -5,6 +5,7 @@
   <arg name="SIMULATOR_NAME" default="RobotHardware0" />
   <arg name="CONF_FILE" default="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).conf" />
   <arg name="USE_LIMB_TRAJECTORY" default="true" />
+  <arg name="CONTROLLER_CONFIG_FILE" default="$(find hrpsys_gazebo_atlas)/config/atlas_v3_controller_config.yaml" />
 
   <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
     <arg name="USE_RTCD" value="true" />
@@ -22,31 +23,19 @@
 
   <rosparam if="$(arg USE_LIMB_TRAJECTORY)"
             command="load"
-            file="$(find hrpsys_gazebo_atlas)/config/atlas_v3_controller_config.yaml" />
+            file="$(arg CONTROLLER_CONFIG_FILE)" />
 
   <!-- hrpsys_ros_bridge -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_ros_bridge.launch">
     <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
     <arg name="USE_ROBOTHARDWARE" value="true" />
     <arg name="USE_DIAGNOSTICS" value="false" />
+    <arg name="USE_COLLISIONCHECK" value="false" />
   </include>
   <!-- start diagnostics -->
   <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_diagnostics.launch">
   </include>
 
-  <!-- <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" > -->
-  <!--   <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" /> -->
-  <!--   <arg name="MODEL_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" /> -->
-  <!--   <arg name="COLLADA_FILE" value="$(find hrpsys_gazebo_atlas)/models/$(arg ROBOT_NAME).dae" /> -->
-  <!--   <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" /> -->
-  <!--   <arg name="USE_ROBOTHARDWARE" value="true" /> -->
-  <!-- </include> -->
-
-  <!-- BEGIN:openrtm connection -->
-  <!-- <env name="ROBOT_NAME" value="$(arg ROBOT_NAME)" /> -->
-  <!-- <env name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" /> -->
-  <!-- <node name="rtmlaunch_hrpsys_gazebo_atlas_hrpsys_launch" pkg="openrtm" type="rtmlaunch.py" args="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_bringup.launch"/> -->
-  <!-- <rtconnect from="RobotHardwareServiceROSBridge.rtc:RobotHardwareService" to="$(arg SIMULATOR_NAME).rtc:RobotHardwareService"  subscription_type="new"/> -->
-  <!-- END:openrtm connection -->
-
+  <!-- dashboard runs on operator's side -->
+  <node pkg="hrpsys_gazebo_atlas" type="atlas_hrpsys_dashboard" name="atlas_dashboard" />
 </launch>
