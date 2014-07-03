@@ -38,7 +38,7 @@ static std::vector<int> servo;
 static bool isLocked = false;
 static int frame = 0;
 static timespec g_ts;
-static long g_period_ns=1000000;
+static long g_period_ns=3000000;
 static ros::Time rg_ts;
 static ros::Time last_callback_time;
 
@@ -557,7 +557,7 @@ int write_command_angles(const double *angles)
             send_com.kp_velocity[i]  = 50;
           }
         } else if(atlas_name == ATLAS_V0) {
-          send_com.kp_velocity[i]  = 100;
+          send_com.kp_velocity[i]  = 200;
         }
       } else {
         servo_on = false;
@@ -929,7 +929,7 @@ int open_iob(void)
             jointcommands.kp_velocity[i]  = 50;
           }
         } else if(atlas_name == ATLAS_V0) {
-          jointcommands.kp_velocity[i]  = 100;
+          jointcommands.kp_velocity[i]  = 200;
         }
     }
     jointcommands.desired_controller_period_ms = static_cast<unsigned int>(g_period_ns * 1e-6);
