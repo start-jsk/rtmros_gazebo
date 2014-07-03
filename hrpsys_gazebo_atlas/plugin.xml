@@ -1,4 +1,24 @@
 <library path="src">
+  <class name="atlas_hrpsys_dashboard" type="hrpsys_gazebo_atlas.atlas_hrpsys_dashboard.AtlasHrpsysDashboard" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      A Python GUI plugin for displaying a dashboard that displays and interacts with low level hrpsys states.
+    </description>
+    <qtgui>
+      <group>
+        <label>Robot</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to specific robots.</statustip>
+      </group>
+      <group>
+        <label>Hrpsys</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to the hrpsys robot.</statustip>
+      </group>
+      <label>Hrpsys Dashboard</label>
+      <icon type="theme">task-past-due</icon>
+      <statustip>A Python GUI plugin for displaying a dashboard that displays and interacts with low level hrpsys states.</statustip>
+    </qtgui>
+  </class>
   <class name="rqt_hrpsys_triangle"
          type="hrpsys_gazebo_atlas.triangle.TriangleGUI"
          base_class_type="rqt_gui_py::Plugin">

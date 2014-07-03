@@ -1,5 +1,13 @@
-(require :atlas "package://hrpsys_gazebo_atlas/models/atlas_v3.l")
-;; (require :atlas "package://hrpsys_gazebo_atlas/models/atlas.l") ;; for atlas old model (without backpack)
+(if (boundp '*atlas-name*)
+    (cond
+     ((equal *atlas-name* :atlas-v0)
+      (require :atlas "package://hrpsys_gazebo_atlas/models/atlas.l"))
+     ((equal *atlas-name* :atlas-v3)
+      (require :atlas "package://hrpsys_gazebo_atlas/models/atlas_v3.l")))
+  (progn
+    (ros::ros-warn "atlas-v3 is used as default")
+    (require :atlas "package://hrpsys_gazebo_atlas/models/atlas_v3.l"))
+  )
 (require :sandia_hand_left  "package://hrpsys_gazebo_atlas/models/sandia_hand_left.l")
 (require :sandia_hand_right "package://hrpsys_gazebo_atlas/models/sandia_hand_right.l")
 
@@ -25,6 +33,14 @@
     (setq (*atlas* . bodies) atbd)
     )
   *atlas*)
+
+(defmethod atlas-robot
+  (:lhand
+   ()
+   (send self :get :lhand-model))
+  (:rhand
+   ()
+   (send self :get :rhand-model)))
 
 ;; hand pose
 (dolist (ahand '(sandia_hand_left-robot sandia_hand_right-robot))

@@ -1,7 +1,4 @@
 - git:
-    uri: https://github.com/start-jsk/openrtm_aist_core
-    local-name: rtm-ros-robotics/openrtm_common/openrtm_aist_core
-- git:
     uri: https://github.com/start-jsk/openhrp3
     local-name: rtm-ros-robotics/openrtm_common/openhrp3
 - git:
@@ -13,6 +10,9 @@
 - git:
     uri: https://github.com/jsk-ros-pkg/jsk_common
     local-name: jsk-ros-pkg/jsk_common
+- git:
+    uri: https://github.com/jsk-ros-pkg/jsk_recognition
+    local-name: jsk-ros-pkg/jsk_recognition
 - git:
     uri: https://github.com/jsk-ros-pkg/jsk_model_tools
     local-name: jsk-ros-pkg/jsk_model_tools

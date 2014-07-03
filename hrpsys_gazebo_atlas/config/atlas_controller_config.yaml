@@ -17,34 +17,32 @@ controller_configuration:
       - r_arm_elx
       - r_arm_uwy
       - r_arm_mwx
-  - group_name: larm_torso
-    controller_name: /larm_torso_controller
+  - group_name: lleg
+    controller_name: /lleg_controller
     joint_list:
-      - l_arm_usy
-      - l_arm_shx
-      - l_arm_ely
-      - l_arm_elx
-      - l_arm_uwy
-      - l_arm_mwx
-      - back_lbz
-      - back_mby
-      - back_ubx
-  - group_name: rarm_torso
-    controller_name: /rarm_torso_controller
+      - l_leg_uhz
+      - l_leg_mhx
+      - l_leg_lhy
+      - l_leg_kny
+      - l_leg_uay
+      - l_leg_lax
+  - group_name: rleg
+    controller_name: /rleg_controller
     joint_list:
-      - r_arm_usy
-      - r_arm_shx
-      - r_arm_ely
-      - r_arm_elx
-      - r_arm_uwy
-      - r_arm_mwx
-      - back_lbz
-      - back_mby
-      - back_ubx
+      - r_leg_uhz
+      - r_leg_mhx
+      - r_leg_lhy
+      - r_leg_kny
+      - r_leg_uay
+      - r_leg_lax
   - group_name: torso
     controller_name: /torso_controller
     joint_list:
       - back_lbz
       - back_mby
       - back_ubx
-
+  - group_name: head
+    controller_name: /head_controller
+    joint_list:
+      - neck_ay
+iob_atlas_name: atlas_v0

@@ -24,5 +24,6 @@
     <uri>file://drcbox-valve-bar-0</uri>
     <uri>file://drcbox-valve-large-0</uri>
     <uri>file://drcbox-valve-small-0</uri>
+    <uri>file://basket</uri>
   </models>
 </database>

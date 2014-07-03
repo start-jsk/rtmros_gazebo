@@ -19,5 +19,6 @@
   <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
     <arg name="ROBOT_TYPE" value="HRP2JSKNT" />
     <arg name="USE_INSTANCE_NAME" value="true" />
+    <arg name="HRPSYS_PY_ARGS" value="--use-unstable-rtc" />
   </include>
 </launch>

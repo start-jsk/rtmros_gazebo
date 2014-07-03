@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
 find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description message_generation)
+catkin_python_setup()
 
 add_message_files(
   DIRECTORY msg
@@ -55,6 +56,7 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
     --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
     --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
     --conf-file-option "abc_end_effectors: :rarm,r_arm_mwx,back_ubx, :larm,l_arm_mwx,back_ubx, :rleg,r_leg_lax,pelvis, :lleg,l_leg_lax,pelvis,"
+    --conf-file-option "end_effectors: :rarm,r_arm_mwx,back_ubx,0.0,-0.195946,0.04135,0.710565,-0.497543,-0.497543,1.90602, :larm,l_arm_mwx,back_ubx,0.0,0.195946,0.04135,-0.710565,-0.497543,0.497543,1.90602, :rleg,r_leg_lax,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0, :lleg,l_leg_lax,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0,"
     --proj-file-root-option "0,0,1.0,0,0,1,0"
     )
 else()
@@ -84,6 +86,7 @@ if (${collada_urdf_jsk_patch_FOUND} AND EXISTS ${atlas_description_PACKAGE_PATH}
     --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
     --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
     --conf-file-option "abc_end_effectors: :rarm,r_arm_wrx,back_bkx, :larm,l_arm_wrx,back_bkx, :rleg,r_leg_akx,pelvis, :lleg,l_leg_akx,pelvis,"
+    --conf-file-option "end_effectors: :rarm,r_arm_wrx,back_bkx,0.0,-0.195946,0.04135,0.710565,-0.497543,-0.497543,1.90602, :larm,l_arm_wrx,back_bkx,0.0,0.195946,0.04135,-0.710565,-0.497543,0.497543,1.90602, :rleg,r_leg_akx,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0, :lleg,l_leg_akx,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0,"
     --conf-file-option "collision_pair: pelvis:l_arm_wrx pelvis:l_arm_wry pelvis:r_arm_wrx pelvis:r_arm_wry l_arm_wrx:l_leg_akx l_arm_wrx:l_leg_aky l_arm_wry:l_leg_kny l_arm_wry:l_leg_kny r_arm_wrx:r_leg_akx r_arm_wrx:r_leg_aky r_arm_wry:r_leg_kny r_arm_wry:r_leg_kny r_arm_wrx:l_arm_wrx r_arm_wrx:l_arm_wry r_arm_wry:l_arm_wrx r_arm_wry:l_arm_wry r_leg_akx:l_leg_akx r_leg_akx:l_leg_aky r_leg_akx:l_leg_kny r_leg_aky:l_leg_akx r_leg_aky:l_leg_aky r_leg_aky:l_leg_kny r_leg_kny:l_leg_akx r_leg_kny:l_leg_aky r_leg_kny:l_leg_kny"
     #  --conf-file-option "collision_pair: back_bkx:l_arm_wrx back_bkx:l_arm_wry back_bkx:r_arm_wrx back_bkx:r_arm_wry back_bky:l_arm_wrx back_bky:l_arm_wry back_bky:r_arm_wrx back_bky:r_arm_wry back_bkz:l_arm_wrx back_bkz:l_arm_wry back_bkz:r_arm_wrx back_bkz:r_arm_wry l_arm_wrx:l_leg_akx l_arm_wrx:l_leg_aky l_arm_wry:l_leg_kny l_arm_wry:l_leg_kny r_arm_wrx:r_leg_akx r_arm_wrx:r_leg_aky r_arm_wry:r_leg_kny r_arm_wry:r_leg_kny r_arm_wrx:l_arm_wrx r_arm_wrx:l_arm_wry r_arm_wry:l_arm_wrx r_arm_wry:l_arm_wry r_leg_akx:l_leg_akx r_leg_akx:l_leg_aky r_leg_akx:l_leg_kny r_leg_aky:l_leg_akx r_leg_aky:l_leg_aky r_leg_aky:l_leg_kny r_leg_kny:l_leg_akx r_leg_kny:l_leg_aky r_leg_kny:l_leg_kny"
     --proj-file-root-option "0,0,1.0,0,0,1,0"
@@ -100,9 +103,13 @@ pkg_check_modules(omnidynamic omniDynamic4 REQUIRED)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
 pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
 pkg_check_modules(hrpsys hrpsys-base REQUIRED)
+if(EXISTS ${hrpsys_SOURCE_DIR})
+  set(ROBOTHARDWARE_SOURCE ${hrpsys_SOURCE_DIR}/src/rtc/RobotHardware)
+else()
+  set(ROBOTHARDWARE_SOURCE ${hrpsys_PREFIX}/share/hrpsys/src/rtc/RobotHardware)
+endif()
 include_directories(${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhrp3_INCLUDE_DIRS} ${hrpsys_INCLUDE_DIRS})
-link_directories(${CATKIN_DEVEL_PREFIX}/lib ${openhrp3_LIBRARY_DIRS} /opt/ros/$ENV{ROS_DISTRO}/lib/)
-set(ROBOTHARDWARE_SOURCE ${hrpsys_SOURCE_DIR}/src/rtc/RobotHardware)
+link_directories(${CATKIN_DEVEL_PREFIX}/lib ${hrpsys_PREFIX}/lib ${openhrp3_LIBRARY_DIRS} /opt/ros/$ENV{ROS_DISTRO}/lib/)
 add_subdirectory(iob)
 
 add_custom_target(hrpsys_gazebo_atlas_iob ALL DEPENDS RobotHardware_atlas)
