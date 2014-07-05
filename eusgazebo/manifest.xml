@@ -9,9 +9,9 @@
   <review status="unreviewed" notes=""/>
   <!-- <url>http://wiki.ros.org/eusgazebo</url> -->
 
-  <!-- <depend package="gazebo_ros"/> -->
-  <!-- <depend package="gazebo_msgs"/> -->
-  <!-- <depend package="roseus"/> -->
-  <!-- <depend package="collada_urdf_jsk_patch"/> -->
+  <depend package="gazebo_ros"/>
+  <depend package="gazebo_msgs"/>
+  <depend package="roseus"/>
+  <depend package="collada_urdf_jsk_patch"/>
 
 </package>
