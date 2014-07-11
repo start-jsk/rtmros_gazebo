@@ -17,7 +17,7 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; initialize
   (:init
-   ()
+   (&key (gazebo-viewer nil))
 
    ;; start gzserver
    (warning-message 2 "launch gzserver~%")
@@ -38,6 +38,12 @@
 	  (objects ground))
 	 (t
 	  (objects (list ground))))
+   (when gazebo-viewer
+     (unix::usleep (* 5 1000 1000))
+     (cond ((ros::rospack-find "drcsim_gazebo")
+            (unix:system "GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/tmp/gazebo_model rosrun drcsim_gazebo run_gzclient &"))
+           (t
+            (unix:system "GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/tmp/gazebo_model rosrun gazebo_ros gzclient &"))))
    )
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; add eus model to gazebo world
