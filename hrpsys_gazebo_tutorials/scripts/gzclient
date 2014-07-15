@@ -1,14 +1,8 @@
 #!/bin/bash
-final="$@"
 
-# add ros plugin if does not exist
-if [ `expr "$final" : '.*libgazebo_ros_paths_plugin\.so.*'` -eq 0 ]
-then
-    final="$final -g `catkin_find --first-only libgazebo_ros_paths_plugin.so`"
+rospack find drcsim_gazebo 2> /dev/null
+if [ $? -eq 0 ]; then
+    rosrun drcsim_gazebo run_gzclient $@
+else
+    rosrun gazebo_ros gzclient $@
 fi
-
-# Combine the commands
-setup_path=$(pkg-config --variable=prefix gazebo)/share/gazebo/
-. $setup_path/setup.sh
-. $(rospack find hrpsys_gazebo_tutorials)/setup.sh
-gzclient $final
