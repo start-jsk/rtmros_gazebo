@@ -1,20 +1,8 @@
 #!/bin/bash
-final="$@"
 
-# add ros path plugin if it does not already exist in the passed in arguments
-if [ `expr "$final" : '.*libgazebo_ros_paths_plugin\.so.*'` -eq 0 ]
-then
-    final="$final -s `catkin_find --first-only libgazebo_ros_paths_plugin.so`"
+rospack find drcsim_gazebo 2> /dev/null
+if [ $? -eq 0 ]; then
+    rosrun drcsim_gazebo run_gzserver $@
+else
+    rosrun gazebo_ros gzserver $@
 fi
-
-# add ros api plugin if it does not already exist in the passed in arguments
-if [ `expr "$final" : '.*libgazebo\_ros\_api\_plugin\.so.*'` -eq 0 ]
-then
-    final="$final -s `catkin_find --first-only libgazebo_ros_api_plugin.so`"
-fi
-
-setup_path=$(pkg-config --variable=prefix gazebo)/share/gazebo/
-. $setup_path/setup.sh
-. $(rospack find hrpsys_gazebo_tutorials)/setup.sh
-gzserver $final
-
