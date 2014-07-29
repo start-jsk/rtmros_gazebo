@@ -28,10 +28,11 @@
 		 "rosrun eusgazebo eus2urdf_for_gazebo.py ~a ~a ~a"
 		 name collada-path (if urdf-dir urdf-dir "")))
 	;; make static model
-	(unix:system
-	 (format nil
-		 "rosrun eusgazebo make_urdf_static_model_for_gazebo.py ~a ~a"
-		 name (if urdf-dir urdf-dir "")))
+        (when static
+          (unix:system
+           (format nil
+                   "rosrun eusgazebo make_urdf_static_model_for_gazebo.py ~a ~a"
+                   name (if urdf-dir urdf-dir ""))))
 	)
        (t (format nil "dae error~%"))))
     (format nil "~a/~a~a/~a" urdf-dir name (if static "_static" "") "model.urdf")
