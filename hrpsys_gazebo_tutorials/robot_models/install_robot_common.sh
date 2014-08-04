@@ -35,6 +35,7 @@ else
 fi
 
 OUTPUT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}.urdf
+OUTPUT_FILE2=${OUTPUT_DIR}/${ROBOT_NAME}_for_gazebo.urdf
 SED_SCRIPT_FILE=${OUTPUT_DIR}/${ROBOT_NAME}_optional_urdf_setting.sh
 
 if [ ! -e ${INPUT_DIR}/${ROBOT_NAME}.dae ]; then
@@ -42,16 +43,11 @@ if [ ! -e ${INPUT_DIR}/${ROBOT_NAME}.dae ]; then
     exit 0
 fi
 if [ ! -e ${OUTPUT_FILE} ]; then
-##
     mkdir -p ${OUTPUT_DIR}/meshes
     ${COLLADA_TO_URDF} ${INPUT_DIR}/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://hrpsys_gazebo_tutorials/robot_models/${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
-    # if [ ${ROS_DISTRO} == "groovy" ]; then
-    # 	rosrun collada_tools collada_to_urdf ${INPUT_DIR}/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
-    # elif [ ${ROS_DISTRO} == "hydro" ]; then
-    # 	rosrun collada_urdf collada_to_urdf ${INPUT_DIR}/${ROBOT_NAME}.dae -G -A --mesh_output_dir ${OUTPUT_DIR}/meshes --mesh_prefix "package://${ROBOT_NAME}/meshes" --output_file=${OUTPUT_FILE}
-    # fi
-## execute sed
     ${SED_SCRIPT_FILE} ${OUTPUT_FILE} ${ADDITIONAL_ROS_PACKAGE_PATH}
+    cp ${OUTPUT_FILE} ${OUTPUT_FILE2} -f
+    sed -i -e "s@package://hrpsys_gazebo_tutorials/robot_models/@model://@g" ${OUTPUT_FILE2}
 fi
 
 if [ ! -e ${OUTPUT_DIR}/hrpsys ]; then
