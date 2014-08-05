@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+
+<robot name="hook_hand"
+       xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="hook_hand" params="side parent reflect *origin">
+    <link name="${side}_hook">
+      <origin xyz="0 0 ${reflect* 0}" rpy="0 0 0"/>
+      <visual> 
+	<origin xyz = "0 0 0" rpy = "0 1.57 0"/>
+	<geometry>
+	  <mesh filename="package://hrpsys_gazebo_atlas/models/hook_visual.dae" scale = ".001 .001 .001"/>
+	</geometry>
+      </visual>
+      <collision>
+	<origin xyz="0 0 0" rpy = "0 1.57 0" />
+	<geometry>
+	  <mesh filename="package://hrpsys_gazebo_atlas/models/meshes/hook_collision.dae" scale= ".001 .001 .001"/>
+	</geometry>
+      </collision>
+    </link>
+
+    <joint name="${side}_hook_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${side}_hook"/>
+      <insert_block name="origin" />
+    </joint>
+
+  </xacro:macro>
+</robot>
