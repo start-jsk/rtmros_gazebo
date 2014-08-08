@@ -1,0 +1,271 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="atlas" >
+  <xacro:include filename="$(find sandia_hand_description)/urdf/sandia_hand_simple_shapes.urdf.xacro" />
+
+  <xacro:macro name="normal_left_hand">
+    <xacro:sandia_hand side="left" parent="l_hand" reflect="-1" joint_type="revolute" thumb_angle="0">
+      <origin xyz="0.00179  0.13516 0.01176" rpy="0 0  1.57079"/>
+    </xacro:sandia_hand>
+
+    <link name="left_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+
+    <joint name="left_grasp_joint" type="fixed">
+      <parent link="l_hand"/>
+      <child link="left_grasp_frame"/>
+      <origin xyz="0.03 0.25 0.045" rpy="0 0 .91"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="normal_right_hand">
+    <xacro:sandia_hand side="right" parent="r_hand" reflect="1" joint_type="revolute" thumb_angle="0">
+      <origin xyz="-0.00179 -0.13516 0.01176" rpy="0 0 -1.57079"/>
+    </xacro:sandia_hand>
+
+    <link name="right_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+
+    <joint name="right_grasp_joint" type="fixed">
+      <parent link="r_hand"/>
+      <child link="right_grasp_frame"/>
+      <origin xyz="0.03 -0.25 0.045" rpy="0 0 2.23"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="reversed_left_hand">
+    <xacro:sandia_hand side="left" parent="l_hand" reflect="1" joint_type="revolute" thumb_angle="0">
+      <origin xyz="0.00179  0.13516 0.01176" rpy="0 0  1.57079"/>
+    </xacro:sandia_hand>
+    
+    <link name="left_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+
+    <joint name="left_grasp_joint" type="fixed">
+      <parent link="l_hand"/>
+      <child link="left_grasp_frame"/>
+      <origin xyz="-0.03 0.25 0.045" rpy="0 0 2.23"/>
+    </joint>
+  </xacro:macro>
+  
+  <xacro:macro name="reversed_right_hand">
+    <xacro:sandia_hand side="right" parent="r_hand" reflect="-1" joint_type="revolute" thumb_angle="0">
+      <origin xyz="-0.00179 -0.13516 0.01176" rpy="0 0 -1.57079"/>
+    </xacro:sandia_hand>
+
+    <link name="right_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+
+    <joint name="right_grasp_joint" type="fixed">
+      <parent link="r_hand"/>
+      <child link="right_grasp_frame"/>
+      <origin xyz="-0.03 -0.25 0.045" rpy="0 0 .91"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="plus120_left_hand">
+    <xacro:sandia_hand side="left" parent="l_hand" reflect="-1" joint_type="revolute" thumb_angle="0">
+      <origin xyz="0.00179  0.13516 0.01176" rpy="-2.09439333 0 1.57079"/>
+    </xacro:sandia_hand>
+    <link name="left_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="left_grasp_joint" type="fixed">
+      <parent link="l_hand"/>
+      <child link="left_grasp_frame"/>
+      <origin xyz="${-.5 *0.03 + -.866025404 * 0.0333} 0.25 ${-.5 * 0.0333 + .866025404 * 0.03 + 0.01176}" 
+            rpy=".9393 -2.581 -1.2000"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="plus120_right_hand">
+    <xacro:sandia_hand side="right" parent="r_hand" reflect="1" joint_type="revolute" thumb_angle="0">
+      <origin xyz="-0.00179 -0.13516 0.01176" rpy="2.09439333 0 -1.57079"/>
+    </xacro:sandia_hand>
+    <link name="right_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="right_grasp_joint" type="fixed">
+      <parent link="r_hand"/>
+      <child link="right_grasp_frame"/>
+      <origin xyz="${-.5 *0.03 + -.866025404 * 0.0333} -0.25 ${-.5 * 0.0333 + .866025404 * 0.03 + 0.01176}" 
+              rpy="-2.20225 .56095 1.2000"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:include filename="$(find hrpsys_gazebo_atlas)/models/hook_hand.urdf.xacro" />
+
+  <xacro:macro name="hook_left_hand">
+    <xacro:hook_hand side="left" parent="l_hand" reflect="1">
+      <origin xyz="0  0.125 0.01176" rpy="0 0  1.57079"/>
+    </xacro:hook_hand>
+    <link name="left_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="left_grasp_joint" type="fixed">
+      <parent link="l_hand"/>
+      <child link="left_grasp_frame"/>
+      <origin xyz="0 0.38 0" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+ <xacro:macro name="hook_right_hand">
+    <xacro:hook_hand side="right" parent="r_hand" reflect="-1">
+      <origin xyz="0  -0.125 0.01176" rpy="0 0  -1.57079"/>
+    </xacro:hook_hand>
+    <link name="right_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="right_grasp_joint" type="fixed">
+      <parent link="r_hand"/>
+      <child link="right_grasp_frame"/>
+      <origin xyz="0 -0.38 0" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="flathook_left_hand">
+    <xacro:hook_hand side="left" parent="l_hand" reflect="1">
+      <origin xyz="0  0.125 0.01176" rpy="3.14159 0  1.57079"/>
+    </xacro:hook_hand>
+    <link name="left_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="left_grasp_joint" type="fixed">
+      <parent link="l_hand"/>
+      <child link="left_grasp_frame"/>
+      <origin xyz="0 0.38 0" rpy="0 3.14159 0"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="flathook_right_hand">
+    <xacro:hook_hand side="right" parent="r_hand" reflect="-1">
+      <origin xyz="0  -0.125 0.01176" rpy="3.14159 0  -1.57079"/>
+    </xacro:hook_hand>
+    <link name="right_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="right_grasp_joint" type="fixed">
+      <parent link="r_hand"/>
+      <child link="right_grasp_frame"/>
+      <origin xyz="0 -0.38 0" rpy="${3.14159} 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="hook90_right_hand">
+    <xacro:hook_hand side="right" parent="r_hand" reflect="-1">
+      <origin xyz="0  -0.125 0.01176" rpy="1.57079 0  -1.57079"/>
+    </xacro:hook_hand>
+    <link name="right_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="right_grasp_joint" type="fixed">
+      <parent link="r_hand"/>
+      <child link="right_grasp_frame"/>
+      <origin xyz="0 -0.38 0" rpy="${3.14159} 1.57079 0"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="hook30_right_hand">
+    <xacro:hook_hand side="right" parent="r_hand" reflect="-1">
+      <origin xyz="0  -0.125 0.01176" rpy="3.66539 0  -1.57079"/>
+    </xacro:hook_hand>
+    <link name="right_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="right_grasp_joint" type="fixed">
+      <parent link="r_hand"/>
+      <child link="right_grasp_frame"/>
+      <origin xyz="0 -0.38 0" rpy="${3.14159} 3.66539 0"/>
+    </joint>
+  </xacro:macro>
+
+
+  <xacro:macro name="hook30_left_hand">
+    <xacro:hook_hand side="left" parent="l_hand" reflect="1">
+      <origin xyz="0  0.125 0.01176" rpy="2.61799 0  1.57079"/>
+    </xacro:hook_hand>
+    <link name="left_grasp_frame">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <inertial>
+        <mass value="1e-05"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="1e-08" ixy="0" ixz="0" iyy="1e-08" iyz="0" izz="1e-08"/>
+      </inertial>
+    </link>
+    <joint name="left_grasp_joint" type="fixed">
+      <parent link="l_hand"/>
+      <child link="left_grasp_frame"/>
+      <origin xyz="0 0.38 0" rpy="0 2.61799 0"/>
+    </joint>
+  </xacro:macro>
+</robot>
+
+
+
+
+
+
+
+
