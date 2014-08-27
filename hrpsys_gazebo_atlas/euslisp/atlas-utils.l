@@ -204,7 +204,8 @@
 
 ;; angle vector
 (defun real2model ()
-  (send *atlas* :angle-vector (send *ri* :state :potentio-vector))
+  (send *ri* :update-robot-state :wait-until-update t)
+  (send *atlas* :angle-vector (send *ri* :potentio-vector))
   (when *lr-reverse* (mirror-angle-vector)))
 
 (defun model2real (&key (sleep-time 3000) (time sleep-time) (wait nil))
