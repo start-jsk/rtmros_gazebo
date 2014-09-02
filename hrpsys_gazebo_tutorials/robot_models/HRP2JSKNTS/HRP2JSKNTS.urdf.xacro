@@ -5,7 +5,7 @@
   <!-- add IOB plugin -->
   <gazebo>
     <plugin filename="libIOBPlugin.so" name="hrpsys_gazebo_plugin">
-      <robotname>HRP2JSKNT</robotname>
+      <robotname>HRP2JSKNTS</robotname>
       <controller>hrpsys_gazebo_configuration</controller>
     </plugin>
   </gazebo>
