@@ -30,6 +30,9 @@ install:
   - sudo apt-get update -qq
   - sudo apt-get install -qq drcsim-hydro
   - sudo apt-get install -qq ros-hydro-openrtm-aist
+  - sudo apt-get install -qq libpq-dev
+  - sudo updatedb
+  - locate libpq.so
   - export ROS_PARALLEL_JOBS="-j4 -l4"
 script: source .travis/travis.sh
 notifications:
