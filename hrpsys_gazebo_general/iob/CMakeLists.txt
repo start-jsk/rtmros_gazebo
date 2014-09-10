@@ -30,6 +30,8 @@ target_link_libraries(hrpEC_gazebo hrpIo_gazebo hrpsysBaseStub)
 set_target_properties(hrpEC_gazebo PROPERTIES PREFIX "")
 set_target_properties(hrpEC_gazebo PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set_target_properties(hrpEC_gazebo PROPERTIES OUTPUT_NAME hrpEC)
+set_target_properties(hrpEC_gazebo PROPERTIES COMPILE_DEFINITIONS "OPENRTM_VERSION110")
+
 
 install(TARGETS RobotHardwareComp_gazebo RobotHardware_gazebo hrpEC_gazebo hrpIo_gazebo
   RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
