@@ -102,8 +102,8 @@
    (let* (left-av right-av)
      (cond
       ((vectorp av-list)
-       (setq right-av (if (> (length av-list) 6) (subseq av-list 0 6)))
-       (setq left-av (if (> (length av-list) 12) (subseq av-list 6 12))))
+       (setq right-av (if (>= (length av-list) 6) (subseq av-list 0 6)))
+       (setq left-av (if (>= (length av-list) 12) (subseq av-list 6 12))))
       (t
        (setq right-av (elt av-list 0))
        (setq left-av (elt av-list 1))))
