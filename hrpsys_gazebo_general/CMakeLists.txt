@@ -55,4 +55,4 @@ rosbuild_add_library(IOBPlugin src/IOBPlugin.cpp)
 rosbuild_add_library(AddForcePlugin src/AddForcePlugin.cpp)
 rosbuild_add_library(SetVelPlugin src/SetVelPlugin.cpp)
 rosbuild_add_library(GetVelPlugin src/GetVelPlugin.cpp)
-
+rosbuild_add_library(ThermoPlugin src/ThermoPlugin.cpp)
