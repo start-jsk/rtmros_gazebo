@@ -45,11 +45,14 @@ public:
 		this->coil_thermo_conductance = this->parseThermoParam(_sdf, "coil_thermo_conductance", 21.55);
 		this->outer_thermo_resistance = this->parseThermoParam(_sdf, "outer_thermo_resistance", 4.65);
 		this->case_thermo_conductance = this->parseThermoParam(_sdf, "case_thermo_conductance", 240.86);
-		this->atomosphere_thermo_conductance = this->parseThermoParam(_sdf, "atomosphere_thermo_conductance", 10000.0);
+		this->atomosphere_thermo_conductance = this->parseThermoParam(_sdf, "atomosphere_thermo_conductance", 1000.0);
 		this->A_vs_Nm = this->parseThermoParam(_sdf, "A_vs_Nm", 0.1);
 		this->atomosphere_temperature = this->parseThermoParam(_sdf, "atomosphere_temperature", 300);
 		this->case_temperature = this->parseThermoParam(_sdf, "case_temperature", 300);
 		this->coil_temperature = this->parseThermoParam(_sdf, "coil_temperature", 300);
+		this->thermal_calcuration_step = this->parseThermoParam(_sdf, "thermal_calcuration_step", 10);
+		this->thermal_calcuration_cnt = this->thermal_calcuration_step ;
+		this->tau = 0;
 
 		// find root link
 		this->joint = this->model->GetJoint(this->joint_name);
@@ -97,29 +100,41 @@ public:
 
 	// Called by the world update start event
 	void OnUpdate(const common::UpdateInfo & /*_info*/) {
+		physics::JointPtr j = this->joint ;
+		physics::JointWrench w = j->GetForceTorque(0u);
+		math::Vector3 a = j->GetGlobalAxis(0u);
+		math::Vector3 m = this->link->GetWorldPose().rot * w.body2Torque;
+		this->tau += (float)a.Dot(m);
+
+		if ( --this->thermal_calcuration_cnt > 0 ) return ;
+
+		this->tau /= this->thermal_calcuration_step;
+		this->thermal_calcuration_cnt = this->thermal_calcuration_step;
 		common::Time curTime = this->world->GetSimTime();
 		this->PublishThermo(curTime, this->lastUpdateTime);
 		this->lastUpdateTime = curTime ;
+		this->tau = 0;
 	}
 
 	// Link has only 1 joint, and the joint has only 1 axis
 	void PublishThermo(const common::Time &_curTime, const common::Time &_lastTime) {
 		std_msgs::Float32 tor, the1, the2 ;
-		physics::JointPtr j = this->joint ;
-		physics::JointWrench w = j->GetForceTorque(0u);
-		math::Vector3 a = j->GetGlobalAxis(0u);
-		math::Vector3 m = this->link->GetWorldPose().rot * w.body2Torque;
-		float tau = (float)a.Dot(m);
+		float abs_tau  ;
+		if ( this->tau > 0 ){
+			abs_tau = this->tau ;
+		} else {
+			abs_tau = -this->tau ;
+		}
 
 		float dt = (_curTime - _lastTime).Float();
 		float dT = (this->atomosphere_temperature - this->case_temperature)/this->outer_thermo_resistance + (this->coil_temperature - this->case_temperature)/this->inner_thermo_resistance;
-		float dTin = (this->case_temperature - this->coil_temperature)/this->inner_thermo_resistance + tau * this->A_vs_Nm * this->electric_resistance;
+		float dTin = (this->case_temperature - this->coil_temperature)/this->inner_thermo_resistance + abs_tau * this->A_vs_Nm * this->electric_resistance;
 		float dTout = (this->case_temperature - this->atomosphere_temperature)/this->outer_thermo_resistance;
 		this->case_temperature += dT / this->case_thermo_conductance * dt;
 		this->coil_temperature += dTin / this->coil_thermo_conductance * dt;
 		this->atomosphere_temperature += dTout / this->atomosphere_thermo_conductance * dt;
 
-		tor.data = tau ;
+		tor.data = this->tau ;
 		this->pubTorqueQueue->push(tor, this->pubTorque);
 		the1.data = this->case_temperature;
 		this->pubCaseThermoQueue->push(the1, this->pubCaseThermo);
@@ -139,6 +154,8 @@ private:
 	physics::JointPtr joint;
 	event::ConnectionPtr updateConnection;
 	common::Time lastUpdateTime;
+	int thermal_calcuration_step, thermal_calcuration_cnt;
+	float tau;
 
 	float electric_resistance, inner_thermo_resistance, outer_thermo_resistance;
 	float coil_thermo_conductance, case_thermo_conductance, atomosphere_thermo_conductance;
