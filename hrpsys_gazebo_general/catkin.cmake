@@ -50,5 +50,7 @@ add_library(AddForcePlugin src/AddForcePlugin.cpp)
 add_library(GetVelPlugin src/GetVelPlugin.cpp)
 add_dependencies(AddForcePlugin hrpsys_gazebo_msgs_gencpp)
 add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
+add_library(ThermoPlugin src/ThermoPlugin.cpp)
+add_dependencies(ThermoPlugin hrpsys_gazebo_msgs_gencpp)
 #endif()
 
