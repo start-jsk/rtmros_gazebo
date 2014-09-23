@@ -99,8 +99,14 @@
    )
   (:send-command
    (av-list)
-   (let* ((left-av (elt av-list 0))
-	  (right-av (elt av-list 1)))
+   (let* (left-av right-av)
+     (cond
+      ((vectorp av-list)
+       (setq right-av (if (>= (length av-list) 6) (subseq av-list 0 6)))
+       (setq left-av (if (>= (length av-list) 12) (subseq av-list 6 12))))
+      (t
+       (setq right-av (elt av-list 0))
+       (setq left-av (elt av-list 1))))
      (setq msg (instance hrpsys_gazebo_msgs::JointCommand :init))
      (when left-av
        (send msg :position (concatenate float-vector (mapcar #'deg2rad (concatenate cons left-av))))
