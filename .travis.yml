@@ -18,6 +18,7 @@ matrix:
   allow_failures:
     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=true
     - env: ROS_DISTRO=indigo  ROSWS=wstool BUILDER=catkin   USE_DEB=false
+    - env: ROS_DISTRO=hydro  ROSWS=wstool BUILDER=catkin    USE_DEB=false
 before_install:
   # add osrf
   - sudo sh -c 'echo "deb http://packages.ros.org/ros-shadow-fixed/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/ros-latest.list'
