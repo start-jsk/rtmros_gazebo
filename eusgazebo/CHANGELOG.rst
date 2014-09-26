@@ -2,8 +2,8 @@
 Changelog for package eusgazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.1 (2014-09-26)
+------------------
 * fixed minor bug to read static argument
 * add option for displaying gazebo viewer
 * added eusgazebo/test
