@@ -64,6 +64,13 @@
 	  (let* ((model-file-path (format nil "~a/environment_models/~a" package-dir-path obj-name)))
 	    (unless (probe-file model-file-path) (return)))
 	  (incf obj-cnt))
+	(dolist (world-file-path world-file-path-list)
+	  ;; add the obects to the world file
+	  (let* ((pos (scale 0.001 (send obj :worldpos)))
+		 (pos-string (format nil "~a ~a ~a" (elt pos 0) (elt pos 1) (elt pos 2)))
+		 (rpy (car (rpy-angle (send obj :worldrot))))
+		 (rpy-string (format nil "~a ~a ~a" (elt rpy 2) (elt rpy 1) (elt rpy 0))))
+	    (unix:system (format nil "sed -i -e \"s@    <!-- Objects -->@    <!-- Objects -->\\n    <include>\\n      <uri>model://~a_static</uri>\\n      <pose>~a ~a</pose>\\n    </include>@g\" ~a" obj-name pos-string rpy-string world-file-path))))
 	;; convert the model
 	(eus2urdf-for-gazebo obj obj-name)
 	;; make the static model
@@ -72,13 +79,6 @@
 	;; make the fixed model
 	(when (or make-fixed world-file-path-list)
 	  (unix:system (format nil "rosrun hrpsys_gazebo_tutorials make_fixed_model.py ~a" obj-name)))
-	(dolist (world-file-path world-file-path-list)
-	  ;; add the obects to the world file
-	  (let* ((pos (scale 0.001 (send obj :worldpos)))
-		 (pos-string (format nil "~a ~a ~a" (elt pos 0) (elt pos 1) (elt pos 2)))
-		 (rpy (car (rpy-angle (send obj :worldrot))))
-		 (rpy-string (format nil "~a ~a ~a" (elt rpy 2) (elt rpy 1) (elt rpy 0))))
-	    (unix:system (format nil "sed -i -e \"s@    <!-- Objects -->@    <!-- Objects -->\\n    <include>\\n      <uri>model://~a_static</uri>\\n      <pose>~a ~a</pose>\\n    </include>@g\" ~a" obj-name pos-string rpy-string world-file-path))))
 	))
     ;; generate the model database file
     (unix:system (format nil "rosrun hrpsys_gazebo_tutorials generate_model_database.py"))
