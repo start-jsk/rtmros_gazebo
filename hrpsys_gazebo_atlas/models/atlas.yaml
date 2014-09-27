@@ -48,19 +48,13 @@ head:
 larm-end-coords: 
   parent : l_hand
   translate : [0.0, 0.195946, 0.04135]
-  rotate : [0.710565, 0.497543, -0.497543, -109.207]
-  #  translate : [0.0827086, 0.228696, 0.0148248]
-  #  rotate : [1, 0, 0, 0]
-  #  translate : [0, 0, 0]
-  # rotate : [0, 1, 0, 0]
+  rotate : [1, 0, 0, 0]
+  # rotate : [0.710565, 0.497543, -0.497543, -109.207]
 rarm-end-coords:
   parent : r_hand
   translate : [0.0, -0.195946, 0.04135]
-  rotate : [-0.710565, 0.497543, 0.497543, -109.207]
-  #  translate : [0.0827086, -0.220696, 0.0148248]
-  #     rotate : [1, 0, 0, 0]
-  #  translate : [0, 0, 0]
-  #  rotate : [0, 1, 0, 0]
+  rotate : [1, 0, 0, 0]
+  # rotate : [-0.710565, 0.497543, 0.497543, -109.207]
 head-end-coords:
   translate : [-0.01, 0, 0.1]
   rotate    : [0, 1, 0, 90]
