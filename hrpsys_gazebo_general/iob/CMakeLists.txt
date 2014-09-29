@@ -25,7 +25,15 @@ add_executable(RobotHardwareComp_gazebo ${ROBOTHARDWARE_SOURCE}/RobotHardwareCom
 target_link_libraries(RobotHardwareComp_gazebo ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil)
 set_target_properties(RobotHardwareComp_gazebo PROPERTIES OUTPUT_NAME RobotHardwareComp)
 
-install(TARGETS RobotHardwareComp_gazebo RobotHardware_gazebo hrpIo_gazebo
+add_library(hrpEC_gazebo SHARED ${HRPEC_SOURCE}/hrpEC.cpp ${HRPEC_SOURCE}/hrpEC-common.cpp)
+target_link_libraries(hrpEC_gazebo hrpIo_gazebo hrpsysBaseStub)
+set_target_properties(hrpEC_gazebo PROPERTIES PREFIX "")
+set_target_properties(hrpEC_gazebo PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+set_target_properties(hrpEC_gazebo PROPERTIES OUTPUT_NAME hrpEC)
+set_target_properties(hrpEC_gazebo PROPERTIES COMPILE_DEFINITIONS "OPENRTM_VERSION110")
+
+
+install(TARGETS RobotHardwareComp_gazebo RobotHardware_gazebo hrpEC_gazebo hrpIo_gazebo
   RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
   LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
 )
