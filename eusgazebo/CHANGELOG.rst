@@ -2,6 +2,11 @@
 Changelog for package eusgazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add gazebo_ros, gazebo_msgs, and gazebo_plugins to dependency of hrpsys_gazebo_general, eusgaebo.
+* Contributors: Masaki Murooka
+
 0.1.1 (2014-09-26)
 ------------------
 * fixed minor bug to read static argument
