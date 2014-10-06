@@ -12,6 +12,9 @@
 
   <rosdep name="hrpsys_ros_bridge" />
 
+  <depend package="gazebo_ros"/>
+  <depend package="gazebo_msgs"/>
+  <depend package="gazebo_plugins"/>
   <depend package="hrpsys_ros_bridge" />
   <depend package="hrpsys_gazebo_msgs" />
 
