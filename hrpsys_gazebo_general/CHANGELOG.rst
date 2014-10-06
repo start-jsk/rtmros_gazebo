@@ -2,8 +2,8 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.2 (2014-10-06)
+------------------
 * add gazebo_ros, gazebo_msgs, and gazebo_plugins to dependency of hrpsys_gazebo_general, eusgaebo.
 * Merge pull request #111 from k-okada/hrpEC_with_hrpIo_gazebo
   compile hrpEC liked with hrpIo_gazebo
