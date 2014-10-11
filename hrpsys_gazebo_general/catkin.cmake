@@ -29,6 +29,7 @@ link_directories(${CATKIN_DEVEL_PREFIX}/lib ${hrpsys_PREFIX}/lib ${openhrp3_LIBR
 add_subdirectory(iob)
 
 add_custom_target(hrpsys_gazebo_general_iob ALL DEPENDS RobotHardware_gazebo)
+add_dependencies(hrpsys_gazebo_general_iob hrpsys_gazebo_msgs_gencpp)
 
 ## Gazebo plugins
 include (FindPkgConfig)
@@ -43,19 +44,21 @@ link_directories( ${GAZEBO_LIBRARY_DIRS} ${openhrp3_LIBRARY_DIRS})
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/plugins)
 
-#if ($ENV{ROS_DISTRO} STREQUAL "groovy")
 add_library(IOBPlugin src/IOBPlugin.cpp)
-add_library(SetVelPlugin src/SetVelPlugin.cpp)
-add_dependencies(hrpsys_gazebo_general_iob hrpsys_gazebo_msgs_gencpp)
 add_dependencies(IOBPlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS IOBPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+add_library(SetVelPlugin src/SetVelPlugin.cpp)
 add_dependencies(SetVelPlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS SetVelPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 add_library(AddForcePlugin src/AddForcePlugin.cpp)
-add_library(GetVelPlugin src/GetVelPlugin.cpp)
 add_dependencies(AddForcePlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS AddForcePlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+add_library(GetVelPlugin src/GetVelPlugin.cpp)
 add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS GetVelPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 add_library(ThermoPlugin src/ThermoPlugin.cpp)
 add_dependencies(ThermoPlugin hrpsys_gazebo_msgs_gencpp)
-#endif()
+install(TARGETS ThermoPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 ## Convert robot models
 include(${PROJECT_SOURCE_DIR}/cmake/compile_robot_model_for_gazebo.cmake)
@@ -66,3 +69,7 @@ else()
 endif()
 generate_gazebo_urdf_file(${hrpsys_ros_bridge_PACKAGE_PATH}/models/SampleRobot.dae)
 add_custom_target(all_robots_compile ALL DEPENDS ${compile_urdf_robots})
+
+## install
+install(DIRECTORY launch scripts worlds config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION} USE_SOURCE_PERMISSIONS)
+install(PROGRAMS setup.sh DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
