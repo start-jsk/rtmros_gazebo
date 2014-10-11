@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 find_package(PkgConfig)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
 pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
+pkg_check_modules(collada_urdf_jsk_patch collada_urdf_jsk_patch)
 catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 
 ## Build only gazebo iob
@@ -56,3 +57,12 @@ add_library(ThermoPlugin src/ThermoPlugin.cpp)
 add_dependencies(ThermoPlugin hrpsys_gazebo_msgs_gencpp)
 #endif()
 
+## Convert robot models
+include(${PROJECT_SOURCE_DIR}/cmake/compile_robot_model_for_gazebo.cmake)
+if(EXISTS ${hrpsys_ros_bridge_SOURCE_DIR})
+  set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_SOURCE_DIR})
+else()
+  set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_PREFIX}/share/hrpsys_ros_bridge)
+endif()
+generate_gazebo_urdf_file(${hrpsys_ros_bridge_PACKAGE_PATH}/models/SampleRobot.dae)
+add_custom_target(all_robots_compile ALL DEPENDS ${compile_urdf_robots})
