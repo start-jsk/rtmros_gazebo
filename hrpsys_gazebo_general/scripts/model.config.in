@@ -1,0 +1,13 @@
+<?xml version='1.0'?>
+<model>
+  <name>@ROBOT@</name>
+  <version>0.1.0</version>
+  <author>
+    <name>Masaki Murooka</name>
+    <email>murooka@jsk.t.u-tokyo.ac.jp</email>
+  </author>
+  <sdf>@ROBOT@_gazebo.urdf</sdf>
+  <description>
+    auto generated file ...
+  </description>
+</model>
