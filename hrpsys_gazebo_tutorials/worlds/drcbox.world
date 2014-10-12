@@ -29,7 +29,6 @@
     <include>
       <uri>model://ground_plane</uri>
     </include>
-    <!-- A robot -->
     <!-- Objects -->
     <include>
       <uri>model://drcbox</uri>

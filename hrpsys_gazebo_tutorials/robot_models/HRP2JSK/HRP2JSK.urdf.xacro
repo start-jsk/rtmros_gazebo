@@ -1,0 +1,47 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="HRP2JSK" >
+  <xacro:include filename="$(find hrpsys_gazebo_tutorials)/robot_models/HRP2JSK/HRP2JSK.urdf" />
+  <!-- add IOB plugin -->
+  <gazebo>
+    <plugin filename="libIOBPlugin.so" name="hrpsys_gazebo_plugin" >
+      <robotname>HRP2JSK</robotname>
+      <controller>hrpsys_gazebo_configuration</controller>
+    </plugin>
+  </gazebo>
+  <!-- add imu sensor -->
+  <gazebo reference="CHEST_LINK1" >
+    <sensor name="waist_imu" type="imu">
+      <always_on>1</always_on>
+      <update_rate>1000.0</update_rate>
+      <imu>
+        <noise>
+          <type>gaussian</type>
+          <rate>
+            <mean>0.0</mean>
+            <stddev>2e-4</stddev>
+            <bias_mean>0.0000075</bias_mean>
+            <bias_stddev>0.0000008</bias_stddev>
+          </rate>
+          <accel>
+            <mean>0.0</mean>
+            <stddev>1.7e-2</stddev>
+            <bias_mean>0.1</bias_mean>
+            <bias_stddev>0.001</bias_stddev>
+          </accel>
+        </noise>
+      </imu>
+    </sensor>
+  </gazebo>
+  <!-- add force sensor -->
+  <gazebo reference="LLEG_JOINT5">
+    <provideFeedback>1</provideFeedback>
+  </gazebo>
+  <gazebo reference="RLEG_JOINT5">
+    <provideFeedback>1</provideFeedback>
+  </gazebo>
+  <gazebo reference="LARM_JOINT6">
+    <provideFeedback>1</provideFeedback>
+  </gazebo>
+  <gazebo reference="RARM_JOINT6">
+    <provideFeedback>1</provideFeedback>
+  </gazebo>
+</robot>
