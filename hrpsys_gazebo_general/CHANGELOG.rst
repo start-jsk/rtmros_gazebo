@@ -2,6 +2,13 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* set CMAKE_BUILD_TYPE to install, also support RelWithDebInfo for deb release
+* install files
+* add compile_robot_model_for_gazebo.cmake and generate model and launch file for samplerobot simulation.
+* Contributors: Kei Okada, Masaki Murooka
+
 0.1.2 (2014-10-06)
 ------------------
 * add gazebo_ros, gazebo_msgs, and gazebo_plugins to dependency of hrpsys_gazebo_general, eusgaebo.
