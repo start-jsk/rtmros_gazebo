@@ -29,7 +29,7 @@ pkgdir=`rospack find hrpsys_gazebo_general`
 
 if [ -e ${pkgdir} ]; then
     export GAZEBO_RESOURCE_PATH=${pkgdir}/worlds:$GAZEBO_RESOURCE_PATH
-    export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:${pkgdir}/robot_models:${pkgdir}/..
+    export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:${pkgdir}/robot_models:${pkgdir}
     export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${pkgdir}/plugins
 fi
 
