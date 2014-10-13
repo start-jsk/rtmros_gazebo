@@ -11,7 +11,11 @@ namespace gazebo
 {
 GZ_REGISTER_MODEL_PLUGIN(IOBPlugin);
 
-IOBPlugin::IOBPlugin() {
+IOBPlugin::IOBPlugin() : publish_joint_state(false),
+                         publish_joint_state_step(0),
+                         publish_joint_state_counter(0),
+                         use_synchronized_command(false),
+                         use_velocity_feedback(false) {
 }
 
 IOBPlugin::~IOBPlugin() {
@@ -108,10 +112,11 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
           this->publish_joint_state_step = stp;
         }
         //
-        this->publish_joint_state = true;
         this->pubJointStateQueue = this->pmq.addPub<sensor_msgs::JointState>();
         this->pubJointState
           = this->rosNode->advertise<sensor_msgs::JointState>(topic, 100, true);
+        ROS_INFO("publish joint state");
+        this->publish_joint_state = true;
       }
     }
     XmlRpc::XmlRpcValue param_val;
@@ -580,6 +585,18 @@ void IOBPlugin::SetJointCommand_impl(const JointCommand &_msg) {
 void IOBPlugin::PublishJointState() {
   this->publish_joint_state_counter++;
   if(this->publish_joint_state_step > this->publish_joint_state_counter) {
+    return;
+  }
+  if(this->jointNames.size() != this->joints.size()) {
+    ROS_ERROR("joint length miss match %ld != %ld", this->jointNames.size(), this->joints.size());
+    return;
+  }
+  if(this->jointNames.size() == 0) {
+    ROS_ERROR("joint length is zero");
+    return;
+  }
+  if(!this->pubJointStateQueue || !this->pubJointState) {
+    ROS_ERROR("no publisher %d %d", !this->pubJointStateQueue, !this->pubJointState);
     return;
   }
   // publish joint_state
