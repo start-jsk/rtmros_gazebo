@@ -1,7 +1,0 @@
-<launch>
-  <arg name="gzname" default="gazebo"/>
-  <arg name="WORLD" default="SimpleBox.world"/>
-
-  <node name="gazebo" pkg="hrpsys_gazebo_general" type="$(arg gzname)" args="$(find hrpsys_gazebo_tutorials)/worlds/$(arg WORLD)" output="screen" />
-
-</launch>
