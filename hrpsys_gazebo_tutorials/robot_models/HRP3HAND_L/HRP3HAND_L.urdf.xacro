@@ -1,0 +1,10 @@
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="HRP3HAND_L" >
+  <xacro:include filename="$(find hrpsys_gazebo_tutorials)/robot_models/HRP3HAND_L/HRP3HAND_L.urdf" />
+  <!-- add IOB plugin -->
+  <gazebo>
+    <plugin filename="libIOBPlugin.so" name="hrpsys_gazebo_plugin" >
+      <robotname>HRP3HAND_L</robotname>
+      <controller>hrpsys_gazebo_configuration</controller>
+    </plugin>
+  </gazebo>
+</robot>

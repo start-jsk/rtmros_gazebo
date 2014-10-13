@@ -8,8 +8,8 @@
   <arg name="ROBOT_INSTANCE_NAME" default="$(arg ROBOT_TYPE)" />
   <arg name="USE_INSTANCE_NAME" default="false" />
   <arg name="HRPSYS_PY_ARGS" default="" />
-  <arg name="CONF_DIR" value="$(find hrpsys_ros_bridge)/models" />
-  <arg name="CONF_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).conf" />
+  <arg name="CONF_DIR" default="$(find hrpsys_ros_bridge)/models" />
+  <arg name="CONF_FILE" default="$(arg CONF_DIR)/$(arg ROBOT_TYPE).conf" />
 
   <!-- hrpsys_gazebo settings -->
   <arg name="SYNCHRONIZED" default="false" />
