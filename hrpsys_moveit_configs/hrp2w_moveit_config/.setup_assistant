@@ -1,0 +1,8 @@
+moveit_setup_assistant_config:
+  URDF:
+    package: hrpsys_ros_bridge_tutorials
+    relative_path: models/HRP2W.urdf
+  SRDF:
+    relative_path: config/HRP2W.srdf
+  CONFIG:
+    generated_timestamp: 1413958858
