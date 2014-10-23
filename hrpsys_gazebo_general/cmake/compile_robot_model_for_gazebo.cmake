@@ -29,10 +29,6 @@ macro (generate_gazebo_urdf_file daefile)
     COMMAND ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/collada_to_urdf ${daefile} -G -A --mesh_output_dir ${_out_dir}/meshes --mesh_prefix "package://${PROJECT_NAME}/robot_models/${_robot_name}/meshes" --output_file=${_out_urdf_file}
     COMMAND ${_out_dir}/${_robot_name}_additional_urdf_setting.sh ${_out_urdf_file}
     DEPENDS ${_out_dir}/meshes ${compile_robots})
-  add_custom_command(OUTPUT ${_out_urdf_file}
-    COMMAND ${collada_urdf_jsk_patch_PREFIX}/lib/collada_urdf_jsk_patch/collada_to_urdf ${daefile} -G -A --mesh_output_dir ${_out_dir}/meshes --mesh_prefix "package://${PROJECT_NAME}/robot_models/${_robot_name}/meshes" --output_file=${_out_urdf_file}
-    COMMAND ${_out_dir}/${_robot_name}_additional_urdf_setting.sh ${_out_urdf_file}
-    DEPENDS ${_out_dir}/meshes ${compile_robots})
   add_custom_command(OUTPUT ${_out_urdf_gazebo_file}
     COMMAND sed -e "s@package://${PROJECT_NAME}/robot_models/@model://@g" ${_out_urdf_file} > ${_out_urdf_gazebo_file}
     DEPENDS ${_out_urdf_file})
