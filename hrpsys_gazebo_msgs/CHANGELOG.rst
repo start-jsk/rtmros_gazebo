@@ -2,6 +2,9 @@
 Changelog for package hrpsys_gazebo_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.3 (2014-10-12)
 ------------------
 
