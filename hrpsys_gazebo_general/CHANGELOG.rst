@@ -2,6 +2,11 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+0.1.4 (2014-10-23)
+------------------
+* install compile-robot-model-for-gazebo.cmake
+* deletece unnecessary file. added xacro file
+
 0.1.3 (2014-10-12)
 ------------------
 * set CMAKE_BUILD_TYPE to install, also support RelWithDebInfo for deb release
