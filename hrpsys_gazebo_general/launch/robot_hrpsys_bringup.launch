@@ -4,6 +4,7 @@
   <arg name="SIMULATOR_NAME" default="RobotHardware0" />
   <arg name="CONFIG_NAME" default="hrpsys_gazebo_configuration" />
   <arg name="LOOPBACK" default="false" />
+  <arg name="LAUNCH_DASHBOARD" default="false" />
   <!-- ROBOT instance name (name_space) -->
   <arg name="ROBOT_INSTANCE_NAME" default="$(arg ROBOT_TYPE)" />
   <arg name="USE_INSTANCE_NAME" default="false" />
@@ -64,5 +65,5 @@
     <arg name="USE_IMAGESENSOR" default="false" />
   </include>
 
-  <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="gazebo_robot_dashboard" />
+  <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="gazebo_robot_dashboard" if="$(arg LAUNCH_DASHBOARD)" />
 </launch>
