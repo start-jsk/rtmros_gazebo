@@ -14,7 +14,10 @@
 
   <arg name="MODEL_TRANSLATE_X" default="0.0" />
   <arg name="MODEL_TRANSLATE_Y" default="0.0" />
-  <arg name="MODEL_TRANSLATE_Z" default="1.0" />
+  <arg name="MODEL_TRANSLATE_Z" default="0.73" />
+  <arg name="MODEL_ROTATE_R" default="0.0" />
+  <arg name="MODEL_ROTATE_P" default="0.0" />
+  <arg name="MODEL_ROTATE_Y" default="0.0" />
 
   <arg if="$(arg PAUSED)"
        name="paused" value="_paused" />
@@ -51,5 +54,5 @@
 
   <!-- Spawn Robot Model -->
   <node name="spawn_robot_model" pkg="gazebo_ros" type="spawn_model"
-        args="-unpause -urdf -param robot_description -model mobile_base -z 0.73" />
+        args="-unpause -urdf -param robot_description -model mobile_base -x $(arg MODEL_TRANSLATE_X) -y $(arg MODEL_TRANSLATE_Y) -z $(arg MODEL_TRANSLATE_Z) -R $(arg MODEL_ROTATE_R) -P $(arg MODEL_ROTATE_P) -Y $(arg MODEL_ROTATE_Y)" />
 </launch>
