@@ -4,7 +4,7 @@
   <arg name="ALLOW_TRAJECTORY" default="true" />
   <arg name="RUN_RVIZ" default="true" />
   <arg name="RUN_DATABASE" default="false" />
-
+  <arg name="RESPAWN" default="false" />
   <include file="$(find hrp2jsknts_moveit_config)/launch/planning_context.launch">
     <arg name="load_robot_description" value="$(arg LOAD_ROBOT_DESCRIPTION)"/>
   </include>
@@ -14,6 +14,7 @@
 
   <include file="$(find hrp2jsknts_moveit_config)/launch/move_group.launch">
     <arg name="allow_trajectory_execution" value="$(arg ALLOW_TRAJECTORY)"/>
+    <arg name="respawn" value="$(arg RESPAWN)" />
   </include>
 
   <include if="$(arg RUN_RVIZ)"
