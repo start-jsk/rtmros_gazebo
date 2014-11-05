@@ -58,7 +58,7 @@ compile_collada_model(${atlas_dae}
   --conf-dt-option "0.003"
   --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
   --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
-  --conf-file-option "abc_end_effectors: :rarm,r_arm_mwx,back_ubx, :larm,l_arm_mwx,back_ubx, :rleg,r_leg_lax,pelvis, :lleg,l_leg_lax,pelvis,"
+  --conf-file-option "end_effectors: rarm,r_arm_mwx,back_ubx,0.0,-0.195946,0.04135,0.710565,-0.497543,-0.497543,1.90602, larm,l_arm_mwx,back_ubx,0.0,0.195946,0.04135,-0.710565,-0.497543,0.497543,1.90602, rleg,r_leg_lax,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0, lleg,l_leg_lax,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0,"
   --proj-file-root-option "0,0,1.0,0,0,1,0"
   )
 endif()
@@ -86,8 +86,7 @@ compile_collada_model(${atlas_v3_dae}
   --conf-dt-option "0.003"
   --conf-file-option "abc_leg_offset: 0.0, 0.089, 0.0"
   --conf-file-option "abc_stride_parameter: 0.15,0.05,10"
-  --conf-file-option "abc_end_effectors: :rarm,r_arm_wrx,back_bkx, :larm,l_arm_wrx,back_bkx, :rleg,r_leg_akx,pelvis, :lleg,l_leg_akx,pelvis,"
-  --conf-file-option "end_effectors: :rarm,r_arm_wrx,back_bkx,0.0,-0.195946,0.04135,0.710565,-0.497543,-0.497543,1.90602, :larm,l_arm_wrx,back_bkx,0.0,0.195946,0.04135,-0.710565,-0.497543,0.497543,1.90602, :rleg,r_leg_akx,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0, :lleg,l_leg_akx,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0,"
+  --conf-file-option "end_effectors: rarm,r_arm_wrx,back_bkx,0.0,-0.195946,0.04135,0.710565,-0.497543,-0.497543,1.90602, larm,l_arm_wrx,back_bkx,0.0,0.195946,0.04135,-0.710565,-0.497543,0.497543,1.90602, rleg,r_leg_akx,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0, lleg,l_leg_akx,pelvis,0.04,0.0,-0.08,0.0,0.0,0.0,0.0,"
   --conf-file-option "collision_pair: pelvis:l_arm_wrx pelvis:l_arm_wry pelvis:r_arm_wrx pelvis:r_arm_wry l_arm_wrx:l_leg_akx l_arm_wrx:l_leg_aky l_arm_wry:l_leg_kny l_arm_wry:l_leg_kny r_arm_wrx:r_leg_akx r_arm_wrx:r_leg_aky r_arm_wry:r_leg_kny r_arm_wry:r_leg_kny r_arm_wrx:l_arm_wrx r_arm_wrx:l_arm_wry r_arm_wry:l_arm_wrx r_arm_wry:l_arm_wry r_leg_akx:l_leg_akx r_leg_akx:l_leg_aky r_leg_akx:l_leg_kny r_leg_aky:l_leg_akx r_leg_aky:l_leg_aky r_leg_aky:l_leg_kny r_leg_kny:l_leg_akx r_leg_kny:l_leg_aky r_leg_kny:l_leg_kny"
 #  --conf-file-option "collision_pair: back_bkx:l_arm_wrx back_bkx:l_arm_wry back_bkx:r_arm_wrx back_bkx:r_arm_wry back_bky:l_arm_wrx back_bky:l_arm_wry back_bky:r_arm_wrx back_bky:r_arm_wry back_bkz:l_arm_wrx back_bkz:l_arm_wry back_bkz:r_arm_wrx back_bkz:r_arm_wry l_arm_wrx:l_leg_akx l_arm_wrx:l_leg_aky l_arm_wry:l_leg_kny l_arm_wry:l_leg_kny r_arm_wrx:r_leg_akx r_arm_wrx:r_leg_aky r_arm_wry:r_leg_kny r_arm_wry:r_leg_kny r_arm_wrx:l_arm_wrx r_arm_wrx:l_arm_wry r_arm_wry:l_arm_wrx r_arm_wry:l_arm_wry r_leg_akx:l_leg_akx r_leg_akx:l_leg_aky r_leg_akx:l_leg_kny r_leg_aky:l_leg_akx r_leg_aky:l_leg_aky r_leg_aky:l_leg_kny r_leg_kny:l_leg_akx r_leg_kny:l_leg_aky r_leg_kny:l_leg_kny"
   --proj-file-root-option "0,0,1.0,0,0,1,0"
@@ -133,7 +132,7 @@ else()
 endif()
 
 include_directories(${roseus_PACKAGE_PATH}/build/devel/include)
-rosbuild_add_executable(hand_controller src/hand_controller.cpp)
+#rosbuild_add_executable(hand_controller src/hand_controller.cpp)
 
 ## test code
 add_custom_command(OUTPUT ${PROJECT_SOURCE_DIR}/test/.gen_testcode

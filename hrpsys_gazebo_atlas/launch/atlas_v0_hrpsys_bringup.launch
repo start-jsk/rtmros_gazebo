@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <arg name="ROBOT_NAME" default="atlas" />
+  <arg name="CONTROLLER_CONFIG_FILE" default="$(find hrpsys_gazebo_atlas)/config/atlas_controller_config.yaml" />
+  <include file="$(find hrpsys_gazebo_atlas)/launch/atlas_hrpsys_bringup.launch" >
+    <arg name="ROBOT_NAME" value="$(arg ROBOT_NAME)" />
+    <arg name="CONTROLLER_CONFIG_FILE" value="$(arg CONTROLLER_CONFIG_FILE)" />
+  </include>
+</launch>

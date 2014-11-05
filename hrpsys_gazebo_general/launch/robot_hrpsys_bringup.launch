@@ -1,0 +1,69 @@
+<launch>
+  <arg name="KILL_SERVERS" default="false" />
+  <arg name="ROBOT_TYPE" default="SampleRobot" /> <!-- ROBOT type name -->
+  <arg name="SIMULATOR_NAME" default="RobotHardware0" />
+  <arg name="CONFIG_NAME" default="hrpsys_gazebo_configuration" />
+  <arg name="LOOPBACK" default="false" />
+  <arg name="LAUNCH_DASHBOARD" default="false" />
+  <!-- ROBOT instance name (name_space) -->
+  <arg name="ROBOT_INSTANCE_NAME" default="$(arg ROBOT_TYPE)" />
+  <arg name="USE_INSTANCE_NAME" default="false" />
+  <arg name="HRPSYS_PY_ARGS" default="" />
+  <arg name="CONF_DIR" default="$(find hrpsys_ros_bridge)/models" />
+  <arg name="CONF_FILE" default="$(arg CONF_DIR)/$(arg ROBOT_TYPE).conf" />
+
+  <!-- hrpsys_gazebo settings -->
+  <arg name="SYNCHRONIZED" default="false" />
+  <arg name="IOB_SUBSTEPS" default="5" />
+  <arg name="HRPSYS_RATE"  default="200" />
+
+  <env if="$(arg SYNCHRONIZED)"
+       name="HRPSYS_GAZEBO_IOB_SYNCHRONIZED" value="1" />
+  <env if="$(arg SYNCHRONIZED)"
+       name="HRPSYS_GAZEBO_IOB_SUBSTEPS" value="$(arg IOB_SUBSTEPS)" />
+
+  <include if="$(arg LOOPBACK)"
+           file="$(find hrpsys_gazebo_general)/launch/gazebo_robot_no_controllers.launch" >
+    <arg name="ROBOT_TYPE" value="$(arg ROBOT_TYPE)" />
+    <arg name="ROBOT_INSTANCE_NAME" value="$(arg ROBOT_INSTANCE_NAME)" />
+    <arg name="LOOPBACK" value="true" />
+  </include>
+
+  <!--env name="HRPSYS_GAZEBO_IOB_NAME" value="hrpsys_gazebo_iob" /-->
+  <!--env name="HRPSYS_GAZEBO_CONFIGURATION" value="hrpsys_gazebo_configuration" /-->
+  <env if="$(arg USE_INSTANCE_NAME)"
+       name="HRPSYS_GAZEBO_ROBOTNAME" value="$(arg ROBOT_INSTANCE_NAME)" />
+
+  <!-- end of hrpsys_gazebo settings -->
+
+  <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
+    <arg name="USE_RTCD" value="true" />
+    <arg name="hrpsys_load_path" default="$(find hrpsys_gazebo_general)/lib,$(find hrpsys)/lib"/>
+    <arg name="RobotHardware_conf" default='$(arg CONF_DIR)/$(arg ROBOT_TYPE).RobotHardware.conf'/>
+    <arg name="PROJECT_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE)_nosim.xml" />
+    <arg name="MODEL_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).dae" />
+    <arg name="CONF_FILE" value="$(arg CONF_FILE)" />
+    <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
+    <arg name="HRPSYS_PY_ARGS" default="$(arg HRPSYS_PY_ARGS)" />
+    <arg name="hrpsys_periodic_rate" value="$(arg HRPSYS_RATE)" />
+    <!--arg name="RTCD_LAUNCH_PREFIX" value="xterm -e gdb ++args" /-->
+  </include>
+
+  <!-- hrpsys_ros_bridge -->
+  <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" >
+    <arg name="MODEL_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).dae" />
+    <arg name="COLLADA_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).dae" />
+    <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
+    <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" />
+
+    <arg name="USE_COMMON" default="true" />
+    <arg name="USE_ROBOTHARDWARE" default="true" />
+    <arg name="USE_WALKING" default="true" />
+    <arg name="USE_COLLISIONCHECK" default="true" />
+    <arg name="USE_IMPEDANCECONTROLLER" default="true" />
+    <arg name="USE_SOFTERRORLIMIT" default="true" />
+    <arg name="USE_IMAGESENSOR" default="false" />
+  </include>
+
+  <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="gazebo_robot_dashboard" if="$(arg LAUNCH_DASHBOARD)" />
+</launch>

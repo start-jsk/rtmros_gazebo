@@ -11,7 +11,11 @@ namespace gazebo
 {
 GZ_REGISTER_MODEL_PLUGIN(IOBPlugin);
 
-IOBPlugin::IOBPlugin() {
+IOBPlugin::IOBPlugin() : publish_joint_state(false),
+                         publish_joint_state_step(0),
+                         publish_joint_state_counter(0),
+                         use_synchronized_command(false),
+                         use_velocity_feedback(false) {
 }
 
 IOBPlugin::~IOBPlugin() {
@@ -44,6 +48,7 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
     this->use_velocity_feedback = _sdf->Get<bool>("velocity_feedback");
     std::cerr << ";; use velocity feedback" << std::endl;
   }
+
   // initialize ros
   if (!ros::isInitialized()) {
     gzerr << "Not loading plugin since ROS hasn't been "
@@ -66,7 +71,7 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 
   // creating joints from ros param
   if (this->rosNode->hasParam(this->controller_name)) {
-    {
+    { // read synchronized_command from rosparam
       std::string pname = this->controller_name + "/use_synchronized_command";
       if (this->rosNode->hasParam(pname)) {
         bool ret;
@@ -79,7 +84,7 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
         }
       }
     }
-    {
+    { // read velocity_feedback from rosparam
       std::string pname = this->controller_name + "/use_velocity_feedback";
       if (this->rosNode->hasParam(pname)) {
         bool ret;
@@ -87,6 +92,31 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
         ROS_WARN("override use_veolcity_feedback at %d by %d",
                  this->use_velocity_feedback, ret);
         this->use_velocity_feedback = ret;
+      }
+    }
+    { // read publish_joint_state from rosparam
+      std::string pname = this->controller_name + "/publish_joint_state";
+      if (this->rosNode->hasParam(pname)) {
+        std::string topic;
+        if (this->rosNode->hasParam(pname + "/topic")) {
+          this->rosNode->getParam(pname + "/topic", topic);
+        } else {
+          topic = this->robot_name + "/joint_state";
+        }
+        //
+        this->publish_joint_state_counter = 0;
+        this->publish_joint_state_step = 1;
+        if (this->rosNode->hasParam(pname + "/step")) {
+          int stp;
+          this->rosNode->getParam(pname + "/step", stp);
+          this->publish_joint_state_step = stp;
+        }
+        //
+        this->pubJointStateQueue = this->pmq.addPub<sensor_msgs::JointState>();
+        this->pubJointState
+          = this->rosNode->advertise<sensor_msgs::JointState>(topic, 100, true);
+        ROS_INFO("publish joint state");
+        this->publish_joint_state = true;
       }
     }
     XmlRpc::XmlRpcValue param_val;
@@ -552,7 +582,35 @@ void IOBPlugin::SetJointCommand_impl(const JointCommand &_msg) {
   this->jointCommand.desired_controller_period_ms =
     _msg.desired_controller_period_ms;
 }
-
+void IOBPlugin::PublishJointState() {
+  this->publish_joint_state_counter++;
+  if(this->publish_joint_state_step > this->publish_joint_state_counter) {
+    return;
+  }
+  if(this->jointNames.size() != this->joints.size()) {
+    ROS_ERROR("joint length miss match %ld != %ld", this->jointNames.size(), this->joints.size());
+    return;
+  }
+  if(this->jointNames.size() == 0) {
+    ROS_ERROR("joint length is zero");
+    return;
+  }
+  if(!this->pubJointStateQueue || !this->pubJointState) {
+    ROS_ERROR("no publisher %d %d", !this->pubJointStateQueue, !this->pubJointState);
+    return;
+  }
+  // publish joint_state
+  sensor_msgs::JointState jstate;
+  jstate.header.stamp = this->robotState.header.stamp;
+  jstate.name.resize(this->jointNames.size());
+  jstate.position.resize(this->joints.size());
+  for (unsigned int i = 0; i < this->joints.size(); ++i) {
+    jstate.name[i] = this->jointNames[i];
+    jstate.position[i] = this->joints[i]->GetAngle(0).Radian();
+  }
+  this->pubJointStateQueue->push(jstate, this->pubJointState);
+  this->publish_joint_state_counter = 0;
+}
 void IOBPlugin::UpdateStates() {
   //ROS_DEBUG("update");
   common::Time curTime = this->world->GetSimTime();
@@ -561,6 +619,8 @@ void IOBPlugin::UpdateStates() {
     this->GetRobotStates(curTime);
     // publish robot states
     this->pubRobotStateQueue->push(this->robotState, this->pubRobotState);
+    if (this->publish_joint_state) this->PublishJointState();
+
     if (this->use_synchronized_command) {
       {
         boost::unique_lock<boost::mutex> lock(this->uniq_mutex);

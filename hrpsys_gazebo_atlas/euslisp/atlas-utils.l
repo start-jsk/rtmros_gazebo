@@ -7,34 +7,34 @@
 
 (defun atlas-init-ex
   (&key (real t)
-	(set-reset-pose t)
-	(view t)
-	(servo-gain
-	 (list (cons :legs 3.0)
-	       (cons :torso 2.0) ;; 1.0
-	       (cons :arms 4.0) ;; 1.0
-	       (cons :head 5.0))))
-  (if real
-      (unless (boundp '*atlas-init-called*)
-        (setq *atlas-init-called* t)
-        (atlas-init :set-reset-pose set-reset-pose :set-user-mode nil))
-    (if (not (boundp '*atlas*)) (setq *atlas* (atlas-with-hand))))
-  ;; fix end-coords when generate euslisp 
-  ;; (unless (boundp '*translated-atlas-arm-end-coords*)
-  ;;   (setq *translated-atlas-arm-end-coords* t)
-  ;;   (send (send *atlas* :larm :end-coords) :translate #f(0 125 0) :local)
-  ;;   (send (send *atlas* :rarm :end-coords) :translate #f(0 -125 0) :local)
-  ;;   (send (send (send (send *atlas* :larm :end-coords)
-  ;;                     :rotate (deg2rad -20) :x) :translate #f(0 0 -30) :local) :translate #f(0 -20 0) :local)
-  ;;   (send (send (send (send *atlas* :rarm :end-coords)
-  ;;                     :rotate (deg2rad 20) :x) :translate #f(0 0 -30) :local) :translate #f(0 20 0) :local))
+        (set-reset-pose t)
+        (view t)
+        servo-gain)
+  (cond (real
+         (atlas-init :set-reset-pose set-reset-pose :set-user-mode nil))
+        ((not (boundp '*atlas*))
+         (setq *atlas* (atlas-with-hand))))
+
   (when real
+    (cond
+     ((equal *atlas-name* :atlas-v0)
+      (setq servo-gain (list (cons :legs 1.0)
+                             (cons :torso 1.5) ;; 1.0
+                             (cons :arms 4.0) ;; 1.0
+                             (cons :head 5.0))))
+     ((or (equal *atlas-name* :atlas-v3) t)
+      (setq servo-gain (list (cons :legs 3.0)
+                             (cons :torso 2.0) ;; 1.0
+                             (cons :arms 4.0) ;; 1.0
+                             (cons :head 5.0)))))
     (mapcar
      #'(lambda (k)
-	 (atlas-set-servo-gain-by-torque-limit
-	  (cdr k) (car k)))
+         (atlas-set-servo-gain-by-torque-limit
+          (cdr k) (car k)))
      servo-gain)
-    (set-hand-kp 10.0))
+    (set-hand-kp 10.0)
+    (load-imp-offset-atlas)
+    (send *ri* :init-hand))
   (setq *robot* *atlas*)
   (when view (objects (list *atlas*)))
   t)
@@ -138,8 +138,8 @@
    ((equal limb :arms) (set-kp kp :larm) (set-kp kp :rarm))
    ((equal limb :legs) (set-kp kp :lleg) (set-kp kp :rleg))
    (t (dolist (j (if (equal limb :all) (send-all (send *atlas* :joint-list) :name)
-		   (send-all (send *atlas* limb :joint-list) :name)))
-	(send *ri* :set-servo-gain-percentage j kp)))))
+                   (send-all (send *atlas* limb :joint-list) :name)))
+        (send *ri* :set-servo-gain-percentage j kp)))))
 
 (defun set-high-gain (&optional (limb :all))
   (warning-message 1 "[altas-utils] set-high-gain ~a~%" limb)
@@ -204,7 +204,8 @@
 
 ;; angle vector
 (defun real2model ()
-  (send *atlas* :angle-vector (send *ri* :state :potentio-vector))
+  (send *ri* :update-robot-state :wait-until-update t)
+  (send *atlas* :angle-vector (send *ri* :potentio-vector))
   (when *lr-reverse* (mirror-angle-vector)))
 
 (defun model2real (&key (sleep-time 3000) (time sleep-time) (wait nil))
@@ -215,25 +216,25 @@
 
 (defun model2real-with-rand-vib (&key (sleep-time 1500) (time sleep-time) (wait nil))
   (model2real :sleep-time time :wait wait))
-  ;; (when *lr-reverse* (mirror-angle-vector))
-  ;; (let* ((prev-av (send *ri* :state :potentio-vector))
-  ;;        (dest-av (send *atlas* :angle-vector))
-  ;;        (ik-time 100)
-  ;;        (ik-num (/ time ik-time))
-  ;;        (rand-angle 0.0) rand-av)
-  ;;   (dotimes (i ik-num)
-  ;;     (setq rand-av
-  ;;           (concatenate float-vector
-  ;;                        (mapcar #'(lambda (x) (- x (/ rand-angle 2)))
-  ;;                                (mapcar #'random (list rand-angle rand-angle rand-angle rand-angle rand-angle rand-angle)))))
-  ;;     (send *atlas* :angle-vector (midpoint (/ (+ i 0.0) ik-num) prev-av dest-av))
-  ;;     (send *atlas* :lleg :angle-vector (v+ (send *atlas* :lleg :angle-vector) rand-av))
-  ;;     (send *ri* :angle-vector (send *atlas* :angle-vector) ik-time)
-  ;;     (send *ri* :wait-interpolation))
-  ;;   (send *atlas* :angle-vector dest-av)
-  ;;   (send *ri* :angle-vector (send *atlas* :angle-vector) ik-time))
-  ;; (when *lr-reverse* (mirror-angle-vector))
-  ;; (when wait (send *ri* :wait-interpolation)))
+;; (when *lr-reverse* (mirror-angle-vector))
+;; (let* ((prev-av (send *ri* :state :potentio-vector))
+;;        (dest-av (send *atlas* :angle-vector))
+;;        (ik-time 100)
+;;        (ik-num (/ time ik-time))
+;;        (rand-angle 0.0) rand-av)
+;;   (dotimes (i ik-num)
+;;     (setq rand-av
+;;           (concatenate float-vector
+;;                        (mapcar #'(lambda (x) (- x (/ rand-angle 2)))
+;;                                (mapcar #'random (list rand-angle rand-angle rand-angle rand-angle rand-angle rand-angle)))))
+;;     (send *atlas* :angle-vector (midpoint (/ (+ i 0.0) ik-num) prev-av dest-av))
+;;     (send *atlas* :lleg :angle-vector (v+ (send *atlas* :lleg :angle-vector) rand-av))
+;;     (send *ri* :angle-vector (send *atlas* :angle-vector) ik-time)
+;;     (send *ri* :wait-interpolation))
+;;   (send *atlas* :angle-vector dest-av)
+;;   (send *ri* :angle-vector (send *atlas* :angle-vector) ik-time))
+;; (when *lr-reverse* (mirror-angle-vector))
+;; (when wait (send *ri* :wait-interpolation)))
 
 (defun reset-pose (&key (real nil))
   (send *atlas* :stand-pose)
@@ -248,13 +249,13 @@
 (defun mirror-angle-vector
   ()
   (let* ((larm-av (send *atlas* :larm :angle-vector))
-	 (rarm-av (send *atlas* :rarm :angle-vector))
-	 (lleg-av (send *atlas* :lleg :angle-vector))
-	 (rleg-av (send *atlas* :rleg :angle-vector))
-	 (torso-av (send *atlas* :torso :angle-vector))
-	 (arm-convert-v (float-vector -1 1 -1 -1 1 1))
-	 (leg-convert-v (float-vector 1 -1 1 -1 1 -1))
-	 (torso-convert-v (float-vector -1 1 -1)))
+         (rarm-av (send *atlas* :rarm :angle-vector))
+         (lleg-av (send *atlas* :lleg :angle-vector))
+         (rleg-av (send *atlas* :rleg :angle-vector))
+         (torso-av (send *atlas* :torso :angle-vector))
+         (arm-convert-v (float-vector -1 1 -1 -1 1 1))
+         (leg-convert-v (float-vector 1 -1 1 -1 1 -1))
+         (torso-convert-v (float-vector -1 1 -1)))
     (send *atlas* :rarm :angle-vector (map float-vector #'* arm-convert-v larm-av))
     (send *atlas* :larm :angle-vector (map float-vector #'* arm-convert-v rarm-av))
     (send *atlas* :rleg :angle-vector (map float-vector #'* leg-convert-v lleg-av))
@@ -334,7 +335,7 @@
        (real2model)
        (send *atlas* :newcoords (make-coords :rpy (get-hrpsys-imu-rpy)))
        (cond (*pickview* (send *pickview* :draw-objects))
-	     (*irtviewer* (send *pickview* :draw-objects)))
+             (*irtviewer* (send *pickview* :draw-objects)))
        (x::window-main-one)
        (unix::usleep (* 10 1000)))
     (send *atlas* :newcoords (make-coords :rpy (get-hrpsys-imu-rpy)))
@@ -350,18 +351,18 @@
 (defun rotate-with-imu (zdeg)
   (let ((diff (- zdeg (elt (get-imu-data-with-offset) 0))))
     (cond
-      ((< 180 diff)
-       (setq diff (- diff 360))
-       )
-      ((> -180 diff)
-       (setq diff (+ diff 360))
-       )
+     ((< 180 diff)
+      (setq diff (- diff 360))
       )
+     ((> -180 diff)
+      (setq diff (+ diff 360))
+      )
+     )
     (if (< 1 (abs diff))
-      (progn
-        (print diff)
-        (send *ri* :go-pos 0 0 diff)
-        ))
+        (progn
+          (print diff)
+          (send *ri* :go-pos 0 0 diff)
+          ))
     ))
 
 ;; joint
@@ -371,19 +372,19 @@
    (send (send self fix-leg :end-coords) :transform-vector offset))
   (:calc-target-centroid-pos
    (centroid-leg fix-legs
-		 &optional (mid 0.5)
-		           (offsets
-			    (mapcar
-			     #'(lambda (x)
-				 (float-vector 30 0 0))
-			     (make-list (length fix-legs)))))
+                 &optional (mid 0.5)
+                 (offsets
+                  (mapcar
+                   #'(lambda (x)
+                       (float-vector 30 0 0))
+                   (make-list (length fix-legs)))))
    (if (eq centroid-leg :both)
        (apply
-	#'midpoint mid
-	(mapcar
-	 #'(lambda (tmp-leg tmp-of)
-	     (send self :calc-target-centroid-pos-for-one-leg tmp-leg tmp-of))
-	 fix-legs offsets))
+        #'midpoint mid
+        (mapcar
+         #'(lambda (tmp-leg tmp-of)
+             (send self :calc-target-centroid-pos-for-one-leg tmp-leg tmp-of))
+         fix-legs offsets))
      (send self :calc-target-centroid-pos-for-one-leg centroid-leg (car offsets))))
   (:walk-pose
    ()
@@ -392,8 +393,8 @@
    (send self :legs :move-end-pos #f(0 0 100) :world)
    (send self :fix-leg-to-coords (make-coords))
    (send self :move-centroid-on-foot
-	 :both '(:rleg :lleg)
-	 :target-centroid-pos (send self :calc-target-centroid-pos :both '(:rleg :lleg)))
+         :both '(:rleg :lleg)
+         :target-centroid-pos (send self :calc-target-centroid-pos :both '(:rleg :lleg)))
    )
   (:walk-manip-pose
    ()
@@ -402,8 +403,8 @@
    (send self :legs :move-end-pos #f(0 0 100) :world)
    (send self :fix-leg-to-coords (make-coords))
    (send self :move-centroid-on-foot
-	 :both '(:rleg :lleg)
-	 :target-centroid-pos (send self :calc-target-centroid-pos :both '(:rleg :lleg)))
+         :both '(:rleg :lleg)
+         :target-centroid-pos (send self :calc-target-centroid-pos :both '(:rleg :lleg)))
    )
   ;; (:reset-manip-pose
   ;;  (&key (base-down nil))
@@ -416,14 +417,14 @@
   ;;  (send self :rarm :wrist-p :joint-angle -30)
   ;;  (send self :larm :wrist-p :joint-angle 30)
   ;;  (send self :move-centroid-on-foot
-  ;; 	 :both '(:rleg :lleg)
-  ;; 	 :target-centroid-pos (send self :calc-target-centroid-pos :both '(:rleg :lleg)))
+  ;;  :both '(:rleg :lleg)
+  ;;  :target-centroid-pos (send self :calc-target-centroid-pos :both '(:rleg :lleg)))
   ;;  )
   (:get-jl
    (limb)
    (cadr (assoc limb *atlas-joint-list*)))
   (:print-jl ()
-	     (dolist (jl *atlas-joint-list*) (dolist (j (cadr jl)) (print (append (list (car jl)) (list j) (list (send *atlas* (car jl) j :max-angle)) (list (send *atlas* (car jl) j :min-angle))))))))
+             (dolist (jl *atlas-joint-list*) (dolist (j (cadr jl)) (print (append (list (car jl)) (list j) (list (send *atlas* (car jl) j :max-angle)) (list (send *atlas* (car jl) j :min-angle))))))))
 
 (setq *atlas-joint-list*
       (list 
@@ -472,7 +473,7 @@
   )
 
 (defun interpolated-mode-change (&key (e-start 0) (e-end 255) (mode :stand)
-                                  (mask) ((:time tm) 3000))
+                                      (mask) ((:time tm) 3000))
   (let ((step (/ tm (float (abs (- e-end e-start))))))
     (dotimes (i (abs (- e-end e-start)))
       (warn ";; effort = ~d~%"
@@ -568,39 +569,39 @@
 
 (defun safety-fall-down nil
   ;; (let* ((tc (list (send (send *atlas* :rleg :end-coords :copy-worldcoords) :translate #f(0 0 450) :world)
-  ;; 		   (send (send *atlas* :lleg :end-coords :copy-worldcoords) :translate #f(0 0 450) :world)
-  ;; 		   nil
-  ;; 		   nil)))
+  ;;    (send (send *atlas* :lleg :end-coords :copy-worldcoords) :translate #f(0 0 450) :world)
+  ;;    nil
+  ;;    nil)))
   ;;   (with-move-target-link-list
   ;;    (mt ll *atlas* '(:rleg :lleg :rarm :larm))
   ;;    (send *atlas* :fullbody-inverse-kinematics
-  ;; 	   (mapcar #'(lambda (c m) (if c c (send m :copy-worldcoords))) tc mt)
-  ;; 	   :link-list ll :move-target mt
-  ;; 	   :collision-avoidance-link-pair nil
-  ;; 	   :stop 1000
-  ;; 	   :translation-axis '(t t t t)
-  ;; 	   :rotation-axis '(t t t t)
-  ;; 	   :thre '(5 5 10 10)
-  ;; 	   :rthre (list (deg2rad 2) (deg2rad 2) (deg2rad 2) (deg2rad 2))
-  ;; 	   :target-centroid-pos (send *atlas* :calc-target-centroid-pos :both '(:larm :lleg))
-  ;; 	   :centroid-thre 500))
+  ;;    (mapcar #'(lambda (c m) (if c c (send m :copy-worldcoords))) tc mt)
+  ;;    :link-list ll :move-target mt
+  ;;    :collision-avoidance-link-pair nil
+  ;;    :stop 1000
+  ;;    :translation-axis '(t t t t)
+  ;;    :rotation-axis '(t t t t)
+  ;;    :thre '(5 5 10 10)
+  ;;    :rthre (list (deg2rad 2) (deg2rad 2) (deg2rad 2) (deg2rad 2))
+  ;;    :target-centroid-pos (send *atlas* :calc-target-centroid-pos :both '(:larm :lleg))
+  ;;    :centroid-thre 500))
   ;;   )
 
   (send *atlas* :angle-vector #f(33.5356 46.4636 14.0039 64.2606 95.3945 -24.981 -79.9998 -25.5105 15.0798 -23.0551 150.466 -40.8152 62.3277 6.39616 -79.6342 133.101 2.05166 -69.9106 -0.370845 -51.5662 13.6866 133.288 5.99313 -72.0902 -10.4833 -50.4458 -16.8264 -35.0))
   (progn (model2real :time 5000)(send *ri* :wait-interpolation))
 
   ;; (send *atlas* :larm :inverse-kinematics
-  ;; 	(make-coords :pos #f(-100 400 -250))
-  ;; 	:debug-view t :thre 10 :stop 200 :rotation-axis nil)
+  ;; (make-coords :pos #f(-100 400 -250))
+  ;; :debug-view t :thre 10 :stop 200 :rotation-axis nil)
 
   ;; (send *atlas* :rarm :inverse-kinematics
-  ;; 	(make-coords :pos #f(50 -200 -250))
-  ;; 	:debug-view t :thre 10 :stop 200 :rotation-axis nil)
+  ;; (make-coords :pos #f(50 -200 -250))
+  ;; :debug-view t :thre 10 :stop 200 :rotation-axis nil)
 
   ;; (send *atlas* :move-centroid-on-foot
-  ;; 	:both '(:rleg :lleg )
-  ;; 	:target-centroid-pos (send *atlas* :calc-target-centroid-pos :both '(:rleg :lleg))
-  ;; 	:centroid-thre 40)
+  ;; :both '(:rleg :lleg )
+  ;; :target-centroid-pos (send *atlas* :calc-target-centroid-pos :both '(:rleg :lleg))
+  ;; :centroid-thre 40)
 
   (send *atlas* :angle-vector #f(33.5356 46.4636 14.0039 64.2606 95.3945 -24.981 -79.9998 -25.5105 15.0798 -26.4997 154.671 -17.5356 69.7715 -18.2152 -72.1545 133.003 -5.39242 -77.1493 6.91985 -44.144 14.013 134.584 -4.13608 -76.1416 -0.52805 -47.872 -16.8734 -35.0))
   (progn (model2real :time 3000) (send *ri* :wait-interpolation))
@@ -612,7 +613,7 @@
 
   (send *atlas* :angle-vector #f(33.5356 46.4636 14.0039 64.2606 95.3945 -24.981 -79.9998 -25.5105 15.0798 -26.4997 154.671 -17.5356 69.7715 -18.2152 -72.1545 140.375 -5.39242 -77.1493 6.91985 -20.0 14.013 140.375 -4.13608 -76.1416 -0.52805 -20.0 -16.8734 -35.0))
   (progn (model2real :time 5000) (send *ri* :wait-interpolation))
-)
+  )
 
 
 
@@ -629,31 +630,31 @@
     (matrix-exponent
      (normalize-vector axis) (deg2rad rotate))))
   (let* ((carm (car (remove arm (list :larm :rarm))))
-	 (axis :y)
-	 (v1
-	  (transform
-	   rotate-matrix
-	   (normalize-vector
-	    (v- (send (send *atlas* carm :end-coords) :worldpos)
-		(send (send *atlas* arm :end-coords) :worldpos)))))
-	 (v2 (float-vector 0 0 1))
-	 v3
-	 tc-pos tc-rot tc
-	 ret)
+         (axis :y)
+         (v1
+          (transform
+           rotate-matrix
+           (normalize-vector
+            (v- (send (send *atlas* carm :end-coords) :worldpos)
+                (send (send *atlas* arm :end-coords) :worldpos)))))
+         (v2 (float-vector 0 0 1))
+         v3
+         tc-pos tc-rot tc
+         ret)
     (setq v2 (normalize-vector (v* v1 v2)))
     (setq v3 (normalize-vector (v* v1 v2)))
     (setq tc-pos (send (send *atlas* arm :end-coords) :worldpos))
     (cond ((equal arm :larm)
-	   (setq tc-rot (transpose (matrix v3 (v- v1) (v- v2)))))
-	  ((equal arm :rarm)
-	   (setq tc-rot (transpose (matrix v3 v1 v2)))))
+           (setq tc-rot (transpose (matrix v3 (v- v1) (v- v2)))))
+          ((equal arm :rarm)
+           (setq tc-rot (transpose (matrix v3 v1 v2)))))
     (setq tc (make-coords :pos tc-pos :rot tc-rot))
     ;; (send tc :draw-on :flush t :size 800 :width 5 :color #f(1 0 0))
     (setq ret (send *atlas* arm :inverse-kinematics tc :stop 100
-		    :thre 1
-		    :rthre (deg2rad 2)
-		    :rotation-axis axis
-		    :revert-if-fail nil))
+                    :thre 1
+                    :rthre (deg2rad 2)
+                    :rotation-axis axis
+                    :revert-if-fail nil))
     (send *irtviewer* :draw-objects)
     ret))
 
@@ -661,8 +662,8 @@
   (&optional (arm :larm))
   (do-until-key
    (let* ((carm (car (remove arm (list :larm :rarm))))
-	  (r 1000)
-	  (r/2 (/ r 2)))
+          (r 1000)
+          (r/2 (/ r 2)))
      (send *atlas* :reset-manip-pose)
      (send *atlas* carm :move-end-pos (float-vector (- r/2 (random r)) (- r/2 (random r)) (- r/2 (random r))) :world :revert-if-fail nil)
      (send *irtviewer* :draw-objects)

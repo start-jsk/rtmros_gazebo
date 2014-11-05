@@ -12,7 +12,9 @@
 
   <rosdep name="hrpsys_ros_bridge" />
 
+  <depend package="gazebo_ros"/>
+  <depend package="gazebo_msgs"/>
   <depend package="hrpsys_ros_bridge" />
-  <depend package="hrpsys_gazebo_msgs" />
-
+  <depend package="collada_urdf_jsk_patch" />
+  <depend package="xacro" />
 </package>

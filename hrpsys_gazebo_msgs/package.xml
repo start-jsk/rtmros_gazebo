@@ -1,6 +1,6 @@
 <package>
   <name>hrpsys_gazebo_msgs</name>
-  <version>0.1.0</version>
+  <version>0.1.5</version>
   <description>hrpsys_gazebo_msgs</description>
   <maintainer email="youhei@jsk.t.u-tokyo.ac.jp">Yohei Kakiuchi</maintainer>
 

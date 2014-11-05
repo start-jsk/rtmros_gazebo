@@ -1,33 +1,30 @@
-#cmake_minimum_required(VERSION 2.4.6)
-#include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
+add_definitions(-DHRPSYS_PACKAGE_VERSION=\"\\"${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}\\"\")
 
-set(target hrpIo)
+# hrpIo
+add_library(hrpIo_atlas SHARED iob.cpp)
 
-#rosbuild_find_ros_package(hrpsys)
-execute_process(
-  COMMAND rospack find hrpsys
-  OUTPUT_VARIABLE hrpsys_PACKAGE_PATH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-execute_process(
-  COMMAND rospack find osrf_msgs
-  OUTPUT_VARIABLE osrf_msgs_PACKAGE_PATH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-execute_process(
-  COMMAND rospack find atlas_msgs
-  OUTPUT_VARIABLE atlas_msgs_PACKAGE_PATH
-  OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+if (NOT APPLE AND NOT QNXNTO)
+   target_link_libraries(hrpIo_atlas rt)
+endif()
 
-include_directories(BEFORE ${PROJECT_SOURCE_DIR}/lib/io;${osrf_msgs_PACKAGE_PATH}/msg_gen/cpp/include;${atlas_msgs_PACKAGE_PATH}/msg_gen/cpp/include)
-link_directories("/opt/ros/${ROS_DISTRO}/lib")
-add_library(${target} SHARED iob.cpp)
-target_link_libraries(${target} rt roscpp rostime)
-target_link_libraries(${target} rt)
+target_link_libraries(hrpIo_atlas roscpp rostime)
 
+# RobotHardware
+set(comp_source  ${ROBOTHARDWARE_SOURCE}/robot.cpp ${ROBOTHARDWARE_SOURCE}/RobotHardware.cpp ${ROBOTHARDWARE_SOURCE}/RobotHardwareService_impl.cpp)
+set(libs hrpIo_atlas hrpModel-3.1 hrpCollision-3.1 hrpUtil-3.1 hrpsysBaseStub)
 
-install(TARGETS ${target}
+add_library(RobotHardware_atlas SHARED ${comp_source})
+
+target_link_libraries(RobotHardware_atlas  ${libs})
+set_target_properties(RobotHardware_atlas PROPERTIES PREFIX "")
+set_target_properties(RobotHardware_atlas PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+set_target_properties(RobotHardware_atlas PROPERTIES OUTPUT_NAME RobotHardware)
+
+add_executable(RobotHardwareComp_atlas ${ROBOTHARDWARE_SOURCE}/RobotHardwareComp.cpp ${comp_source})
+target_link_libraries(RobotHardwareComp_atlas ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil)
+set_target_properties(RobotHardwareComp_atlas PROPERTIES OUTPUT_NAME RobotHardwareComp)
+
+install(TARGETS RobotHardwareComp_atlas RobotHardware_atlas hrpIo_atlas
   RUNTIME DESTINATION bin CONFIGURATIONS Release Debug
   LIBRARY DESTINATION lib CONFIGURATIONS Release Debug
 )

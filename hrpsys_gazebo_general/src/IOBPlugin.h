@@ -68,6 +68,7 @@ namespace gazebo
     void ZeroJointCommand();
     void UpdatePIDControl(double _dt);
     void UpdatePID_Velocity_Control(double _dt);
+    void PublishJointState();
 
     void GetIMUState(const common::Time &_curTime);
     void GetForceTorqueSensorState(const common::Time &_curTime);
@@ -109,6 +110,12 @@ namespace gazebo
     RobotState robotState;
     ros::Publisher pubRobotState;
     PubQueue<RobotState>::Ptr pubRobotStateQueue;
+
+    bool publish_joint_state;
+    int  publish_joint_state_step;
+    int  publish_joint_state_counter;
+    ros::Publisher pubJointState;
+    PubQueue<sensor_msgs::JointState>::Ptr pubJointStateQueue;
 
     ros::ServiceServer jointrefServ;
     ros::ServiceServer controlServ;

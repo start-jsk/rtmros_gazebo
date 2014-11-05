@@ -7,31 +7,37 @@ find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge hrpsys_gazebo_msgs)
 find_package(PkgConfig)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
 pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
-catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs)
+pkg_check_modules(collada_urdf_jsk_patch collada_urdf_jsk_patch)
+catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs CFG_EXTRAS compile_robot_model_for_gazebo.cmake)
 
-## Build only iob
-add_custom_command(OUTPUT ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
-  COMMAND cmake -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/iob
-  COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob cmake ${PROJECT_SOURCE_DIR}/iob -DCATKIN_INCLUDE_DIRS="${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhrp3_INCLUDE_DIRS}"
-  COMMAND cmake -E chdir ${CMAKE_CURRENT_BINARY_DIR}/iob make -j1
-  COMMAND cmake -E make_directory ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
-  COMMAND cmake -E copy  ${CMAKE_CURRENT_BINARY_DIR}/iob/libhrpIo.so ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
-  DEPENDS ${PROJECT_SOURCE_DIR}/iob/iob.cpp
-)
-add_custom_target(hrpsys_gazebo_general_iob ALL
-  DEPENDS ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib)
+# set CMAKE_BUILD_TYPE
+if(NOT CMAKE_BUILD_TYPE)
+  set(
+    CMAKE_BUILD_TYPE Release CACHE STRING
+    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+    FORCE)
+endif()
 
-## Build hrpsys for gazebo
-#add_custom_command(OUTPUT ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
-#  COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f ${PROJECT_SOURCE_DIR}/Makefile.hrpsys-base INSTALL_PREFIX_PATH=${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general OPENRTM_DIR=${openrtm_aist_PREFIX}/lib/openrtm_aist HRPSYS_BASE_SOURCE=${hrpsys_SOURCE_DIR}/build/hrpsys-base-source CATKIN_INCLUDE_DIRS=${hrpsys_gazebo_msgs_INCLUDE_DIRS} CMAKE_PKG_CONFIG_PATH=${CATKIN_DEVEL_PREFIX}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH} installed
-#  DEPENDS)
-#add_custom_target(hrpsys_gazebo_general_iob ALL
-#  DEPENDS ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib)
-#execute_process(COMMAND cmake -E chdir ${PROJECT_SOURCE_DIR} make -f ${PROJECT_SOURCE_DIR}/Makefile.hrpsys-base INSTALL_PREFIX_PATH=${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general OPENRTM_DIR=${openrtm_aist_PREFIX}/lib/openrtm_aist HRPSYS_BASE_SOURCE=${hrpsys_SOURCE_DIR}/build/hrpsys-base-source CATKIN_INCLUDE_DIRS=${hrpsys_gazebo_msgs_INCLUDE_DIRS} installed
-#  RESULT_VARIABLE _make_failed)
-#if (_make_failed)
-#  message(FATAL_ERROR "Build of hrpsys/iob failed")
-#endif(_make_failed)
+## Build only gazebo iob
+find_package(PkgConfig)
+pkg_check_modules(omniorb omniORB4 REQUIRED)
+pkg_check_modules(omnidynamic omniDynamic4 REQUIRED)
+pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
+pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
+pkg_check_modules(hrpsys hrpsys-base REQUIRED)
+if(EXISTS ${hrpsys_SOURCE_DIR})
+  set(ROBOTHARDWARE_SOURCE ${hrpsys_SOURCE_DIR}/src/rtc/RobotHardware)
+  set(HRPEC_SOURCE         ${hrpsys_SOURCE_DIR}/src/ec/hrpEC)
+else()
+  set(ROBOTHARDWARE_SOURCE ${hrpsys_PREFIX}/share/hrpsys/src/rtc/RobotHardware)
+  set(HRPEC_SOURCE         ${hrpsys_PREFIX}/share/hrpsys/src/ec/hrpEC)
+endif()
+include_directories(${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhrp3_INCLUDE_DIRS} ${hrpsys_INCLUDE_DIRS})
+link_directories(${CATKIN_DEVEL_PREFIX}/lib ${hrpsys_PREFIX}/lib ${openhrp3_LIBRARY_DIRS} /opt/ros/$ENV{ROS_DISTRO}/lib/)
+add_subdirectory(iob)
+
+add_custom_target(hrpsys_gazebo_general_iob ALL DEPENDS RobotHardware_gazebo)
+add_dependencies(hrpsys_gazebo_general_iob hrpsys_gazebo_msgs_gencpp)
 
 ## Gazebo plugins
 include (FindPkgConfig)
@@ -46,19 +52,32 @@ link_directories( ${GAZEBO_LIBRARY_DIRS} ${openhrp3_LIBRARY_DIRS})
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/plugins)
 
-#if ($ENV{ROS_DISTRO} STREQUAL "groovy")
 add_library(IOBPlugin src/IOBPlugin.cpp)
-add_library(SetVelPlugin src/SetVelPlugin.cpp)
-add_dependencies(hrpsys_gazebo_general_iob hrpsys_gazebo_msgs_gencpp)
 add_dependencies(IOBPlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS IOBPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+add_library(SetVelPlugin src/SetVelPlugin.cpp)
 add_dependencies(SetVelPlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS SetVelPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 add_library(AddForcePlugin src/AddForcePlugin.cpp)
-add_library(GetVelPlugin src/GetVelPlugin.cpp)
 add_dependencies(AddForcePlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS AddForcePlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+add_library(GetVelPlugin src/GetVelPlugin.cpp)
 add_dependencies(GetVelPlugin hrpsys_gazebo_msgs_gencpp)
-#endif()
+install(TARGETS GetVelPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+add_library(ThermoPlugin src/ThermoPlugin.cpp)
+add_dependencies(ThermoPlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS ThermoPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
-install(DIRECTORY
-  ${CATKIN_DEVEL_PREFIX}/share/hrpsys_gazebo_general/lib
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+## Convert robot models
+include(${PROJECT_SOURCE_DIR}/cmake/compile_robot_model_for_gazebo.cmake)
+if(EXISTS ${hrpsys_ros_bridge_SOURCE_DIR})
+  set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_SOURCE_DIR})
+else()
+  set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_PREFIX}/share/hrpsys_ros_bridge)
+endif()
+generate_gazebo_urdf_file(${hrpsys_ros_bridge_PACKAGE_PATH}/models/SampleRobot.dae)
+add_custom_target(all_robots_compile ALL DEPENDS ${compile_urdf_robots})
 
+## install
+install(DIRECTORY launch scripts worlds config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION} USE_SOURCE_PERMISSIONS)
+install(PROGRAMS setup.sh DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})

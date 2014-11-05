@@ -1,9 +1,0 @@
-<launch>
-  <!-- <rosparam command="load" -->
-  <!--           file="$(find jsk_hrpsys_ros_bridge)/models/STARO_controller_config.yaml" /> -->
-
-  <include file="$(find hrpsys_gazebo_tutorials)/launch/robot_hrpsys_bringup.launch">
-    <arg name="ROBOT_TYPE" value="STARO" />
-    <arg name="USE_INSTANCE_NAME" value="true" />
-  </include>
-</launch>
