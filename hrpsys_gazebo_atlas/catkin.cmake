@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general atlas_description message_generation)
+find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general message_generation)
 catkin_python_setup()
 
 add_message_files(
@@ -27,6 +27,9 @@ include(${hrpsys_ros_bridge_PACKAGE_PATH}/cmake/compile_robot_model.cmake)
 find_package(PkgConfig)
 pkg_check_modules(collada_urdf_jsk_patch collada_urdf_jsk_patch)
 
+# check if atlas description is installed
+pkg_check_modules(atlas_description atlas_description)
+if(atlas_description_FOUND)
 if(EXISTS ${atlas_description_SOURCE_DIR})
   set(atlas_description_PACKAGE_PATH ${atlas_description_SOURCE_DIR})
 else()
@@ -93,6 +96,9 @@ else()
   message(FATAL_ERROR "${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro")
 endif()
 endif (collada_urdf_jsk_patch_FOUND)
+else(atlas_description_FOUND)
+  message(AUTHOR_WARNING "no atlas_description is installed")
+endif(atlas_description_FOUND)
 
 ## Build only atlas iob
 find_package(PkgConfig)
