@@ -10,7 +10,7 @@
   <arg name="ROBOT_INSTANCE_NAME" default="$(arg ROBOT_TYPE)" />
 
   <arg name="LOOPBACK" default="false" />
-  <arg name="SPAWN_MODEL" default="false" />
+  <arg name="SPAWN_MODEL" default="true" />
 
   <arg name="MODEL_TRANSLATE_X" default="0.0" />
   <arg name="MODEL_TRANSLATE_Y" default="0.0" />
@@ -53,6 +53,7 @@
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
 
   <!-- Spawn Robot Model -->
-  <node name="spawn_robot_model" pkg="gazebo_ros" type="spawn_model"
+  <node if="$(arg SPAWN_MODEL)"
+        name="spawn_robot_model" pkg="gazebo_ros" type="spawn_model"
         args="-unpause -urdf -param robot_description -model mobile_base -x $(arg MODEL_TRANSLATE_X) -y $(arg MODEL_TRANSLATE_Y) -z $(arg MODEL_TRANSLATE_Z) -R $(arg MODEL_ROTATE_R) -P $(arg MODEL_ROTATE_P) -Y $(arg MODEL_ROTATE_Y)" />
 </launch>
