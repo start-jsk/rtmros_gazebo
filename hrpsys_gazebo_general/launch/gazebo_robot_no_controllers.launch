@@ -55,5 +55,5 @@
   <!-- Spawn Robot Model -->
   <node if="$(arg SPAWN_MODEL)"
         name="spawn_robot_model" pkg="gazebo_ros" type="spawn_model"
-        args="-unpause -urdf -param robot_description -model mobile_base -x $(arg MODEL_TRANSLATE_X) -y $(arg MODEL_TRANSLATE_Y) -z $(arg MODEL_TRANSLATE_Z) -R $(arg MODEL_ROTATE_R) -P $(arg MODEL_ROTATE_P) -Y $(arg MODEL_ROTATE_Y)" />
+        args="-unpause -urdf -param robot_description -model $(arg ROBOT_INSTANCE_NAME) -x $(arg MODEL_TRANSLATE_X) -y $(arg MODEL_TRANSLATE_Y) -z $(arg MODEL_TRANSLATE_Z) -R $(arg MODEL_ROTATE_R) -P $(arg MODEL_ROTATE_P) -Y $(arg MODEL_ROTATE_Y)" />
 </launch>
