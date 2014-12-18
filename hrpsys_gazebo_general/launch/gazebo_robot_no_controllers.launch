@@ -20,15 +20,20 @@
   <arg name="MODEL_ROTATE_Y" default="0.0" />
 
   <arg if="$(arg PAUSED)"
-       name="paused" value="_paused" />
+       name="paused" value=" -u" />
+  <arg if="$(arg PAUSED)"
+       name="spawn_paused" value="" />
+
   <arg unless="$(arg PAUSED)"
        name="paused" value="" />
+  <arg unless="$(arg PAUSED)"
+       name="spawn_paused" value="-unpause " />
 
   <group unless="$(arg LOOPBACK)" >
     <param name="/use_sim_time" type="bool" value="true"/>
 
     <!-- start gazebo with the hrpsys_gazebo -->
-    <node name="gazebo" pkg="hrpsys_gazebo_general" type="$(arg gzname)" args="$(arg WORLD)" output="screen" />
+    <node name="gazebo" pkg="hrpsys_gazebo_general" type="$(arg gzname)" args="$(arg WORLD)$(arg paused)" output="screen" />
   </group>
 
   <group if="$(arg USE_INSTANCE_NAME)"
@@ -55,5 +60,5 @@
   <!-- Spawn Robot Model -->
   <node if="$(arg SPAWN_MODEL)"
         name="spawn_robot_model" pkg="gazebo_ros" type="spawn_model"
-        args="-unpause -urdf -param robot_description -model $(arg ROBOT_INSTANCE_NAME) -x $(arg MODEL_TRANSLATE_X) -y $(arg MODEL_TRANSLATE_Y) -z $(arg MODEL_TRANSLATE_Z) -R $(arg MODEL_ROTATE_R) -P $(arg MODEL_ROTATE_P) -Y $(arg MODEL_ROTATE_Y)" />
+        args="$(arg spawn_paused)-urdf -param robot_description -model $(arg ROBOT_INSTANCE_NAME) -x $(arg MODEL_TRANSLATE_X) -y $(arg MODEL_TRANSLATE_Y) -z $(arg MODEL_TRANSLATE_Z) -R $(arg MODEL_ROTATE_R) -P $(arg MODEL_ROTATE_P) -Y $(arg MODEL_ROTATE_Y)" />
 </launch>
