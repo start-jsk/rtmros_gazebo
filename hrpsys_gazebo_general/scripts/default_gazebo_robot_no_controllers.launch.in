@@ -3,6 +3,7 @@
   <arg name="WORLD" default="$(find hrpsys_gazebo_general)/worlds/empty.world"/>
   <arg name="PAUSED" default="false"/>
   <arg name="SYNCHRONIZED" default="false" />
+  <arg name="SPAWN_MODEL" default="true" />
 
   <include file="$(find hrpsys_gazebo_general)/launch/gazebo_robot_no_controllers.launch">
     <arg name="ROBOT_TYPE" value="@ROBOT@" />
@@ -14,5 +15,8 @@
     <arg name="SYNCHRONIZED" value="$(arg SYNCHRONIZED)" />
     <arg name="USE_INSTANCE_NAME" value="true" />
     <arg name="gzname" value="$(arg gzname)" />
+
+    <!--arg name="MODEL_TRANSLATE_Z" default="1.00" /-->
+    <arg name="SPAWN_MODEL" value="$(arg SPAWN_MODEL)" />
   </include>
 </launch>
