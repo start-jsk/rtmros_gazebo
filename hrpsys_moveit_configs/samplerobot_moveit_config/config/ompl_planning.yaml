@@ -15,6 +15,8 @@ planner_configs:
     type: geometric::RRTConnect
   RRTstarkConfigDefault:
     type: geometric::RRTstar
+  TRRTkConfigDefault:
+    type: geometric::TRRT
   PRMkConfigDefault:
     type: geometric::PRM
   PRMstarkConfigDefault:
@@ -29,6 +31,7 @@ larm:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
   projection_evaluator: joints(LARM_SHOULDER_P,LARM_SHOULDER_R)
@@ -43,6 +46,7 @@ rarm:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
   projection_evaluator: joints(RARM_SHOULDER_P,RARM_SHOULDER_R)
@@ -57,6 +61,7 @@ lhand:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
 rhand:
@@ -69,6 +74,7 @@ rhand:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
 torso:
@@ -81,6 +87,7 @@ torso:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
   projection_evaluator: joints(WAIST_P,WAIST_R)
@@ -95,6 +102,7 @@ larm_torso:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
   projection_evaluator: joints(WAIST_P,WAIST_R)
@@ -109,6 +117,7 @@ rarm_torso:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
   projection_evaluator: joints(WAIST_P,WAIST_R)
@@ -123,5 +132,6 @@ base:
     - RRTkConfigDefault
     - RRTConnectkConfigDefault
     - RRTstarkConfigDefault
+    - TRRTkConfigDefault
     - PRMkConfigDefault
     - PRMstarkConfigDefault
