@@ -15,7 +15,8 @@ IOBPlugin::IOBPlugin() : publish_joint_state(false),
                          publish_joint_state_step(0),
                          publish_joint_state_counter(0),
                          use_synchronized_command(false),
-                         use_velocity_feedback(false) {
+                         use_velocity_feedback(false),
+                         use_joint_effort(false) {
 }
 
 IOBPlugin::~IOBPlugin() {
@@ -92,6 +93,15 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
         ROS_WARN("override use_veolcity_feedback at %d by %d",
                  this->use_velocity_feedback, ret);
         this->use_velocity_feedback = ret;
+      }
+    }
+    { // read use_joint_effort from rosparam
+      std::string pname = this->controller_name + "/use_joint_effort";
+      if (this->rosNode->hasParam(pname)) {
+        bool ret;
+        this->rosNode->getParam(pname, ret);
+        ROS_INFO("use_joint_effort %d", ret);
+        this->use_joint_effort = ret;
       }
     }
     { // read publish_joint_state from rosparam
@@ -251,6 +261,9 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       ROS_ERROR("%s robot expected joint[%s] not present, plugin not loaded",
                 this->robot_name.c_str(), this->jointNames[i].c_str());
       return;
+    }
+    if (this->use_joint_effort) {
+      this->joints[i]->SetProvideFeedback(true);
     }
   }
 
@@ -691,13 +704,29 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   // populate robotState from robot
   this->robotState.header.stamp = ros::Time(_curTime.sec, _curTime.nsec);
 
-  //
+  // joint states
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
     this->robotState.position[i] = this->joints[i]->GetAngle(0).Radian();
     this->robotState.velocity[i] = this->joints[i]->GetVelocity(0);
-    if (this->use_velocity_feedback) {
-      // not implemented yet on gazebo ???
-      this->robotState.effort[i] = this->joints[i]->GetForce(0);
+    if (this->use_joint_effort) {
+      physics::JointPtr j = this->joints[i];
+      physics::JointWrench w = j->GetForceTorque(0u);
+      {
+        math::Vector3 a = j->GetLocalAxis(0u);
+        this->robotState.effort[i] = a.Dot(w.body1Torque);
+      }
+#if 0 // DEBUG
+      {
+        math::Vector3 a = j->GetGlobalAxis(0u);
+        math::Vector3 m = this->joints[i]->GetChild()->GetWorldPose().rot * w.body2Torque;
+        float ret = this->robotState.effort[i] = a.Dot(m);
+        ROS_INFO("f[%d]->%f,%f", i, this->robotState.effort[i], ret);
+      }
+#endif
+    } else {
+      if (this->use_velocity_feedback) {
+        this->robotState.effort[i] = this->joints[i]->GetForce(0);
+      }
     }
   }
 
