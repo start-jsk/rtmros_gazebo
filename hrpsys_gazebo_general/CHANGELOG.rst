@@ -2,6 +2,9 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.4 (2014-10-23)
 ------------------
 * install compile-robot-model-for-gazebo.cmake

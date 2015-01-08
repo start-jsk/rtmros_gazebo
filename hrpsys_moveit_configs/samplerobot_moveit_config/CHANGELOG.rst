@@ -2,6 +2,9 @@
 Changelog for package samplerobot_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.4 (2014-10-23)
 ------------------
 
