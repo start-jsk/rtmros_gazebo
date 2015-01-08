@@ -2,8 +2,8 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.6 (2015-01-08)
+------------------
 * update CHANGELOG.rst
 * add dl to target_link_libraries
 * add SPAWN_MODEL and fix for PAUSE
