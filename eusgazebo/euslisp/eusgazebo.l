@@ -3,6 +3,7 @@
 (load "package://eusgazebo/euslisp/eusgazebo-util.l")
 (load "package://eusgazebo/euslisp/mass-property-util.l")
 
+(ros::load-ros-manifest "trajectory_msgs")
 (ros::load-ros-manifest "gazebo_msgs")
 
 (ros::roseus "eusgazebo_client")
