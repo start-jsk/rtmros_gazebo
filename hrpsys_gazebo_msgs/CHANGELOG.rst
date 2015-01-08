@@ -4,6 +4,8 @@ Changelog for package hrpsys_gazebo_msgs
 
 Forthcoming
 -----------
+* update CHANGELOG.rst
+* Contributors: Kei Okada
 
 0.1.4 (2014-10-23)
 ------------------
