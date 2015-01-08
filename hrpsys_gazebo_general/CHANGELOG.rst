@@ -18,6 +18,31 @@ Changelog for package hrpsys_gazebo_general
 * install compile-robot-model-for-gazebo.cmake
 * deletece unnecessary file. added xacro file
 
+Forthcoming
+-----------
+* add pthread for link only for raling 64bit
+* 0.1.6
+* update CHANGELOG.rst
+* update CHANGELOG.rst
+* add dl to target_link_libraries
+* add SPAWN_MODEL and fix for PAUSE
+* change model name when spawning robot model
+* update setup.sh
+* fix using SPAWN_MODEL argument
+* udpate PubQueue.h for matching gazebo_ros_pkgs
+* 0.1.5
+* enable to select launching dashboard or not. default is false.
+* add SampleRobot.conf for unstable rtc and call that conf file.
+* 0.1.4
+* update CHANGELOG.rst
+* install compile-robot-model-for-gazebo.cmake
+* add world for using cfm parameter
+* fix parameter of gazebo launch
+* initialize flag and counter
+* fixed bag: removed duplicate lines in compile_robot_model_for_gazebo.cmake.
+* deletece unnecessary file. added xacro file
+* Contributors: Kei Okada, YoheiKakiuchi, mmurooka
+
 0.1.3 (2014-10-12)
 ------------------
 * set CMAKE_BUILD_TYPE to install, also support RelWithDebInfo for deb release
