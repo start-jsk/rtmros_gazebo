@@ -22,7 +22,7 @@ set_target_properties(RobotHardware_gazebo PROPERTIES LIBRARY_OUTPUT_DIRECTORY $
 set_target_properties(RobotHardware_gazebo PROPERTIES OUTPUT_NAME RobotHardware)
 
 add_executable(RobotHardwareComp_gazebo ${ROBOTHARDWARE_SOURCE}/RobotHardwareComp.cpp ${comp_source})
-target_link_libraries(RobotHardwareComp_gazebo ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil dl)
+target_link_libraries(RobotHardwareComp_gazebo ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil dl pthread)
 set_target_properties(RobotHardwareComp_gazebo PROPERTIES OUTPUT_NAME RobotHardwareComp)
 
 add_library(hrpEC_gazebo SHARED ${HRPEC_SOURCE}/hrpEC.cpp ${HRPEC_SOURCE}/hrpEC-common.cpp)
