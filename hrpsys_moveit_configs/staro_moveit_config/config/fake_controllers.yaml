@@ -1,0 +1,52 @@
+controller_list:
+  - name: fake_larm_controller
+    joints:
+      - LARM_JOINT0
+      - LARM_JOINT1
+      - LARM_JOINT2
+      - LARM_JOINT3
+      - LARM_JOINT4
+      - LARM_JOINT5
+      - LARM_JOINT6
+      - LARM_JOINT7
+  - name: fake_rarm_controller
+    joints:
+      - RARM_JOINT0
+      - RARM_JOINT1
+      - RARM_JOINT2
+      - RARM_JOINT3
+      - RARM_JOINT4
+      - RARM_JOINT5
+      - RARM_JOINT6
+      - RARM_JOINT7
+  - name: fake_torso_controller
+    joints:
+      - CHEST_JOINT0
+      - CHEST_JOINT1
+  - name: fake_lhand_controller
+    joints:
+      - L_finger_1_joint_1
+      - L_finger_1_joint_2
+      - L_finger_1_joint_3
+      - L_palm_finger_2_joint
+      - L_finger_2_joint_1
+      - L_finger_2_joint_2
+      - L_finger_2_joint_3
+      - L_palm_finger_middle_joint
+      - L_finger_middle_joint_1
+      - L_finger_middle_joint_2
+      - L_finger_middle_joint_3
+  - name: fake_rhand_controller
+    joints:
+      - R_palm_finger_1_joint
+      - R_finger_1_joint_1
+      - R_finger_1_joint_2
+      - R_finger_1_joint_3
+      - R_palm_finger_2_joint
+      - R_finger_2_joint_1
+      - R_finger_2_joint_2
+      - R_finger_2_joint_3
+      - R_palm_finger_middle_joint
+      - R_finger_middle_joint_1
+      - R_finger_middle_joint_2
+      - R_finger_middle_joint_3

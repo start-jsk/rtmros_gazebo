@@ -1,0 +1,53 @@
+controller_list:
+  - name: fake_larm_controller
+    joints:
+      - LARM_SHOULDER_P
+      - LARM_SHOULDER_R
+      - LARM_SHOULDER_Y
+      - LARM_ELBOW
+      - LARM_WRIST_Y
+      - LARM_WRIST_P
+  - name: fake_rarm_controller
+    joints:
+      - RARM_SHOULDER_P
+      - RARM_SHOULDER_R
+      - RARM_SHOULDER_Y
+      - RARM_ELBOW
+      - RARM_WRIST_Y
+      - RARM_WRIST_P
+  - name: fake_lhand_controller
+    joints:
+      - LARM_WRIST_R
+  - name: fake_rhand_controller
+    joints:
+      - RARM_WRIST_R
+  - name: fake_torso_controller
+    joints:
+      - WAIST_P
+      - WAIST_R
+      - CHEST
+  - name: fake_larm_torso_controller
+    joints:
+      - WAIST_P
+      - WAIST_R
+      - CHEST
+      - LARM_SHOULDER_P
+      - LARM_SHOULDER_R
+      - LARM_SHOULDER_Y
+      - LARM_ELBOW
+      - LARM_WRIST_Y
+      - LARM_WRIST_P
+  - name: fake_rarm_torso_controller
+    joints:
+      - WAIST_P
+      - WAIST_R
+      - CHEST
+      - RARM_SHOULDER_P
+      - RARM_SHOULDER_R
+      - RARM_SHOULDER_Y
+      - RARM_ELBOW
+      - RARM_WRIST_Y
+      - RARM_WRIST_P
+  - name: fake_base_controller
+    joints:
+      - virtual_joint
