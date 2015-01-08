@@ -18,8 +18,8 @@ Changelog for package hrpsys_gazebo_general
 * install compile-robot-model-for-gazebo.cmake
 * deletece unnecessary file. added xacro file
 
-Forthcoming
------------
+0.1.7 (2015-01-09)
+------------------
 * add pthread for link only for raling 64bit
 * 0.1.6
 * update CHANGELOG.rst

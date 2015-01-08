@@ -11,8 +11,8 @@ Changelog for package samplerobot_moveit_config
 0.1.4 (2014-10-23)
 ------------------
 
-Forthcoming
------------
+0.1.7 (2015-01-09)
+------------------
 * 0.1.6
 * fix version number
 * update CHANGELOG.rst
