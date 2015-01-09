@@ -2,6 +2,10 @@
 Changelog for package eusgazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix CHANGELOG order, https://github.com/ros/rosdistro/pull/6794
+
 0.1.7 (2015-01-09)
 ------------------
 * add trajectory_msgs
