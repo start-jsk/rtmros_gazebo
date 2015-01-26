@@ -11,7 +11,7 @@ pkg_check_modules(collada_urdf_jsk_patch collada_urdf_jsk_patch)
 catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs CFG_EXTRAS compile_robot_model_for_gazebo.cmake)
 
 # set CMAKE_BUILD_TYPE
-if(NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYP)
   set(
     CMAKE_BUILD_TYPE Release CACHE STRING
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
@@ -28,6 +28,9 @@ pkg_check_modules(hrpsys hrpsys-base REQUIRED)
 if(EXISTS ${hrpsys_SOURCE_DIR})
   set(ROBOTHARDWARE_SOURCE ${hrpsys_SOURCE_DIR}/src/rtc/RobotHardware)
   set(HRPEC_SOURCE         ${hrpsys_SOURCE_DIR}/src/ec/hrpEC)
+elseif(EXISTS ${hrpsys_SOURCE_PREFIX})
+  set(ROBOTHARDWARE_SOURCE ${hrpsys_SOURCE_PREFIX}/src/rtc/RobotHardware)
+  set(HRPEC_SOURCE         ${hrpsys_SOURCE_PREFIX}/src/ec/hrpEC)
 else()
   set(ROBOTHARDWARE_SOURCE ${hrpsys_PREFIX}/share/hrpsys/src/rtc/RobotHardware)
   set(HRPEC_SOURCE         ${hrpsys_PREFIX}/share/hrpsys/src/ec/hrpEC)
@@ -72,6 +75,8 @@ install(TARGETS ThermoPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATIO
 include(${PROJECT_SOURCE_DIR}/cmake/compile_robot_model_for_gazebo.cmake)
 if(EXISTS ${hrpsys_ros_bridge_SOURCE_DIR})
   set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_SOURCE_DIR})
+elseif(EXISTS ${hrpsys_ros_bridge_SOURCE_PREFIX})
+  set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_SOURCE_PREFIX})
 else()
   set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_PREFIX}/share/hrpsys_ros_bridge)
 endif()
