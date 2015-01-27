@@ -36,9 +36,9 @@ if(EXISTS ${atlas_description_SOURCE_DIR})
   set(atlas_description_PACKAGE_PATH ${atlas_description_SOURCE_DIR})
 elseif(EXISTS ${atlas_description_SOURCE_PREFIX})
   set(atlas_description_PACKAGE_PATH ${atlas_description_SOURCE_PREFIX})
-else()
+else(EXISTS ${atlas_description_SOURCE_DIR})
   set(atlas_description_PACKAGE_PATH ${atlas_description_PREFIX}/share/atlas_description)
-endif()
+endif(EXISTS ${atlas_description_SOURCE_DIR})
 if (collada_urdf_jsk_patch_FOUND)
 if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
   set(atlas_urdf "${CMAKE_CURRENT_BINARY_DIR}/atlas.jsk.urdf")
@@ -100,9 +100,6 @@ else()
   message(FATAL_ERROR "${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro")
 endif()
 endif (collada_urdf_jsk_patch_FOUND)
-else(atlas_description_FOUND)
-  message(AUTHOR_WARNING "no atlas_description is installed")
-endif(atlas_description_FOUND)
 
 ## Build only atlas iob
 find_package(PkgConfig)
@@ -121,8 +118,12 @@ endif()
 include_directories(${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhrp3_INCLUDE_DIRS} ${hrpsys_INCLUDE_DIRS})
 link_directories(${CATKIN_DEVEL_PREFIX}/lib ${hrpsys_PREFIX}/lib ${openhrp3_LIBRARY_DIRS} /opt/ros/$ENV{ROS_DISTRO}/lib/)
 add_subdirectory(iob)
-
 add_custom_target(hrpsys_gazebo_atlas_iob ALL DEPENDS RobotHardware_atlas)
+else(atlas_description_FOUND)
+  message(AUTHOR_WARNING "no atlas_description is installed")
+endif(atlas_description_FOUND)
+
+
 
 ## laser assember is not catkinized
 if (EXISTS /opt/ros/groovy/stacks/laser_assembler/srv_gen/)
