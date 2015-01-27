@@ -16,6 +16,13 @@ generate_messages(
 
 catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description message_runtime)
 
+# check if atlas_description is available
+find_package(PkgConfig)
+pkg_check_modules(atlas_description atlas_description)
+if (NOT atlas_description_FOUND)
+  message(WARNING "cannot find atlas_description, did you install drcsim?")
+  return()
+endif(NOT atlas_description_FOUND)
 
 if(EXISTS ${hrpsys_ros_bridge_SOURCE_DIR})
   set(hrpsys_ros_bridge_PACKAGE_PATH ${hrpsys_ros_bridge_SOURCE_DIR})
