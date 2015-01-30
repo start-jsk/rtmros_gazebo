@@ -11,7 +11,7 @@ pkg_check_modules(collada_urdf_jsk_patch collada_urdf_jsk_patch)
 catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs CFG_EXTRAS compile_robot_model_for_gazebo.cmake)
 
 # set CMAKE_BUILD_TYPE
-if(NOT CMAKE_BUILD_TYP)
+if(NOT CMAKE_BUILD_TYPE)
   set(
     CMAKE_BUILD_TYPE Release CACHE STRING
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
