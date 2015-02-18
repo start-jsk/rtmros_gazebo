@@ -1,0 +1,10 @@
+sensors:
+  - sensor_plugin: jsk_pcl/PointCloudMoveitFilter
+    point_cloud_topic: /multisense/organized_image_points2_color
+    max_range: 6.0
+    point_subsample: 1
+    padding_offset: 0.025
+    padding_scale: 1.0
+    filtered_cloud_topic: /multisense/organized_image_points2_color_filtered
+    filtered_cloud_keep_organized: true
+    filtered_cloud_use_color: true
