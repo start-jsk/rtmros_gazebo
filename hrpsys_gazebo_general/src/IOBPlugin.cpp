@@ -227,7 +227,7 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
               gzerr << ln << " not found\n";
             } else {
               // Get imu sensors
-              msi.sensor = boost::shared_dynamic_cast<sensors::ImuSensor>
+              msi.sensor = boost::dynamic_pointer_cast<sensors::ImuSensor>
                 (sensors::SensorManager::Instance()->GetSensor
                  (this->world->GetName() + "::" + msi.link->GetScopedName() + "::" + msi.sensor_name));
 
