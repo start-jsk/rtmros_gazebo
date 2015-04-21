@@ -10,6 +10,9 @@ pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
 find_package(collada_urdf_jsk_patch)
 catkin_package(CATKIN_DEPENDS hrpsys_ros_bridge hrpsys_gazebo_msgs CFG_EXTRAS compile_robot_model_for_gazebo.cmake)
 
+catkin_add_env_hooks(99.hrpsys_gazebo_general SHELLS bash zsh
+  DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/env-hooks)
+
 # set CMAKE_BUILD_TYPE
 if(NOT CMAKE_BUILD_TYPE)
   set(
