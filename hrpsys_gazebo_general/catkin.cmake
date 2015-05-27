@@ -2,7 +2,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_general)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge hrpsys_gazebo_msgs)
+find_package(catkin REQUIRED COMPONENTS
+  hrpsys_ros_bridge
+  hrpsys_gazebo_msgs
+  sensor_msgs
+  roscpp)
 
 find_package(PkgConfig)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
@@ -54,6 +58,10 @@ include_directories( ${GAZEBO_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${openrtm_ais
 link_directories( ${GAZEBO_LIBRARY_DIRS} ${openhrp3_LIBRARY_DIRS})
 
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/plugins)
+
+add_executable(laser_scan_intensity_filter src/LaserScanIntensityFilter.cpp)
+target_link_libraries(laser_scan_intensity_filter ${catkin_LIBRARIES})
+install(TARGETS laser_scan_intensity_filter RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 add_library(IOBPlugin src/IOBPlugin.cpp)
 add_dependencies(IOBPlugin hrpsys_gazebo_msgs_gencpp)
