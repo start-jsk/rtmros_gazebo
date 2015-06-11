@@ -2,8 +2,8 @@
 Changelog for package eusgazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.9 (2015-06-11)
+------------------
 * [eusgazebo] Add roseus to dependency
 * Contributors: Ryohei Ueda
 

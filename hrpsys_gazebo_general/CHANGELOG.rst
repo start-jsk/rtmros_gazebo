@@ -2,8 +2,8 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.9 (2015-06-11)
+------------------
 * Replace shared_dynamic_cast to dynamic_pointer_cast because shared_dynamic_cast is deprecated from boost 1.53
 * [hrpsys_gazebo_general] Use find_package macro to look up collada_jsk_patch package
 * [hrpsys_gazebo_general] Fix typo
