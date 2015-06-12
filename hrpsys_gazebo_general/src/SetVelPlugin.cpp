@@ -33,25 +33,25 @@ namespace gazebo
       // read option args in sdf tags
       this->obj_name = "";
       if (_sdf->HasElement("objname")) {
-	this->obj_name = _sdf->Get<std::string>("objname");
+        this->obj_name = _sdf->Get<std::string>("objname");
       }
       this->link_name = "root";
       if (_sdf->HasElement("linkname")) {
-	this->link_name = _sdf->Get<std::string>("linkname");
+        this->link_name = _sdf->Get<std::string>("linkname");
       }
 
       // find root link
       this->link = this->model->GetLink(this->link_name);
       if(!this->link) {
-	gzerr << "Root link are not found. (link_name is "<< this->link_name << ")" << std::endl;
-	return;
+        gzerr << "Root link are not found. (link_name is "<< this->link_name << ")" << std::endl;
+        return;
       }
-      
-      // Make sure the ROS node for Gazebo has already been initialized                                                                                    
+
+      // Make sure the ROS node for Gazebo has already been initialized
       if (!ros::isInitialized()) {
-	gzerr << "A ROS node for Gazebo has not been initialized, unable to load plugin. "
-	      << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)";
-	return;
+        gzerr << "A ROS node for Gazebo has not been initialized, unable to load plugin. "
+              << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)";
+        return;
       }
       // ros node
       this->rosNode = new ros::NodeHandle("");
@@ -62,13 +62,13 @@ namespace gazebo
     void DeferredLoad() {
       // ros topic subscribtions
       ros::SubscribeOptions VelCommandSo =
-	ros::SubscribeOptions::create<geometry_msgs::Twist>("/" + this->obj_name + "/SetVelPlugin/VelCommand", 100,
-						    boost::bind(&SetVel::SetVelCommand, this, _1),
-						    ros::VoidPtr(), &this->rosQueue);
+        ros::SubscribeOptions::create<geometry_msgs::Twist>("/" + this->obj_name + "/SetVelPlugin/VelCommand", 100,
+                                                    boost::bind(&SetVel::SetVelCommand, this, _1),
+                                                    ros::VoidPtr(), &this->rosQueue);
       ros::SubscribeOptions PoseCommandSo =
-	ros::SubscribeOptions::create<geometry_msgs::Pose>("/" + this->obj_name + "/SetVelPlugin/PoseCommand", 100,
-					      boost::bind(&SetVel::SetPoseCommand, this, _1),
-					      ros::VoidPtr(), &this->rosQueue);
+        ros::SubscribeOptions::create<geometry_msgs::Pose>("/" + this->obj_name + "/SetVelPlugin/PoseCommand", 100,
+                                              boost::bind(&SetVel::SetPoseCommand, this, _1),
+                                              ros::VoidPtr(), &this->rosQueue);
       // Enable TCP_NODELAY because TCP causes bursty communication with high jitter,
       VelCommandSo.transport_hints = ros::TransportHints().reliable().tcpNoDelay(true);
       this->subVelCommand = this->rosNode->subscribe(VelCommandSo);
@@ -100,7 +100,7 @@ namespace gazebo
       this->model->SetLinearVel(math::Vector3(0, 0, 0));
       this->model->SetAngularVel(math::Vector3(0, 0, 0));
       this->pose.Set(math::Vector3(_msg->position.x, _msg->position.y, _msg->position.z),
-		     math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
+                     math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
       // this->model->SetLinkWorldPose(this->pose, this->link);
       this->model->SetWorldPose(this->pose, this->link);
       gzmsg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
@@ -118,7 +118,7 @@ namespace gazebo
       static const double timeout = 0.01;
 
       while (this->rosNode->ok()) {
-	this->rosQueue.callAvailable(ros::WallDuration(timeout));
+        this->rosQueue.callAvailable(ros::WallDuration(timeout));
       }
     }
 
