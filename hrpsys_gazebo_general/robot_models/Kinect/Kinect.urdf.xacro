@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<robot name="Kinect" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include filename="$(find turtlebot_description)/urdf/turtlebot_library.urdf.xacro" />
+  <link name="base_link" />
+  <gazebo reference="base_link">
+    <gravity>false</gravity>
+  </gazebo>
+
+  <property name="cam_px" value="0" />
+  <property name="cam_py" value="0" />
+  <property name="cam_pz" value="0" />
+  <property name="cam_or" value="0" />
+  <property name="cam_op" value="0" />
+  <property name="cam_oy" value="0" />
+  <sensor_kinect  parent="base_link"/>
+
+  <gazebo>
+    <plugin filename="libSetVelPlugin.so" name="set_vel_plugin" >
+      <objname>Kinect</objname>
+      <linkname>base_link</linkname>
+    </plugin>
+  </gazebo>
+  <gazebo>
+    <plugin filename="libPubTfPlugin.so" name="pub_tf_plugin" >
+      <objname>Kinect</objname>
+      <linkname>base_link</linkname>
+    </plugin>
+  </gazebo>
+</robot>
