@@ -1,7 +1,7 @@
 <launch>
   <arg name="gzname" default="gazebo"/>
   <arg name="ROBOT_TYPE" default="Kinect" />
-  <arg name="WORLD" default="$(find hrpsys_gazebo_general)/worlds/empty.world" />
+  <arg name="WORLD" default="$(find hrpsys_gazebo_general)/worlds/empty_slow.world" />
   <arg name="ROBOT_MODEL" default="$(find hrpsys_gazebo_general)/robot_models/$(arg ROBOT_TYPE)/$(arg ROBOT_TYPE).urdf.xacro" />
   <arg name="PAUSED" default="false"/>
   <arg name="ROBOT_INSTANCE_NAME" default="$(arg ROBOT_TYPE)" />
