@@ -1,5 +1,6 @@
 <launch>
   <arg name="KILL_SERVERS" default="false" />
+  <arg name="BASE_LINK" default="BODY" />
   <arg name="ROBOT_TYPE" default="SampleRobot" /> <!-- ROBOT type name -->
   <arg name="SIMULATOR_NAME" default="RobotHardware0" />
   <arg name="CONFIG_NAME" default="hrpsys_gazebo_configuration" />
@@ -53,6 +54,7 @@
   <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" >
     <arg name="MODEL_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).dae" />
     <arg name="COLLADA_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).dae" />
+    <arg name="BASE_LINK" value="$(arg BASE_LINK)"/>
     <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
     <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" />
 
