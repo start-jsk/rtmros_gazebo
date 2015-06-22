@@ -32,6 +32,7 @@ install:
   - sudo apt-get install -qq drcsim-hydro
   - sudo apt-get install -qq ros-hydro-openrtm-aist
   - export ROS_PARALLEL_JOBS="-j1 -l1"
+  - export CATKIN_PARALLEL_JOBS="-p1"
 script: source .travis/travis.sh
 notifications:
   email:
