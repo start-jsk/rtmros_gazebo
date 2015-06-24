@@ -38,26 +38,26 @@ namespace gazebo
       // read option args in sdf tags
       this->obj_name = "";
       if (_sdf->HasElement("objname")) {
-	this->obj_name = _sdf->Get<std::string>("objname");
+        this->obj_name = _sdf->Get<std::string>("objname");
       }
       this->link_name = "root";
       if (_sdf->HasElement("linkname")) {
-	this->link_name = _sdf->Get<std::string>("linkname");
+        this->link_name = _sdf->Get<std::string>("linkname");
       }
 
       // find root link
       this->link = this->model->GetLink(this->link_name);
       if(!this->link) {
-	gzerr << "Root link are not found. (link_name is "<< this->link_name << ")" << std::endl;
-	return;
+        gzerr << "Root link are not found. (link_name is "<< this->link_name << ")" << std::endl;
+        return;
       }
       world = this->model->GetWorld();
-      
-      // Make sure the ROS node for Gazebo has already been initialized                                                                                    
+
+      // Make sure the ROS node for Gazebo has already been initialized
       if (!ros::isInitialized()) {
-	gzerr << "A ROS node for Gazebo has not been initialized, unable to load plugin. "
-	      << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)";
-	return;
+        gzerr << "A ROS node for Gazebo has not been initialized, unable to load plugin. "
+              << "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)";
+        return;
       }
       // ros node
       this->rosNode = new ros::NodeHandle("");
@@ -90,7 +90,6 @@ namespace gazebo
     // Called by the world update start event
     void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
-      
       common::Time curTime = this->world->GetSimTime();
 
       // publish topics

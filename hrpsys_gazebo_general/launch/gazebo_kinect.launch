@@ -1,0 +1,14 @@
+<launch>
+  <arg name="gzname" default="gazebo"/>
+  <arg name="WORLD" default="$(find hrpsys_gazebo_general)/worlds/empty_slow.world"/>
+  <arg name="PAUSED" default="false"/>
+  <arg name="SYNCHRONIZED" default="false" />
+
+  <include file="$(find hrpsys_gazebo_general)/launch/gazebo_sensor.launch">
+    <arg name="ROBOT_TYPE" value="Kinect" />
+    <arg name="WORLD" value="$(arg WORLD)" />
+
+    <arg name="PAUSED" value="$(arg PAUSED)"/>
+    <arg name="gzname" value="$(arg gzname)" />
+  </include>
+</launch>
