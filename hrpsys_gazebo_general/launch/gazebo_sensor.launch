@@ -1,0 +1,39 @@
+<launch>
+  <arg name="gzname" default="gazebo"/>
+  <arg name="ROBOT_TYPE" default="Kinect" />
+  <arg name="WORLD" default="$(find hrpsys_gazebo_general)/worlds/empty_slow.world" />
+  <arg name="ROBOT_MODEL" default="$(find hrpsys_gazebo_general)/robot_models/$(arg ROBOT_TYPE)/$(arg ROBOT_TYPE).urdf.xacro" />
+  <arg name="PAUSED" default="false"/>
+  <arg name="ROBOT_INSTANCE_NAME" default="$(arg ROBOT_TYPE)" />
+
+  <arg name="SPAWN_MODEL" default="true" />
+
+  <arg name="MODEL_TRANSLATE_X" default="0.0" />
+  <arg name="MODEL_TRANSLATE_Y" default="0.0" />
+  <arg name="MODEL_TRANSLATE_Z" default="0.73" />
+  <arg name="MODEL_ROTATE_R" default="0.0" />
+  <arg name="MODEL_ROTATE_P" default="0.0" />
+  <arg name="MODEL_ROTATE_Y" default="0.0" />
+
+  <arg if="$(arg PAUSED)"
+       name="paused" value=" -u" />
+  <arg if="$(arg PAUSED)"
+       name="spawn_paused" value="" />
+
+  <arg unless="$(arg PAUSED)"
+       name="paused" value="" />
+  <arg unless="$(arg PAUSED)"
+       name="spawn_paused" value="-unpause " />
+
+  <param name="/use_sim_time" type="bool" value="true"/>
+  <node name="gazebo" pkg="hrpsys_gazebo_general" type="$(arg gzname)" args="$(arg WORLD)$(arg paused)" output="screen" />
+
+  <!-- Robot Description -->
+  <param name="robot_description" command="$(find xacro)/xacro.py '$(arg ROBOT_MODEL)'" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+
+  <!-- Spawn Robot Model -->
+  <node if="$(arg SPAWN_MODEL)"
+        name="spawn_robot_model" pkg="gazebo_ros" type="spawn_model"
+        args="$(arg spawn_paused)-urdf -param robot_description -model $(arg ROBOT_INSTANCE_NAME) -x $(arg MODEL_TRANSLATE_X) -y $(arg MODEL_TRANSLATE_Y) -z $(arg MODEL_TRANSLATE_Z) -R $(arg MODEL_ROTATE_R) -P $(arg MODEL_ROTATE_P) -Y $(arg MODEL_ROTATE_Y)" />
+</launch>

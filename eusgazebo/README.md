@@ -40,7 +40,7 @@ roseus play-domino-simulation.l "(progn (init-domino-simulation) (play-domino-si
 
 ### ROS Test
 ```bash
-rostest eusgazebo test-fall-arrow-object-simulation.test
-rostest eusgazebo test-play-domino-simulation.test
+rostest eusgazebo test-fall-arrow-object-simulation.launch
+rostest eusgazebo test-play-domino-simulation.launch
 ```
 

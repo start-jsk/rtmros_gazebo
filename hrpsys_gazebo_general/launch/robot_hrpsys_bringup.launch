@@ -1,5 +1,6 @@
 <launch>
   <arg name="KILL_SERVERS" default="false" />
+  <arg name="BASE_LINK" default="BODY" />
   <arg name="ROBOT_TYPE" default="SampleRobot" /> <!-- ROBOT type name -->
   <arg name="SIMULATOR_NAME" default="RobotHardware0" />
   <arg name="CONFIG_NAME" default="hrpsys_gazebo_configuration" />
@@ -13,6 +14,7 @@
   <arg name="HRPSYS_PY_ARGS" default="" />
   <arg name="CONF_DIR" default="$(find hrpsys_ros_bridge)/models" />
   <arg name="CONF_FILE" default="$(arg CONF_DIR)/$(arg ROBOT_TYPE).conf" />
+  <arg name="KINEMATICS_MODE" default="false"/>
 
   <!-- hrpsys_gazebo settings -->
   <arg name="SYNCHRONIZED" default="false" />
@@ -57,6 +59,7 @@
   <include file="$(find hrpsys_ros_bridge)/launch/hrpsys_ros_bridge.launch" >
     <arg name="MODEL_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).dae" />
     <arg name="COLLADA_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).dae" />
+    <arg name="BASE_LINK" value="$(arg BASE_LINK)"/>
     <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
     <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" />
 
@@ -70,4 +73,6 @@
   </include>
 
   <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="gazebo_robot_dashboard" if="$(arg LAUNCH_DASHBOARD)" />
+
+  <node pkg="hrpsys_gazebo_general" type="gazebo_robot_kinematics_mode.py" name="gazebo_robot_kinematics_mode" if="$(arg KINEMATICS_MODE)" />
 </launch>
