@@ -193,5 +193,9 @@ namespace gazebo
       return 0.0;
     }
 
+    int force_sensor_average_window_size;
+    int force_sensor_average_cnt;
+
+    std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> > > > forceValQueueMap;
   };
 }
