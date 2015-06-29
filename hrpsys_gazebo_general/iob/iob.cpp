@@ -415,7 +415,11 @@ int read_pgain(int id, double *gain)
       *(gain) = jointcommand.kp_position[iid] / initial_jointcommand.kp_position[iid];
       //std::cerr << ";;; read gain: " << id << " = " << *gain << std::endl;
     } else {
-
+      if (initial_jointcommand.kpv_position[iid] <= 0) {
+        *(gain) = 1.0;
+      } else {
+        *(gain) = jointcommand.kpv_position[iid] / initial_jointcommand.kpv_position[iid];
+      }
     }
   }
   return TRUE;
@@ -432,7 +436,7 @@ int write_pgain(int id, double gain)
       jointcommand.kp_position[iid] = gain * initial_jointcommand.kp_position[iid];
       //std::cerr << ";;; write pgain: " << id << " = " << gain << std::endl;
     } else {
-
+      jointcommand.kpv_position[iid] = gain * initial_jointcommand.kpv_position[iid];
     }
   }
   return TRUE;
@@ -448,7 +452,11 @@ int read_dgain(int id, double *gain)
       *(gain) = jointcommand.kd_position[iid] / initial_jointcommand.kd_position[iid];
       //std::cerr << ";;; read dgain: " << id << " = " << *gain << std::endl;
     } else {
-
+      if(initial_jointcommand.kpv_velocity[iid] <= 0) {
+        *(gain) = 1.0;
+      } else {
+        *(gain) = jointcommand.kpv_velocity[iid] / initial_jointcommand.kpv_velocity[iid];
+      }
     }
   }
   return TRUE;
@@ -465,7 +473,8 @@ int write_dgain(int id, double gain)
         gain * initial_jointcommand.kd_position[iid];
       //std::cerr << ";;; write dgain: " << id << " = " << gain << std::endl;
     } else {
-
+      jointcommand.kpv_velocity[iid] =
+        gain * initial_jointcommand.kpv_velocity[iid];
     }
   }
   return TRUE;
