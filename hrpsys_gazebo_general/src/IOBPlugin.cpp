@@ -17,8 +17,9 @@ IOBPlugin::IOBPlugin() : publish_joint_state(false),
                          use_synchronized_command(false),
                          use_velocity_feedback(false),
                          use_joint_effort(false),
-			 force_sensor_average_window_size(5),
-			 force_sensor_average_cnt(0)
+                         iob_period(0.005),
+                         force_sensor_average_window_size(5),
+                         force_sensor_average_cnt(0)
 {
 }
 
@@ -92,6 +93,14 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
         }
       }
     }
+    { // read synchronized_command from rosparam
+      std::string pname = this->controller_name + "/use_loose_synchronized";
+      if (this->rosNode->hasParam(pname)) {
+        bool ret = false;
+        this->rosNode->getParam(pname, ret);
+        this->use_loose_synchronized = ret;
+      }
+    }
     { // read velocity_feedback from rosparam
       std::string pname = this->controller_name + "/use_velocity_feedback";
       if (this->rosNode->hasParam(pname)) {
@@ -109,6 +118,24 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
         this->rosNode->getParam(pname, ret);
         ROS_INFO("use_joint_effort %d", ret);
         this->use_joint_effort = ret;
+      }
+    }
+    {
+      std::string pname = this->controller_name + "/iob_rate";
+      if (this->rosNode->hasParam(pname)) {
+        double rate;
+        this->rosNode->getParam(pname, rate);
+        ROS_INFO("iob rate %f", rate);
+        this->iob_period = 1.0 / rate;
+      }
+    }
+    {
+      std::string pname = this->controller_name + "/force_sensor_average_window_size";
+      if (this->rosNode->hasParam(pname)) {
+        int asize;
+        this->rosNode->getParam(pname, asize);
+        force_sensor_average_window_size = asize;
+        ROS_INFO("force_sensor_average_window_size %d", asize);
       }
     }
     { // read publish_joint_state from rosparam
@@ -206,14 +233,14 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
           } else {
             ROS_ERROR("Force-Torque sensor: %s has invalid configuration", sensor_name.c_str());
           }
-	  // setup force sensor publishers
-	  boost::shared_ptr<std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue(new std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> >);
-	  // forceValQueue->resize(this->force_sensor_average_window_size);
-	  for ( int i=0; i<this->force_sensor_average_window_size; i++ ){
-	    boost::shared_ptr<geometry_msgs::WrenchStamped> fbuf(new geometry_msgs::WrenchStamped);
-	    forceValQueue->push_back(fbuf);
-	  }
-	  this->forceValQueueMap[sensor_name] = forceValQueue;
+          // setup force sensor publishers
+          boost::shared_ptr<std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue(new std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> >);
+          // forceValQueue->resize(this->force_sensor_average_window_size);
+          for ( int i=0; i<this->force_sensor_average_window_size; i++ ){
+            boost::shared_ptr<geometry_msgs::WrenchStamped> fbuf(new geometry_msgs::WrenchStamped);
+            forceValQueue->push_back(fbuf);
+          }
+          this->forceValQueueMap[sensor_name] = forceValQueue;
         }
       } else {
         ROS_WARN("Force-Torque sensor: no setting exists");
@@ -658,6 +685,20 @@ void IOBPlugin::UpdateStates() {
         //ROS_DEBUG("service wait");
         wait_service_cond_.wait(lock);
       }
+    } else if (this->use_loose_synchronized) { // loose synchronization
+      ros::Time rnow;
+      rnow.fromSec(curTime.Double());
+      int counter = 0;
+      //if ((rnow - this->jointCommand.header.stamp).toSec() > 0.002) {
+      //  ROS_WARN("%f update fail %f", rnow.toSec(), this->jointCommand.header.stamp.toSec());
+      //}
+      while ((rnow - this->jointCommand.header.stamp).toSec() > this->iob_period) {
+        ros::WallDuration(0, 200000).sleep(); // 0.2 ms
+        if(counter++ > 100) break;
+      }
+      //if(counter > 0) {
+      //  ROS_WARN("%f recover %f", rnow.toSec(), this->jointCommand.header.stamp.toSec());
+      //}
     }
     {
       boost::mutex::scoped_lock lock(this->mutex);
@@ -754,32 +795,32 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
     if(it != this->forceSensors.end()) {
       physics::JointPtr jt = it->second.joint;
       if (!!jt) {
-	physics::JointWrench wrench = jt->GetForceTorque(0u);
-	this->robotState.sensors[i].name = this->forceSensorNames[i];
-	this->robotState.sensors[i].frame_id = it->second.frame_id;
-	if (!!it->second.pose) {
-	  // convert force
-	  math::Vector3 force_trans = it->second.pose->rot * wrench.body2Force;
-	  math::Vector3 torque_trans = it->second.pose->rot * wrench.body2Torque;
-	  // rotate force
-	  forceVal->wrench.force.x = force_trans.x;
-	  forceVal->wrench.force.y = force_trans.y;
-	  forceVal->wrench.force.z = force_trans.z;
-	  // rotate torque + additional torque
-	  torque_trans += it->second.pose->pos.Cross(force_trans);
-	  forceVal->wrench.torque.x = torque_trans.x;
-	  forceVal->wrench.torque.y = torque_trans.y;
-	  forceVal->wrench.torque.z = torque_trans.z;
-	} else {
-	  forceVal->wrench.force.x = wrench.body2Force.x;
-	  forceVal->wrench.force.y = wrench.body2Force.y;
-	  forceVal->wrench.force.z = wrench.body2Force.z;
-	  forceVal->wrench.torque.x = wrench.body2Torque.x;
-	  forceVal->wrench.torque.y = wrench.body2Torque.y;
-	  forceVal->wrench.torque.z = wrench.body2Torque.z;
-	}
+        physics::JointWrench wrench = jt->GetForceTorque(0u);
+        this->robotState.sensors[i].name = this->forceSensorNames[i];
+        this->robotState.sensors[i].frame_id = it->second.frame_id;
+        if (!!it->second.pose) {
+          // convert force
+          math::Vector3 force_trans = it->second.pose->rot * wrench.body2Force;
+          math::Vector3 torque_trans = it->second.pose->rot * wrench.body2Torque;
+          // rotate force
+          forceVal->wrench.force.x = force_trans.x;
+          forceVal->wrench.force.y = force_trans.y;
+          forceVal->wrench.force.z = force_trans.z;
+          // rotate torque + additional torque
+          torque_trans += it->second.pose->pos.Cross(force_trans);
+          forceVal->wrench.torque.x = torque_trans.x;
+          forceVal->wrench.torque.y = torque_trans.y;
+          forceVal->wrench.torque.z = torque_trans.z;
+        } else {
+          forceVal->wrench.force.x = wrench.body2Force.x;
+          forceVal->wrench.force.y = wrench.body2Force.y;
+          forceVal->wrench.force.z = wrench.body2Force.z;
+          forceVal->wrench.torque.x = wrench.body2Torque.x;
+          forceVal->wrench.torque.y = wrench.body2Torque.y;
+          forceVal->wrench.torque.z = wrench.body2Torque.z;
+        }
       } else {
-	ROS_WARN("[ForceSensorPlugin] joint not found for %s", this->forceSensorNames[i].c_str());
+        ROS_WARN("[ForceSensorPlugin] joint not found for %s", this->forceSensorNames[i].c_str());
       }
     }
     this->robotState.sensors[i].force.x = 0;
