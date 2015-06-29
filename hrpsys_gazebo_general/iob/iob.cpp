@@ -47,6 +47,7 @@ static bool isLocked = false;
 static unsigned long long frame = 0;
 static timespec g_ts;
 static long g_period_ns=1000000;
+static long overwrite_g_period_ns = -1;
 static ros::Time rg_ts;
 static int num_of_substeps = 1;
 
@@ -370,13 +371,13 @@ int write_command_angles(const double *angles)
 #if USE_SERVO_ON
       if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
         send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
-        send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
+        send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
       } else {
         servo_on = false;
       }
 #else
       send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
-      send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (g_period_ns * 1e-9);
+      send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
 #endif
     }
 
@@ -415,7 +416,11 @@ int read_pgain(int id, double *gain)
       *(gain) = jointcommand.kp_position[iid] / initial_jointcommand.kp_position[iid];
       //std::cerr << ";;; read gain: " << id << " = " << *gain << std::endl;
     } else {
-
+      if (initial_jointcommand.kpv_position[iid] <= 0) {
+        *(gain) = 1.0;
+      } else {
+        *(gain) = jointcommand.kpv_position[iid] / initial_jointcommand.kpv_position[iid];
+      }
     }
   }
   return TRUE;
@@ -432,7 +437,7 @@ int write_pgain(int id, double gain)
       jointcommand.kp_position[iid] = gain * initial_jointcommand.kp_position[iid];
       //std::cerr << ";;; write pgain: " << id << " = " << gain << std::endl;
     } else {
-
+      jointcommand.kpv_position[iid] = gain * initial_jointcommand.kpv_position[iid];
     }
   }
   return TRUE;
@@ -448,7 +453,11 @@ int read_dgain(int id, double *gain)
       *(gain) = jointcommand.kd_position[iid] / initial_jointcommand.kd_position[iid];
       //std::cerr << ";;; read dgain: " << id << " = " << *gain << std::endl;
     } else {
-
+      if(initial_jointcommand.kpv_velocity[iid] <= 0) {
+        *(gain) = 1.0;
+      } else {
+        *(gain) = jointcommand.kpv_velocity[iid] / initial_jointcommand.kpv_velocity[iid];
+      }
     }
   }
   return TRUE;
@@ -465,7 +474,8 @@ int write_dgain(int id, double gain)
         gain * initial_jointcommand.kd_position[iid];
       //std::cerr << ";;; write dgain: " << id << " = " << gain << std::endl;
     } else {
-
+      jointcommand.kpv_velocity[iid] =
+        gain * initial_jointcommand.kpv_velocity[iid];
     }
   }
   return TRUE;
@@ -692,11 +702,14 @@ int open_iob(void)
         std::string ret_str(ret);
         if (ret_str.size() > 0) {
           iob_synchronized = true;
-          ROS_INFO("[iob] use synchronized command");
         }
       } else {
         iob_synchronized = false;
       }
+      if(rosnode->hasParam(controller_name + "/use_synchronized_command")) {
+        rosnode->getParam(controller_name + "/use_synchronized_command", iob_synchronized);
+      }
+      if(iob_synchronized) ROS_INFO("[iob] use synchronized command");
     }
     { // setting substeps
       char *ret = getenv("HRPSYS_GAZEBO_IOB_SUBSTEPS");
@@ -706,6 +719,19 @@ int open_iob(void)
           num_of_substeps = num;
           ROS_INFO("[iob] use substeps %d", num);
         }
+      }
+      if(rosnode->hasParam(controller_name + "/iob_substeps")) {
+        rosnode->getParam(controller_name + "/iob_substeps", num_of_substeps);
+        ROS_INFO("[iob] use substeps %d", num_of_substeps);
+      }
+    }
+    { // settting rate
+      if(rosnode->hasParam(controller_name + "/iob_rate")) {
+        double rate = 0;
+        rosnode->getParam(controller_name + "/iob_rate", rate);
+        overwrite_g_period_ns = (long) ((1000 * 1000 * 1000) / rate);
+        fprintf(stderr, "iob::period %d\n", overwrite_g_period_ns);
+        ROS_INFO("[iob] period_ns %d", overwrite_g_period_ns);
       }
     }
 
@@ -830,7 +856,7 @@ int open_iob(void)
     }
 
     initial_jointcommand.desired_controller_period_ms =
-      static_cast<unsigned int>(g_period_ns * 1e-6);
+      static_cast<unsigned int>(overwrite_g_period_ns * 1e-6);
 
     if (iob_synchronized) {
       serv_command =
@@ -1099,20 +1125,24 @@ int wait_for_iob_signal()
   } else {
     //
     ros::Time rnow;
-    ros::Duration tm = ros::Duration(0, g_period_ns);
+    ros::Duration tm = ros::Duration(0, overwrite_g_period_ns);
     ros::WallDuration wtm = ros::WallDuration(0, 100000); // 0.1 ms
     while ((rnow = ros::Time::now()) < rg_ts) {
       wtm.sleep();
     }
 
-    rg_ts += tm;
-    if ((rg_ts - rnow).toSec() <= 0) {
-      fprintf(stderr, "iob::overrun (%f[ms]), w:%f -> %f\n",
-              (rnow - rg_ts).toSec()*1000, rnow.toSec(), rg_ts.toSec());
+    if ((rg_ts - rnow).toSec() < 0) {
+      if((rg_ts + tm).toSec() - rnow.toSec() < 0) {
+        fprintf(stderr, "iob::critical overrun (%f[ms]), w:%f -> %f\n",
+                (rnow - rg_ts).toSec()*1000, rnow.toSec(), rg_ts.toSec());
+      }
       do {
         rg_ts += tm;
       } while ((rg_ts - rnow).toSec() <= 0);
+    } else {
+      rg_ts += tm;
     }
+    // fprintf(stderr, "iob:: %f\n", rg_ts.toSec()); // debug
 
     return 0;
   }
@@ -1133,6 +1163,9 @@ int read_extra_servo_state(int id, int *state)
 int set_signal_period(long period_ns)
 {
     g_period_ns = period_ns;
+    if(overwrite_g_period_ns < 0) {
+      overwrite_g_period_ns = g_period_ns;
+    }
     return TRUE;
 }
 
