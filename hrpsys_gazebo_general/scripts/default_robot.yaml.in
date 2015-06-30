@@ -1,0 +1,47 @@
+hrpsys_gazebo_configuration:
+### velocity feedback for joint control, use parameter gains/joint_name/p_v
+  use_velocity_feedback: true
+  use_joint_effort: true
+# iob_rate: 200
+### loose synchronization default true
+# use_loose_synchronized: false
+### synchronized hrpsys and gazebo
+# use_synchronized_command: false
+# iob_substeps: 5
+### name of robot (using for namespace)
+  robotname: @ROBOT@
+### joint_id (order) conversion from gazebo to hrpsys, joint_id_list[gazebo_id] := hrpsys_id
+  joint_id_list: [0, 1, 2, 3]
+### joints : list used in gazebo, sizeof(joint_id_list) == sizeof(joints)
+  joints:
+    - RLEG_JOINT
+    - LLEG_JOINT
+    - RARM_JOINT
+    - LARM_JOINT
+### joint gain settings
+  gains:
+    RLEG_JOINT:      {p: 12000.0, d:  4.0, i: 0.0, vp:  6.0, i_clamp: 0.0, p_v: 250.0}
+    LLEG_JOINT:      {p: 12000.0, d:  4.0, i: 0.0, vp:  6.0, i_clamp: 0.0, p_v: 250.0}
+    RARM_JOINT:      {p: 12000.0, d:  4.0, i: 0.0, vp:  6.0, i_clamp: 0.0, p_v: 250.0}
+    LARM_JOINT:      {p: 12000.0, d:  4.0, i: 0.0, vp:  6.0, i_clamp: 0.0, p_v: 250.0}
+### force sensor settings
+### list of force sensorname
+  force_torque_sensors:
+    - rfsensor
+    - lfsensor
+    - rhsensor
+    - lhsensor
+### configuration of force sensor
+### key of force_torque_sensors_config should be a member of force_torque_sensors
+  force_torque_sensors_config:
+    rfsensor: {joint_name: 'RLEG_JOINT', frame_id: 'RLEG_LINK', translation: [0, 0, 0], rotation: [1, 0, 0, 0]}
+    lfsensor: {joint_name: 'LLEG_JOINT', frame_id: 'LLEG_LINK', translation: [0, 0, 0], rotation: [1, 0, 0, 0]}
+    rhsensor: {joint_name: 'RARM_JOINT', frame_id: 'RARM_LINK'}
+    lhsensor: {joint_name: 'LARM_JOINT', frame_id: 'LARM_LINK'}
+### IMU sensor settings
+### configuration of IMU sensor
+### key of imu_sensors_config should be a member of imu_sensors
+  imu_sensors:
+    - imu_sensor0
+  imu_sensors_config:
+    imu_sensor0: {ros_name: 'sample_imu_sensor', link_name: 'WAIST_LINK', frame_id: 'WAIST_LINK'}
