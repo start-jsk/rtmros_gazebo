@@ -4,7 +4,7 @@ add_definitions(-DHRPSYS_PACKAGE_VERSION=\"\\"${CPACK_PACKAGE_VERSION_MAJOR}.${C
 add_library(hrpIo_atlas SHARED iob.cpp)
 
 if (NOT APPLE AND NOT QNXNTO)
-   target_link_libraries(hrpIo_atlas rt)
+   target_link_libraries(hrpIo_atlas rt dl pthread)
 endif()
 
 target_link_libraries(hrpIo_atlas roscpp rostime)
@@ -21,7 +21,7 @@ set_target_properties(RobotHardware_atlas PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${
 set_target_properties(RobotHardware_atlas PROPERTIES OUTPUT_NAME RobotHardware)
 
 add_executable(RobotHardwareComp_atlas ${ROBOTHARDWARE_SOURCE}/RobotHardwareComp.cpp ${comp_source})
-target_link_libraries(RobotHardwareComp_atlas ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil)
+target_link_libraries(RobotHardwareComp_atlas ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil dl)
 set_target_properties(RobotHardwareComp_atlas PROPERTIES OUTPUT_NAME RobotHardwareComp)
 
 install(TARGETS RobotHardwareComp_atlas RobotHardware_atlas hrpIo_atlas
