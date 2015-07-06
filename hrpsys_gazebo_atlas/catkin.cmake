@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general message_generation)
+find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general message_generation atlas_description)
 catkin_python_setup()
 
 add_message_files(
@@ -30,7 +30,6 @@ find_package(PkgConfig)
 pkg_check_modules(collada_urdf_jsk_patch collada_urdf_jsk_patch)
 
 # check if atlas description is installed
-pkg_check_modules(atlas_description atlas_description)
 if(atlas_description_FOUND)
 if(EXISTS ${atlas_description_SOURCE_DIR})
   set(atlas_description_PACKAGE_PATH ${atlas_description_SOURCE_DIR})
