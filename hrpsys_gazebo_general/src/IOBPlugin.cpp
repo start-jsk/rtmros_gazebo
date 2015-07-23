@@ -22,7 +22,9 @@ IOBPlugin::IOBPlugin() : publish_joint_state(false),
                          force_sensor_average_window_size(6),
                          force_sensor_average_cnt(0),
                          effort_average_window_size(6),
-                         effort_average_cnt(0)
+                         effort_average_cnt(0),
+                         publish_step(2),
+                         publish_count(0)
 {
 }
 
@@ -683,9 +685,12 @@ void IOBPlugin::UpdateStates() {
     // gather robot state data
     this->GetRobotStates(curTime);
 
-    // publish robot states
-    this->pubRobotStateQueue->push(this->robotState, this->pubRobotState);
-    if (this->publish_joint_state) this->PublishJointState();
+    this->publish_count++;
+    if(this->publish_count % this->publish_step == 0) {
+      // publish robot states
+      this->pubRobotStateQueue->push(this->robotState, this->pubRobotState);
+      if (this->publish_joint_state) this->PublishJointState();
+    }
 
     if (this->use_synchronized_command) {
       {
