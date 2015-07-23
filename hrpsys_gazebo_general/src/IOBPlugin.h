@@ -202,6 +202,8 @@ namespace gazebo
     int effort_average_cnt;
     int effort_average_window_size;
     std::vector< boost::shared_ptr<std::vector<double> > > effortValQueue;
-
+    // stepping data publish cycle
+    int publish_count;
+    int publish_step;
   };
 }
