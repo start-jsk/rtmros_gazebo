@@ -710,7 +710,10 @@ void IOBPlugin::UpdateStates() {
       //}
       while ((rnow - this->jointCommand.header.stamp).toSec() > this->iob_period) {
         ros::WallDuration(0, 200000).sleep(); // 0.2 ms
-        if(counter++ > 100) break;
+        if(counter++ > 100) {
+          ROS_WARN_THROTTLE(5, "timeout: loose synchronization / you should check hrpsys is working");
+          break;
+        }
       }
       //if(counter > 0) {
       //  ROS_WARN("%f recover %f", rnow.toSec(), this->jointCommand.header.stamp.toSec());
