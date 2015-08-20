@@ -16,7 +16,7 @@ def gazebo_robot_kinematics_mode_main():
     current_physics_properties = get_physics_properties_srv()
     set_physics_properties_srv(time_step=current_physics_properties.time_step,
                                max_update_rate=current_physics_properties.max_update_rate,
-                               gravity=Vector3(x=0, y=0, z=0),
+                               gravity=current_physics_properties.gravity,
                                ode_config=current_physics_properties.ode_config)
     rospy.Subscriber('/odom', Odometry, odom_cb)
     robot_pose_pub = rospy.Publisher('/ROBOT/SetVelPlugin/PoseCommand', Pose)
