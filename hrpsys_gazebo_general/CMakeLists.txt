@@ -86,6 +86,11 @@ endif()
 generate_gazebo_urdf_file(${hrpsys_ros_bridge_PACKAGE_PATH}/models/SampleRobot.dae)
 add_custom_target(all_robots_compile ALL DEPENDS ${compile_urdf_robots})
 
+# Configure config file to resolve model path
+execute_process(COMMAND pkg-config openhrp3.1   --variable=idl_dir      OUTPUT_VARIABLE openhrp3_idl_dir   OUTPUT_STRIP_TRAILING_WHITESPACE)
+configure_file(${PROJECT_SOURCE_DIR}/config/SampleRobot.conf.in
+  ${PROJECT_SOURCE_DIR}/config/SampleRobot.conf)
+
 ## install
 install(DIRECTORY launch scripts worlds config DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION} USE_SOURCE_PERMISSIONS)
 install(PROGRAMS setup.sh DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
