@@ -103,7 +103,7 @@ namespace gazebo
                      math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
       // this->model->SetLinkWorldPose(this->pose, this->link);
       this->model->SetWorldPose(this->pose, this->link);
-      gzmsg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
+      gzdbg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
     }
 
     // Called by the world update start event
