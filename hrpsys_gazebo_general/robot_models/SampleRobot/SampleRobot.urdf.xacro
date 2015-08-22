@@ -44,4 +44,11 @@
   <gazebo reference="RARM_WRIST_R">
     <provideFeedback>1</provideFeedback>
   </gazebo>
+  <!-- add SetVelPlugin -->
+  <gazebo>
+    <plugin filename="libSetVelPlugin.so" name="set_vel_plugin" >
+      <objname>ROBOT</objname>
+      <linkname>WAIST_LINK0</linkname>
+    </plugin>
+  </gazebo>
 </robot>
