@@ -15,7 +15,8 @@
   <arg name="CONF_DIR" default="$(find hrpsys_ros_bridge)/models" />
   <arg name="CONF_FILE" default="$(arg CONF_DIR)/$(arg ROBOT_TYPE).conf" />
   <arg name="KINEMATICS_MODE" default="false"/>
-
+  <arg name="USE_ROBOT_POSE_EKF" default="true" />
+  <arg name="USE_FOOTCOORDS" default="false" />
   <!-- hrpsys_gazebo settings -->
   <arg name="SYNCHRONIZED" default="false" />
   <arg name="IOB_SUBSTEPS" default="5" />
@@ -66,6 +67,7 @@
     <arg name="USE_COMMON" default="true" />
     <arg name="USE_ROBOTHARDWARE" default="true" />
     <arg name="USE_WALKING" default="true" />
+    <arg name="USE_ROBOT_POSE_EKF" value="$(arg USE_ROBOT_POSE_EKF)" />
     <arg name="USE_COLLISIONCHECK" default="true" />
     <arg name="USE_IMPEDANCECONTROLLER" default="true" />
     <arg name="USE_SOFTERRORLIMIT" default="true" />
@@ -75,4 +77,6 @@
   <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="gazebo_robot_dashboard" if="$(arg LAUNCH_DASHBOARD)" />
 
   <node pkg="hrpsys_gazebo_general" type="gazebo_robot_kinematics_mode.py" name="gazebo_robot_kinematics_mode" if="$(arg KINEMATICS_MODE)" />
+
+  <node pkg="jsk_footstep_controller" type="footcoords" name="footcoords" if="$(arg USE_FOOTCOORDS)" />
 </launch>
