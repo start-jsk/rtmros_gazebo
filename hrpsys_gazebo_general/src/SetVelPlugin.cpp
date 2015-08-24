@@ -117,7 +117,7 @@ namespace gazebo
       this->pose.Set(math::Vector3(_msg->position.x, _msg->position.y, _msg->position.z),
                      math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
       this->set_pose_flag = true;
-      gzmsg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
+      gzdbg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
       if (!this->apply_in_gazebo_loop) {
         // this->model->SetLinkWorldPose(this->pose, this->link);
         this->model->SetWorldPose(this->pose, this->link);
