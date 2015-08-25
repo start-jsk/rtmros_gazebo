@@ -39,6 +39,12 @@ namespace gazebo
       if (_sdf->HasElement("linkname")) {
         this->link_name = _sdf->Get<std::string>("linkname");
       }
+      this->apply_in_gazebo_loop = true;
+      if (_sdf->HasElement("apply_in_gazebo_loop")) {
+        if(_sdf->Get<std::string>("apply_in_gazebo_loop") == "false") {
+          this->apply_in_gazebo_loop = false;
+        }
+      }
 
       // find root link
       this->link = this->model->GetLink(this->link_name);
@@ -46,6 +52,10 @@ namespace gazebo
         gzerr << "Root link are not found. (link_name is "<< this->link_name << ")" << std::endl;
         return;
       }
+
+      // initialize flag
+      this->set_pose_flag = false;
+      this->set_vel_flag = false;
 
       // Make sure the ROS node for Gazebo has already been initialized
       if (!ros::isInitialized()) {
@@ -92,7 +102,12 @@ namespace gazebo
       this->angular_vel.x = _msg->angular.x;
       this->angular_vel.y = _msg->angular.y;
       this->angular_vel.z = _msg->angular.z;
+      this->set_vel_flag = true;
       gzmsg << "subscribed SetVelCommand. ( linear: " << this->linear_vel << "  angular: " << this->angular_vel << " )" << std::endl;
+      if (!this->apply_in_gazebo_loop) {
+        this->model->SetLinearVel(this->linear_vel);
+        this->model->SetAngularVel(this->angular_vel);
+      }
     }
 
     void SetPoseCommand(const geometry_msgs::Pose::ConstPtr &_msg)
@@ -101,16 +116,26 @@ namespace gazebo
       this->model->SetAngularVel(math::Vector3(0, 0, 0));
       this->pose.Set(math::Vector3(_msg->position.x, _msg->position.y, _msg->position.z),
                      math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
-      // this->model->SetLinkWorldPose(this->pose, this->link);
-      this->model->SetWorldPose(this->pose, this->link);
-      gzmsg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
+      this->set_pose_flag = true;
+      gzdbg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
+      if (!this->apply_in_gazebo_loop) {
+        // this->model->SetLinkWorldPose(this->pose, this->link);
+        this->model->SetWorldPose(this->pose, this->link);
+      }
     }
 
     // Called by the world update start event
     void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
-      // this->model->SetLinearVel(this->linear_vel);
-      // this->model->SetAngularVel(this->angular_vel);
+      if (this->apply_in_gazebo_loop) {
+        if (this->set_pose_flag) {
+          this->model->SetWorldPose(this->pose, this->link);
+        }
+        if (this->set_vel_flag) {
+          this->model->SetLinearVel(this->linear_vel);
+          this->model->SetAngularVel(this->angular_vel);
+        }
+      }
     }
 
     // Ros loop thread function
@@ -131,6 +156,9 @@ namespace gazebo
     math::Pose pose;
     physics::LinkPtr link;
     event::ConnectionPtr updateConnection;
+    bool set_pose_flag;
+    bool set_vel_flag;
+    bool apply_in_gazebo_loop;
 
     ros::NodeHandle* rosNode;
     ros::CallbackQueue rosQueue;
