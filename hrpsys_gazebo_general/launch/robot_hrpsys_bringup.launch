@@ -63,7 +63,7 @@
     <arg name="BASE_LINK" value="$(arg BASE_LINK)"/>
     <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
     <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" />
-
+    <arg name="CONF_FILE" default="$(arg CONF_FILE)" />
     <arg name="USE_COMMON" default="true" />
     <arg name="USE_ROBOTHARDWARE" default="true" />
     <arg name="USE_WALKING" default="true" />
