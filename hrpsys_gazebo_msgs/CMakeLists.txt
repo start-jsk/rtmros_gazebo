@@ -6,11 +6,11 @@ find_package(catkin REQUIRED COMPONENTS message_generation geometry_msgs)
 
 add_message_files(
   DIRECTORY msg
-  FILES JointCommand.msg  NamedImu.msg NamedWrench.msg RobotState.msg
+  FILES JointCommand.msg  NamedImu.msg NamedWrench.msg RobotState.msg LIPSwitchFootCommand.msg LIPState.msg
 )
 add_service_files(
   DIRECTORY srv
-  FILES SyncCommand.srv
+  FILES SyncCommand.srv LIPSwitchFoot.srv LIPSetState.srv
 )
 
 ## Generate added messages and services with any dependencies listed here
