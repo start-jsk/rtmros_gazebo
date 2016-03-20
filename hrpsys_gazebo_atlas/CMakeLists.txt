@@ -2,7 +2,12 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_atlas)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_gazebo_general message_generation)
+find_package(catkin REQUIRED COMPONENTS
+  hrpsys_gazebo_general
+  jsk_footstep_msgs
+  laser_assembler
+  message_generation
+  )
 catkin_python_setup()
 
 add_message_files(
@@ -11,10 +16,10 @@ add_message_files(
 )
 
 generate_messages(
-  DEPENDENCIES geometry_msgs actionlib_msgs
+  DEPENDENCIES geometry_msgs actionlib_msgs jsk_footstep_msgs
 )
 
-catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general atlas_description message_runtime)
+catkin_package(CATKIN_DEPENDS hrpsys_gazebo_general jsk_footstep_msgs laser_assembler message_runtime)
 
 
 if(EXISTS ${hrpsys_ros_bridge_SOURCE_DIR})
@@ -26,10 +31,8 @@ else()
 endif()
 include(${hrpsys_ros_bridge_PACKAGE_PATH}/cmake/compile_robot_model.cmake)
 
-find_package(PkgConfig)
-pkg_check_modules(collada_urdf_jsk_patch collada_urdf_jsk_patch)
-
 # check if atlas description is installed
+find_package(PkgConfig)
 pkg_check_modules(atlas_description atlas_description)
 if(atlas_description_FOUND)
 if(EXISTS ${atlas_description_SOURCE_DIR})
@@ -39,6 +42,8 @@ elseif(EXISTS ${atlas_description_SOURCE_PREFIX})
 else(EXISTS ${atlas_description_SOURCE_DIR})
   set(atlas_description_PACKAGE_PATH ${atlas_description_PREFIX}/share/atlas_description)
 endif(EXISTS ${atlas_description_SOURCE_DIR})
+
+find_package(collada_urdf_jsk_patch QUIET)
 if (collada_urdf_jsk_patch_FOUND)
 if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
   set(atlas_urdf "${CMAKE_CURRENT_BINARY_DIR}/atlas.jsk.urdf")
@@ -67,9 +72,9 @@ if (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
     )
 else()
   message(FATAL_ERROR "${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf is not found")
-endif()
+endif (EXISTS ${atlas_description_PACKAGE_PATH}/urdf/atlas.urdf)
 
-if (${collada_urdf_jsk_patch_FOUND} AND EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
+if (EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
   set(atlas_v3_urdf "${CMAKE_CURRENT_BINARY_DIR}/atlas_v3.jsk.urdf")
   set(atlas_v3_dae  "${PROJECT_SOURCE_DIR}/models/atlas_v3.dae")
   add_custom_command(
@@ -98,11 +103,10 @@ if (${collada_urdf_jsk_patch_FOUND} AND EXISTS ${atlas_description_PACKAGE_PATH}
     )
 else()
   message(FATAL_ERROR "${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro")
-endif()
+endif (EXISTS ${atlas_description_PACKAGE_PATH}/robots/atlas_v3.urdf.xacro)
 endif (collada_urdf_jsk_patch_FOUND)
 
 ## Build only atlas iob
-find_package(PkgConfig)
 pkg_check_modules(omniorb omniORB4 REQUIRED)
 pkg_check_modules(omnidynamic omniDynamic4 REQUIRED)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
@@ -122,17 +126,9 @@ add_custom_target(hrpsys_gazebo_atlas_iob ALL DEPENDS RobotHardware_atlas)
 else(atlas_description_FOUND)
   message(AUTHOR_WARNING "no atlas_description is installed")
 endif(atlas_description_FOUND)
-
-
-
-## laser assember is not catkinized
-if (EXISTS /opt/ros/groovy/stacks/laser_assembler/srv_gen/)
-  include_directories(/opt/ros/groovy/stacks/laser_assembler/srv_gen/cpp/include/)
-  add_executable(atlas_laser_snapshotter src/atlas_laser_snapshotter.cpp)
-  target_link_libraries(atlas_laser_snapshotter ${catkin_LIBRARIES})
-else()
-  message(AUTHOR_WARNING "sudo apt-get install ros-groovy-laser-assembler to install laser_assembler")
-endif()
+include_directories(${catkin_INCLUDE_DIRS})
+add_executable(atlas_laser_snapshotter src/atlas_laser_snapshotter.cpp)
+target_link_libraries(atlas_laser_snapshotter ${catkin_LIBRARIES})
 
 ## pr2_controller_manager is not catkinized for groovy
 # include_directories(/opt/ros/groovy/stacks/pr2_mechanism/pr2_controller_manager/include)
