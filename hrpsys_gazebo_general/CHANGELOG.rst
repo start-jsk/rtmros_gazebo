@@ -2,8 +2,8 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.10 (2016-03-24)
+-------------------
 * [CMakeLists.txt] hotfix for compiling iob, https://github.com/fkanehiro/hrpsys-base/pull/803
 * [hrpsys_gazebo_general] Supress message from SetVelPlugin.cpp
 * [hrpsys_gazebo_general/src/IOBPlugin.cpp] add message when timeout loose synchronization

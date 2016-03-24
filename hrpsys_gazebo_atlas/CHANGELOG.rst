@@ -2,8 +2,8 @@
 Changelog for package hrpsys_gazebo_atlas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.10 (2016-03-24)
+-------------------
 * [hrpsys_gazebo_atlas/CMakeLists.txt] add jsk_footstep_msgs to find_package of hrpsys_gazebo_atlas.
 * Remove rosbuild related files
 * modify touchit server for general robot use
