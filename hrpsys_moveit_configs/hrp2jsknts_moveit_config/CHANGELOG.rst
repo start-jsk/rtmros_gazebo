@@ -2,6 +2,9 @@
 Changelog for package hrp2jsknts_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.9 (2015-06-11)
 ------------------
 * [hrp2jsknts_moveit_config] Use multisense stereo

@@ -2,6 +2,13 @@
 Changelog for package hrpsys_gazebo_atlas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [hrpsys_gazebo_atlas/CMakeLists.txt] add jsk_footstep_msgs to find_package of hrpsys_gazebo_atlas.
+* Remove rosbuild related files
+* modify touchit server for general robot use
+* Contributors: Ryohei Ueda, mmurooka
+
 0.1.9 (2015-06-11)
 ------------------
 * [hrpsys_gazebo_atlas] Do not compile iob if no atlas_description is available

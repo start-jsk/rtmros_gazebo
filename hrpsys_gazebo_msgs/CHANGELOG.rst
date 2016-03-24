@@ -2,6 +2,11 @@
 Changelog for package hrpsys_gazebo_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove rosbuild related files
+* Contributors: Ryohei Ueda
+
 0.1.9 (2015-06-11)
 ------------------
 

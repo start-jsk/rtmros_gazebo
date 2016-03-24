@@ -2,6 +2,9 @@
 Changelog for package staro_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.9 (2015-06-11)
 ------------------
 

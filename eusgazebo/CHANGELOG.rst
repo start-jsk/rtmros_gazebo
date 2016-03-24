@@ -2,6 +2,12 @@
 Changelog for package eusgazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Remove rosbuild related files
+* rename .test -> .launch in order to avoid test after installation
+* Contributors: MasakiMurooka, Ryohei Ueda
+
 0.1.9 (2015-06-11)
 ------------------
 * [eusgazebo] Add roseus to dependency

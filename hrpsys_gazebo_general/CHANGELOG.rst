@@ -2,6 +2,33 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [CMakeLists.txt] hotfix for compiling iob, https://github.com/fkanehiro/hrpsys-base/pull/803
+* [hrpsys_gazebo_general] Supress message from SetVelPlugin.cpp
+* [hrpsys_gazebo_general/src/IOBPlugin.cpp] add message when timeout loose synchronization
+* [hrpsys_gazebo_general] add USE_ROBOT_POSE_EKF and USE_FOOTCOORDS  argument to select how to compute odometry
+* [hrpsys_gazebo_general] Use $PROJECT_DIR to specify path to model file
+* [hrpsys_gazebo_general/src/SetVelPlugin.cpp] set pose in gazebo loop by SetVelPlugin
+* [hrpsys_gazebo_general/launch/samplerobot_hrpsys_bringup.launch] add kinematics mode option to launch file of sample robot in rtmros_gazebo
+* [CMakeLists.txt, Makefile] Remove rosbuild related files
+* [hrpsys_gazebo_general/scripts/gazebo_robot_kinematics_mode.py] do not disable gravity in kinematics mode
+* [hrpsys_gazebo_general/src/IOBPlugin.cpp] add publish stepping
+* [hrpsys_gazebo_general/src/IOBPlugin.cpp] add averaging joint effort
+* [hrpsys_gazebo_general/cmake/compile_robot_model_for_gazebo.cmake] add auto generation for default robot config file for gazebo
+* [hrpsys_gazebo_general/iob/iob.cpp] add loose_synchronize mode to IOBPlugin
+* [hrpsys_gazebo_general/iob/iob.cpp] fix for setting gain on velocity feedback mode
+* [hrpsys_gazebo_general/iob/iob.cpp] average filtering force sensor
+* [hrpsys_gazebo_general] Add BASE_LINK argument
+* [hrpsys_gazebo_general/launch/robot_hrpsys_bringup.launch,hrpsys_gazebo_general/scripts/gazebo_robot_kinematics_mode.py] add launch file option and script for gazebo kinematics mode
+* [hrpsys_gazebo_general/launch/gazebo_kinect.launch, hrpsys_gazebo_general/launch/gazebo_sensor.launch, hrpsys_gazebo_general/worlds/empty_slow.world] use slow update world file for sensor simulation
+* [hrpsys_gazebo_general/launch/robot_hrpsys_bringup.launch] add hrpsys_py argument
+* [hrpsys_gazebo_general] Add kinect sensor
+  * add PubTfPlugin
+  * fix indent of SetVelPlugin
+  * add kinect launch file
+* Contributors: Masaki Murooka, Ryohei Ueda, Yohei Kakiuchi, Eisoku Kuroiwa, Shintaro Noda
+
 0.1.9 (2015-06-11)
 ------------------
 * Replace shared_dynamic_cast to dynamic_pointer_cast because shared_dynamic_cast is deprecated from boost 1.53
