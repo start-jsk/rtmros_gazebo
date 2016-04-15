@@ -19,7 +19,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 ## Build only gazebo iob
-find_package(PkgConfig)
 pkg_check_modules(omniorb omniORB4 REQUIRED)
 pkg_check_modules(omnidynamic omniDynamic4 REQUIRED)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
