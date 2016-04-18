@@ -26,6 +26,7 @@
   <run_depend>hrpsys_gazebo_msgs</run_depend>
   <run_depend>gazebo_ros</run_depend>
   <run_depend>collada_urdf_jsk_patch</run_depend>
+  <run_depend>turtlebot_description</run_depend>
   <run_depend>xacro</run_depend>
 
   <export>
