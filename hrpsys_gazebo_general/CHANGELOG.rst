@@ -2,8 +2,8 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.11 (2016-08-30)
+-------------------
 * [hrpsys_gazebo_general/CMakeLists.txt, hrpsys_gazebo_general/cmake/compile_robot_model_for_gazebo.cmake] install whole robot_models directory.
 * Modified package.xml to fix dependency
 * Merge pull request `#224 <https://github.com/start-jsk/rtmros_gazebo/issues/224>`_ from mmurooka/add-LIP-plugin
