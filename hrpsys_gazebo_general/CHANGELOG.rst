@@ -2,6 +2,16 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [hrpsys_gazebo_general/CMakeLists.txt, hrpsys_gazebo_general/cmake/compile_robot_model_for_gazebo.cmake] install whole robot_models directory.
+* Modified package.xml to fix dependency
+* Merge pull request `#224 <https://github.com/start-jsk/rtmros_gazebo/issues/224>`_ from mmurooka/add-LIP-plugin
+  [hrpsys_gazebo_general, hrpsys_gazebo_msgs] Add plugin for Linear Inverted Pendulum
+* [hrpsys_gazebo_general/src/LIPPlugin.cpp] add LIPPlugin, which controls Linear Inverted Pendulum.
+* [hrpsys_gazebo_general/package.xml] set gazebo_model_path in package.xml
+* Contributors: Masaki Murooka, Shunichi Nozawa, Iori Yanokura
+
 0.1.10 (2016-03-24)
 -------------------
 * [CMakeLists.txt] hotfix for compiling iob, https://github.com/fkanehiro/hrpsys-base/pull/803

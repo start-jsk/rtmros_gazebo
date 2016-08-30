@@ -2,6 +2,9 @@
 Changelog for package eusgazebo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.10 (2016-03-24)
 -------------------
 * Remove rosbuild related files

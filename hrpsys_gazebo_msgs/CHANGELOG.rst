@@ -2,6 +2,11 @@
 Changelog for package hrpsys_gazebo_msgs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [hrpsys_gazebo_msgs] add message and service for LIPPlugin.
+* Contributors: Masaki Murooka
+
 0.1.10 (2016-03-24)
 -------------------
 * Remove rosbuild related files
