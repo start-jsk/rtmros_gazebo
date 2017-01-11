@@ -2,6 +2,9 @@
 Changelog for package hrp2jsknt_moveit_config
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.11 (2016-08-30)
 -------------------
 

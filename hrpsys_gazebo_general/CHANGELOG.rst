@@ -2,6 +2,12 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [hrpsys_gazebo_general][iob/CMakeLists.txt] fix: remove build type specification from install
+* [hrpsys_gazebo_general] Pass CONF_FILE option to hrpsys_ros_bridge.launch
+* Contributors: Yuki Furuta, Iori Kumagai
+
 0.1.11 (2016-08-30)
 -------------------
 * [hrpsys_gazebo_general/CMakeLists.txt, hrpsys_gazebo_general/cmake/compile_robot_model_for_gazebo.cmake] install whole robot_models directory.

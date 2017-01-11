@@ -2,6 +2,9 @@
 Changelog for package hrpsys_gazebo_atlas
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 0.1.11 (2016-08-30)
 -------------------
 
