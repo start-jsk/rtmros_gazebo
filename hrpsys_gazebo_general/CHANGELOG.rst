@@ -2,8 +2,8 @@
 Changelog for package hrpsys_gazebo_general
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.1.12 (2017-01-11)
+-------------------
 * [hrpsys_gazebo_general][iob/CMakeLists.txt] fix: remove build type specification from install
 * [hrpsys_gazebo_general] Pass CONF_FILE option to hrpsys_ros_bridge.launch
 * Contributors: Yuki Furuta, Iori Kumagai
