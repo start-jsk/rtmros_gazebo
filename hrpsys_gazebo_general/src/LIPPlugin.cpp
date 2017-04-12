@@ -133,7 +133,7 @@ namespace gazebo
       this->root_y_joint_->SetVelocity(0, 0);
       this->linear_joint_->SetVelocity(0, 0);
       // set position and velocity
-      this->model_->SetWorldPose(base_pose, this->base_link_);
+      this->model_->SetWorldPose(base_pose);
       this->mass_link_->SetWorldPose(mass_pose);
       this->mass_link_->SetLinearVel(mass_velocity);
 
@@ -157,7 +157,7 @@ namespace gazebo
       this->root_y_joint_->SetVelocity(0, 0);
       this->linear_joint_->SetVelocity(0, 0);
       // set position and velocity
-      this->model_->SetWorldPose(base_pose, this->base_link_);
+      this->model_->SetWorldPose(base_pose);
       this->mass_link_->SetWorldPose(mass_pose);
       this->mass_link_->SetLinearVel(mass_velocity);
 
