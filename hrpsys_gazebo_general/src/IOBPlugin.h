@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <memory>
 
 #include <boost/thread/mutex.hpp>
 
@@ -44,10 +45,10 @@
 
 namespace gazebo
 {
-  typedef boost::shared_ptr< sensors::ImuSensor > ImuSensorPtr;
+  typedef std::shared_ptr< sensors::ImuSensor > ImuSensorPtr;
   typedef hrpsys_gazebo_msgs::JointCommand JointCommand;
   typedef hrpsys_gazebo_msgs::RobotState RobotState;
-  typedef boost::shared_ptr< math::Pose > PosePtr;
+  typedef std::shared_ptr< math::Pose > PosePtr;
 
   class IOBPlugin : public ModelPlugin
   {
@@ -197,11 +198,11 @@ namespace gazebo
     // force sensor averaging
     int force_sensor_average_window_size;
     int force_sensor_average_cnt;
-    std::map<std::string, boost::shared_ptr<std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> > > > forceValQueueMap;
+    std::map<std::string, std::shared_ptr<std::vector<std::shared_ptr<geometry_msgs::WrenchStamped> > > > forceValQueueMap;
     // effort averaging
     int effort_average_cnt;
     int effort_average_window_size;
-    std::vector< boost::shared_ptr<std::vector<double> > > effortValQueue;
+    std::vector< std::shared_ptr<std::vector<double> > > effortValQueue;
     // stepping data publish cycle
     int publish_count;
     int publish_step;

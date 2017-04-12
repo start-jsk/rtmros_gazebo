@@ -17,7 +17,7 @@ if(NOT CMAKE_BUILD_TYPE)
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
     FORCE)
 endif()
-
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 ## Build only gazebo iob
 pkg_check_modules(omniorb omniORB4 REQUIRED)
 pkg_check_modules(omnidynamic omniDynamic4 REQUIRED)
