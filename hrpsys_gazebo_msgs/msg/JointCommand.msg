@@ -18,6 +18,9 @@
 #
 Header header
 
+bool[] power
+bool[] servo
+
 ## parameter for effort feedback control
 float64[] position
 float64[] velocity

@@ -3,7 +3,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
+
+#ifndef IOB2
 #include "io/iob.h"
+#else
+#include "iob2.h"
+#include <functional>
+#endif
 
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
@@ -14,6 +20,7 @@
 
 #include <hrpUtil/Eigen3d.h>
 
+#ifndef IOB2
 typedef hrpsys_gazebo_msgs::JointCommand JointCommand;
 typedef hrpsys_gazebo_msgs::RobotState RobotState;
 
@@ -25,6 +32,7 @@ static ros::Subscriber sub_robot_state;
 static bool iob_synchronized;
 static bool start_robothw = false;
 static bool use_velocity_feedback = false;
+static bool use_servo_on = false;
 
 static JointCommand jointcommand;
 static JointCommand initial_jointcommand;
@@ -50,6 +58,7 @@ static long g_period_ns=1000000;
 static long overwrite_g_period_ns = -1;
 static ros::Time rg_ts;
 static int num_of_substeps = 1;
+#endif
 
 #define CHECK_JOINT_ID(id) if ((id) < 0 || (id) >= number_of_joints()) return E_ID
 #define CHECK_FORCE_SENSOR_ID(id) if ((id) < 0 || (id) >= number_of_force_sensors()) return E_ID
@@ -61,12 +70,16 @@ static int num_of_substeps = 1;
 #define JOINT_ID_MODEL2REAL(id) joint_id_model2real(id)
 #define NUM_OF_REAL_JOINT (joint_real2model_vec.size())
 
-#define USE_SERVO_ON 0
-
+#ifndef IOB2
 static std::map<int, int> joint_model2real_map;
 static std::vector<int>   joint_real2model_vec;
+#endif
 
+#ifndef IOB2
 static inline int joint_id_model2real(int id)
+#else
+inline int iob::joint_id_model2real(int id)
+#endif
 {
   std::map< int, int>::iterator it = joint_model2real_map.find (id);
 
@@ -77,7 +90,11 @@ static inline int joint_id_model2real(int id)
   }
 }
 
+#ifndef IOB2
 static inline void tick_service_command()
+#else
+inline void iob::tick_service_command()
+#endif
 {
   // tick gazebo ...
   hrpsys_gazebo_msgs::SyncCommandRequest req;
@@ -126,33 +143,56 @@ int clock_nanosleep(clockid_t clk_id, int flags, struct timespec *tp,
 }
 #endif
 
-
+#ifndef IOB2
 int number_of_joints()
+#else
+int iob::number_of_joints()
+#endif
 {
     return (int)command.size();
 }
 
+#ifndef IOB2
 int number_of_force_sensors()
+#else
+int iob::number_of_force_sensors()
+#endif
 {
     return (int)forces.size();
 }
 
+#ifndef IOB2
 int number_of_gyro_sensors()
+#else
+int iob::number_of_gyro_sensors()
+#endif
 {
     return (int)gyros.size();
 }
 
+#ifndef IOB2
 int number_of_accelerometers()
+#else
+int iob::number_of_accelerometers()
+#endif
 {
     return (int)accelerometers.size();
 }
 
+#ifndef IOB2
 int number_of_attitude_sensors()
+#else
+int iob::number_of_attitude_sensors()
+#endif
 {
     return (int)attitude_sensors.size();
 }
 
+#ifndef IOB2
 int set_number_of_joints(int num)
+#else
+int iob::set_number_of_joints(int num)
+#endif
 {
     std::cerr << ";; IOB / set num of joint = " << num << std::endl;
     command.resize(num);
@@ -165,7 +205,11 @@ int set_number_of_joints(int num)
     return TRUE;
 }
 
+#ifndef IOB2
 int set_number_of_force_sensors(int num)
+#else
+int iob::set_number_of_force_sensors(int num)
+#endif
 {
     std::cerr << ";; set_number_of_force_sensors = " << num << std::endl;
     forces.resize(num);
@@ -181,7 +225,11 @@ int set_number_of_force_sensors(int num)
     return TRUE;
 }
 
+#ifndef IOB2
 int set_number_of_gyro_sensors(int num)
+#else
+int iob::set_number_of_gyro_sensors(int num)
+#endif
 {
     std::cerr << ";; set_number_of_gyro_sensors = " << num << std::endl;
     gyros.resize(num);
@@ -197,7 +245,11 @@ int set_number_of_gyro_sensors(int num)
     return TRUE;
 }
 
+#ifndef IOB2
 int set_number_of_accelerometers(int num)
+#else
+int iob::set_number_of_accelerometers(int num)
+#endif
 {
   std::cerr << ";; set_number_of_number_of_accelerometers = " << num << std::endl;
     accelerometers.resize(num);
@@ -213,6 +265,7 @@ int set_number_of_accelerometers(int num)
     return TRUE;
 }
 
+#ifndef IOB2
 int set_number_of_attitude_sensors(int num)
 {
     attitude_sensors.resize(num);
@@ -224,56 +277,89 @@ int set_number_of_attitude_sensors(int num)
     }
     return TRUE;
 }
+#endif
 
+#ifndef IOB2
 int read_power_state(int id, int *s)
+#else
+int iob::read_power_state(int id, int *s)
+#endif
 {
     CHECK_JOINT_ID(id);
     *s = power[id];
     return TRUE;
 }
 
+#ifndef IOB2
 int write_power_command(int id, int com)
+#else
+int iob::write_power_command(int id, int com)
+#endif
 {
     CHECK_JOINT_ID(id);
     power[id] = com;
     return TRUE;
 }
 
+#ifndef IOB2
 int read_power_command(int id, int *com)
+#else
+int iob::read_power_command(int id, int *com)
+#endif
 {
     CHECK_JOINT_ID(id);
     *com = power[id];
     return TRUE;
 }
 
+#ifndef IOB2
 int read_servo_state(int id, int *s)
+#else
+int iob::read_servo_state(int id, int *s)
+#endif
 {
     CHECK_JOINT_ID(id);
     *s = servo[id];
     return TRUE;
 }
 
+#ifndef IOB2
 int read_servo_alarm(int id, int *a)
+#else
+int iob::read_servo_alarm(int id, int *a)
+#endif
 {
     CHECK_JOINT_ID(id);
     *a = 0;
     return TRUE;
 }
 
+#ifndef IOB2
 int read_control_mode(int id, joint_control_mode *s)
+#else
+int iob::read_control_mode(int id, joint_control_mode *s)
+#endif
 {
     CHECK_JOINT_ID(id);
     *s = JCM_POSITION;
     return TRUE;
 }
 
+#ifndef IOB2
 int write_control_mode(int id, joint_control_mode s)
+#else
+int iob::write_control_mode(int id, joint_control_mode s)
+#endif
 {
     CHECK_JOINT_ID(id);
     return TRUE;
 }
 
+#ifndef IOB2
 int read_actual_angle(int id, double *angle)
+#else
+int iob::read_actual_angle(int id, double *angle)
+#endif
 {
   CHECK_JOINT_ID(id);
 
@@ -289,7 +375,11 @@ int read_actual_angle(int id, double *angle)
   return TRUE;
 }
 
+#ifndef IOB2
 int read_actual_angles(double *angles)
+#else
+int iob::read_actual_angles(double *angles)
+#endif
 {
     for (int i=0; i<number_of_joints(); i++){
         read_actual_angle(i, &angles[i]);
@@ -297,7 +387,11 @@ int read_actual_angles(double *angles)
     return TRUE;
 }
 
+#ifndef IOB2
 int read_actual_torques(double *torques)
+#else
+int iob::read_actual_torques(double *torques)
+#endif
 {
   if(init_sub_flag) {
     for(int i=0; i<number_of_joints(); i++){
@@ -312,41 +406,69 @@ int read_actual_torques(double *torques)
   return TRUE;
 }
 
+#ifndef IOB2
 int read_command_torque(int id, double *torque)
+#else
+int iob::read_command_torque(int id, double *torque)
+#endif
 {
     return FALSE;
 }
 
+#ifndef IOB2
 int write_command_torque(int id, double torque)
+#else
+  int iob::write_command_torque(int id, double torque)
+#endif
 {
     return FALSE;
 }
 
+#ifndef IOB2
 int read_command_torques(double *torques)
+#else
+int iob::read_command_torques(double *torques)
+#endif
 {
     return FALSE;
 }
 
+#ifndef IOB2
 int write_command_torques(const double *torques)
+#else
+int iob::write_command_torques(const double *torques)
+#endif
 {
     return FALSE;
 }
 
+#ifndef IOB2
 int read_command_angle(int id, double *angle)
+#else
+int iob::read_command_angle(int id, double *angle)
+#endif
 {
     CHECK_JOINT_ID(id);
     *angle = command[id];
     return TRUE;
 }
 
+#ifndef IOB2
 int write_command_angle(int id, double angle)
+#else
+int iob::write_command_angle(int id, double angle)
+#endif
 {
     CHECK_JOINT_ID(id);
     command[id] = angle;
     return TRUE;
 }
 
+#ifndef IOB2
 int read_command_angles(double *angles)
+#else
+int iob::read_command_angles(double *angles)
+#endif
 {
     for (int i=0; i<number_of_joints(); i++){
         angles[i] = command[i];
@@ -354,7 +476,11 @@ int read_command_angles(double *angles)
     return TRUE;
 }
 
+#ifndef IOB2
 int write_command_angles(const double *angles)
+#else
+int iob::write_command_angles(const double *angles)
+#endif
 {
     //std::cerr << "[iob] write command[" << frame << "]" << std::endl;
     for (int i=0; i<number_of_joints(); i++){
@@ -363,29 +489,26 @@ int write_command_angles(const double *angles)
     }
 
     JointCommand send_com(jointcommand);
-    bool servo_on = true;
 
     send_com.header.stamp = ros::Time::now();
 
     for (int i=0; i<NUM_OF_REAL_JOINT; i++) {
-#if USE_SERVO_ON
-      if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
-        send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
-        send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
-      } else {
-        servo_on = false;
+      if (JOINT_ID_REAL2MODEL(i) < number_of_joints()){
+	if (use_servo_on){
+	  if (servo[JOINT_ID_REAL2MODEL(i)] > 0) send_com.servo[i] = true;
+	  else send_com.servo[i] = false;
+	  
+	  if (power[JOINT_ID_REAL2MODEL(i)] > 0) send_com.power[i] = true;
+	  else send_com.power[i] = false;
+	}
+	send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
+	send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
       }
-#else
-      send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
-      send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
-#endif
     }
 
     if (iob_synchronized) {
       hrpsys_gazebo_msgs::SyncCommandRequest req;
-      if (servo_on) {
-        req.joint_command = send_com;
-      }
+      req.joint_command = send_com;
       hrpsys_gazebo_msgs::SyncCommandResponse res;
       // std::cerr << "[iob] srv c" << std::endl;
       serv_command.call(req, res);
@@ -393,20 +516,22 @@ int write_command_angles(const double *angles)
       js = res.robot_state;
       init_sub_flag = true;
     } else {
-      if(servo_on) {
-        pub_joint_command.publish(send_com);
-      }
+      pub_joint_command.publish(send_com);
       ros::spinOnce();
     }
     if (!start_robothw) {
       frame = 0;
       start_robothw = true;
     }
-
+    
     return TRUE;
 }
 
+#ifndef IOB2
 int read_pgain(int id, double *gain)
+#else
+int iob::read_pgain(int id, double *gain)
+#endif
 {
   if(JOINT_ID_MODEL2REAL(id) < 0) {
     std::cerr << ";;; read pgain: " << id << " failed." << std::endl;
@@ -426,7 +551,11 @@ int read_pgain(int id, double *gain)
   return TRUE;
 }
 
+#ifndef IOB2
 int write_pgain(int id, double gain)
+#else
+int iob::write_pgain(int id, double gain)
+#endif
 {
 
   if(JOINT_ID_MODEL2REAL(id) < 0) {
@@ -443,7 +572,11 @@ int write_pgain(int id, double gain)
   return TRUE;
 }
 
+#ifndef IOB2
 int read_dgain(int id, double *gain)
+#else
+int iob::read_dgain(int id, double *gain)
+#endif
 {
   if(JOINT_ID_MODEL2REAL(id) < 0) {
     //
@@ -463,7 +596,11 @@ int read_dgain(int id, double *gain)
   return TRUE;
 }
 
+#ifndef IOB2
 int write_dgain(int id, double gain)
+#else
+int iob::write_dgain(int id, double gain)
+#endif
 {
   if(JOINT_ID_MODEL2REAL(id) < 0) {
     //
@@ -481,7 +618,11 @@ int write_dgain(int id, double gain)
   return TRUE;
 }
 
+#ifndef IOB2
 int read_force_sensor(int id, double *forces)
+#else
+int iob::read_force_sensor(int id, double *forces)
+#endif
 {
   CHECK_FORCE_SENSOR_ID(id);
 
@@ -501,7 +642,11 @@ int read_force_sensor(int id, double *forces)
   return TRUE;
 }
 
+#ifndef IOB2
 int read_gyro_sensor(int id, double *rates)
+#else
+int iob::read_gyro_sensor(int id, double *rates)
+#endif
 {
   CHECK_GYRO_SENSOR_ID(id);
   if(init_sub_flag){
@@ -529,7 +674,11 @@ int read_gyro_sensor(int id, double *rates)
   return TRUE;
 }
 
+#ifndef IOB2
 int read_accelerometer(int id, double *accels)
+#else
+int iob::read_accelerometer(int id, double *accels)
+#endif
 {
   CHECK_ACCELEROMETER_ID(id);
 
@@ -549,78 +698,124 @@ int read_accelerometer(int id, double *accels)
   return TRUE;
 }
 
+#ifndef IOB2
 int read_touch_sensors(unsigned short *onoff)
 {
     return FALSE;
 }
+#endif
 
+#ifndef IOB2
 int read_attitude_sensor(int id, double *att)
+#else
+int iob::read_attitude_sensor(int id, double *att)
+#endif
 {
   return FALSE;
 }
 
+#ifndef IOB2
 int read_current(int id, double *mcurrent)
 {
     return FALSE;
 }
+#endif
 
+#ifndef IOB2
 int read_current_limit(int id, double *v)
 {
     return FALSE;
 }
+#endif
 
+#ifndef IOB2
 int read_currents(double *currents)
 {
     return FALSE;
 }
+#endif
 
+#ifndef IOB2
 int read_gauges(double *gauges)
 {
     return FALSE;
 }
+#endif
 
+#ifndef IOB2
 int read_actual_velocity(int id, double *vel)
+#else
+int iob::read_actual_velocity(int id, double *vel)
+#endif
 {
     // TODO: impliment here
     return FALSE;
 }
 
+#ifndef IOB2
 int read_command_velocity(int id, double *vel)
+#else
+int iob::read_command_velocity(int id, double *vel)
+#endif
 {
     // TODO: impliment here
     return FALSE;
 }
 
+#ifndef IOB2
 int write_command_velocity(int id, double vel)
+#else
+int iob::write_command_velocity(int id, double vel)
+#endif
 {
     // TODO: impliment here
     return FALSE;
 }
 
+#ifndef IOB2
 int read_actual_velocities(double *vels)
+#else
+int iob::read_actual_velocities(double *vels)
+#endif
 {
     // TODO: impliment here
     return FALSE;
 }
 
+#ifndef IOB2
 int read_command_velocities(double *vels)
+#else
+int iob::read_command_velocities(double *vels)
+#endif
 {
     // TODO: impliment here
     return FALSE;
 }
 
+#ifndef IOB2
 int write_command_velocities(const double *vels)
+#else
+int iob::write_command_velocities(const double *vels)
+#endif
 {
     // TODO: impliment here
     return FALSE;
 }
 
+#ifndef IOB2
 int read_temperature(int id, double *v)
+#else
+int iob::read_temperature(int id, double *v)
+#endif
 {
     return FALSE;
 }
 
+#ifndef IOB2
 int write_servo(int id, int com)
+#else
+int iob::write_servo(int id, int com)
+#endif
 {
   std::cerr << "servo: id: " << id;
   std::cerr << "(" << servo.size() << ")";
@@ -629,13 +824,20 @@ int write_servo(int id, int com)
     return TRUE;
 }
 
+#ifndef IOB2
 int write_dio(unsigned short buf)
 {
     return FALSE;
 }
+#endif
 
 // callback
-static void setJointStates(const RobotState::ConstPtr &_js) {
+#ifndef IOB2
+static void setJointStates(const RobotState::ConstPtr &_js)
+#else
+void iob::setJointStates(const RobotState::ConstPtr &_js)
+#endif
+{
   ROS_DEBUG("[iob] subscribe RobotState");
   js = *_js;
   init_sub_flag = true;
@@ -644,7 +846,11 @@ static void setJointStates(const RobotState::ConstPtr &_js) {
   //}
 }
 
+#ifndef IOB2
 int open_iob(void)
+#else
+  int iob::open_iob(std::string iob_name)
+#endif
 {
     static bool isInitialized = false;
     if ( isInitialized ) return TRUE;
@@ -654,7 +860,11 @@ int open_iob(void)
 
     std::string node_name;
     {
+#ifndef IOB2
       char *ret = getenv("HRPSYS_GAZEBO_IOB_NAME");
+#else
+      char *ret = getenv((iob_name+"_HRPSYS_GAZEBO_IOB_NAME").c_str());
+#endif
       if (ret != NULL) {
         node_name.assign(ret);
       } else {
@@ -663,14 +873,24 @@ int open_iob(void)
       std::cerr << "[iob] set node name : " << node_name << std::endl;
     }
 
+#ifdef IOB2
+    if (!ros::isInitialized()){
+#endif
     std::map<std::string, std::string> arg;
     ros::init(arg, "hrpsys_gazebo_iob", ros::init_options::NoSigintHandler);
+#ifdef IOB2
+    }
+#endif
     rosnode = new ros::NodeHandle();
     ros::WallDuration(0.5).sleep(); // wait for initializing ros
 
     std::string controller_name;
     { // setting configuration name
+#ifndef IOB2
       char *ret = getenv("HRPSYS_GAZEBO_CONFIGURATION");
+#else
+      char *ret = getenv((iob_name+"_HRPSYS_GAZEBO_CONFIGURATION").c_str());
+#endif
       if (ret != NULL) {
         controller_name.assign(ret);
       } else {
@@ -680,7 +900,11 @@ int open_iob(void)
     }
     std::string robotname;
     { // setting configuration name
+#ifndef IOB2
       char *ret = getenv("HRPSYS_GAZEBO_ROBOTNAME");
+#else
+      char *ret = getenv((iob_name+"_HRPSYS_GAZEBO_ROBOTNAME").c_str());
+#endif
       if (ret != NULL) {
         robotname.assign(ret);
         // controller_name -> robotname/controller_name
@@ -697,7 +921,11 @@ int open_iob(void)
     }
 
     { // setting synchronized
+#ifndef IOB2
       char *ret = getenv("HRPSYS_GAZEBO_IOB_SYNCHRONIZED");
+#else
+      char *ret = getenv((iob_name+"_HRPSYS_GAZEBO_IOB_SYNCHRONIZED").c_str());
+#endif
       if (ret != NULL) {
         std::string ret_str(ret);
         if (ret_str.size() > 0) {
@@ -712,7 +940,11 @@ int open_iob(void)
       if(iob_synchronized) ROS_INFO("[iob] use synchronized command");
     }
     { // setting substeps
+#ifndef IOB2
       char *ret = getenv("HRPSYS_GAZEBO_IOB_SUBSTEPS");
+#else
+      char *ret = getenv((iob_name+"_HRPSYS_GAZEBO_IOB_SUBSTEPS").c_str());
+#endif
       if (ret != NULL) {
         int num = atoi(ret);
         if (num > 0) {
@@ -730,8 +962,8 @@ int open_iob(void)
         double rate = 0;
         rosnode->getParam(controller_name + "/iob_rate", rate);
         overwrite_g_period_ns = (long) ((1000 * 1000 * 1000) / rate);
-        fprintf(stderr, "iob::period %d\n", overwrite_g_period_ns);
-        ROS_INFO("[iob] period_ns %d", overwrite_g_period_ns);
+        fprintf(stderr, "iob::period %d\n", int(overwrite_g_period_ns));
+        ROS_INFO("[iob] period_ns %d", int(overwrite_g_period_ns));
       }
     }
 
@@ -757,6 +989,14 @@ int open_iob(void)
         use_velocity_feedback = ret;
         if(ret) {
           ROS_INFO("[iob] use_velocity_feedback");
+        }
+    }
+    if (rosnode->hasParam(controller_name + "/use_servo_on")) {
+        bool ret;
+        rosnode->getParam(controller_name + "/use_servo_on", ret);
+        use_servo_on = ret;
+        if(ret) {
+          ROS_INFO("[iob] use_servo_on");
         }
     }
     XmlRpc::XmlRpcValue param_val;
@@ -787,6 +1027,9 @@ int open_iob(void)
 
     unsigned int n = NUM_OF_REAL_JOINT;
 
+    initial_jointcommand.servo.resize(n);
+    initial_jointcommand.power.resize(n);
+    
     initial_jointcommand.position.resize(n);
     initial_jointcommand.velocity.resize(n);
     //initial_jointcommand.effort.resize(n);
@@ -804,6 +1047,16 @@ int open_iob(void)
       initial_jointcommand.kpv_velocity.resize(n);
     }
 
+    for (unsigned int i = 0; i < NUM_OF_REAL_JOINT; ++i) {
+      if (use_servo_on){
+	initial_jointcommand.servo[i] = false;
+	initial_jointcommand.power[i] = false;
+      }else{
+	initial_jointcommand.servo[i] = true;
+	initial_jointcommand.power[i] = true;
+      }
+    }
+    
     for (unsigned int i = 0; i < joint_lst.size(); ++i) {
       std::string joint_ns(controller_name);
       joint_ns += ("/gains/" + joint_lst[i] + "/");
@@ -869,8 +1122,13 @@ int open_iob(void)
 
       // ros topic subscribtions
       ros::SubscribeOptions jointStatesSo =
+#ifndef IOB2
         ros::SubscribeOptions::create<RobotState>(robotname + "/robot_state", 1, setJointStates,
-                                                  ros::VoidPtr(), rosnode->getCallbackQueue());
+						  ros::VoidPtr(), rosnode->getCallbackQueue());
+#else
+      ros::SubscribeOptions::create<RobotState>(robotname + "/robot_state", 1, std::bind(&iob::setJointStates,this,std::placeholders::_1),
+	                                          ros::VoidPtr(), rosnode->getCallbackQueue());
+#endif
       // Because TCP causes bursty communication with high jitter,
       // declare a preference on UDP connections for receiving
       // joint states, which we want to get at a high rate.
@@ -926,13 +1184,21 @@ int open_iob(void)
     return TRUE;
 }
 
+#ifndef IOB2
 int close_iob(void)
+#else
+int iob::close_iob(void)
+#endif
 {
     std::cerr << "[iob] IOB is closed" << std::endl;
     return TRUE;
 }
 
+#ifndef IOB2
 int reset_body(void)
+#else
+int iob::reset_body(void)
+#endif
 {
     for (int i=0; i<number_of_joints(); i++){
         power[i] = servo[i] = OFF;
@@ -940,12 +1206,18 @@ int reset_body(void)
     return TRUE;
 }
 
+#ifndef IOB2
 int joint_calibration(int id, double angle)
 {
     return FALSE;
 }
+#endif
 
+#ifndef IOB2
 int read_gyro_sensor_offset(int id, double *offset)
+#else
+int iob::read_gyro_sensor_offset(int id, double *offset)
+#endif
 {
     for (int i=0; i<3; i++){
         offset[i] = gyro_offset[id][i];
@@ -953,7 +1225,11 @@ int read_gyro_sensor_offset(int id, double *offset)
     return TRUE;
 }
 
+#ifndef IOB2
 int write_gyro_sensor_offset(int id, double *offset)
+#else
+int iob::write_gyro_sensor_offset(int id, double *offset)
+#endif
 {
     for (int i=0; i<3; i++){
         gyro_offset[id][i] = offset[i];
@@ -961,7 +1237,11 @@ int write_gyro_sensor_offset(int id, double *offset)
     return TRUE;
 }
 
+#ifndef IOB2
 int read_accelerometer_offset(int id, double *offset)
+#else
+int iob::read_accelerometer_offset(int id, double *offset)
+#endif
 {
     for (int i=0; i<3; i++){
         offset[i] = accel_offset[id][i];
@@ -969,7 +1249,11 @@ int read_accelerometer_offset(int id, double *offset)
     return TRUE;
 }
 
+#ifndef IOB2
 int write_accelerometer_offset(int id, double *offset)
+#else
+int iob::write_accelerometer_offset(int id, double *offset)
+#endif
 {
     for (int i=0; i<3; i++){
         accel_offset[id][i] = offset[i];
@@ -977,7 +1261,11 @@ int write_accelerometer_offset(int id, double *offset)
     return TRUE;
 }
 
+#ifndef IOB2
 int read_force_offset(int id, double *offsets)
+#else
+int iob::read_force_offset(int id, double *offsets)
+#endif
 {
     for (int i=0; i<6; i++){
         offsets[i] = force_offset[id][i];
@@ -985,7 +1273,11 @@ int read_force_offset(int id, double *offsets)
     return TRUE;
 }
 
+#ifndef IOB2
 int write_force_offset(int id, double *offsets)
+#else
+int iob::write_force_offset(int id, double *offsets)
+#endif
 {
     for (int i=0; i<6; i++){
         force_offset[id][i] = offsets[i];
@@ -993,12 +1285,20 @@ int write_force_offset(int id, double *offsets)
     return TRUE;
 }
 
+#ifndef IOB2
 int write_attitude_sensor_offset(int id, double *offset)
+#else
+int iob::write_attitude_sensor_offset(int id, double *offset)
+#endif
 {
     return FALSE;
 }
 
+#ifndef IOB2
 int read_calib_state(int id, int *s)
+#else
+int iob::read_calib_state(int id, int *s)
+#endif
 {
     CHECK_JOINT_ID(id);
     int v = id/2;
@@ -1006,65 +1306,100 @@ int read_calib_state(int id, int *s)
     return TRUE;
 }
 
+#ifndef IOB2
 int lock_iob()
+#else
+int iob::lock_iob()
+#endif
 {
     if (isLocked) return FALSE;
 
     //isLocked = true;
     return TRUE;
 }
+
+#ifndef IOB2
 int unlock_iob()
+#else
+int iob::unlock_iob()
+#endif
 {
     isLocked = false;
     return TRUE;
 }
 
+#ifndef IOB2
 int read_lock_owner(pid_t *pid)
+#else
+int iob::read_lock_owner(pid_t *pid)
+#endif
 {
   return FALSE;
 }
-
+#ifndef IOB2
 int read_limit_angle(int id, double *angle)
 {
   return FALSE;
 }
-
+#endif
+#ifndef IOB2
 int read_angle_offset(int id, double *angle)
+#else
+int iob::read_angle_offset(int id, double *angle)
+#endif
 {
   return FALSE;
 }
-
+#ifndef IOB2
 int write_angle_offset(int id, double angle)
+#else
+int iob::write_angle_offset(int id, double angle)  
+#endif
 {
   return FALSE;
 }
-
+#ifndef IOB2
 int read_ulimit_angle(int id, double *angle)
 {
   return FALSE;
 }
+#endif
+#ifndef IOB2
 int read_llimit_angle(int id, double *angle)
 {
   return FALSE;
 }
+#endif
+#ifndef IOB2
 int read_encoder_pulse(int id, double *ec)
 {
   return FALSE;
 }
+#endif
+#ifndef IOB2
 int read_gear_ratio(int id, double *gr)
 {
   return FALSE;
 }
+#endif
+#ifndef IOB2
 int read_torque_const(int id, double *tc)
 {
   return FALSE;
 }
+#endif
+#ifndef IOB2
 int read_torque_limit(int id, double *limit)
 {
   return FALSE;
 }
+#endif
 
+#ifndef IOB2
 unsigned long long read_iob_frame()
+#else
+unsigned long long iob::read_iob_frame()
+#endif
 {
     ++frame;
     if (iob_synchronized && start_robothw) {
@@ -1075,7 +1410,11 @@ unsigned long long read_iob_frame()
     return frame;
 }
 
+#ifndef IOB2
 int number_of_substeps()
+#else
+int iob::number_of_substeps()
+#endif
 {
   if (iob_synchronized) {
     return num_of_substeps;
@@ -1084,14 +1423,22 @@ int number_of_substeps()
   }
 }
 
+#ifndef IOB2
 int read_power(double *voltage, double *current)
+#else
+int iob::read_power(double *voltage, double *current)
+#endif
 {
     *voltage = ((double)random()-RAND_MAX/2)/(RAND_MAX/2)*1+48;
     *current = ((double)random()-RAND_MAX/2)/(RAND_MAX/2)*0.5+1;
     return TRUE;
 }
 
+#ifndef IOB2
 int read_driver_temperature(int id, unsigned char *v)
+#else
+int iob::read_driver_temperature(int id, unsigned char *v)
+#endif
 {
     *v = id * 2;
     return TRUE;
@@ -1113,7 +1460,11 @@ double timespec_compare(timespec *ts1, timespec *ts2)
     return dts*1e9+dtn;
 }
 
+#ifndef IOB2
 int wait_for_iob_signal()
+#else
+int iob::wait_for_iob_signal()
+#endif
 {
   if (iob_synchronized) {
     //std::cerr << "wait>" << std::endl;
@@ -1150,17 +1501,29 @@ int wait_for_iob_signal()
   return 0;
 }
 
+#ifndef IOB2
 size_t length_of_extra_servo_state(int id)
+#else
+size_t iob::length_of_extra_servo_state(int id)
+#endif
 {
     return 0;
 }
 
+#ifndef IOB2
 int read_extra_servo_state(int id, int *state)
+#else
+int iob::read_extra_servo_state(int id, int *state)
+#endif
 {
     return TRUE;
 }
 
+#ifndef IOB2
 int set_signal_period(long period_ns)
+#else
+int iob::set_signal_period(long period_ns)
+#endif
 {
     g_period_ns = period_ns;
     if(overwrite_g_period_ns < 0) {
@@ -1169,43 +1532,75 @@ int set_signal_period(long period_ns)
     return TRUE;
 }
 
+#ifndef IOB2
 long get_signal_period()
+#else
+long iob::get_signal_period()
+#endif
 {
     return g_period_ns;
 }
 
+#ifndef IOB2
 int initializeJointAngle(const char *name, const char *option)
+#else
+int iob::initializeJointAngle(const char *name, const char *option)
+#endif
 {
     sleep(3);
     return TRUE;
 }
 
+#ifndef IOB2
 int read_digital_input(char *dinput)
+#else
+int iob::read_digital_input(char *dinput)
+#endif
 {
   return 0;
 }
 
+#ifndef IOB2
 int write_digital_output(const char *doutput)
+#else
+int iob::write_digital_output(const char *doutput)
+#endif
 {
   return 0;
 }
 
+#ifndef IOB2
 int length_digital_input(void)
+#else
+int iob::length_digital_input(void)
+#endif
 {
   return 0;
 }
 
+#ifndef IOB2
 int write_digital_output_with_mask(const char *doutput, const char *mask)
+#else
+int iob::write_digital_output_with_mask(const char *doutput, const char *mask)
+#endif
 {
   return FALSE;
 }
 
+#ifndef IOB2
 int length_digital_output(void)
+#else
+int iob::length_digital_output(void)
+#endif
 {
   return 0;
 }
 
+#ifndef IOB2
 int read_digital_output(char *doutput)
+#else
+int iob::read_digital_output(char *doutput)
+#endif
 {
   return 0;
 }

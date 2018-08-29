@@ -10,6 +10,16 @@ endif()
 
 target_link_libraries(hrpIo_gazebo roscpp rostime)
 
+# hrpIo2
+add_library(hrpIo2_gazebo SHARED iob.cpp)
+add_dependencies(hrpIo2_gazebo hrpsys_gazebo_msgs_gencpp)
+
+if (NOT APPLE AND NOT QNXNTO)
+   target_link_libraries(hrpIo2_gazebo rt)
+endif()
+set_target_properties(hrpIo2_gazebo PROPERTIES COMPILE_FLAGS "-DIOB2")
+target_link_libraries(hrpIo2_gazebo roscpp rostime)
+
 # RobotHardware
 set(comp_source  ${ROBOTHARDWARE_SOURCE}/robot.cpp ${ROBOTHARDWARE_SOURCE}/RobotHardware.cpp ${ROBOTHARDWARE_SOURCE}/RobotHardwareService_impl.cpp)
 set(libs hrpIo_gazebo hrpModel-3.1 hrpCollision-3.1 hrpUtil-3.1 hrpsysBaseStub)
@@ -33,13 +43,14 @@ set_target_properties(hrpEC_gazebo PROPERTIES OUTPUT_NAME hrpEC)
 set_target_properties(hrpEC_gazebo PROPERTIES COMPILE_DEFINITIONS "OPENRTM_VERSION110")
 
 
-install(TARGETS hrpIo_gazebo
+install(TARGETS hrpIo_gazebo hrpIo2_gazebo
   LIBRARY DESTINATION lib CONFIGURATIONS Release Debug RelWithDebInfo
 )
 install(TARGETS RobotHardwareComp_gazebo RobotHardware_gazebo hrpEC_gazebo
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/lib
 )
-
-
+#install(FILES iob2.h
+#  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+#)
 

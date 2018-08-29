@@ -165,6 +165,8 @@ namespace gazebo
     bool use_loose_synchronized;
     bool use_velocity_feedback;
     bool use_joint_effort;
+    bool use_pd_feedback;
+    bool use_servo_on;
     double iob_period;
 
     static inline int xmlrpc_value_as_int(XmlRpc::XmlRpcValue &v) {

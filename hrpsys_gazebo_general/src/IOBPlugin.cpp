@@ -18,7 +18,9 @@ IOBPlugin::IOBPlugin() : publish_joint_state(false),
                          use_synchronized_command(false),
                          use_velocity_feedback(false),
                          use_joint_effort(false),
+			 use_pd_feedback(false),
                          use_loose_synchronized(true),
+			 use_servo_on(false),
                          iob_period(0.005),
                          force_sensor_average_window_size(6),
                          force_sensor_average_cnt(0),
@@ -62,6 +64,12 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   if (_sdf->HasElement("velocity_feedback")) {
     this->use_velocity_feedback = _sdf->Get<bool>("velocity_feedback");
     std::cerr << ";; use velocity feedback" << std::endl;
+  }
+
+  this->use_pd_feedback = false;
+  if (_sdf->HasElement("pd_feedback")) {
+    this->use_pd_feedback = _sdf->Get<bool>("pd_feedback");
+    std::cerr << ";; use pd feedback" << std::endl;
   }
 
   // initialize ros
@@ -125,6 +133,25 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
         this->rosNode->getParam(pname, ret);
         ROS_INFO("use_joint_effort %d", ret);
         this->use_joint_effort = ret;
+      }
+    }
+    { // read pd_feedback from rosparam
+      std::string pname = this->controller_name + "/use_pd_feedback";
+      if (this->rosNode->hasParam(pname)) {
+        bool ret;
+        this->rosNode->getParam(pname, ret);
+        ROS_WARN("override use_pd_feedback at %d by %d",
+                 this->use_pd_feedback, ret);
+        this->use_pd_feedback = ret;
+      }
+    }
+    { // read pd_feedback from rosparam
+      std::string pname = this->controller_name + "/use_servo_on";
+      if (this->rosNode->hasParam(pname)) {
+        bool ret;
+        this->rosNode->getParam(pname, ret);
+	ROS_INFO("use servo on %d", ret);
+        this->use_servo_on = ret;
       }
     }
     {
@@ -368,10 +395,13 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
                this->jointDampingModel[i]);
     }
   }
-
+  
   {
     // We are not sending names due to the fact that there is an enum
     // joint indices in ...
+    this->robotState.power.resize(this->joints.size());
+    this->robotState.servo.resize(this->joints.size());
+    
     this->robotState.position.resize(this->joints.size());
     this->robotState.velocity.resize(this->joints.size());
     this->robotState.effort.resize(this->joints.size());
@@ -400,6 +430,9 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   }
 
   {
+    this->jointCommand.power.resize(this->joints.size());
+    this->jointCommand.servo.resize(this->joints.size());
+    
     this->jointCommand.position.resize(this->joints.size());
     this->jointCommand.velocity.resize(this->joints.size());
     this->jointCommand.effort.resize(this->joints.size());
@@ -426,6 +459,13 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
 
 void IOBPlugin::ZeroJointCommand() {
   for (unsigned i = 0; i < this->jointNames.size(); ++i) {
+    if (this->use_servo_on){
+      this->jointCommand.power[i] = false;
+      this->jointCommand.servo[i] = false;
+    } else {
+      this->jointCommand.power[i] = true;
+      this->jointCommand.servo[i] = true;
+    }
     this->jointCommand.position[i] = 0;
     this->jointCommand.velocity[i] = 0;
     this->jointCommand.effort[i] = 0;
@@ -566,14 +606,27 @@ void IOBPlugin::SetJointCommand_impl(const JointCommand &_msg) {
 
   this->jointCommand.header.stamp = _msg.header.stamp;
 
-  // for jointCommand, only position, velocity and efforts are used.
-  if (_msg.position.size() == this->jointCommand.position.size())
-    std::copy(_msg.position.begin(), _msg.position.end(), this->jointCommand.position.begin());
-  else
-    ROS_DEBUG("JointCommand message contains different number of"
-      " elements position[%ld] than expected[%ld]",
-      _msg.position.size(), this->jointCommand.position.size());
-
+  // for jointCommand, only power servo position, velocity and efforts are used.
+  if (this->use_servo_on){
+    if (_msg.power.size() == this->jointCommand.power.size())
+      std::copy(_msg.power.begin(), _msg.power.end(), this->jointCommand.power.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+		" elements power[%ld] than expected[%ld]",
+		_msg.power.size(), this->jointCommand.power.size());
+    if (_msg.servo.size() == this->jointCommand.servo.size())
+      std::copy(_msg.servo.begin(), _msg.servo.end(), this->jointCommand.servo.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+		" elements servo[%ld] than expected[%ld]",
+		_msg.servo.size(), this->jointCommand.servo.size());
+    if (_msg.position.size() == this->jointCommand.position.size())
+      std::copy(_msg.position.begin(), _msg.position.end(), this->jointCommand.position.begin());
+    else
+      ROS_DEBUG("JointCommand message contains different number of"
+		" elements position[%ld] than expected[%ld]",
+		_msg.position.size(), this->jointCommand.position.size());
+  }
   if (_msg.velocity.size() == this->jointCommand.velocity.size())
     std::copy(_msg.velocity.begin(), _msg.velocity.end(), this->jointCommand.velocity.begin());
   else
@@ -916,6 +969,8 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   {
     boost::mutex::scoped_lock lock(this->mutex);
     for (unsigned int i = 0; i < this->joints.size(); ++i) {
+      this->robotState.power[i] = this->jointCommand.power[i];
+      this->robotState.servo[i] = this->jointCommand.servo[i];
       this->robotState.ref_position[i] = this->jointCommand.position[i];
       this->robotState.ref_velocity[i] = this->jointCommand.velocity[i];
     }
@@ -958,8 +1013,10 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
              j_velocity, positionTarget, robotState.position[i],
              this->robotState.kpv_position[i]);
 #endif
-    // apply velocity to joint
-    this->joints[i]->SetVelocity(0, j_velocity);
+    if (this->jointCommand.power[i] && this->jointCommand.servo[i]){
+      // apply velocity to joint
+      this->joints[i]->SetVelocity(0, j_velocity);
+    }
   }
 }
 
@@ -967,98 +1024,140 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
 
   /// update pid with feedforward force
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
-    // truncate joint position within range of motion
-    double positionTarget = math::clamp(this->jointCommand.position[i],
-                                        static_cast<double>(this->joints[i]->GetLowStop(0).Radian()),
-                                        static_cast<double>(this->joints[i]->GetHighStop(0).Radian()));
+    if(!this->use_pd_feedback){
+      // truncate joint position within range of motion
+      double positionTarget = math::clamp(this->jointCommand.position[i],
+					  static_cast<double>(this->joints[i]->GetLowStop(0).Radian()),
+					  static_cast<double>(this->joints[i]->GetHighStop(0).Radian()));
+      
+      double q_p = positionTarget - this->robotState.position[i];
+      
+      if (!math::equal(_dt, 0.0))
+	this->errorTerms[i].d_q_p_dt = (q_p - this->errorTerms[i].q_p) / _dt;
+      
+      //
+      // Take advantage of cfm damping by passing kp_velocity through
+      // to intrinsic joint damping coefficient.  Simulating
+      // infinite bandwidth kp_velocity.
+      //
+      // kp_velocity is truncated within (jointDampingModel, jointDampingMax).
+      //
+      // To take advantage of utilizing full range of cfm damping dynamically
+      // for controlling the robot, set model damping (jointDmapingModel)
+      // to jointDampingMin first.
+      double jointDampingCoef = math::clamp(
+					    static_cast<double>(this->robotState.kp_velocity[i]),
+					    this->jointDampingModel[i], this->jointDampingMax[i]);
+      
+      // skip set joint damping if value is not changing
+      if (!math::equal(this->lastJointCFMDamping[i], jointDampingCoef))
+	{
+	  this->joints[i]->SetDamping(0, jointDampingCoef);
+	  this->lastJointCFMDamping[i] = jointDampingCoef;
+	}
+      
+      // approximate effort generated by a non-zero joint velocity state
+      // this is the approximate force of the infinite bandwidth
+      // kp_velocity term, we'll use this to bound additional forces later.
+      // Force generated by cfm damping from damping coefficient smaller than
+      // jointDampingModel is generated for free.
+      double kpVelocityDampingEffort = 0;
+      double kpVelocityDampingCoef =
+	jointDampingCoef - this->jointDampingModel[i];
+      if (kpVelocityDampingCoef > 0.0)
+	kpVelocityDampingEffort =
+	  kpVelocityDampingCoef * this->robotState.velocity[i];
+      //
+      
+      this->errorTerms[i].q_p = q_p;
 
-    double q_p = positionTarget - this->robotState.position[i];
+      this->errorTerms[i].qd_p =
+	this->jointCommand.velocity[i] - this->robotState.velocity[i];
+      
+      this->errorTerms[i].k_i_q_i = math::clamp(this->errorTerms[i].k_i_q_i +
+						_dt *
+						static_cast<double>(this->robotState.ki_position[i])
+						* this->errorTerms[i].q_p,
+						static_cast<double>(this->robotState.i_effort_min[i]),
+						static_cast<double>(this->robotState.i_effort_max[i]));
+      
+      // use gain params to compute force cmd
+      double forceUnclamped =
+	static_cast<double>(this->robotState.kp_position[i]) * this->errorTerms[i].q_p +
+	this->errorTerms[i].k_i_q_i +
+	static_cast<double>(this->robotState.kd_position[i]) * this->errorTerms[i].d_q_p_dt +
+	static_cast<double>(this->robotState.kp_velocity[i]) * this->errorTerms[i].qd_p +
+	this->jointCommand.effort[i];
+      
+      // keep unclamped force for integral tie-back calculation
+      double forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
+      
+      // clamp force after integral tie-back
+      // shift by kpVelocityDampingEffort to prevent controller from
+      // exerting too much force from use of kp_velocity --> cfm damping
+      // pass through.
+      forceClamped = math::clamp(forceUnclamped,
+				 -this->effortLimit[i] + kpVelocityDampingEffort,
+				 this->effortLimit[i] + kpVelocityDampingEffort);
+      
+      // integral tie-back during control saturation if using integral gain
+      if (!math::equal(forceClamped, forceUnclamped) &&
+	  !math::equal(static_cast<double>(this->robotState.ki_position[i]), 0.0)) {
+	// lock integral term to provide continuous control as system moves
+	// out of staturation
+	this->errorTerms[i].k_i_q_i = math::clamp(this->errorTerms[i].k_i_q_i + (forceClamped - forceUnclamped),
+						  static_cast<double>(this->robotState.i_effort_min[i]),
+						  static_cast<double>(this->robotState.i_effort_max[i]));
+      }
+      // clamp force after integral tie-back
+      forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
+      
+      if (this->jointCommand.power[i] && this->jointCommand.servo[i]){
+	// apply force to joint
+	this->joints[i]->SetForce(0, forceClamped);
 
-    if (!math::equal(_dt, 0.0))
-      this->errorTerms[i].d_q_p_dt = (q_p - this->errorTerms[i].q_p) / _dt;
+	// fill in jointState efforts
+	this->robotState.effort[i] = forceClamped;
+      }else{
+	// fill in jointState efforts
+	this->robotState.effort[i] = 0.0;
+      }
+      
+    } else{
+      // truncate joint position within range of motion
+      double positionTarget = math::clamp(this->jointCommand.position[i],
+					  static_cast<double>(this->joints[i]->GetLowStop(0).Radian()),
+					  static_cast<double>(this->joints[i]->GetHighStop(0).Radian()));
+      
+      double q_p = positionTarget - this->robotState.position[i];
+      
+      if (!math::equal(_dt, 0.0))
+	this->errorTerms[i].d_q_p_dt = (q_p - this->errorTerms[i].q_p) / _dt;
+      
+      this->errorTerms[i].q_p = q_p;
 
-    //
-    // Take advantage of cfm damping by passing kp_velocity through
-    // to intrinsic joint damping coefficient.  Simulating
-    // infinite bandwidth kp_velocity.
-    //
-    // kp_velocity is truncated within (jointDampingModel, jointDampingMax).
-    //
-    // To take advantage of utilizing full range of cfm damping dynamically
-    // for controlling the robot, set model damping (jointDmapingModel)
-    // to jointDampingMin first.
-    double jointDampingCoef = math::clamp(
-      static_cast<double>(this->robotState.kp_velocity[i]),
-      this->jointDampingModel[i], this->jointDampingMax[i]);
+      this->errorTerms[i].qd_p =
+	this->jointCommand.velocity[i] - this->robotState.velocity[i];
+            
+      // use gain params to compute force cmd
+      double forceUnclamped =
+	static_cast<double>(this->robotState.kp_position[i]) * this->errorTerms[i].q_p +
+	static_cast<double>(this->robotState.kd_position[i]) * this->errorTerms[i].d_q_p_dt;
+      
+      // clamp force
+      double forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
 
-    // skip set joint damping if value is not changing
-    if (!math::equal(this->lastJointCFMDamping[i], jointDampingCoef))
-    {
-      this->joints[i]->SetDamping(0, jointDampingCoef);
-      this->lastJointCFMDamping[i] = jointDampingCoef;
+      if (this->jointCommand.power[i] && this->jointCommand.servo[i]){
+	// apply force to joint
+	this->joints[i]->SetForce(0, forceClamped);
+	
+	// fill in jointState efforts
+	this->robotState.effort[i] = forceClamped;
+      }else{
+	// fill in jointState efforts
+	this->robotState.effort[i] = 0.0;
+      }
     }
-
-    // approximate effort generated by a non-zero joint velocity state
-    // this is the approximate force of the infinite bandwidth
-    // kp_velocity term, we'll use this to bound additional forces later.
-    // Force generated by cfm damping from damping coefficient smaller than
-    // jointDampingModel is generated for free.
-    double kpVelocityDampingEffort = 0;
-    double kpVelocityDampingCoef =
-      jointDampingCoef - this->jointDampingModel[i];
-    if (kpVelocityDampingCoef > 0.0)
-      kpVelocityDampingEffort =
-        kpVelocityDampingCoef * this->robotState.velocity[i];
-    //
-
-    this->errorTerms[i].q_p = q_p;
-
-    this->errorTerms[i].qd_p =
-      this->jointCommand.velocity[i] - this->robotState.velocity[i];
-
-    this->errorTerms[i].k_i_q_i = math::clamp(this->errorTerms[i].k_i_q_i +
-                                              _dt *
-                                              static_cast<double>(this->robotState.ki_position[i])
-                                              * this->errorTerms[i].q_p,
-                                              static_cast<double>(this->robotState.i_effort_min[i]),
-                                              static_cast<double>(this->robotState.i_effort_max[i]));
-
-    // use gain params to compute force cmd
-    double forceUnclamped =
-      static_cast<double>(this->robotState.kp_position[i]) * this->errorTerms[i].q_p +
-                                                             this->errorTerms[i].k_i_q_i +
-      static_cast<double>(this->robotState.kd_position[i]) * this->errorTerms[i].d_q_p_dt +
-      static_cast<double>(this->robotState.kp_velocity[i]) * this->errorTerms[i].qd_p +
-                                                             this->jointCommand.effort[i];
-
-    // keep unclamped force for integral tie-back calculation
-    double forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
-
-    // clamp force after integral tie-back
-    // shift by kpVelocityDampingEffort to prevent controller from
-    // exerting too much force from use of kp_velocity --> cfm damping
-    // pass through.
-    forceClamped = math::clamp(forceUnclamped,
-                               -this->effortLimit[i] + kpVelocityDampingEffort,
-                               this->effortLimit[i] + kpVelocityDampingEffort);
-
-    // integral tie-back during control saturation if using integral gain
-    if (!math::equal(forceClamped, forceUnclamped) &&
-        !math::equal(static_cast<double>(this->robotState.ki_position[i]), 0.0)) {
-      // lock integral term to provide continuous control as system moves
-      // out of staturation
-      this->errorTerms[i].k_i_q_i = math::clamp(this->errorTerms[i].k_i_q_i + (forceClamped - forceUnclamped),
-                                                static_cast<double>(this->robotState.i_effort_min[i]),
-                                                static_cast<double>(this->robotState.i_effort_max[i]));
-    }
-    // clamp force after integral tie-back
-    forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
-
-    // apply force to joint
-    this->joints[i]->SetForce(0, forceClamped);
-
-    // fill in jointState efforts
-    this->robotState.effort[i] = forceClamped;
   }
 }
 

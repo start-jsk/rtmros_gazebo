@@ -79,6 +79,9 @@ install(TARGETS ThermoPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATIO
 add_library(LIPPlugin src/LIPPlugin.cpp)
 add_dependencies(LIPPlugin hrpsys_gazebo_msgs_gencpp)
 install(TARGETS LIPPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+add_library(CranePlugin src/CranePlugin.cpp)
+add_dependencies(CranePlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS CranePlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 ## Convert robot models
 include(${PROJECT_SOURCE_DIR}/cmake/compile_robot_model_for_gazebo.cmake)
