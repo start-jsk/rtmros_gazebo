@@ -368,17 +368,19 @@ int write_command_angles(const double *angles)
     send_com.header.stamp = ros::Time::now();
 
     for (int i=0; i<NUM_OF_REAL_JOINT; i++) {
+      if (JOINT_ID_REAL2MODEL(i) < number_of_joints()){
 #if USE_SERVO_ON
-      if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
-        send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
-        send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
-      } else {
-        servo_on = false;
-      }
+	if (servo[JOINT_ID_REAL2MODEL(i)] > 0) {
+	  send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
+	  send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
+	} else {
+	  servo_on = false;
+	}
 #else
-      send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
-      send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
+	send_com.position[i] = command[JOINT_ID_REAL2MODEL(i)];
+	send_com.velocity[i] = (command[JOINT_ID_REAL2MODEL(i)] - prev_command[JOINT_ID_REAL2MODEL(i)]) / (overwrite_g_period_ns * 1e-9);
 #endif
+      }
     }
 
     if (iob_synchronized) {
