@@ -1119,6 +1119,8 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
 	// fill in jointState efforts
 	this->robotState.effort[i] = forceClamped;
       }else{
+	// apply force to joint
+	this->joints[i]->SetForce(0, 0.0);
 	// fill in jointState efforts
 	this->robotState.effort[i] = 0.0;
       }
@@ -1154,6 +1156,8 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
 	// fill in jointState efforts
 	this->robotState.effort[i] = forceClamped;
       }else{
+	// apply force to joint
+	this->joints[i]->SetForce(0, 0.0);
 	// fill in jointState efforts
 	this->robotState.effort[i] = 0.0;
       }
