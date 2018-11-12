@@ -40,6 +40,10 @@ namespace gazebo
       if (_sdf->HasElement("linkname")) {
         this->link_name = _sdf->Get<std::string>("linkname");
       }
+      this->topic_name = "CranePlugin";
+      if (_sdf->HasElement("topicname")) {
+        this->topic_name = _sdf->Get<std::string>("topicname");
+      }
 
       // find root link
       this->link = this->model->GetLink(this->link_name);
@@ -88,11 +92,18 @@ namespace gazebo
       if (_sdf->HasElement("damp")) {
         this->damp = _sdf->Get<double>("damp");
       }
-      
+
       // initialize
-      {
+      bool liftstart = true;
+      if (_sdf->HasElement("liftstart")) {
+	liftstart = _sdf->Get<bool>("liftstart");
+      }
+      if (liftstart) {
 	std_msgs::Empty::ConstPtr msg;
 	LiftCommand(msg);
+      } else {
+	std_msgs::Empty::ConstPtr msg;
+	LowerCommand(msg);
       }
       
       // Make sure the ROS node for Gazebo has already been initialized
@@ -110,11 +121,11 @@ namespace gazebo
     void DeferredLoad() {
       // ros topic subscribtions
       ros::SubscribeOptions LiftCommandSo =
-        ros::SubscribeOptions::create<std_msgs::Empty>("/" + this->obj_name + "/CranePlugin/LiftCommand", 100,
+        ros::SubscribeOptions::create<std_msgs::Empty>("/" + this->obj_name + "/" + this->topic_name + "/LiftCommand", 100,
                                                     boost::bind(&Crane::LiftCommand, this, _1),
                                                     ros::VoidPtr(), &this->rosQueue);
       ros::SubscribeOptions LowerCommandSo =
-        ros::SubscribeOptions::create<std_msgs::Empty>("/" + this->obj_name + "/CranePlugin/LowerCommand", 100,
+        ros::SubscribeOptions::create<std_msgs::Empty>("/" + this->obj_name + "/" + this->topic_name + "/LowerCommand", 100,
                                               boost::bind(&Crane::LowerCommand, this, _1),
                                               ros::VoidPtr(), &this->rosQueue);
       // Enable TCP_NODELAY because TCP causes bursty communication with high jitter,
@@ -222,6 +233,7 @@ namespace gazebo
     physics::ModelPtr model;
     std::string obj_name;
     std::string link_name;
+    std::string topic_name;
     double lift_height;
     double lower_height;
     double target_height;
