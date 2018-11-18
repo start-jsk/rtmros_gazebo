@@ -837,15 +837,16 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
         this->robotState.sensors[i].name = this->forceSensorNames[i];
         this->robotState.sensors[i].frame_id = it->second.frame_id;
         if (!!it->second.pose) {
-          // convert force
-          math::Vector3 force_trans = it->second.pose->rot * wrench.body2Force;
-          math::Vector3 torque_trans = it->second.pose->rot * wrench.body2Torque;
+          // convert moment (around joint -> around sensor)
+	  math::Vector3 sen_moment = wrench.body2Torque - it->second.pose->pos.Cross(wrench.body2Force);
+	  // convert forcemoment frame (childlink frame -> sensor frame)
+          math::Vector3 force_trans = it->second.pose->rot.RotateVectorReverse(wrench.body2Force);
+          math::Vector3 torque_trans = it->second.pose->rot.RotateVectorReverse(sen_moment);
           // rotate force
           forceVal->wrench.force.x = force_trans.x;
           forceVal->wrench.force.y = force_trans.y;
           forceVal->wrench.force.z = force_trans.z;
           // rotate torque + additional torque
-          torque_trans += it->second.pose->pos.Cross(force_trans);
           forceVal->wrench.torque.x = torque_trans.x;
           forceVal->wrench.torque.y = torque_trans.y;
           forceVal->wrench.torque.z = torque_trans.z;
