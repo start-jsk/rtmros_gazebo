@@ -14,6 +14,7 @@
 #include <ros/subscribe_options.h>
 
 #include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Empty.h>
 
 #include "PubQueue.h"
 
@@ -171,6 +172,15 @@ public:
     this->pubCaseThermoQueue = this->pmq.addPub<std_msgs::Float32MultiArray>();
     this->pubCaseThermo = this->rosNode->advertise<std_msgs::Float32MultiArray>(
 								      "/" + this->robot_name + "/" + this->controller_name + "/case", 100, true);
+    ros::SubscribeOptions resetThermoCommandSo =
+      ros::SubscribeOptions::create<std_msgs::Empty>("/" + this->robot_name + "/" + this->controller_name + "/ResetThermoCommand", 100,
+                                              boost::bind(&ThermoPlugin::ResetThermoCommand, this, _1),
+                                              ros::VoidPtr(), &this->rosQueue);
+    resetThermoCommandSo.transport_hints = ros::TransportHints().reliable().tcpNoDelay(true);
+    this->subresetThermoCommand = this->rosNode->subscribe(resetThermoCommandSo);
+
+    // ros callback queue for processing subscription
+    this->callbackQueeuThread = boost::thread(boost::bind(&ThermoPlugin::RosQueueThread, this));
 
     // Listen to the update event.
     this->updateConnection = event::Events::ConnectWorldUpdateBegin(
@@ -179,11 +189,25 @@ public:
     ROS_INFO("ThermoPlugin was loaded !");
   }
 
+  void ResetThermoCommand(const std_msgs::Empty::ConstPtr &_msg)
+  {
+    this->reset_thermo_flag = true;
+    gzmsg << "[CranePlugin]subscribed ResetThermoCommand." << std::endl;
+  }
+
   // Called by the world update start event
   void OnUpdate(const common::UpdateInfo & /*_info*/) {
     this->curTime = this->world->GetSimTime();
-    for (int i=0;i<this->joints.size();i++){
-      this->EstimateThermo(this->motorheatparams[i],this->joints[i]->GetForce(0));
+    if(this->reset_thermo_flag){
+      for (int i=0;i<this->joints.size();i++){
+	this->motorheatparams[i].temperature = atomosphere_temperature;
+	this->motorheatparams[i].surface_temperature = atomosphere_temperature;
+      }
+      this->reset_thermo_flag = false;
+    }else{
+      for (int i=0;i<this->joints.size();i++){
+	this->EstimateThermo(this->motorheatparams[i],this->joints[i]->GetForce(0));
+      }
     }
     this->lastUpdateTime = this->curTime ;
     if ( --this->thermal_publish_cnt > 0 ) return ;
@@ -219,6 +243,15 @@ public:
     this->pubCaseThermoQueue->push(the2, this->pubCaseThermo);
   }
 
+  // Ros loop thread function
+  void RosQueueThread() {
+    static const double timeout = 0.01;
+
+    while (this->rosNode->ok()) {
+      this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    }
+  }
+
 private:
   physics::ModelPtr model;
   physics::WorldPtr world;
@@ -234,14 +267,19 @@ private:
   common::Time lastUpdateTime;
   common::Time curTime;
   event::ConnectionPtr updateConnection;
-  
+
+  bool reset_thermo_flag;
+
   PubMultiQueue pmq;
   boost::thread deferredLoadThread;
+  boost::thread callbackQueeuThread;
 
+  ros::CallbackQueue rosQueue;
   ros::Publisher pubCoilThermo;
   PubQueue<std_msgs::Float32MultiArray>::Ptr pubCoilThermoQueue;
   ros::Publisher pubCaseThermo;
   PubQueue<std_msgs::Float32MultiArray>::Ptr pubCaseThermoQueue;
+  ros::Subscriber subresetThermoCommand;
 
   template<typename T>
   T parsesdfParam(sdf::ElementPtr _sdf, std::string name, T defo){

@@ -105,7 +105,8 @@ namespace gazebo
 	std_msgs::Empty::ConstPtr msg;
 	LowerCommand(msg);
       }
-      
+      this->set_pose_flag = false;
+
       // Make sure the ROS node for Gazebo has already been initialized
       if (!ros::isInitialized()) {
         gzerr << "[CranePlugin] A ROS node for Gazebo has not been initialized, unable to load plugin. "
@@ -128,11 +129,17 @@ namespace gazebo
         ros::SubscribeOptions::create<std_msgs::Empty>("/" + this->obj_name + "/" + this->topic_name + "/LowerCommand", 100,
                                               boost::bind(&Crane::LowerCommand, this, _1),
                                               ros::VoidPtr(), &this->rosQueue);
+      ros::SubscribeOptions PoseCommandSo =
+        ros::SubscribeOptions::create<geometry_msgs::Pose>("/" + this->obj_name + "/" + this->topic_name + "/PoseCommand", 100,
+                                              boost::bind(&Crane::SetPoseCommand, this, _1),
+                                              ros::VoidPtr(), &this->rosQueue);
       // Enable TCP_NODELAY because TCP causes bursty communication with high jitter,
       LiftCommandSo.transport_hints = ros::TransportHints().reliable().tcpNoDelay(true);
       this->subLiftCommand = this->rosNode->subscribe(LiftCommandSo);
       LowerCommandSo.transport_hints = ros::TransportHints().reliable().tcpNoDelay(true);
       this->subLowerCommand = this->rosNode->subscribe(LowerCommandSo);
+      PoseCommandSo.transport_hints = ros::TransportHints().reliable().tcpNoDelay(true);
+      this->subPoseCommand = this->rosNode->subscribe(PoseCommandSo);
 
       // ros callback queue for processing subscription
       this->callbackQueeuThread = boost::thread(boost::bind(&Crane::RosQueueThread, this));
@@ -164,6 +171,17 @@ namespace gazebo
 	this->lastUpdateTime = this->world->GetSimTime();
       }
       gzdbg << "[CranePlugin]subscribed LowerCommand." << std::endl;
+    }
+
+
+    void SetPoseCommand(const geometry_msgs::Pose::ConstPtr &_msg)
+    {
+      this->pose.Set(math::Vector3(_msg->position.x, _msg->position.y, _msg->position.z),
+                     math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
+      this->set_pose_flag = true;
+      this->pull_up_flag = false;
+      this->pull_down_flag = false;
+      gzdbg << "[CranePlugin]subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
     }
 
     // Called by the world update start event
@@ -216,9 +234,14 @@ namespace gazebo
 	  this->link->AddTorque(ang);
 	}
 	this->lastUpdateTime = curTime;
+      }else if (this->set_pose_flag) {
+	this->model->SetLinearVel(math::Vector3(0, 0, 0));
+	this->model->SetAngularVel(math::Vector3(0, 0, 0));
+	this->model->SetWorldPose(this->pose);
+	this->set_pose_flag = false;
       }
     }
-
+    
     // Ros loop thread function
     void RosQueueThread() {
       static const double timeout = 0.01;
@@ -250,11 +273,14 @@ namespace gazebo
     bool damp;
     common::Time lastUpdateTime;
     int count;
+    math::Pose pose;
+    bool set_pose_flag;
 
     ros::NodeHandle* rosNode;
     ros::CallbackQueue rosQueue;
     ros::Subscriber subLiftCommand;
     ros::Subscriber subLowerCommand;
+    ros::Subscriber subPoseCommand;
     boost::thread callbackQueeuThread;
     boost::thread deferredLoadThread;
   };
