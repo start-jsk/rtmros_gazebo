@@ -17,7 +17,7 @@ if(NOT CMAKE_BUILD_TYPE)
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
     FORCE)
 endif()
-
+set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
 ## Build only gazebo iob
 pkg_check_modules(omniorb omniORB4 REQUIRED)
 pkg_check_modules(omnidynamic omniDynamic4 REQUIRED)
@@ -79,6 +79,9 @@ install(TARGETS ThermoPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATIO
 add_library(LIPPlugin src/LIPPlugin.cpp)
 add_dependencies(LIPPlugin hrpsys_gazebo_msgs_gencpp)
 install(TARGETS LIPPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+add_library(CranePlugin src/CranePlugin.cpp)
+add_dependencies(CranePlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS CranePlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 ## Convert robot models
 include(${PROJECT_SOURCE_DIR}/cmake/compile_robot_model_for_gazebo.cmake)

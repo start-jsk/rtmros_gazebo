@@ -54,9 +54,14 @@
   </group>
 
   <!-- Robot Description -->
-  <param name="robot_description" command="$(find xacro)/xacro.py '$(arg ROBOT_MODEL)'" />
-  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" />
+  <arg name="USE_CALIBRATED_URDF" default="false"/>
+  <arg name="CALIB_FILE_COMMAND" default=""/>
+  <param name="robot_description" command="$(find xacro)/xacro '$(arg ROBOT_MODEL)'" unless="$(arg USE_CALIBRATED_URDF)"/>
+  <param name="robot_description" command="$(arg CALIB_FILE_COMMAND)" if="$(arg USE_CALIBRATED_URDF)"/>
 
+  <arg name="use_robot_state_publisher" default="true"/>
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="state_publisher" if="$(arg use_robot_state_publisher)"/>
+  
   <!-- Spawn Robot Model -->
   <node if="$(arg SPAWN_MODEL)"
         name="spawn_robot_model" pkg="gazebo_ros" type="spawn_model"

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <limits>
 #include <stdio.h>
 
 #include <boost/bind.hpp>
@@ -12,9 +13,8 @@
 #include <ros/advertise_options.h>
 #include <ros/subscribe_options.h>
 
-#include <std_msgs/Float32.h>
-#include <std_msgs/String.h>
-#include <geometry_msgs/Vector3.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Empty.h>
 
 #include "PubQueue.h"
 
@@ -22,171 +22,277 @@ namespace gazebo {
 class ThermoPlugin: public ModelPlugin {
 
 public:
-	// Initialize
-	void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
-		// Store the pointer to the model
-		this->model = _parent;
+  class MotorHeatParam
+  {
+  public:
+    double temperature;
+    double surface_temperature;
+    double currentCoeffs; // electric_resistance / A_vs_Nm / A_vs_Nm 
+    double R1; //thermal resistance between Core and Surface
+    double R2; //thermal resistance between Surface ans Air
+    double core_C;
+    double surface_C;
+  };
+  
+  // Initialize
+  void Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
+    // Store the pointer to the model
+    this->model = _parent;
+    this->world = this->model->GetWorld();
 
-		// read option args in sdf tags
-		this->robot_name = "robot";
-		if (_sdf->HasElement("robotname")) {
-			this->link_name = _sdf->Get<std::string>("robotname");
-		}
-		this->link_name = "root";
-		if (_sdf->HasElement("linkname")) {
-			this->link_name = _sdf->Get<std::string>("linkname");
-		}
-		this->joint_name = "";
-		if (_sdf->HasElement("jointname")) {
-			this->joint_name = _sdf->Get<std::string>("jointname");
-		}
-		this->electric_resistance = this->parseThermoParam(_sdf, "electric_resistance", 1.16);
-		this->inner_thermo_resistance = this->parseThermoParam(_sdf, "inner_thermo_resistance", 1.93);
-		this->coil_thermo_conductance = this->parseThermoParam(_sdf, "coil_thermo_conductance", 21.55);
-		this->outer_thermo_resistance = this->parseThermoParam(_sdf, "outer_thermo_resistance", 4.65);
-		this->case_thermo_conductance = this->parseThermoParam(_sdf, "case_thermo_conductance", 240.86);
-		this->atomosphere_thermo_conductance = this->parseThermoParam(_sdf, "atomosphere_thermo_conductance", 1000.0);
-		this->A_vs_Nm = this->parseThermoParam(_sdf, "A_vs_Nm", 0.1);
-		this->atomosphere_temperature = this->parseThermoParam(_sdf, "atomosphere_temperature", 300);
-		this->case_temperature = this->parseThermoParam(_sdf, "case_temperature", 300);
-		this->coil_temperature = this->parseThermoParam(_sdf, "coil_temperature", 300);
-		this->thermal_calcuration_step = this->parseThermoParam(_sdf, "thermal_calcuration_step", 10);
-		this->thermal_calcuration_cnt = this->thermal_calcuration_step ;
-		this->tau = 0;
+    this->robot_name = this->parsesdfParam(_sdf, "robotname", std::string("robot"));
+    this->controller_name = this->parsesdfParam(_sdf, "controllername", std::string("thermo"));
+    
+    this->configuration_name = this->robot_name + "/" + this->controller_name + "_gazebo_configuration";
 
-		// find root link
-		this->joint = this->model->GetJoint(this->joint_name);
-		this->link = this->model->GetLink(this->link_name);
-		if (!this->link) { this->link = this->joint->GetChild(); }
-		this->world = this->model->GetWorld();
-		this->lastUpdateTime = this->world->GetSimTime() ;
+    // Make sure the ROS node for Gazebo has already been initialized
+    if (!ros::isInitialized()) {
+      gzerr
+	<< "A ROS node for Gazebo has not been initialized, unable to load plugin. "
+	<< "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)";
+      return;
+    }
 
-		// Make sure the ROS node for Gazebo has already been initialized
-		if (!ros::isInitialized()) {
-			gzerr
-					<< "A ROS node for Gazebo has not been initialized, unable to load plugin. "
-					<< "Load the Gazebo system plugin 'libgazebo_ros_api_plugin.so' in the gazebo_ros package)";
-			return;
-		}
-		// ros node
-		this->rosNode = new ros::NodeHandle("");
-		// ros callback queue for processing subscription
-		this->deferredLoadThread = boost::thread(
-				boost::bind(&ThermoPlugin::DeferredLoad, this));
+    // ros node
+    this->rosNode = new ros::NodeHandle("");
+    
+    XmlRpc::XmlRpcValue param_val;
+    this->rosNode->getParam(this->configuration_name, param_val);
+    if (param_val.getType() ==  XmlRpc::XmlRpcValue::TypeStruct) {
+      // joint name
+      XmlRpc::XmlRpcValue joint_lst = param_val["joints"];
+      if (joint_lst.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+	for(int s = 0; s < joint_lst.size(); s++) {
+	  std::string n = joint_lst[s];
+	  ROS_INFO("add joint: %s", n.c_str());
+	  this->jointNames.push_back(n);
 	}
+      } else {
+	ROS_WARN("Controlled Joints: no setting exists");
+      }
+    } else{
+      ROS_WARN("param_val.getType() !=  XmlRpc::XmlRpcValue::TypeStruct");
+    }
+    
+    // get pointers to joints from gazebo
+    this->joints.resize(this->jointNames.size());
+    ROS_INFO("joints size = %ld", this->joints.size());
+    for (unsigned int i = 0; i < this->joints.size(); ++i) {
+      this->joints[i] = this->model->GetJoint(this->jointNames[i]);
+      if (!this->joints[i])  {
+	ROS_ERROR("%s robot expected joint[%s] not present, plugin not loaded",
+		  this->robot_name.c_str(), this->jointNames[i].c_str());
+	return;
+      }
+    }
 
-	void DeferredLoad() {
-		// publish multi queue
-		this->pmq.startServiceThread();
+    {
+      this->atomosphere_temperature = this->parsesdfParam(_sdf, "atomosphere_temperature", 25.0);
+      std::string pname = this->configuration_name+"/atomosphere_temperature";
+      if (this->rosNode->hasParam(pname)) {
+	double ret;
+	this->rosNode->getParam(pname, ret);
+	ROS_INFO("atomosphere_temperature %lf", ret);
+	this->atomosphere_temperature = ret;
+      }
+    }
+    
+    //motor heat params
+    motorheatparams.resize(this->jointNames.size());
+    for (unsigned int i = 0; i < this->joints.size(); ++i) {
+      std::string joint_ns=this->configuration_name;
+      joint_ns += ("/motor_heat_params/" + this->joints[i]->GetName() + "/");
+      
+      double currentCoeffs_val = 0.0;
+      std::string currentCoeffs_str = joint_ns+"currentCoeffs";
+      if (!this->rosNode->getParam(currentCoeffs_str, currentCoeffs_val)) {
+	ROS_WARN("IOBPlugin: couldn't find a currentCoeffs param for %s", joint_ns.c_str());
+      }
+      this->motorheatparams[i].currentCoeffs  =  currentCoeffs_val;
+      
+      double R1_val = std::numeric_limits<double>::max();
+      std::string R1_str = joint_ns+"R1";
+      if (!this->rosNode->getParam(R1_str, R1_val)) {
+	ROS_WARN("IOBPlugin: couldn't find a R1 param for %s", joint_ns.c_str());
+      }
+      this->motorheatparams[i].R1  =  R1_val;
 
-		// ros topic publications
-		this->pubTorqueQueue = this->pmq.addPub<std_msgs::Float32>();
-		this->pubTorque = this->rosNode->advertise<std_msgs::Float32>(
-				 "/" + this->robot_name + "/thermo_plugin/" + this->joint_name + "/torque", 100, true);
-		this->pubCoilThermoQueue = this->pmq.addPub<std_msgs::Float32>();
-		this->pubCoilThermo = this->rosNode->advertise<std_msgs::Float32>(
-				"/" + this->robot_name + "/thermo_plugin/" + this->joint_name + "/thermo/coil", 100, true);
-		this->pubCaseThermoQueue = this->pmq.addPub<std_msgs::Float32>();
-			this->pubCaseThermo = this->rosNode->advertise<std_msgs::Float32>(
-					"/" + this->robot_name + "/thermo_plugin/" + this->joint_name + "/thermo/case", 100, true);
+      double R2_val = std::numeric_limits<double>::max();
+      std::string R2_str = joint_ns+"R2";
+      if (!this->rosNode->getParam(R2_str, R2_val)) {
+	ROS_WARN("IOBPlugin: couldn't find a R2 param for %s", joint_ns.c_str());
+      }
+      this->motorheatparams[i].R2  =  R2_val;
 
+      double core_C_val = std::numeric_limits<double>::max();
+      std::string core_C_str = joint_ns+"core_C";
+      if (!this->rosNode->getParam(core_C_str, core_C_val)) {
+	ROS_WARN("IOBPlugin: couldn't find a core_C param for %s", joint_ns.c_str());
+      }
+      this->motorheatparams[i].core_C  =  core_C_val;
 
-		// Listen to the update event.
-		this->updateConnection = event::Events::ConnectWorldUpdateBegin(
-				boost::bind(&ThermoPlugin::OnUpdate, this, _1));
+      double surface_C_val = std::numeric_limits<double>::max();
+      std::string surface_C_str = joint_ns+"surface_C";
+      if (!this->rosNode->getParam(surface_C_str, surface_C_val)) {
+	ROS_WARN("IOBPlugin: couldn't find a surface_C param for %s", joint_ns.c_str());
+      }
+      this->motorheatparams[i].surface_C  =  surface_C_val;
+      
+      this->motorheatparams[i].temperature = atomosphere_temperature;
+      this->motorheatparams[i].surface_temperature = atomosphere_temperature;
+    }
 
-		gzmsg << "ThermoPlugin was loaded !" << std::endl;
-	}
+    {
+      this->thermal_publish_step = this->parsesdfParam(_sdf, "thermal_publish_step", 10);
+      std::string pname = this->configuration_name+"/thermal_publish_step";
+      if (this->rosNode->hasParam(pname)) {
+	int ret;
+	this->rosNode->getParam(pname, ret);
+	ROS_INFO("thermal_publish_step %d", ret);
+	this->thermal_publish_step = ret;
+      }
+      this->thermal_publish_cnt = this->thermal_publish_step ;
+    }
+    
+    this->lastUpdateTime = this->world->GetSimTime() ;
+		
+    // ros callback queue for processing subscription
+    this->deferredLoadThread = boost::thread(
+					     boost::bind(&ThermoPlugin::DeferredLoad, this));
+  }
 
-	// Called by the world update start event
-	void OnUpdate(const common::UpdateInfo & /*_info*/) {
-		physics::JointPtr j = this->joint ;
-		physics::JointWrench w = j->GetForceTorque(0u);
-		math::Vector3 a = j->GetGlobalAxis(0u);
-		math::Vector3 m = this->link->GetWorldPose().rot * w.body2Torque;
-		this->tau += (float)a.Dot(m);
+  void DeferredLoad() {
+    // publish multi queue
+    this->pmq.startServiceThread();
 
-		if ( --this->thermal_calcuration_cnt > 0 ) return ;
+    // ros topic publications
+    this->pubCoilThermoQueue = this->pmq.addPub<std_msgs::Float32MultiArray>();
+    this->pubCoilThermo = this->rosNode->advertise<std_msgs::Float32MultiArray>(
+								      "/" + this->robot_name + "/" + this->controller_name + "/coil", 100, true);
+    this->pubCaseThermoQueue = this->pmq.addPub<std_msgs::Float32MultiArray>();
+    this->pubCaseThermo = this->rosNode->advertise<std_msgs::Float32MultiArray>(
+								      "/" + this->robot_name + "/" + this->controller_name + "/case", 100, true);
+    ros::SubscribeOptions resetThermoCommandSo =
+      ros::SubscribeOptions::create<std_msgs::Empty>("/" + this->robot_name + "/" + this->controller_name + "/ResetThermoCommand", 100,
+                                              boost::bind(&ThermoPlugin::ResetThermoCommand, this, _1),
+                                              ros::VoidPtr(), &this->rosQueue);
+    resetThermoCommandSo.transport_hints = ros::TransportHints().reliable().tcpNoDelay(true);
+    this->subresetThermoCommand = this->rosNode->subscribe(resetThermoCommandSo);
 
-		this->tau /= this->thermal_calcuration_step;
-		this->thermal_calcuration_cnt = this->thermal_calcuration_step;
-		common::Time curTime = this->world->GetSimTime();
-		this->PublishThermo(curTime, this->lastUpdateTime);
-		this->lastUpdateTime = curTime ;
-		this->tau = 0;
-	}
+    // ros callback queue for processing subscription
+    this->callbackQueeuThread = boost::thread(boost::bind(&ThermoPlugin::RosQueueThread, this));
 
-	// Link has only 1 joint, and the joint has only 1 axis
-	void PublishThermo(const common::Time &_curTime, const common::Time &_lastTime) {
-		std_msgs::Float32 tor, the1, the2 ;
-		float abs_tau  ;
-		if ( this->tau > 0 ){
-			abs_tau = this->tau ;
-		} else {
-			abs_tau = -this->tau ;
-		}
+    // Listen to the update event.
+    this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+								    boost::bind(&ThermoPlugin::OnUpdate, this, _1));
 
-		float dt = (_curTime - _lastTime).Float();
-		float dT = (this->atomosphere_temperature - this->case_temperature)/this->outer_thermo_resistance + (this->coil_temperature - this->case_temperature)/this->inner_thermo_resistance;
-		float dTin = (this->case_temperature - this->coil_temperature)/this->inner_thermo_resistance + abs_tau * this->A_vs_Nm * this->electric_resistance;
-		float dTout = (this->case_temperature - this->atomosphere_temperature)/this->outer_thermo_resistance;
-		this->case_temperature += dT / this->case_thermo_conductance * dt;
-		this->coil_temperature += dTin / this->coil_thermo_conductance * dt;
-		this->atomosphere_temperature += dTout / this->atomosphere_thermo_conductance * dt;
+    ROS_INFO("ThermoPlugin was loaded !");
+  }
 
-		tor.data = this->tau ;
-		this->pubTorqueQueue->push(tor, this->pubTorque);
-		the1.data = this->case_temperature;
-		this->pubCaseThermoQueue->push(the1, this->pubCaseThermo);
-		the2.data = this->coil_temperature;
-		this->pubCoilThermoQueue->push(the2, this->pubCoilThermo);
+  void ResetThermoCommand(const std_msgs::Empty::ConstPtr &_msg)
+  {
+    this->reset_thermo_flag = true;
+    gzmsg << "[CranePlugin]subscribed ResetThermoCommand." << std::endl;
+  }
 
-		//std::cout << "(" << this->coil_temperature << "," << this->case_temperature << "," << this->atomosphere_temperature << ") in " << dt << "sec" << std::endl;
-	}
+  // Called by the world update start event
+  void OnUpdate(const common::UpdateInfo & /*_info*/) {
+    this->curTime = this->world->GetSimTime();
+    if(this->reset_thermo_flag){
+      for (int i=0;i<this->joints.size();i++){
+	this->motorheatparams[i].temperature = atomosphere_temperature;
+	this->motorheatparams[i].surface_temperature = atomosphere_temperature;
+      }
+      this->reset_thermo_flag = false;
+    }else{
+      for (int i=0;i<this->joints.size();i++){
+	this->EstimateThermo(this->motorheatparams[i],this->joints[i]->GetForce(0));
+      }
+    }
+    this->lastUpdateTime = this->curTime ;
+    if ( --this->thermal_publish_cnt > 0 ) return ;
+
+    this->thermal_publish_cnt = this->thermal_publish_step;
+    this->PublishThermo();
+  }
+
+  void EstimateThermo(MotorHeatParam &param,double tau){
+    double Qin, Qmid, Qout;
+    double dt = (this->curTime - this->lastUpdateTime).Double();
+    Qin = param.currentCoeffs * std::pow(tau, 2);
+    Qmid = (param.temperature - param.surface_temperature) / param.R1;
+    Qout = (param.surface_temperature - this->atomosphere_temperature) / param.R2;
+    param.temperature += (Qin - Qmid) / param.core_C * dt;
+    param.surface_temperature += (Qmid - Qout) / param.surface_C * dt;
+  }
+  
+  // Link has only 1 joint, and the joint has only 1 axis
+  void PublishThermo() {
+    std_msgs::Float32MultiArray the1, the2;
+
+    the1.data.resize(this->joints.size());
+    for(int i;i<this->joints.size();i++){
+	the1.data[i] = this->motorheatparams[i].temperature;
+    }
+    this->pubCaseThermoQueue->push(the1, this->pubCoilThermo);
+
+    the2.data.resize(this->joints.size());
+    for(int i;i<this->joints.size();i++){
+	the2.data[i] = this->motorheatparams[i].surface_temperature;
+    }
+    this->pubCaseThermoQueue->push(the2, this->pubCaseThermo);
+  }
+
+  // Ros loop thread function
+  void RosQueueThread() {
+    static const double timeout = 0.01;
+
+    while (this->rosNode->ok()) {
+      this->rosQueue.callAvailable(ros::WallDuration(timeout));
+    }
+  }
 
 private:
-	physics::ModelPtr model;
-	physics::WorldPtr world;
-	std::string robot_name;
-	std::string joint_name;
-	std::string link_name;
-	physics::LinkPtr link;
-	physics::JointPtr joint;
-	event::ConnectionPtr updateConnection;
-	common::Time lastUpdateTime;
-	int thermal_calcuration_step, thermal_calcuration_cnt;
-	float tau;
+  physics::ModelPtr model;
+  physics::WorldPtr world;
+  ros::NodeHandle* rosNode;
+  std::string robot_name;
+  std::vector<std::string> jointNames;
+  physics::Joint_V joints;
+  std::string controller_name;
+  std::string configuration_name;
+  std::vector<MotorHeatParam> motorheatparams;
+  double atomosphere_temperature;
+  int thermal_publish_step, thermal_publish_cnt;
+  common::Time lastUpdateTime;
+  common::Time curTime;
+  event::ConnectionPtr updateConnection;
 
-	float electric_resistance, inner_thermo_resistance, outer_thermo_resistance;
-	float coil_thermo_conductance, case_thermo_conductance, atomosphere_thermo_conductance;
-	float A_vs_Nm, atomosphere_temperature, case_temperature, coil_temperature;
+  bool reset_thermo_flag;
 
-	ros::NodeHandle* rosNode;
-	PubMultiQueue pmq;
-	boost::mutex mutex;
-	boost::thread deferredLoadThread;
+  PubMultiQueue pmq;
+  boost::thread deferredLoadThread;
+  boost::thread callbackQueeuThread;
 
-	ros::Publisher pubTorque;
-	PubQueue<std_msgs::Float32>::Ptr pubTorqueQueue;
-	ros::Publisher pubCoilThermo;
-	PubQueue<std_msgs::Float32>::Ptr pubCoilThermoQueue;
-	ros::Publisher pubCaseThermo;
-	PubQueue<std_msgs::Float32>::Ptr pubCaseThermoQueue;
+  ros::CallbackQueue rosQueue;
+  ros::Publisher pubCoilThermo;
+  PubQueue<std_msgs::Float32MultiArray>::Ptr pubCoilThermoQueue;
+  ros::Publisher pubCaseThermo;
+  PubQueue<std_msgs::Float32MultiArray>::Ptr pubCaseThermoQueue;
+  ros::Subscriber subresetThermoCommand;
 
-//	ros::Publisher pubMoment;
-//	PubQueue<geometry_msgs::Vector3>::Ptr pubMomentQueue;
-
-	float parseThermoParam(sdf::ElementPtr _sdf, std::string name, float defo){
-		float ret ;
-		if (_sdf->HasElement(name)) {
-			ret = _sdf->Get<float>(name);
-		} else {
-			ret = defo;
-		}
-		std::cout << " [thermo plugin] " << name << " = " << ret << " for " << this->joint_name << std::endl;
-		return ret ;
-	}
+  template<typename T>
+  T parsesdfParam(sdf::ElementPtr _sdf, std::string name, T defo){
+    T ret ;
+    if (_sdf->HasElement(name)) {
+      ret = _sdf->Get<T>(name);
+    } else {
+      ret = defo;
+    }
+    std::cout << " [thermo plugin] " << name << " = " << ret << std::endl;
+    return ret ;
+  }
 };
 
-GZ_REGISTER_MODEL_PLUGIN(ThermoPlugin)
+  GZ_REGISTER_MODEL_PLUGIN(ThermoPlugin)
 }
