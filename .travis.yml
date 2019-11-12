@@ -12,6 +12,7 @@ env:
   global:
     - USE_DOCKER=true
     - USE_TRAVIS=true
+    - ROS_PARALLEL_JOBS="-j1 -l1"
   matrix:
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=true
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=false
@@ -31,8 +32,6 @@ before_install:
   - export BEFORE_SCRIPT="sudo -E sh -c 'echo "deb http://packages.osrfoundation.org/drc/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/drc-latest.list'; wget http://packages.osrfoundation.org/drc.key -O - | sudo apt-key add -; sudo apt-get update -qq; sudo apt-get install -qq -y drcsim ros-${ROS_DISTRO}-openrtm-aist"
   - if [ $USE_DEB == true ] ; then mkdir -p ~/ros/ws_rtmros_gazebo/src; fi
   - if [ $USE_DEB == true ] ; then git clone https://github.com/start-jsk/rtmros_tutorials ~/ros/ws_rtmros_gazebo/src/rtmros_tutorials; fi
-install:
-  - export ROS_PARALLEL_JOBS="-j1 -l1"
 script: source .travis/travis.sh
 notifications:
   email:
