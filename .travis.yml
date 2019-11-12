@@ -28,16 +28,10 @@ matrix:
     #- env: ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
 before_install:
   # add osrf
-  - sudo sh -c 'echo "deb http://packages.ros.org/ros-shadow-fixed/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/ros-latest.list'
-  - sudo sh -c 'echo "deb http://packages.osrfoundation.org/drc/ubuntu precise main" > /etc/apt/sources.list.d/drc-latest.list'
-  - wget http://packages.ros.org/ros.key -O - | sudo apt-key add -
-  - wget http://packages.osrfoundation.org/drc.key -O - | sudo apt-key add -
+  - export BEFORE_SCRIPT="sudo -E sh -c 'echo "deb http://packages.osrfoundation.org/drc/ubuntu `lsb_release -cs` main" > /etc/apt/sources.list.d/drc-latest.list'; wget http://packages.osrfoundation.org/drc.key -O - | sudo apt-key add -; sudo apt-get update -qq; sudo apt-get install -qq -y drcsim ros-${ROS_DISTRO}-openrtm-aist"
   - if [ $USE_DEB == true ] ; then mkdir -p ~/ros/ws_rtmros_gazebo/src; fi
   - if [ $USE_DEB == true ] ; then git clone https://github.com/start-jsk/rtmros_tutorials ~/ros/ws_rtmros_gazebo/src/rtmros_tutorials; fi
 install:
-  - sudo apt-get update -qq
-  - sudo apt-get install -qq drcsim-hydro
-  - sudo apt-get install -qq ros-hydro-openrtm-aist
   - export ROS_PARALLEL_JOBS="-j1 -l1"
 script: source .travis/travis.sh
 notifications:
