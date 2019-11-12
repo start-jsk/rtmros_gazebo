@@ -4,7 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
-#include "io/iob.h"
+#include "hrpsys/io/iob.h"
 
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
