@@ -27,6 +27,12 @@
 
 #include <ros/ros.h>
 
+#if __cplusplus >= 201103L
+using std::shared_ptr;
+#else
+using boost::shared_ptr;
+#endif
+
 
 /// \brief Container for a (ROS publisher, outgoing message) pair.  
 /// We'll have queues of these.  Templated on a ROS message type.
@@ -49,21 +55,21 @@ template<class T>
 class PubQueue
 {
   public:
-    typedef std::shared_ptr<std::deque<std::shared_ptr<
+    typedef shared_ptr<std::deque<shared_ptr<
       PubMessagePair<T> > > > QueuePtr;
-    typedef std::shared_ptr<PubQueue<T> > Ptr;
+    typedef shared_ptr<PubQueue<T> > Ptr;
 
   private:
     /// \brief Our queue of outgoing messages.
     QueuePtr queue_;
     /// \brief Mutex to control access to the queue.
-    std::shared_ptr<boost::mutex> queue_lock_;
+    shared_ptr<boost::mutex> queue_lock_;
     /// \brief Function that will be called when a new message is pushed on.
     boost::function<void()> notify_func_;
 
   public:
     PubQueue(QueuePtr queue, 
-             std::shared_ptr<boost::mutex> queue_lock,
+             shared_ptr<boost::mutex> queue_lock,
              boost::function<void()> notify_func) :
       queue_(queue), queue_lock_(queue_lock), notify_func_(notify_func) {}
     ~PubQueue() {}
@@ -73,7 +79,7 @@ class PubQueue
     /// \param[in] pub The ROS publisher to use to publish the message
     void push(T& msg, ros::Publisher& pub)
     {
-      std::shared_ptr<PubMessagePair<T> > el(new PubMessagePair<T>(msg, pub));
+      shared_ptr<PubMessagePair<T> > el(new PubMessagePair<T>(msg, pub));
       boost::mutex::scoped_lock lock(*queue_lock_);
       queue_->push_back(el);
       notify_func_();
@@ -81,7 +87,7 @@ class PubQueue
 
     /// \brief Pop all waiting messages off the queue.
     /// \param[out] els Place to store the popped messages
-    void pop(std::vector<std::shared_ptr<PubMessagePair<T> > >& els)
+    void pop(std::vector<shared_ptr<PubMessagePair<T> > >& els)
     {
       boost::mutex::scoped_lock lock(*queue_lock_);
       while(!queue_->empty())
@@ -113,11 +119,11 @@ class PubMultiQueue
     /// \brief Service a given queue by popping outgoing message off it and
     /// publishing them.
     template <class T> 
-    void serviceFunc(std::shared_ptr<PubQueue<T> > pq)
+    void serviceFunc(shared_ptr<PubQueue<T> > pq)
     {
-      std::vector<std::shared_ptr<PubMessagePair<T> > > els;
+      std::vector<shared_ptr<PubMessagePair<T> > > els;
       pq->pop(els);
-      for(typename std::vector<std::shared_ptr<PubMessagePair<T> > >::iterator it = els.begin();
+      for(typename std::vector<shared_ptr<PubMessagePair<T> > >::iterator it = els.begin();
           it != els.end();
           ++it)
       {
@@ -141,11 +147,11 @@ class PubMultiQueue
     /// least each type of publish message).
     /// \return Pointer to the newly created queue, good for calling push() on.
     template <class T>
-    std::shared_ptr<PubQueue<T> > addPub()
+    shared_ptr<PubQueue<T> > addPub()
     {
-      typename PubQueue<T>::QueuePtr queue(new std::deque<std::shared_ptr<PubMessagePair<T> > >);
-      std::shared_ptr<boost::mutex> queue_lock(new boost::mutex);
-      std::shared_ptr<PubQueue<T> > pq(new PubQueue<T>(queue, queue_lock, boost::bind(&PubMultiQueue::notifyServiceThread, this)));
+      typename PubQueue<T>::QueuePtr queue(new std::deque<shared_ptr<PubMessagePair<T> > >);
+      shared_ptr<boost::mutex> queue_lock(new boost::mutex);
+      shared_ptr<PubQueue<T> > pq(new PubQueue<T>(queue, queue_lock, boost::bind(&PubMultiQueue::notifyServiceThread, this)));
       boost::function<void()> f = boost::bind(&PubMultiQueue::serviceFunc<T>, this, pq);
       {
         boost::mutex::scoped_lock lock(service_funcs_lock_);
