@@ -1,12 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string>
-#include <memory>
 
 #include <gazebo/transport/Node.hh>
 #include <gazebo/common/Assert.hh>
 
 #include "IOBPlugin.h"
+
+#if __cplusplus >= 201103L
+#include <memory>
+using std::dynamic_pointer_cast;
+#else
+using boost::dynamic_pointer_cast;
+#endif
 
 namespace gazebo
 {
@@ -241,10 +247,10 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
             ROS_ERROR("Force-Torque sensor: %s has invalid configuration", sensor_name.c_str());
           }
           // setup force sensor publishers
-          std::shared_ptr<std::vector<std::shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue(new std::vector<std::shared_ptr<geometry_msgs::WrenchStamped> >);
+          shared_ptr<std::vector<shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue(new std::vector<shared_ptr<geometry_msgs::WrenchStamped> >);
           // forceValQueue->resize(this->force_sensor_average_window_size);
           for ( int i=0; i<this->force_sensor_average_window_size; i++ ){
-            std::shared_ptr<geometry_msgs::WrenchStamped> fbuf(new geometry_msgs::WrenchStamped);
+            shared_ptr<geometry_msgs::WrenchStamped> fbuf(new geometry_msgs::WrenchStamped);
             forceValQueue->push_back(fbuf);
           }
           this->forceValQueueMap[sensor_name] = forceValQueue;
@@ -276,7 +282,7 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
               gzerr << ln << " not found\n";
             } else {
               // Get imu sensors
-              msi.sensor = std::dynamic_pointer_cast<sensors::ImuSensor>
+              msi.sensor = dynamic_pointer_cast<sensors::ImuSensor>
                 (sensors::SensorManager::Instance()->GetSensor
                  (this->world->GetName() + "::" + msi.link->GetScopedName() + "::" + msi.sensor_name));
 
@@ -378,7 +384,7 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
     // effort average
     effortValQueue.resize(0);
     for(int i = 0; i < this->effort_average_window_size; i++) {
-      std::shared_ptr<std::vector<double> > vbuf(new std::vector<double> (this->joints.size()));
+      shared_ptr<std::vector<double> > vbuf(new std::vector<double> (this->joints.size()));
       effortValQueue.push_back(vbuf);
     }
     // for reference
@@ -780,7 +786,7 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   // populate robotState from robot
   this->robotState.header.stamp = ros::Time(_curTime.sec, _curTime.nsec);
 
-  std::shared_ptr<std::vector<double > > vbuf = effortValQueue.at(this->effort_average_cnt);
+  shared_ptr<std::vector<double > > vbuf = effortValQueue.at(this->effort_average_cnt);
   // joint states
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
     this->robotState.position[i] = this->joints[i]->GetAngle(0).Radian();
@@ -810,7 +816,7 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   }
   if (this->use_joint_effort) {
     for (int j = 0; j < effortValQueue.size(); j++) {
-      std::shared_ptr<std::vector<double > > vbuf = effortValQueue.at(j);
+      shared_ptr<std::vector<double > > vbuf = effortValQueue.at(j);
       for (int i = 0; i < this->joints.size(); i++) {
         this->robotState.effort[i] += vbuf->at(i);
       }
@@ -829,8 +835,8 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   this->robotState.sensors.resize(this->forceSensorNames.size());
   for (unsigned int i = 0; i < this->forceSensorNames.size(); i++) {
     forceSensorMap::iterator it = this->forceSensors.find(this->forceSensorNames[i]);
-    std::shared_ptr<std::vector<std::shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue = this->forceValQueueMap.find(this->forceSensorNames[i])->second;
-    std::shared_ptr<geometry_msgs::WrenchStamped> forceVal = forceValQueue->at(this->force_sensor_average_cnt);
+    shared_ptr<std::vector<shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue = this->forceValQueueMap.find(this->forceSensorNames[i])->second;
+    shared_ptr<geometry_msgs::WrenchStamped> forceVal = forceValQueue->at(this->force_sensor_average_cnt);
     if(it != this->forceSensors.end()) {
       physics::JointPtr jt = it->second.joint;
       if (!!jt) {
@@ -869,7 +875,7 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
     this->robotState.sensors[i].torque.y = 0;
     this->robotState.sensors[i].torque.z = 0;
     for ( int j=0; j<forceValQueue->size() ; j++ ){
-      std::shared_ptr<geometry_msgs::WrenchStamped> forceValBuf = forceValQueue->at(j);
+      shared_ptr<geometry_msgs::WrenchStamped> forceValBuf = forceValQueue->at(j);
       this->robotState.sensors[i].force.x += forceValBuf->wrench.force.x;
       this->robotState.sensors[i].force.y += forceValBuf->wrench.force.y;
       this->robotState.sensors[i].force.z += forceValBuf->wrench.force.z;
@@ -898,9 +904,15 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
     if(!!sp) {
       this->robotState.Imus[i].name = this->imuSensorNames[i];
       this->robotState.Imus[i].frame_id = it->second.frame_id;
+#if __cplusplus >= 201103L
       math::Vector3 wLocal = sp->AngularVelocity();
       math::Vector3 accel = sp->LinearAcceleration();
       math::Quaternion imuRot = sp->Orientation();
+#else
+      math::Vector3 wLocal = sp->GetAngularVelocity();
+      math::Vector3 accel = sp->GetLinearAcceleration();
+      math::Quaternion imuRot = sp->GetOrientation();
+#endif
       this->robotState.Imus[i].angular_velocity.x = wLocal.x;
       this->robotState.Imus[i].angular_velocity.y = wLocal.y;
       this->robotState.Imus[i].angular_velocity.z = wLocal.z;
@@ -949,7 +961,11 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
       static_cast<double>(this->robotState.kpv_velocity[i]) * this->errorTerms[i].qd_p;
 
     // update max force
+#if __cplusplus >= 201103L
     this->joints[i]->SetParam("max_force", 0, this->joints[i]->GetEffortLimit(0));
+#else
+    this->joints[i]->SetMaxForce(0, this->joints[i]->GetEffortLimit(0));
+#endif
     // clamp max velocity
     j_velocity = math::clamp(j_velocity, -max_vel, max_vel);
 #if 0

@@ -17,7 +17,20 @@ if(NOT CMAKE_BUILD_TYPE)
     "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
     FORCE)
 endif()
-set(CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+
+# Gazebo only supports C++11 from version 5
+# http://answers.gazebosim.org/question/13869/ros-enabled-plugin-examples-use-c11/
+include (FindPkgConfig)
+if (PKG_CONFIG_FOUND)
+  pkg_check_modules(GAZEBO gazebo)
+else()
+  message(FATAL_ERROR "pkg-config is required; please install it")
+endif()
+if(${GAZEBO_VERSION} VERSION_LESS "5.0.0")
+else()
+  set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+endif()
+
 ## Build only gazebo iob
 pkg_check_modules(omniorb omniORB4 REQUIRED)
 pkg_check_modules(omnidynamic omniDynamic4 REQUIRED)
@@ -46,13 +59,6 @@ add_custom_target(hrpsys_gazebo_general_iob ALL DEPENDS RobotHardware_gazebo)
 add_dependencies(hrpsys_gazebo_general_iob hrpsys_gazebo_msgs_gencpp)
 
 ## Gazebo plugins
-include (FindPkgConfig)
-if (PKG_CONFIG_FOUND)
-  pkg_check_modules(GAZEBO gazebo)
-else()
-  message(FATAL_ERROR "pkg-config is required; please install it")
-endif()
-
 include_directories( ${GAZEBO_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhrp3_INCLUDE_DIRS})
 link_directories( ${GAZEBO_LIBRARY_DIRS} ${openhrp3_LIBRARY_DIRS})
 
