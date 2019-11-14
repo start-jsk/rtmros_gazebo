@@ -5,6 +5,13 @@ python:
   - "2.7"
 compiler:
   - gcc
+cache:
+  apt: true
+  pip: true
+  directories:
+    - $HOME/.ccache
+    - $HOME/.cache/pip
+    - $HOME/apt-cacher-ng
 dist: trusty
 services:
   - docker
