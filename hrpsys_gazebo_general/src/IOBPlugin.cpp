@@ -975,7 +975,12 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
              this->robotState.kpv_position[i]);
 #endif
     // apply velocity to joint
+#if __cplusplus >= 201103L
+    this->joints[i]->SetParam("vel", 0, j_velocity);
+#else
     this->joints[i]->SetVelocity(0, j_velocity);
+#endif
+
   }
 }
 
