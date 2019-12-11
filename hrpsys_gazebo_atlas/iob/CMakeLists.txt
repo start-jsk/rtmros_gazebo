@@ -21,7 +21,7 @@ set_target_properties(RobotHardware_atlas PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${
 set_target_properties(RobotHardware_atlas PROPERTIES OUTPUT_NAME RobotHardware)
 
 add_executable(RobotHardwareComp_atlas ${ROBOTHARDWARE_SOURCE}/RobotHardwareComp.cpp ${comp_source})
-target_link_libraries(RobotHardwareComp_atlas ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil)
+target_link_libraries(RobotHardwareComp_atlas ${libs} ${omniorb_LIBRARIES} ${omnidynamic_LIBRARIES} RTC coil dl pthread)
 set_target_properties(RobotHardwareComp_atlas PROPERTIES OUTPUT_NAME RobotHardwareComp)
 
 install(TARGETS RobotHardwareComp_atlas RobotHardware_atlas hrpIo_atlas

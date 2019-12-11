@@ -18,16 +18,25 @@ if(NOT CMAKE_BUILD_TYPE)
     FORCE)
 endif()
 
+# Gazebo only supports C++11 from version 5
+# http://answers.gazebosim.org/question/13869/ros-enabled-plugin-examples-use-c11/
+include (FindPkgConfig)
+if (PKG_CONFIG_FOUND)
+  pkg_check_modules(GAZEBO gazebo)
+else()
+  message(FATAL_ERROR "pkg-config is required; please install it")
+endif()
+if(${GAZEBO_VERSION} VERSION_LESS "5.0.0")
+else()
+  set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
+endif()
+
 ## Build only gazebo iob
 pkg_check_modules(omniorb omniORB4 REQUIRED)
 pkg_check_modules(omnidynamic omniDynamic4 REQUIRED)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
 pkg_check_modules(openhrp3 openhrp3.1 REQUIRED)
 pkg_check_modules(hrpsys hrpsys-base REQUIRED)
-### hotfix for https://github.com/fkanehiro/hrpsys-base/pull/803
-list(GET hrpsys_INCLUDE_DIRS 0 hrpsys_first_incdir)
-list(APPEND hrpsys_INCLUDE_DIRS ${hrpsys_first_incdir}/hrpsys)
-list(APPEND hrpsys_INCLUDE_DIRS ${hrpsys_first_incdir}/hrpsys/idl)
 if(EXISTS ${hrpsys_SOURCE_DIR})
   set(ROBOTHARDWARE_SOURCE ${hrpsys_SOURCE_DIR}/src/rtc/RobotHardware)
   set(HRPEC_SOURCE         ${hrpsys_SOURCE_DIR}/src/ec/hrpEC)
@@ -46,13 +55,6 @@ add_custom_target(hrpsys_gazebo_general_iob ALL DEPENDS RobotHardware_gazebo)
 add_dependencies(hrpsys_gazebo_general_iob hrpsys_gazebo_msgs_gencpp)
 
 ## Gazebo plugins
-include (FindPkgConfig)
-if (PKG_CONFIG_FOUND)
-  pkg_check_modules(GAZEBO gazebo)
-else()
-  message(FATAL_ERROR "pkg-config is required; please install it")
-endif()
-
 include_directories( ${GAZEBO_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS} ${openrtm_aist_INCLUDE_DIRS} ${openhrp3_INCLUDE_DIRS})
 link_directories( ${GAZEBO_LIBRARY_DIRS} ${openhrp3_LIBRARY_DIRS})
 

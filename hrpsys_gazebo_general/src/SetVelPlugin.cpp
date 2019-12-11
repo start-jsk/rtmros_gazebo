@@ -120,7 +120,11 @@ namespace gazebo
       gzdbg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
       if (!this->apply_in_gazebo_loop) {
         // this->model->SetLinkWorldPose(this->pose, this->link);
+#if __cplusplus >= 201103L
+        this->model->SetWorldPose(this->pose);
+#else
         this->model->SetWorldPose(this->pose, this->link);
+#endif
       }
     }
 
@@ -129,7 +133,11 @@ namespace gazebo
     {
       if (this->apply_in_gazebo_loop) {
         if (this->set_pose_flag) {
+#if __cplusplus >= 201103L
+          this->model->SetWorldPose(this->pose);
+#else
           this->model->SetWorldPose(this->pose, this->link);
+#endif
         }
         if (this->set_vel_flag) {
           this->model->SetLinearVel(this->linear_vel);
