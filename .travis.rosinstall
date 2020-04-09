@@ -2,7 +2,7 @@
     uri: https://github.com/start-jsk/openhrp3
     local-name: rtm-ros-robotics/openrtm_common/openhrp3
 - git:
-    uri: https://github.com/start-jsk/hrpsys
+    uri: https://github.com/fkanehiro/hrpsys-base
     local-name: rtm-ros-robotics/openrtm_common/hrpsys
 ## - git:
 ##     uri: https://github.com/start-jsk/rtshell_core 
