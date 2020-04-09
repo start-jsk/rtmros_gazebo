@@ -117,6 +117,7 @@ hrpsys_gazebo_configuration:
 ## IMU sensor settings
 ## configuration of IMU sensor
 ## key of imu_sensors_config should be a member of imu_sensors
+## pose of IMU sensor should be written in URDF
   imu_sensors:
     - imu_sensor0
   imu_sensors_config:
