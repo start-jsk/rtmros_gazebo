@@ -240,8 +240,8 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
                   qt.z = xmlrpc_value_as_double(rot[3]);
                 }
                 fsi.pose = PosePtr(new math::Pose (vtr, qt));
-                this->forceSensors[sensor_name] = fsi;
               }
+              this->forceSensors[sensor_name] = fsi;
             }
           } else {
             ROS_ERROR("Force-Torque sensor: %s has invalid configuration", sensor_name.c_str());
