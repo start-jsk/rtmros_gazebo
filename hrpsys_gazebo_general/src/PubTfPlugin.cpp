@@ -6,7 +6,7 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Time.hh>
-#if GAZEBO_MAJOR_VERSION >= 7
+#if GAZEBO_MAJOR_VERSION >= 9
 #include <ignition/math/Pose3.hh>
 #endif
 
@@ -21,17 +21,6 @@
 
 #include "PubQueue.h"
 
-#if GAZEBO_MAJOR_VERSION >= 7
-#else
-namespace ignition::math
-{
-  using equal = gazebo::math::equal;
-  using clamp = gazebo::math::clamp;
-  using Pose3d = gazebo::math::Pose;
-  using Vector3d = gazebo::math::Vector3;
-  using Quaterniond = gazebo::math::Quaterion;
-}
-#endif
 
 namespace gazebo
 {
@@ -88,7 +77,7 @@ namespace gazebo
     // Called by the world update start event
     void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
-#if GAZEBO_MAJOR_VERSION >= 7
+#if GAZEBO_MAJOR_VERSION >= 9
       common::Time curTime = this->world->SimTime();
 #else
       common::Time curTime = this->world->GetSimTime();
@@ -101,7 +90,11 @@ namespace gazebo
     // Publish function
     void PublishTf(const common::Time &_curTime)
     {
+#if GAZEBO_MAJOR_VERSION >= 9
       ignition::math::Pose3d pose;
+#else
+      math::Pose pose;
+#endif
       tf::Transform transform;
 
       // set pose
@@ -113,7 +106,7 @@ namespace gazebo
       pose = this->link->GetWorldPose();
       transform.setOrigin(tf::Vector3(pose.pos.x, pose.pos.y, pose.pos.z));
       tf::Quaternion q(pose.rot.x, pose.rot.y, pose.rot.z, pose.rot.w);
-#endif  
+#endif
       transform.setRotation(q);
       // publish pose
       this->br.sendTransform(tf::StampedTransform(transform, ros::Time(_curTime.sec, _curTime.nsec), "gazebo_world", this->link_name));
