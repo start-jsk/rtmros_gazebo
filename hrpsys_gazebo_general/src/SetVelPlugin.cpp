@@ -6,6 +6,12 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
 
+#if GAZEBO_MAJOR_VERSION >= 7
+#include <ignition/math/Vector3.hh>
+#include <ignition/math/Quaternion.hh>
+#include <ignition/math/Pose3.hh>
+#endif
+
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 #include <ros/advertise_options.h>
@@ -17,6 +23,17 @@
 #include <geometry_msgs/Wrench.h>
 #include <std_msgs/String.h>
 
+#if GAZEBO_MAJOR_VERSION >= 7
+#else
+namespace ignition::math
+{
+  using equal = gazebo::math::equal;
+  using clamp = gazebo::math::clamp;
+  using Pose3d = gazebo::math::Pose;
+  using Vector3d = gazebo::math::Vector3;
+  using Quaterniond = gazebo::math::Quaterion;
+}
+#endif
 
 namespace gazebo
 {
@@ -96,12 +113,21 @@ namespace gazebo
 
     void SetVelCommand(const geometry_msgs::Twist::ConstPtr &_msg)
     {
+#if GAZEBO_MAJOR_VERSION >= 7
+      this->linear_vel.X() = _msg->linear.x;
+      this->linear_vel.Y() = _msg->linear.y;
+      this->linear_vel.Z() = _msg->linear.z;
+      this->angular_vel.X() = _msg->angular.x;
+      this->angular_vel.Y() = _msg->angular.y;
+      this->angular_vel.Z() = _msg->angular.z;
+#else
       this->linear_vel.x = _msg->linear.x;
       this->linear_vel.y = _msg->linear.y;
       this->linear_vel.z = _msg->linear.z;
       this->angular_vel.x = _msg->angular.x;
       this->angular_vel.y = _msg->angular.y;
       this->angular_vel.z = _msg->angular.z;
+#endif
       this->set_vel_flag = true;
       gzmsg << "subscribed SetVelCommand. ( linear: " << this->linear_vel << "  angular: " << this->angular_vel << " )" << std::endl;
       if (!this->apply_in_gazebo_loop) {
@@ -112,12 +138,16 @@ namespace gazebo
 
     void SetPoseCommand(const geometry_msgs::Pose::ConstPtr &_msg)
     {
-      this->model->SetLinearVel(math::Vector3(0, 0, 0));
-      this->model->SetAngularVel(math::Vector3(0, 0, 0));
-      this->pose.Set(math::Vector3(_msg->position.x, _msg->position.y, _msg->position.z),
-                     math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
+      this->model->SetLinearVel(ignition::math::Vector3d(0, 0, 0));
+      this->model->SetAngularVel(ignition::math::Vector3d(0, 0, 0));
+      this->pose.Set(ignition::math::Vector3d(_msg->position.x, _msg->position.y, _msg->position.z),
+                     ignition::math::Quaterniond(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
       this->set_pose_flag = true;
+#if GAZEBO_MAJOR_VERSION >= 7
+      gzdbg << "subscribed SetPoseCommand. ( position: " << this->pose.Pos() << "  orientation: " << this->pose.Rot() << " )" << std::endl;
+#else
       gzdbg << "subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
+#endif
       if (!this->apply_in_gazebo_loop) {
         // this->model->SetLinkWorldPose(this->pose, this->link);
 #if __cplusplus >= 201103L
@@ -159,9 +189,9 @@ namespace gazebo
     physics::ModelPtr model;
     std::string obj_name;
     std::string link_name;
-    math::Vector3 linear_vel;
-    math::Vector3 angular_vel;
-    math::Pose pose;
+    ignition::math::Vector3d linear_vel;
+    ignition::math::Vector3d angular_vel;
+    ignition::math::Pose3d pose;
     physics::LinkPtr link;
     event::ConnectionPtr updateConnection;
     bool set_pose_flag;

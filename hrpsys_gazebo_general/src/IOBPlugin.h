@@ -18,7 +18,11 @@
 #include <boost/thread.hpp>
 #include <boost/thread/condition.hpp>
 
+#if GAZEBO_MAJOR_VERSION >= 7
+#include <ignition/math/Pose3.hh>
+#else
 #include <gazebo/math/gzmath.hh>
+#endif
 #include <gazebo/physics/physics.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/transport/TransportTypes.hh>
@@ -49,12 +53,24 @@ using std::shared_ptr;
 using boost::shared_ptr;
 #endif
 
+#if GAZEBO_MAJOR_VERSION >= 7
+#else
+namespace ignition::math
+{
+  using equal = gazebo::math::equal;
+  using clamp = gazebo::math::clamp;
+  using Pose3d = gazebo::math::Pose;
+  using Vector3d = gazebo::math::Vector3;
+  using Quaterniond = gazebo::math::Quaterion;
+}
+#endif
+
 namespace gazebo
 {
   typedef shared_ptr< sensors::ImuSensor > ImuSensorPtr;
   typedef hrpsys_gazebo_msgs::JointCommand JointCommand;
   typedef hrpsys_gazebo_msgs::RobotState RobotState;
-  typedef shared_ptr< math::Pose > PosePtr;
+  typedef shared_ptr< ignition::math::Pose3d > PosePtr;
 
   class IOBPlugin : public ModelPlugin
   {

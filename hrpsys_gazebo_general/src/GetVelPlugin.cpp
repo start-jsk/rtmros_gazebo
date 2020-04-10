@@ -22,6 +22,18 @@
 
 #include "PubQueue.h"
 
+#if GAZEBO_MAJOR_VERSION >= 7
+#else
+namespace ignition::math
+{
+  using equal = gazebo::math::equal;
+  using clamp = gazebo::math::clamp;
+  using Pose3d = gazebo::math::Pose;
+  using Vector3d = gazebo::math::Vector3;
+  using Quaterniond = gazebo::math::Quaterion;
+}
+#endif
+
 
 namespace gazebo
 {
@@ -90,7 +102,11 @@ namespace gazebo
     // Called by the world update start event
     void OnUpdate(const common::UpdateInfo & /*_info*/)
     {
+#if GAZEBO_MAJOR_VERSION >= 7
+      common::Time curTime = this->world->SimTime();
+#else
       common::Time curTime = this->world->GetSimTime();
+#endif
 
       // publish topics
       this->PublishVel(curTime);
@@ -101,65 +117,158 @@ namespace gazebo
     {
       geometry_msgs::TwistStamped _twist;
       geometry_msgs::PoseStamped _pose;
-      math::Vector3 linear_vel;
-      math::Vector3 angular_vel;
-      math::Vector3 linear_accel;
-      math::Vector3 angular_accel;
-      math::Pose pose;
+      ignition::math::Vector3d linear_vel;
+      ignition::math::Vector3d angular_vel;
+      ignition::math::Vector3d linear_accel;
+      ignition::math::Vector3d angular_accel;
+      ignition::math::Pose3d pose;
       _twist.header.stamp = ros::Time(_curTime.sec, _curTime.nsec);
       _pose.header.stamp = ros::Time(_curTime.sec, _curTime.nsec);
 
       // set rel vel
+#if GAZEBO_MAJOR_VERSION >= 9
+      linear_vel = this->model->RelativeLinearVel();
+#else
       linear_vel = this->model->GetRelativeLinearVel();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 7
+      _twist.twist.linear.x = linear_vel.X();
+      _twist.twist.linear.y = linear_vel.Y();
+      _twist.twist.linear.z = linear_vel.Z();
+#else
       _twist.twist.linear.x = linear_vel.x;
       _twist.twist.linear.y = linear_vel.y;
       _twist.twist.linear.z = linear_vel.z;
+#endif
+#if GAZEBO_MAJOR_VERSION >= 9
+      angular_vel = this->model->RelativeAngularVel();
+#else
       angular_vel = this->model->GetRelativeAngularVel();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 7
+      _twist.twist.angular.x = angular_vel.X();
+      _twist.twist.angular.y = angular_vel.Y();
+      _twist.twist.angular.z = angular_vel.Z();
+#else
       _twist.twist.angular.x = angular_vel.x;
       _twist.twist.angular.y = angular_vel.y;
       _twist.twist.angular.z = angular_vel.z;
+#endif
       // publish rel vel
       this->pubRelVelQueue->push(_twist, this->pubRelVel);
 
       // set abs vel
+#if GAZEBO_MAJOR_VERSION >= 9
+      linear_vel = this->model->WorldLinearVel();
+#else
       linear_vel = this->model->GetWorldLinearVel();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 7
+      _twist.twist.linear.x = linear_vel.X();
+      _twist.twist.linear.y = linear_vel.Y();
+      _twist.twist.linear.z = linear_vel.Z();
+#else
       _twist.twist.linear.x = linear_vel.x;
       _twist.twist.linear.y = linear_vel.y;
       _twist.twist.linear.z = linear_vel.z;
+#endif
+#if GAZEBO_MAJOR_VERSION >= 9
+      angular_vel = this->model->WorldAngularVel();
+#else
       angular_vel = this->model->GetWorldAngularVel();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 7
+      _twist.twist.angular.x = angular_vel.X();
+      _twist.twist.angular.y = angular_vel.Y();
+      _twist.twist.angular.z = angular_vel.Z();
+#else
       _twist.twist.angular.x = angular_vel.x;
       _twist.twist.angular.y = angular_vel.y;
       _twist.twist.angular.z = angular_vel.z;
+#endif
       // publish abs vel
       this->pubAbsVelQueue->push(_twist, this->pubAbsVel);
 
       // set rel accel
+#if GAZEBO_MAJOR_VERSION >= 9
+      linear_accel = this->model->RelativeLinearAccel();
+#else
       linear_accel = this->model->GetRelativeLinearAccel();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 7
+      _twist.twist.linear.x = linear_accel.X();
+      _twist.twist.linear.y = linear_accel.Y();
+      _twist.twist.linear.z = linear_accel.Z();
+#else
       _twist.twist.linear.x = linear_accel.x;
       _twist.twist.linear.y = linear_accel.y;
       _twist.twist.linear.z = linear_accel.z;
+#endif
+#if GAZEBO_MAJOR_VERSION >= 9
+      angular_accel = this->model->RelativeAngularAccel();
+#else
       angular_accel = this->model->GetRelativeAngularAccel();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 7
+      _twist.twist.angular.x = angular_accel.X();
+      _twist.twist.angular.y = angular_accel.Y();
+      _twist.twist.angular.z = angular_accel.Z();
+#else
       _twist.twist.angular.x = angular_accel.x;
       _twist.twist.angular.y = angular_accel.y;
       _twist.twist.angular.z = angular_accel.z;
+#endif
       // publish rel accel
       this->pubRelAccelQueue->push(_twist, this->pubRelAccel);
 
       // set abs accel
+#if GAZEBO_MAJOR_VERSION >= 9
+      linear_accel = this->model->WorldLinearAccel();
+#else
       linear_accel = this->model->GetWorldLinearAccel();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 7
+      _twist.twist.linear.x = linear_accel.X();
+      _twist.twist.linear.y = linear_accel.Y();
+      _twist.twist.linear.z = linear_accel.Z();
+#else
       _twist.twist.linear.x = linear_accel.x;
       _twist.twist.linear.y = linear_accel.y;
       _twist.twist.linear.z = linear_accel.z;
+#endif
+#if GAZEBO_MAJOR_VERSION >= 9
+      angular_accel = this->model->WorldAngularAccel();
+#else
       angular_accel = this->model->GetWorldAngularAccel();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 7
+      _twist.twist.angular.x = angular_accel.X();
+      _twist.twist.angular.y = angular_accel.Y();
+      _twist.twist.angular.z = angular_accel.Z();
+#else
       _twist.twist.angular.x = angular_accel.x;
       _twist.twist.angular.y = angular_accel.y;
       _twist.twist.angular.z = angular_accel.z;
+#endif
       // publish abs accel
       this->pubAbsAccelQueue->push(_twist, this->pubAbsAccel);
 
       // set pose
+#if GAZEBO_MAJOR_VERSION >= 9
+      pose = this->link->WorldCoGPose();
+#else
       pose = this->link->GetWorldCoGPose();
+#endif
       // pose = this->link->GetWorldPose();
+#if GAZEBO_MAJOR_VERSION >= 7
+      _pose.pose.position.x = pose.Pos().X();
+      _pose.pose.position.y = pose.Pos().Y();
+      _pose.pose.position.z = pose.Pos().Z();
+      _pose.pose.orientation.x = pose.Rot().X();
+      _pose.pose.orientation.y = pose.Rot().Y();
+      _pose.pose.orientation.z = pose.Rot().Z();
+      _pose.pose.orientation.w = pose.Rot().W();
+#else
       _pose.pose.position.x = pose.pos.x;
       _pose.pose.position.y = pose.pos.y;
       _pose.pose.position.z = pose.pos.z;
@@ -167,6 +276,7 @@ namespace gazebo
       _pose.pose.orientation.y = pose.rot.y;
       _pose.pose.orientation.z = pose.rot.z;
       _pose.pose.orientation.w = pose.rot.w;
+#endif
       // publish pose
       this->pubPoseQueue->push(_pose, this->pubPose);
     }
