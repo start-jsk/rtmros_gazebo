@@ -5,7 +5,10 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
-#include <ignition/math.hh>
+
+#if GAZEBO_MAJOR_VERSION >= 9
+#include <ignition/math/Vector3.hh>
+#endif
 
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
@@ -40,18 +43,39 @@ namespace gazebo
       if (_sdf->HasElement("linkname")) {
 	this->link_name = _sdf->Get<std::string>("linkname");
       }
+#if GAZEBO_MAJOR_VERSION >= 9
       this->force = ignition::math::Vector3d(0, 0, 0);
       if (_sdf->HasElement("force")) {
 	this->force = _sdf->Get<ignition::math::Vector3d>("force");
       }
+#else
+      this->force = math::Vector3(0, 0, 0);
+      if (_sdf->HasElement("force")) {
+	this->force = _sdf->Get<math::Vector3>("force");
+      }
+#endif
+#if GAZEBO_MAJOR_VERSION >= 9
       this->torque = ignition::math::Vector3d(0, 0, 0);
       if (_sdf->HasElement("torque")) {
 	this->torque = _sdf->Get<ignition::math::Vector3d>("torque");
       }
+#else
+      this->torque = math::Vector3(0, 0, 0);
+      if (_sdf->HasElement("torque")) {
+	this->torque = _sdf->Get<math::Vector3>("torque");
+      }
+#endif
+#if GAZEBO_MAJOR_VERSION >= 9
       this->position = ignition::math::Vector3d(0, 0, 0);
       if(_sdf->HasElement("position")) {
 	this->position = _sdf->Get<ignition::math::Vector3d>("position");
       }
+#else
+      this->position = math::Vector3(0, 0, 0);
+      if(_sdf->HasElement("position")) {
+	this->position = _sdf->Get<math::Vector3>("position");
+      }
+#endif      
 
       // find root link
       this->link = this->model->GetLink(this->link_name);
@@ -99,20 +123,35 @@ namespace gazebo
 
     void SetForceCommand(const geometry_msgs::Wrench::ConstPtr &_msg)
     {
+#if GAZEBO_MAJOR_VERSION >= 9
       this->force.X() = _msg->force.x;
       this->force.Y() = _msg->force.y;
       this->force.Z() = _msg->force.z;
       this->torque.X() = _msg->torque.x;
       this->torque.Y() = _msg->torque.y;
       this->torque.Z() = _msg->torque.z;
+#else
+      this->force.x = _msg->force.x;
+      this->force.y = _msg->force.y;
+      this->force.z = _msg->force.z;
+      this->torque.x = _msg->torque.x;
+      this->torque.y = _msg->torque.y;
+      this->torque.z = _msg->torque.z;
+#endif
       gzmsg << "subscribed AddForceCommand. ( force: " << this->force << "  torque: " << this->torque << " )" << std::endl;
     }
 
     void SetForcePosition(const geometry_msgs::Vector3::ConstPtr &_msg)
     {
+#if GAZEBO_MAJOR_VERSION >= 9
       this->position.X() = _msg->x;
       this->position.Y() = _msg->y;
       this->position.Z() = _msg->z;
+#else
+      this->position.x = _msg->x;
+      this->position.y = _msg->y;
+      this->position.z = _msg->z;
+#endif
       gzmsg << "subscribed AddForcePosition. ( position: " << this->position << " )" << std::endl;
     }
 
@@ -138,9 +177,15 @@ namespace gazebo
     physics::ModelPtr model;
     std::string link_name;
     std::string obj_name;
+#if GAZEBO_MAJOR_VERSION >= 9
     ignition::math::Vector3d force;
     ignition::math::Vector3d torque;
     ignition::math::Vector3d position;
+#else
+    math::Vector3 force;
+    math::Vector3 torque;
+    math::Vector3 position;
+#endif
     physics::LinkPtr link;
     event::ConnectionPtr updateConnection;
 
