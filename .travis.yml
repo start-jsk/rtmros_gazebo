@@ -32,6 +32,7 @@ env:
     - USE_JENKINS=true ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
 #matrix:
 #  allow_failures:
+  # if USE_DEB=false, testing time easily exceeds limits. Reduce the load on the host machine.
 #    - env: USE_JENKINS=true ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
 #    - env: USE_JENKINS=true ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
 #    - env: USE_JENKINS=true ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
