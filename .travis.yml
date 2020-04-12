@@ -17,25 +17,23 @@ services:
   - docker
 env:
   global:
-    - USE_DOCKER=true
-    - USE_TRAVIS=true
     - ROS_PARALLEL_JOBS="-j1 -l1"
   matrix:
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=true
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=false
     #- ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin USE_DEB=true
     #- ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin USE_DEB=false
-    - ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=true
-    - ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
-    - ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=true
-    - ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
-    - ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=true
-    - ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_JENKINS=true ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=true
+    - USE_JENKINS=true ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_JENKINS=true ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=true
+    - USE_JENKINS=true ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_JENKINS=true ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=true
+    - USE_JENKINS=true ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
 #matrix:
 #  allow_failures:
-#    - env: ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
-#    - env: ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
-#    - env: ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
+#    - env: USE_JENKINS=true ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
+#    - env: USE_JENKINS=true ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
+#    - env: USE_JENKINS=true ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
 before_install:
   # Install openrtm_aist & add osrf
   - export BEFORE_SCRIPT="sudo apt-get install -qq -y ros-${ROS_DISTRO}-openrtm-aist; sudo -E sh -c 'echo \"deb http://packages.osrfoundation.org/gazebo/ubuntu-stable \`lsb_release -cs\` main\" > /etc/apt/sources.list.d/gazebo-latest.list'; wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt-get update -qq"
