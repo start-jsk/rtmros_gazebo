@@ -7,6 +7,26 @@ rtmros_gazebo  [![Build Status](https://travis-ci.org/start-jsk/rtmros_gazebo.pn
 
 Please refer [rtmros_common] for installing these packages.
 
+### Try Sample
+Open Terminal and run gazebo
+
+```
+roslaunch hrpsys_gazebo_general gazebo_samplerobot_no_controllers.launch
+```
+Launch another terminal and start hrpsys-base
+```
+rtmlaunch hrpsys_gazebo_general samplerobot_hrpsys_bringup.launch
+```
+Launch another terminal and send command to robot by roseus
+```
+roscd hrpsys_ros_bridge/euslisp/
+roseus samplerobot-interface.l
+(samplerobot-init)
+(setq *robot* (instance samplerobot-robot :init))
+(send *ri* :angle-vector (send *robot* :reset-pose) 5000)
+(send *ri* :go-pos 0 0 0)
+```
+
 ### Package Description
 
 ### [hrpsys_gazebo_general]
@@ -25,16 +45,6 @@ This package consists iob.cpp which is low-level interface of RobotHardware on h
     - Synchronized mode between  hrpsys step and gazebo step. (default: false)
 - HRPSYS_GAZEBO_IOB_SUBSTEPS
     - Number of substeps. Controlling command will be sent in every substeps. (default: 1)
-
-### [hrpsys_gazebo_tutorials]
-
-This package is a collection of examples for using hrpsys_gazebo system and utility scripts.
-
-- You should prepare robot model file. Supported types of model file are collada(openrave) and VRML(openhrp3). URDF and OpenRAVE xml can be used by converting to collada.
-    - *&lt;robot_name&gt;*.yaml for configurating gazebo setting and hrpsys setting
-    - (automatically generated) *&lt;robot_name&gt;*.urdf under robot_models/*&lt;robot_name&gt;* directory
-    - (automatically generated) hrpsys settings (you should have a collada or VRML robot model file)
-    - *&lt;robot_name&gt;*_optional_urdf_setting.sh under robot_models/*&lt;robot_name&gt;* directory, this is for adding description used by gazebo (such as sensor settings, collision and friction setting)
 
 #### Setting of *&lt;robot_name&gt;*.yaml files
 
@@ -77,16 +87,11 @@ This is yaml file for configuring gazebo setting.
     # IMU sensor settings
     # configuration of IMU sensor
     #   key of imu_sensors_config should be a member of imu_sensors
+    # pose of imu_sensor relative to parent link should be specified in URDF.
       imu_sensors:
         - imu_sensor0
       imu_sensors_config:
         imu_sensor0: {ros_name: 'ros_imu_sensor', link_name: 'LINK_NAME0', frame_id: 'LINK_NAME0'}
-
-#### (automatically generated files)
-
-You can use robot_models/install_robot_common.sh for installing urdf model file. This scripts converts collada file in [hrpsys_ros_bridge_tutorials]/models directory to urdf file. 
-
-    ./install_robot_common.sh ROBOT_NAME (model directory) (output directory) (collada_to_urdf_binary) (additional_ros_package_path)
 
 [gazebo]:http://gazebosim.org
 [rtmros_common]:https://github.com/start-jsk/rtmros_common
