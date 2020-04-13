@@ -19,11 +19,6 @@ env:
   global:
     - ROS_PARALLEL_JOBS="-j8 -l1"
     - CATKIN_PARALLEL_TEST_JOBS="-p1 -j8"
-    # hrpsys_gazebo_atlas is compiled only. not tested.
-    # Tests for hrpsys_gazebo_atlas depend on rtmros_tutorials/hrpsys_ros_bridge_tutorials.
-    # Since rtmros_tutorials depends on rtmros_gazebo, these tests are executed in rtmros_tutorials instead of rtmros_gazebo.
-    - BUILD_PKGS=""
-    - TEST_PKGS="eusgazebo hrp2jsk_moveit_config hrp2jsknt_moveit_config hrp2jsknts_moveit_config hrp2w_moveit_config hrpsys_gazebo_msgs hrpsys_gazebo_general samplerobot_moveit_config staro_moveit_config"
   matrix:
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=true
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=false
