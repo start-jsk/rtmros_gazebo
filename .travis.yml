@@ -19,6 +19,11 @@ env:
   global:
     - ROS_PARALLEL_JOBS="-j8 -l1"
     - CATKIN_PARALLEL_TEST_JOBS="-p1 -j8"
+    # hrpsys_gazebo_atlas is compiled only. not tested.
+    # Tests for hrpsys_gazebo_atlas depend on rtmros_tutorials/hrpsys_ros_bridge_tutorials.
+    # Since rtmros_tutorials depends on rtmros_gazebo, these tests are executed in rtmros_tutorials instead of rtmros_gazebo.
+    - BUILD_PKGS=""
+    - TEST_PKGS="eusgazebo hrp2jsk_moveit_config hrp2jsknt_moveit_config hrp2jsknts_moveit_config hrp2w_moveit_config hrpsys_gazebo_msgs hrpsys_gazebo_general samplerobot_moveit_config staro_moveit_config"
   matrix:
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=true
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=false
@@ -56,7 +61,6 @@ before_install:
   - if [ $USE_DEB == true ] ; then mkdir -p ~/ros/ws_rtmros_gazebo/src; fi
   - if [ $USE_DEB == true ] ; then git clone https://github.com/start-jsk/rtmros_tutorials ~/ros/ws_rtmros_gazebo/src/rtmros_tutorials; fi
 script:
-  - if [ "${ROS_DISTRO}" == "hydro" ] ; then sudo apt-get install -y --force-yes gdebi && wget https://bintray.com/artifact/download/furushchev/ros-shadow-fixed/python-catkin-tools_0.3.1-1_all.deb && wget https://bintray.com/artifact/download/furushchev/ros-shadow-fixed/python-catkin-pkg_0.2.10-1_all.deb && sudo gdebi -n -q python-catkin-pkg_0.2.10-1_all.deb && sudo gdebi -n -q python-catkin-tools_0.3.1-1_all.deb && sudo apt-mark hold python-catkin-tools; fi
   - source .travis/travis.sh
 notifications:
   email:

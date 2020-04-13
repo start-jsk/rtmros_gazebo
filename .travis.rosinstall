@@ -7,6 +7,4 @@
 - git:
     uri: https://github.com/start-jsk/rtmros_common
     local-name: rtm-ros-robotics/rtmros_common
-- git:
-    uri: https://github.com/start-jsk/rtmros_tutorials
-    local-name: rtm-ros-robotics/rtmros_tutorials
+# rtmros_tutorials depends on rtmros_gazebo. So rtmros_tutorials is not included here.
