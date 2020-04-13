@@ -17,36 +17,55 @@ services:
   - docker
 env:
   global:
-    - USE_DOCKER=true
-    - USE_TRAVIS=true
-    - ROS_PARALLEL_JOBS="-j1 -l1"
+    - ROS_PARALLEL_JOBS="-j8 -l1"
+    - CATKIN_PARALLEL_TEST_JOBS="-p1 -j8"
+    # hrpsys_gazebo_atlas is compiled only. not tested.
+    # Tests for hrpsys_gazebo_atlas depend on rtmros_tutorials/hrpsys_ros_bridge_tutorials.
+    # Since rtmros_tutorials depends on rtmros_gazebo, these tests are executed in rtmros_tutorials instead of rtmros_gazebo.
+    - BUILD_PKGS=""
+    - TEST_PKGS="eusgazebo hrp2jsk_moveit_config hrp2jsknt_moveit_config hrp2jsknts_moveit_config hrp2w_moveit_config hrpsys_gazebo_msgs hrpsys_gazebo_general samplerobot_moveit_config staro_moveit_config"
   matrix:
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=true
     #- ROS_DISTRO=groovy ROSWS=rosws BUILDER=rosbuild USE_DEB=false
     #- ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin USE_DEB=true
     #- ROS_DISTRO=groovy ROSWS=wstool BUILDER=catkin USE_DEB=false
-    - ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=true
-    - ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
-    - ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=true
-    - ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
-    - ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=true
-    - ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
-    - ROS_DISTRO=melodic ROSWS=wstool BUILDER=catkin USE_DEB=true
-    - ROS_DISTRO=melodic ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=true
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=true
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=true
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=melodic ROSWS=wstool BUILDER=catkin USE_DEB=true
+    - USE_JENKINS=true ROS_DISTRO=melodic ROSWS=wstool BUILDER=catkin USE_DEB=false
 matrix:
   allow_failures:
-    # - env: ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
-    # - env: ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
-    # - env: ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
-    - env: ROS_DISTRO=melodic ROSWS=wstool BUILDER=catkin USE_DEB=true
+    # if USE_DEB=false, testing time easily exceeds limits. Reduce the load on the host machine.
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=hydro ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=indigo ROSWS=wstool BUILDER=catkin USE_DEB=false
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=kinetic ROSWS=wstool BUILDER=catkin USE_DEB=false
+    # hrpsys and hrpsys_ros_bridge are not release in melodic
+    - USE_DOCKER=true USE_TRAVIS=true ROS_DISTRO=melodic ROSWS=wstool BUILDER=catkin USE_DEB=true
 before_install:
   # Install openrtm_aist & add osrf
-  - export BEFORE_SCRIPT="sudo apt-get install -qq -y ros-${ROS_DISTRO}-openrtm-aist; sudo -E sh -c 'echo \"deb http://packages.osrfoundation.org/gazebo/ubuntu-stable \`lsb_release -cs\` main\" > /etc/apt/sources.list.d/gazebo-latest.list'; wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt-get update -qq"
+  - export BEFORE_SCRIPT="sudo apt-get install -qq -y ros-${ROS_DISTRO}-openrtm-aist; sudo -E sh -c \"echo \\\"deb http://packages.osrfoundation.org/gazebo/ubuntu-stable \`lsb_release -cs\` main\\\" > /etc/apt/sources.list.d/gazebo-latest.list\"; wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt-get update -qq"
+  # Forcely upgrade PCRE to avoid failure in building hrpsys with hydro.
+  # This has a side effect, and we need extra settings.
+  # Issue detail: https://github.com/start-jsk/rtmros_common/issues/1076
+  # .deb can be got from https://pkgs.org (e.g., https://pkgs.org/download/libpcre3)
+  # libpcre3-dev requires the same version of libpcrecpp0
+  - if [ "${ROS_DISTRO}" == "hydro" ] && [ "${USE_DEB}" != "true" ] ; then add_scr="wget archive.ubuntu.com/ubuntu/pool/main/p/pcre3/libpcre3_8.31-2ubuntu2_amd64.deb; wget archive.ubuntu.com/ubuntu/pool/main/p/pcre3/libpcrecpp0_8.31-2ubuntu2_amd64.deb; wget archive.ubuntu.com/ubuntu/pool/main/p/pcre3/libpcre3-dev_8.31-2ubuntu2_amd64.deb; sudo dpkg -i libpcre3_8.31-2ubuntu2_amd64.deb; sudo dpkg -i libpcrecpp0_8.31-2ubuntu2_amd64.deb; sudo dpkg -i libpcre3-dev_8.31-2ubuntu2_amd64.deb; sudo apt-mark hold libpcre3 libpcrecpp0 libpcre3-dev"; if [ "${BEFORE_SCRIPT}" == "" ] ; then export BEFORE_SCRIPT=${add_scr}; else export BEFORE_SCRIPT="${BEFORE_SCRIPT}; ${add_scr}"; fi; fi
+  # Forcely upgrading PCRE makes hrpsys_state_publisher dies:
+  # https://github.com/start-jsk/rtmros_common/pull/1077#issuecomment-552102475
+  # To avoid this, the following PRs are required:
+  # https://github.com/ros/robot_model/pull/105, https://github.com/ros/robot_model/pull/106, https://github.com/ros/robot_model/pull/108
+  # Also, see https://github.com/start-jsk/rtmros_common/pull/1077#issuecomment-552121026
+  - if [ "${ROS_DISTRO}" == "hydro" ] && [ "${USE_DEB}" != "true" ] ; then export BEFORE_SCRIPT="${BEFORE_SCRIPT}; wstool set -y robot_model --git https://github.com/pazeshun/robot_model.git -v for-hydro-with-new-pcre; wstool update"; export ROSDEP_ADDITIONAL_OPTIONS="-n -q -r --ignore-src --skip-keys=liburdfdom-dev --skip-keys=liburdfdom-headers-dev"; fi
   # On kinetic and melodic, drcsim is not released
   - if [ ${ROS_DISTRO} != "kinetic" ] && [ ${ROS_DISTRO} != "melodic" ] ; then export BEFORE_SCRIPT="${BEFORE_SCRIPT}; sudo apt-get install -qq -y drcsim"; fi
   - if [ $USE_DEB == true ] ; then mkdir -p ~/ros/ws_rtmros_gazebo/src; fi
   - if [ $USE_DEB == true ] ; then git clone https://github.com/start-jsk/rtmros_tutorials ~/ros/ws_rtmros_gazebo/src/rtmros_tutorials; fi
-script: source .travis/travis.sh
+script:
+  - source .travis/travis.sh
 notifications:
   email:
     on_success: always
