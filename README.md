@@ -96,5 +96,3 @@ This is yaml file for configuring gazebo setting.
 [gazebo]:http://gazebosim.org
 [rtmros_common]:https://github.com/start-jsk/rtmros_common
 [hrpsys_gazebo_general]:https://github.com/start-jsk/rtmros_gazebo/tree/master/hrpsys_gazebo_general
-[hrpsys_gazebo_tutorials]:https://github.com/start-jsk/rtmros_gazebo/tree/master/hrpsys_gazebo_tutorials
-[hrpsys_ros_bridge_tutorials]:https://github.com/start-jsk/rtmros_tutorials/tree/master/hrpsys_ros_bridge_tutorials
