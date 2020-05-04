@@ -7,6 +7,13 @@
 
 #include "IOBPlugin.h"
 
+#if GAZEBO_MAJOR_VERSION >= 7
+#include <memory>
+using std::dynamic_pointer_cast;
+#else
+using boost::dynamic_pointer_cast;
+#endif
+
 namespace gazebo
 {
 GZ_REGISTER_MODEL_PLUGIN(IOBPlugin);
@@ -81,7 +88,11 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
   this->sdf = _sdf;
 
   // initialize update time
+#if GAZEBO_MAJOR_VERSION >= 9
+  this->lastControllerUpdateTime = this->world->SimTime();
+#else
   this->lastControllerUpdateTime = this->world->GetSimTime();
+#endif
 
   // creating joints from ros param
   if (this->rosNode->hasParam(this->controller_name)) {
@@ -219,31 +230,53 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
               fsi.pose.reset();
               if ((trs.getType() == XmlRpc::XmlRpcValue::TypeArray) ||
                   (rot.getType() == XmlRpc::XmlRpcValue::TypeArray)) {
+#if GAZEBO_MAJOR_VERSION >= 9
+                ignition::math::Vector3d vtr;
+                ignition::math::Quaterniond qt;
+#else
                 math::Vector3 vtr;
                 math::Quaternion qt;
+#endif
                 if (trs.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+#if GAZEBO_MAJOR_VERSION >= 9
+                  vtr.X() = xmlrpc_value_as_double(trs[0]);
+                  vtr.Y() = xmlrpc_value_as_double(trs[1]);
+                  vtr.Z() = xmlrpc_value_as_double(trs[2]);
+#else
                   vtr.x = xmlrpc_value_as_double(trs[0]);
                   vtr.y = xmlrpc_value_as_double(trs[1]);
                   vtr.z = xmlrpc_value_as_double(trs[2]);
+#endif
                 }
                 if (rot.getType() == XmlRpc::XmlRpcValue::TypeArray) {
+#if GAZEBO_MAJOR_VERSION >= 9
+                  qt.W() = xmlrpc_value_as_double(rot[0]);
+                  qt.X() = xmlrpc_value_as_double(rot[1]);
+                  qt.Y() = xmlrpc_value_as_double(rot[2]);
+                  qt.Z() = xmlrpc_value_as_double(rot[3]);
+#else
                   qt.w = xmlrpc_value_as_double(rot[0]);
                   qt.x = xmlrpc_value_as_double(rot[1]);
                   qt.y = xmlrpc_value_as_double(rot[2]);
                   qt.z = xmlrpc_value_as_double(rot[3]);
+#endif
                 }
+#if GAZEBO_MAJOR_VERSION >= 9
+                fsi.pose = PosePtr(new ignition::math::Pose3d (vtr, qt));
+#else
                 fsi.pose = PosePtr(new math::Pose (vtr, qt));
-                this->forceSensors[sensor_name] = fsi;
+#endif
               }
+              this->forceSensors[sensor_name] = fsi;
             }
           } else {
             ROS_ERROR("Force-Torque sensor: %s has invalid configuration", sensor_name.c_str());
           }
           // setup force sensor publishers
-          boost::shared_ptr<std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue(new std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> >);
+          shared_ptr<std::vector<shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue(new std::vector<shared_ptr<geometry_msgs::WrenchStamped> >);
           // forceValQueue->resize(this->force_sensor_average_window_size);
           for ( int i=0; i<this->force_sensor_average_window_size; i++ ){
-            boost::shared_ptr<geometry_msgs::WrenchStamped> fbuf(new geometry_msgs::WrenchStamped);
+            shared_ptr<geometry_msgs::WrenchStamped> fbuf(new geometry_msgs::WrenchStamped);
             forceValQueue->push_back(fbuf);
           }
           this->forceValQueueMap[sensor_name] = forceValQueue;
@@ -275,14 +308,26 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
               gzerr << ln << " not found\n";
             } else {
               // Get imu sensors
-              msi.sensor = boost::dynamic_pointer_cast<sensors::ImuSensor>
+#if GAZEBO_MAJOR_VERSION >= 9
+              msi.sensor = dynamic_pointer_cast<sensors::ImuSensor>
+                (sensors::SensorManager::Instance()->GetSensor
+                 (this->world->Name() + "::" + msi.link->GetScopedName() + "::" + msi.sensor_name));
+#else
+              msi.sensor = dynamic_pointer_cast<sensors::ImuSensor>
                 (sensors::SensorManager::Instance()->GetSensor
                  (this->world->GetName() + "::" + msi.link->GetScopedName() + "::" + msi.sensor_name));
+#endif
 
               if (!msi.sensor)  {
+#if GAZEBO_MAJOR_VERSION >= 9
+                gzerr << sensor_name << "("                             \
+                      << (this->world->Name() + "::" + msi.link->GetScopedName() + "::" + msi.sensor_name) \
+                      <<" not found\n" << "\n";
+#else
                 gzerr << sensor_name << "("                             \
                       << (this->world->GetName() + "::" + msi.link->GetScopedName() + "::" + msi.sensor_name) \
                       <<" not found\n" << "\n";
+#endif
               }
               imuSensors[sensor_name] = msi;
             }
@@ -342,7 +387,11 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
       //  max effort allowed / max velocity allowed
       double maxEffort = this->joints[i]->GetEffortLimit(0);
       double maxVelocity = this->joints[i]->GetVelocityLimit(0);
+#if GAZEBO_MAJOR_VERSION >= 9
+      if (ignition::math::equal(maxVelocity, 0.0))
+#else
       if (math::equal(maxVelocity, 0.0))
+#endif
       {
         ROS_ERROR("Set Joint Damping Upper Limit: Joint[%s] "
                   "effort limit [%f] velocity limit[%f]: "
@@ -377,7 +426,7 @@ void IOBPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr _sdf) {
     // effort average
     effortValQueue.resize(0);
     for(int i = 0; i < this->effort_average_window_size; i++) {
-      boost::shared_ptr<std::vector<double> > vbuf(new std::vector<double> (this->joints.size()));
+      shared_ptr<std::vector<double> > vbuf(new std::vector<double> (this->joints.size()));
       effortValQueue.push_back(vbuf);
     }
     // for reference
@@ -673,14 +722,22 @@ void IOBPlugin::PublishJointState() {
   jstate.position.resize(this->joints.size());
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
     jstate.name[i] = this->jointNames[i];
+#if GAZEBO_MAJOR_VERSION >= 9
+    jstate.position[i] = this->joints[i]->Position(0);
+#else
     jstate.position[i] = this->joints[i]->GetAngle(0).Radian();
+#endif
   }
   this->pubJointStateQueue->push(jstate, this->pubJointState);
   this->publish_joint_state_counter = 0;
 }
 void IOBPlugin::UpdateStates() {
   //ROS_DEBUG("update");
+#if GAZEBO_MAJOR_VERSION >= 9
+  common::Time curTime = this->world->SimTime();
+#else
   common::Time curTime = this->world->GetSimTime();
+#endif
   if (curTime > this->lastControllerUpdateTime) {
     // gather robot state data
     this->GetRobotStates(curTime);
@@ -759,7 +816,11 @@ bool IOBPlugin::serviceRefCallback(std_srvs::EmptyRequest &req,
   jc.effort.resize(this->joints.size());
 
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
+#if GAZEBO_MAJOR_VERSION >= 9
+    jc.position[i] = this->joints[i]->Position(0);
+#else
     jc.position[i] = this->joints[i]->GetAngle(0).Radian();
+#endif
     jc.velocity[i] = 0;
     jc.effort[i] = 0;
   }
@@ -779,24 +840,37 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   // populate robotState from robot
   this->robotState.header.stamp = ros::Time(_curTime.sec, _curTime.nsec);
 
-  boost::shared_ptr<std::vector<double > > vbuf = effortValQueue.at(this->effort_average_cnt);
+  shared_ptr<std::vector<double > > vbuf = effortValQueue.at(this->effort_average_cnt);
   // joint states
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
+#if GAZEBO_MAJOR_VERSION >= 9
+    this->robotState.position[i] = this->joints[i]->Position(0);
+#else
     this->robotState.position[i] = this->joints[i]->GetAngle(0).Radian();
+#endif
     this->robotState.velocity[i] = this->joints[i]->GetVelocity(0);
     if (this->use_joint_effort) {
       physics::JointPtr j = this->joints[i];
       physics::JointWrench w = j->GetForceTorque(0u);
       {
+#if GAZEBO_MAJOR_VERSION >= 9
+        ignition::math::Vector3d a = j->LocalAxis(0u);
+#else
         math::Vector3 a = j->GetLocalAxis(0u);
+#endif
         vbuf->at(i) = a.Dot(w.body1Torque);
         this->robotState.effort[i] = 0.0;
         //this->robotState.effort[i] = a.Dot(w.body1Torque);
       }
 #if 0 // DEBUG
       {
+#if GAZEBO_MAJOR_VERSION >= 9
+        ignition::math::Vector3d a = j->GlobalAxis(0u);
+        ignition::math::Vector3d m = this->joints[i]->GetChild()->WorldPose().Rot() * w.body2Torque;
+#else
         math::Vector3 a = j->GetGlobalAxis(0u);
         math::Vector3 m = this->joints[i]->GetChild()->GetWorldPose().rot * w.body2Torque;
+#endif
         float ret = this->robotState.effort[i] = a.Dot(m);
         ROS_INFO("f[%d]->%f,%f", i, this->robotState.effort[i], ret);
       }
@@ -809,7 +883,7 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   }
   if (this->use_joint_effort) {
     for (int j = 0; j < effortValQueue.size(); j++) {
-      boost::shared_ptr<std::vector<double > > vbuf = effortValQueue.at(j);
+      shared_ptr<std::vector<double > > vbuf = effortValQueue.at(j);
       for (int i = 0; i < this->joints.size(); i++) {
         this->robotState.effort[i] += vbuf->at(i);
       }
@@ -828,8 +902,8 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
   this->robotState.sensors.resize(this->forceSensorNames.size());
   for (unsigned int i = 0; i < this->forceSensorNames.size(); i++) {
     forceSensorMap::iterator it = this->forceSensors.find(this->forceSensorNames[i]);
-    boost::shared_ptr<std::vector<boost::shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue = this->forceValQueueMap.find(this->forceSensorNames[i])->second;
-    boost::shared_ptr<geometry_msgs::WrenchStamped> forceVal = forceValQueue->at(this->force_sensor_average_cnt);
+    shared_ptr<std::vector<shared_ptr<geometry_msgs::WrenchStamped> > > forceValQueue = this->forceValQueueMap.find(this->forceSensorNames[i])->second;
+    shared_ptr<geometry_msgs::WrenchStamped> forceVal = forceValQueue->at(this->force_sensor_average_cnt);
     if(it != this->forceSensors.end()) {
       physics::JointPtr jt = it->second.joint;
       if (!!jt) {
@@ -838,24 +912,51 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
         this->robotState.sensors[i].frame_id = it->second.frame_id;
         if (!!it->second.pose) {
           // convert force
+#if GAZEBO_MAJOR_VERSION >= 9
+          ignition::math::Vector3d force_trans = it->second.pose->Rot() * wrench.body2Force;
+          ignition::math::Vector3d torque_trans = it->second.pose->Rot() * wrench.body2Torque;
+#else
           math::Vector3 force_trans = it->second.pose->rot * wrench.body2Force;
           math::Vector3 torque_trans = it->second.pose->rot * wrench.body2Torque;
+#endif
           // rotate force
+#if GAZEBO_MAJOR_VERSION >= 9
+          forceVal->wrench.force.x = force_trans.X();
+          forceVal->wrench.force.y = force_trans.Y();
+          forceVal->wrench.force.z = force_trans.Z();
+#else
           forceVal->wrench.force.x = force_trans.x;
           forceVal->wrench.force.y = force_trans.y;
           forceVal->wrench.force.z = force_trans.z;
+#endif
           // rotate torque + additional torque
+#if GAZEBO_MAJOR_VERSION >= 9
+          torque_trans += it->second.pose->Pos().Cross(force_trans);
+          forceVal->wrench.torque.x = torque_trans.X();
+          forceVal->wrench.torque.y = torque_trans.Y();
+          forceVal->wrench.torque.z = torque_trans.Z();
+#else
           torque_trans += it->second.pose->pos.Cross(force_trans);
           forceVal->wrench.torque.x = torque_trans.x;
           forceVal->wrench.torque.y = torque_trans.y;
           forceVal->wrench.torque.z = torque_trans.z;
+#endif
         } else {
+#if GAZEBO_MAJOR_VERSION >= 9
+          forceVal->wrench.force.x = wrench.body2Force.X();
+          forceVal->wrench.force.y = wrench.body2Force.Y();
+          forceVal->wrench.force.z = wrench.body2Force.Z();
+          forceVal->wrench.torque.x = wrench.body2Torque.X();
+          forceVal->wrench.torque.y = wrench.body2Torque.Y();
+          forceVal->wrench.torque.z = wrench.body2Torque.Z();
+#else
           forceVal->wrench.force.x = wrench.body2Force.x;
           forceVal->wrench.force.y = wrench.body2Force.y;
           forceVal->wrench.force.z = wrench.body2Force.z;
           forceVal->wrench.torque.x = wrench.body2Torque.x;
           forceVal->wrench.torque.y = wrench.body2Torque.y;
           forceVal->wrench.torque.z = wrench.body2Torque.z;
+#endif
         }
       } else {
         ROS_WARN("[ForceSensorPlugin] joint not found for %s", this->forceSensorNames[i].c_str());
@@ -868,7 +969,7 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
     this->robotState.sensors[i].torque.y = 0;
     this->robotState.sensors[i].torque.z = 0;
     for ( int j=0; j<forceValQueue->size() ; j++ ){
-      boost::shared_ptr<geometry_msgs::WrenchStamped> forceValBuf = forceValQueue->at(j);
+      shared_ptr<geometry_msgs::WrenchStamped> forceValBuf = forceValQueue->at(j);
       this->robotState.sensors[i].force.x += forceValBuf->wrench.force.x;
       this->robotState.sensors[i].force.y += forceValBuf->wrench.force.y;
       this->robotState.sensors[i].force.z += forceValBuf->wrench.force.z;
@@ -897,9 +998,31 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
     if(!!sp) {
       this->robotState.Imus[i].name = this->imuSensorNames[i];
       this->robotState.Imus[i].frame_id = it->second.frame_id;
+#if GAZEBO_MAJOR_VERSION >= 9
+      ignition::math::Vector3d wLocal = sp->AngularVelocity();
+      ignition::math::Vector3d accel = sp->LinearAcceleration();
+      ignition::math::Quaterniond imuRot = sp->Orientation();
+#elif GAZEBO_MAJOR_VERSION >= 7
+      math::Vector3 wLocal = sp->AngularVelocity();
+      math::Vector3 accel = sp->LinearAcceleration();
+      math::Quaternion imuRot = sp->Orientation();
+#else
       math::Vector3 wLocal = sp->GetAngularVelocity();
       math::Vector3 accel = sp->GetLinearAcceleration();
       math::Quaternion imuRot = sp->GetOrientation();
+#endif
+#if GAZEBO_MAJOR_VERSION >= 9
+      this->robotState.Imus[i].angular_velocity.x = wLocal.X();
+      this->robotState.Imus[i].angular_velocity.y = wLocal.Y();
+      this->robotState.Imus[i].angular_velocity.z = wLocal.Z();
+      this->robotState.Imus[i].linear_acceleration.x = accel.X();
+      this->robotState.Imus[i].linear_acceleration.y = accel.Y();
+      this->robotState.Imus[i].linear_acceleration.z = accel.Z();
+      this->robotState.Imus[i].orientation.x = imuRot.X();
+      this->robotState.Imus[i].orientation.y = imuRot.Y();
+      this->robotState.Imus[i].orientation.z = imuRot.Z();
+      this->robotState.Imus[i].orientation.w = imuRot.W();
+#else
       this->robotState.Imus[i].angular_velocity.x = wLocal.x;
       this->robotState.Imus[i].angular_velocity.y = wLocal.y;
       this->robotState.Imus[i].angular_velocity.z = wLocal.z;
@@ -910,6 +1033,7 @@ void IOBPlugin::GetRobotStates(const common::Time &_curTime){
       this->robotState.Imus[i].orientation.y = imuRot.y;
       this->robotState.Imus[i].orientation.z = imuRot.z;
       this->robotState.Imus[i].orientation.w = imuRot.w;
+#endif
     }
   }
   {
@@ -927,13 +1051,23 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
 
     // truncate joint position within range of motion
+#if GAZEBO_MAJOR_VERSION >= 9
+    double positionTarget = ignition::math::clamp(this->jointCommand.position[i],
+                                        static_cast<double>(this->joints[i]->LowerLimit(0)),
+                                        static_cast<double>(this->joints[i]->UpperLimit(0)));
+#else
     double positionTarget = math::clamp(this->jointCommand.position[i],
                                         static_cast<double>(this->joints[i]->GetLowStop(0).Radian()),
                                         static_cast<double>(this->joints[i]->GetHighStop(0).Radian()));
+#endif
 
     double q_p = positionTarget - this->robotState.position[i];
 
+#if GAZEBO_MAJOR_VERSION >= 9
+    if (!ignition::math::equal(_dt, 0.0))
+#else
     if (!math::equal(_dt, 0.0))
+#endif
       this->errorTerms[i].d_q_p_dt = (q_p - this->errorTerms[i].q_p) / _dt;
 
     this->errorTerms[i].q_p = q_p;
@@ -948,9 +1082,17 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
       static_cast<double>(this->robotState.kpv_velocity[i]) * this->errorTerms[i].qd_p;
 
     // update max force
+#if GAZEBO_MAJOR_VERSION >= 7
+    this->joints[i]->SetParam("max_force", 0, this->joints[i]->GetEffortLimit(0));
+#else
     this->joints[i]->SetMaxForce(0, this->joints[i]->GetEffortLimit(0));
+#endif
     // clamp max velocity
+#if GAZEBO_MAJOR_VERSION >= 9
+    j_velocity = ignition::math::clamp(j_velocity, -max_vel, max_vel);
+#else
     j_velocity = math::clamp(j_velocity, -max_vel, max_vel);
+#endif
 #if 0
     ROS_INFO("%d %f / %f %f %f %f",
              i, this->joints[i]->GetMaxForce(0),
@@ -967,13 +1109,23 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
   /// update pid with feedforward force
   for (unsigned int i = 0; i < this->joints.size(); ++i) {
     // truncate joint position within range of motion
+#if GAZEBO_MAJOR_VERSION >= 9
+    double positionTarget = ignition::math::clamp(this->jointCommand.position[i],
+                                        static_cast<double>(this->joints[i]->LowerLimit(0)),
+                                        static_cast<double>(this->joints[i]->UpperLimit(0)));
+#else
     double positionTarget = math::clamp(this->jointCommand.position[i],
                                         static_cast<double>(this->joints[i]->GetLowStop(0).Radian()),
                                         static_cast<double>(this->joints[i]->GetHighStop(0).Radian()));
+#endif
 
     double q_p = positionTarget - this->robotState.position[i];
 
+#if GAZEBO_MAJOR_VERSION >= 9
+    if (!ignition::math::equal(_dt, 0.0))
+#else
     if (!math::equal(_dt, 0.0))
+#endif
       this->errorTerms[i].d_q_p_dt = (q_p - this->errorTerms[i].q_p) / _dt;
 
     //
@@ -986,12 +1138,22 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
     // To take advantage of utilizing full range of cfm damping dynamically
     // for controlling the robot, set model damping (jointDmapingModel)
     // to jointDampingMin first.
+#if GAZEBO_MAJOR_VERSION >= 9
+    double jointDampingCoef = ignition::math::clamp(
+      static_cast<double>(this->robotState.kp_velocity[i]),
+      this->jointDampingModel[i], this->jointDampingMax[i]);
+#else
     double jointDampingCoef = math::clamp(
       static_cast<double>(this->robotState.kp_velocity[i]),
       this->jointDampingModel[i], this->jointDampingMax[i]);
+#endif
 
     // skip set joint damping if value is not changing
+#if GAZEBO_MAJOR_VERSION >= 9
+    if (!ignition::math::equal(this->lastJointCFMDamping[i], jointDampingCoef))
+#else
     if (!math::equal(this->lastJointCFMDamping[i], jointDampingCoef))
+#endif
     {
       this->joints[i]->SetDamping(0, jointDampingCoef);
       this->lastJointCFMDamping[i] = jointDampingCoef;
@@ -1015,12 +1177,21 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
     this->errorTerms[i].qd_p =
       this->jointCommand.velocity[i] - this->robotState.velocity[i];
 
+#if GAZEBO_MAJOR_VERSION >= 9
+    this->errorTerms[i].k_i_q_i = ignition::math::clamp(this->errorTerms[i].k_i_q_i +
+                                              _dt *
+                                              static_cast<double>(this->robotState.ki_position[i])
+                                              * this->errorTerms[i].q_p,
+                                              static_cast<double>(this->robotState.i_effort_min[i]),
+                                              static_cast<double>(this->robotState.i_effort_max[i]));
+#else
     this->errorTerms[i].k_i_q_i = math::clamp(this->errorTerms[i].k_i_q_i +
                                               _dt *
                                               static_cast<double>(this->robotState.ki_position[i])
                                               * this->errorTerms[i].q_p,
                                               static_cast<double>(this->robotState.i_effort_min[i]),
                                               static_cast<double>(this->robotState.i_effort_max[i]));
+#endif
 
     // use gain params to compute force cmd
     double forceUnclamped =
@@ -1031,17 +1202,37 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
                                                              this->jointCommand.effort[i];
 
     // keep unclamped force for integral tie-back calculation
+#if GAZEBO_MAJOR_VERSION >= 9
+    double forceClamped = ignition::math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
+#else
     double forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
+#endif
 
     // clamp force after integral tie-back
     // shift by kpVelocityDampingEffort to prevent controller from
     // exerting too much force from use of kp_velocity --> cfm damping
     // pass through.
+#if GAZEBO_MAJOR_VERSION >= 9
+    forceClamped = ignition::math::clamp(forceUnclamped,
+                               -this->effortLimit[i] + kpVelocityDampingEffort,
+                               this->effortLimit[i] + kpVelocityDampingEffort);
+#else
     forceClamped = math::clamp(forceUnclamped,
                                -this->effortLimit[i] + kpVelocityDampingEffort,
                                this->effortLimit[i] + kpVelocityDampingEffort);
+#endif
 
     // integral tie-back during control saturation if using integral gain
+#if GAZEBO_MAJOR_VERSION >= 9
+    if (!ignition::math::equal(forceClamped, forceUnclamped) &&
+        !ignition::math::equal(static_cast<double>(this->robotState.ki_position[i]), 0.0)) {
+      // lock integral term to provide continuous control as system moves
+      // out of staturation
+      this->errorTerms[i].k_i_q_i = ignition::math::clamp(this->errorTerms[i].k_i_q_i + (forceClamped - forceUnclamped),
+                                                static_cast<double>(this->robotState.i_effort_min[i]),
+                                                static_cast<double>(this->robotState.i_effort_max[i]));
+    }
+#else
     if (!math::equal(forceClamped, forceUnclamped) &&
         !math::equal(static_cast<double>(this->robotState.ki_position[i]), 0.0)) {
       // lock integral term to provide continuous control as system moves
@@ -1050,8 +1241,13 @@ void IOBPlugin::UpdatePIDControl(double _dt) {
                                                 static_cast<double>(this->robotState.i_effort_min[i]),
                                                 static_cast<double>(this->robotState.i_effort_max[i]));
     }
+#endif
     // clamp force after integral tie-back
+#if GAZEBO_MAJOR_VERSION >= 9
+    forceClamped = ignition::math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
+#else
     forceClamped = math::clamp(forceUnclamped, -this->effortLimit[i], this->effortLimit[i]);
+#endif
 
     // apply force to joint
     this->joints[i]->SetForce(0, forceClamped);

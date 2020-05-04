@@ -7,6 +7,10 @@
 #include <gazebo/common/common.hh>
 #include <gazebo/common/Time.hh>
 
+#if GAZEBO_MAJOR_VERSION >= 9
+#include <ignition/math/Vector3.hh>
+#endif
+
 #include <ros/ros.h>
 #include <ros/callback_queue.h>
 #include <ros/advertise_options.h>
@@ -59,7 +63,11 @@ public:
 		this->link = this->model->GetLink(this->link_name);
 		if (!this->link) { this->link = this->joint->GetChild(); }
 		this->world = this->model->GetWorld();
+#if GAZEBO_MAJOR_VERSION >= 9
+		this->lastUpdateTime = this->world->SimTime() ;
+#else
 		this->lastUpdateTime = this->world->GetSimTime() ;
+#endif		
 
 		// Make sure the ROS node for Gazebo has already been initialized
 		if (!ros::isInitialized()) {
@@ -102,15 +110,24 @@ public:
 	void OnUpdate(const common::UpdateInfo & /*_info*/) {
 		physics::JointPtr j = this->joint ;
 		physics::JointWrench w = j->GetForceTorque(0u);
+#if GAZEBO_MAJOR_VERSION >= 9
+		ignition::math::Vector3d a = j->GlobalAxis(0u);
+		ignition::math::Vector3d m = this->link->WorldPose().Rot() * w.body2Torque;
+#else
 		math::Vector3 a = j->GetGlobalAxis(0u);
 		math::Vector3 m = this->link->GetWorldPose().rot * w.body2Torque;
+#endif
 		this->tau += (float)a.Dot(m);
 
 		if ( --this->thermal_calcuration_cnt > 0 ) return ;
 
 		this->tau /= this->thermal_calcuration_step;
 		this->thermal_calcuration_cnt = this->thermal_calcuration_step;
+#if GAZEBO_MAJOR_VERSION >= 9
+		common::Time curTime = this->world->SimTime();
+#else
 		common::Time curTime = this->world->GetSimTime();
+#endif
 		this->PublishThermo(curTime, this->lastUpdateTime);
 		this->lastUpdateTime = curTime ;
 		this->tau = 0;

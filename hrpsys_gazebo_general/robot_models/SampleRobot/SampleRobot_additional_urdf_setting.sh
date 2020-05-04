@@ -15,3 +15,7 @@ sed -i -e 's@continuous@revolute@g' ${OUTPUT_FILE}
 sed -i -e 's@effort="100"@effort="200"@g' ${OUTPUT_FILE}
 ## change max velocity
 sed -i -e 's@velocity="0.5"@velocity="6.0"@g' ${OUTPUT_FILE}
+## change friction
+sed -i -e 's@friction="0"@friction="1"@g' ${OUTPUT_FILE}
+## change damping
+sed -i -e 's@damping="0.2"@damping="1"@g' ${OUTPUT_FILE}

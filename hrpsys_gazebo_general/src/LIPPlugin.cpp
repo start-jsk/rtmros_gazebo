@@ -114,17 +114,35 @@ namespace gazebo
 
     bool SwitchFootCallback(hrpsys_gazebo_msgs::LIPSwitchFootRequest &req, hrpsys_gazebo_msgs::LIPSwitchFootResponse &res)
     {
+#if GAZEBO_MAJOR_VERSION >= 9
+      ignition::math::Pose3d base_pose(req.command.foot_position.x, req.command.foot_position.y, req.command.foot_position.z, 0, 0, 0);
+      ignition::math::Pose3d mass_pose;
+      ignition::math::Vector3d mass_velocity(req.command.mass_velocity.x, req.command.mass_velocity.y, req.command.mass_velocity.z);
+#else
       math::Pose base_pose(req.command.foot_position.x, req.command.foot_position.y, req.command.foot_position.z, 0, 0, 0);
       math::Pose mass_pose;
       math::Vector3 mass_velocity(req.command.mass_velocity.x, req.command.mass_velocity.y, req.command.mass_velocity.z);
+#endif
 
+#if GAZEBO_MAJOR_VERSION >= 9
+      mass_pose = this->mass_link_->WorldPose();
+#else
       mass_pose = this->mass_link_->GetWorldPose();
+#endif
       if (req.command.keep_mass_velocity) {
+#if GAZEBO_MAJOR_VERSION >= 9
+        mass_velocity = this->mass_link_->WorldLinearVel();
+#else
         mass_velocity = this->mass_link_->GetWorldLinearVel();
+#endif
       }
 
       ROS_INFO_STREAM_THROTTLE(1.0, "[LIP command]  switch foot command" << std::endl
+#if GAZEBO_MAJOR_VERSION >= 9
+                               << "  foot_pos: " << base_pose.Pos() << std::endl
+#else
                                << "  foot_pos: " << base_pose.pos << std::endl
+#endif
                                << "  mass_vel: (keep: " << bool(req.command.keep_mass_velocity) << ") " << mass_velocity);
 
       // reset force and velocity
@@ -133,7 +151,11 @@ namespace gazebo
       this->root_y_joint_->SetVelocity(0, 0);
       this->linear_joint_->SetVelocity(0, 0);
       // set position and velocity
+#if GAZEBO_MAJOR_VERSION >= 7
+      this->model_->SetWorldPose(base_pose);
+#else
       this->model_->SetWorldPose(base_pose, this->base_link_);
+#endif
       this->mass_link_->SetWorldPose(mass_pose);
       this->mass_link_->SetLinearVel(mass_velocity);
 
@@ -142,13 +164,24 @@ namespace gazebo
 
     bool SetStateCallback(hrpsys_gazebo_msgs::LIPSetStateRequest &req, hrpsys_gazebo_msgs::LIPSetStateResponse &res)
     {
+#if GAZEBO_MAJOR_VERSION >= 9
+      ignition::math::Pose3d base_pose(req.command.foot_position.x, req.command.foot_position.y, req.command.foot_position.z, 0, 0, 0);
+      ignition::math::Pose3d mass_pose(req.command.mass_position.x, req.command.mass_position.y, req.command.mass_position.z, 0, 0, 0);
+      ignition::math::Vector3d mass_velocity(req.command.mass_velocity.x, req.command.mass_velocity.y, req.command.mass_velocity.z);
+#else
       math::Pose base_pose(req.command.foot_position.x, req.command.foot_position.y, req.command.foot_position.z, 0, 0, 0);
       math::Pose mass_pose(req.command.mass_position.x, req.command.mass_position.y, req.command.mass_position.z, 0, 0, 0);
       math::Vector3 mass_velocity(req.command.mass_velocity.x, req.command.mass_velocity.y, req.command.mass_velocity.z);
+#endif
 
       ROS_INFO_STREAM_THROTTLE(1.0, "[LIP command]  set state command" << std::endl
+#if GAZEBO_MAJOR_VERSION >= 9
+                               << "  foot_pos: " << base_pose.Pos() << std::endl
+                               << "  mass_pos: " << mass_pose.Pos() << std::endl
+#else
                                << "  foot_pos: " << base_pose.pos << std::endl
                                << "  mass_pos: " << mass_pose.pos << std::endl
+#endif
                                << "  mass_vel: " << mass_velocity);
 
       // reset force and velocity
@@ -157,7 +190,11 @@ namespace gazebo
       this->root_y_joint_->SetVelocity(0, 0);
       this->linear_joint_->SetVelocity(0, 0);
       // set position and velocity
+#if GAZEBO_MAJOR_VERSION >= 7
+      this->model_->SetWorldPose(base_pose);
+#else
       this->model_->SetWorldPose(base_pose, this->base_link_);
+#endif
       this->mass_link_->SetWorldPose(mass_pose);
       this->mass_link_->SetLinearVel(mass_velocity);
 
@@ -173,15 +210,28 @@ namespace gazebo
 
     void addForce()
     {
+#if GAZEBO_MAJOR_VERSION >= 9
+      ignition::math::Pose3d base_pose = this->base_link_->WorldPose();;
+      ignition::math::Pose3d mass_pose = this->mass_link_->WorldPose();;
+      double mass_z = mass_pose.Pos().Z();
+      double mass_length = (base_pose.Pos() - mass_pose.Pos()).Length();
+
+      double mass = this->mass_link_->GetInertial()->Mass();
+#else
       math::Pose base_pose = this->base_link_->GetWorldPose();;
       math::Pose mass_pose = this->mass_link_->GetWorldPose();;
       double mass_z = mass_pose.pos.z;
       double mass_length = (base_pose.pos - mass_pose.pos).GetLength();
       double mass = this->mass_link_->GetInertial()->GetMass();
+#endif
       double gravity = 9.81;
       double force = mass * gravity * mass_length / mass_z;
       double force_limit = this->linear_joint_->GetEffortLimit(0);
+#if GAZEBO_MAJOR_VERSION >= 9
+      force = ignition::math::clamp(force, -force_limit, force_limit);
+#else
       force = math::clamp(force, -force_limit, force_limit);
+#endif
 
       ROS_INFO_STREAM_THROTTLE(1.0, "[LIP control]  " << "mg: " << mass * gravity << "  z: " << mass_z << "  l: " << mass_length << "  f: " << force);
 
@@ -191,14 +241,33 @@ namespace gazebo
     void publishState()
     {
       hrpsys_gazebo_msgs::LIPState state;
+#if GAZEBO_MAJOR_VERSION >= 9
+      ignition::math::Pose3d base_pose = this->base_link_->WorldPose();;
+      ignition::math::Pose3d mass_pose = this->mass_link_->WorldPose();;
+      ignition::math::Vector3d mass_velocity = this->mass_link_->WorldLinearVel();
+#else
       math::Pose base_pose = this->base_link_->GetWorldPose();;
       math::Pose mass_pose = this->mass_link_->GetWorldPose();;
       math::Vector3 mass_velocity = this->mass_link_->GetWorldLinearVel();
+#endif
 
       std_msgs::Header tmp_header;
       tmp_header.stamp = ros::Time::now();
       state.header = tmp_header;
 
+#if GAZEBO_MAJOR_VERSION >= 9
+      state.foot_position.x = base_pose.Pos().X();
+      state.foot_position.y = base_pose.Pos().Y();
+      state.foot_position.z = base_pose.Pos().Z();
+
+      state.mass_position.x = mass_pose.Pos().X();
+      state.mass_position.y = mass_pose.Pos().Y();
+      state.mass_position.z = mass_pose.Pos().Z();
+
+      state.mass_velocity.x = mass_velocity.X();
+      state.mass_velocity.y = mass_velocity.Y();
+      state.mass_velocity.z = mass_velocity.Z();
+#else
       state.foot_position.x = base_pose.pos.x;
       state.foot_position.y = base_pose.pos.y;
       state.foot_position.z = base_pose.pos.z;
@@ -210,6 +279,7 @@ namespace gazebo
       state.mass_velocity.x = mass_velocity.x;
       state.mass_velocity.y = mass_velocity.y;
       state.mass_velocity.z = mass_velocity.z;
+#endif
 
       this->state_pub_queue_->push(state, this->state_pub_);
     }
