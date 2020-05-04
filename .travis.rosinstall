@@ -1,30 +1,15 @@
+#- git:
+#    uri: https://github.com/tork-a/openhrp3-release
+#    local-name: openhrp3
 - git:
-    uri: https://github.com/start-jsk/openhrp3
-    local-name: rtm-ros-robotics/openrtm_common/openhrp3
-- git:
-    uri: https://github.com/start-jsk/hrpsys
-    local-name: rtm-ros-robotics/openrtm_common/hrpsys
-## - git:
-##     uri: https://github.com/start-jsk/rtshell_core 
-##     local-name: rtm-ros-robotics/openrtm_common/rtshell_core
-## - git:
-##     uri: https://github.com/jsk-ros-pkg/jsk_common
-##     local-name: jsk-ros-pkg/jsk_common
-## - git:
-##     uri: https://github.com/jsk-ros-pkg/jsk_recognition
-##     local-name: jsk-ros-pkg/jsk_recognition
-- git:
-    uri: https://github.com/jsk-ros-pkg/jsk_model_tools
-    local-name: jsk-ros-pkg/jsk_model_tools
-## - git:
-##     uri: https://github.com/jsk-ros-pkg/jsk_roseus
-##     local-name: jsk-ros-pkg/jsk_roseus
-- svn:
-    uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/openrave_planning/collada_robots
-    local-name: jsk-ros-pkg/collada_robots
+    uri: https://github.com/tork-a/hrpsys-release
+    local-name: hrpsys
 - git:
     uri: https://github.com/start-jsk/rtmros_common
     local-name: rtm-ros-robotics/rtmros_common
-- git:
-    uri: https://github.com/start-jsk/rtmros_tutorials
-    local-name: rtm-ros-robotics/rtmros_tutorials
+# rtmros_tutorials depends on rtmros_gazebo. So rtmros_tutorials is not included here.
+
+# Use unknown
+#- svn:
+#    uri: https://svn.code.sf.net/p/jsk-ros-pkg/code/trunk/openrave_planning/collada_robots
+#    local-name: jsk-ros-pkg/collada_robots
