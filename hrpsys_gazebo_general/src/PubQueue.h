@@ -27,7 +27,7 @@
 
 #include <ros/ros.h>
 
-#if __cplusplus >= 201103L
+#if GAZEBO_MAJOR_VERSION >= 7
 using std::shared_ptr;
 #else
 using boost::shared_ptr;

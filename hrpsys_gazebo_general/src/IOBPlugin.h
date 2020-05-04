@@ -18,7 +18,11 @@
 #include <boost/thread.hpp>
 #include <boost/thread/condition.hpp>
 
+#if GAZEBO_MAJOR_VERSION >= 9
+#include <ignition/math/Pose3.hh>
+#else
 #include <gazebo/math/gzmath.hh>
+#endif
 #include <gazebo/physics/physics.hh>
 #include <gazebo/physics/PhysicsTypes.hh>
 #include <gazebo/transport/TransportTypes.hh>
@@ -42,7 +46,7 @@
 
 #include "PubQueue.h"
 
-#if __cplusplus >= 201103L
+#if GAZEBO_MAJOR_VERSION >= 7
 #include <memory>
 using std::shared_ptr;
 #else
@@ -54,7 +58,11 @@ namespace gazebo
   typedef shared_ptr< sensors::ImuSensor > ImuSensorPtr;
   typedef hrpsys_gazebo_msgs::JointCommand JointCommand;
   typedef hrpsys_gazebo_msgs::RobotState RobotState;
+#if GAZEBO_MAJOR_VERSION >= 9
+  typedef shared_ptr< ignition::math::Pose3d > PosePtr;
+#else
   typedef shared_ptr< math::Pose > PosePtr;
+#endif
 
   class IOBPlugin : public ModelPlugin
   {

@@ -15,12 +15,19 @@
   <arg name="CONF_DIR" default="$(find hrpsys_ros_bridge)/models" />
   <arg name="CONF_FILE" default="$(arg CONF_DIR)/$(arg ROBOT_TYPE).conf" />
   <arg name="KINEMATICS_MODE" default="false"/>
+  <arg name="USE_COMMON" default="true" />
+  <arg name="USE_ROBOTHARDWARE" default="true" />
+  <arg name="USE_WALKING" default="true" />
   <arg name="USE_ROBOT_POSE_EKF" default="true" />
+  <arg name="USE_COLLISIONCHECK" default="true" />
+  <arg name="USE_IMPEDANCECONTROLLER" default="true" />
+  <arg name="USE_SOFTERRORLIMIT" default="true" />
+  <arg name="USE_IMAGESENSOR" default="false" />
   <arg name="USE_FOOTCOORDS" default="false" />
   <!-- hrpsys_gazebo settings -->
   <arg name="SYNCHRONIZED" default="false" />
   <arg name="IOB_SUBSTEPS" default="5" />
-  <arg name="HRPSYS_RATE"  default="200" />
+  <arg name="HRPSYS_RATE"  default="500" />
 
   <env if="$(arg SYNCHRONIZED)"
        name="HRPSYS_GAZEBO_IOB_SYNCHRONIZED" value="1" />
@@ -64,14 +71,14 @@
     <arg name="SIMULATOR_NAME" value="$(arg SIMULATOR_NAME)" />
     <arg name="INSTALL_ROBOT_DESCRIPTION" value="false" />
     <arg name="CONF_FILE" default="$(arg CONF_FILE)" />
-    <arg name="USE_COMMON" default="true" />
-    <arg name="USE_ROBOTHARDWARE" default="true" />
-    <arg name="USE_WALKING" default="true" />
+    <arg name="USE_COMMON" default="$(arg USE_COMMON)" />
+    <arg name="USE_ROBOTHARDWARE" default="$(arg USE_ROBOTHARDWARE)" />
+    <arg name="USE_WALKING" default="$(arg USE_WALKING)" />
     <arg name="USE_ROBOT_POSE_EKF" value="$(arg USE_ROBOT_POSE_EKF)" />
-    <arg name="USE_COLLISIONCHECK" default="true" />
-    <arg name="USE_IMPEDANCECONTROLLER" default="true" />
-    <arg name="USE_SOFTERRORLIMIT" default="true" />
-    <arg name="USE_IMAGESENSOR" default="false" />
+    <arg name="USE_COLLISIONCHECK" default="$(arg USE_COLLISIONCHECK)" />
+    <arg name="USE_IMPEDANCECONTROLLER" default="$(arg USE_IMPEDANCECONTROLLER)" />
+    <arg name="USE_SOFTERRORLIMIT" default="$(arg USE_SOFTERRORLIMIT)" />
+    <arg name="USE_IMAGESENSOR" default="$(arg USE_IMAGESENSOR)" />
   </include>
 
   <node pkg="hrpsys_ros_bridge" type="hrpsys_dashboard" name="gazebo_robot_dashboard" if="$(arg LAUNCH_DASHBOARD)" />
