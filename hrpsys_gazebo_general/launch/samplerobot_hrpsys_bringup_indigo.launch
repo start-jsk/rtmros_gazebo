@@ -25,5 +25,6 @@
     <arg name="CONF_FILE" default="$(find hrpsys_gazebo_general)/config/SampleRobot_indigo.conf" />
     <arg name="KINEMATICS_MODE" value="$(arg KINEMATICS_MODE)"/>
     <arg name="BASE_LINK" value="WAIST_LINK0" />
+    <arg name="HRPSYS_RATE"  value="200" />
   </include>
 </launch>
