@@ -3,7 +3,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <vector>
-#include "hrpsys/io/iob.h"
 
 #include <ros/ros.h>
 #include <boost/algorithm/string.hpp>
@@ -13,6 +12,17 @@
 #include <hrpsys_gazebo_msgs/SyncCommand.h>
 
 #include <hrpUtil/Eigen3d.h>
+
+#if defined IOB_NAMESPACE
+#define STR2(s) #s
+#define STR(s) STR2(s)
+#define IOB_NS (std::string(STR(IOB_NAMESPACE))+"_")
+namespace IOB_NAMESPACE {
+#else
+#define IOB_NS std::string("")
+#endif
+
+#include "hrpsys/io/iob.h"
 
 typedef hrpsys_gazebo_msgs::JointCommand JointCommand;
 typedef hrpsys_gazebo_msgs::RobotState RobotState;
@@ -654,7 +664,7 @@ int open_iob(void)
 
     std::string node_name;
     {
-      char *ret = getenv("HRPSYS_GAZEBO_IOB_NAME");
+      char *ret = getenv((IOB_NS+"HRPSYS_GAZEBO_IOB_NAME").c_str());
       if (ret != NULL) {
         node_name.assign(ret);
       } else {
@@ -670,7 +680,7 @@ int open_iob(void)
 
     std::string controller_name;
     { // setting configuration name
-      char *ret = getenv("HRPSYS_GAZEBO_CONFIGURATION");
+      char *ret = getenv((IOB_NS+"HRPSYS_GAZEBO_CONFIGURATION").c_str());
       if (ret != NULL) {
         controller_name.assign(ret);
       } else {
@@ -680,7 +690,7 @@ int open_iob(void)
     }
     std::string robotname;
     { // setting configuration name
-      char *ret = getenv("HRPSYS_GAZEBO_ROBOTNAME");
+      char *ret = getenv((IOB_NS+"HRPSYS_GAZEBO_ROBOTNAME").c_str());
       if (ret != NULL) {
         robotname.assign(ret);
         // controller_name -> robotname/controller_name
@@ -697,7 +707,7 @@ int open_iob(void)
     }
 
     { // setting synchronized
-      char *ret = getenv("HRPSYS_GAZEBO_IOB_SYNCHRONIZED");
+      char *ret = getenv((IOB_NS+"HRPSYS_GAZEBO_IOB_SYNCHRONIZED").c_str());
       if (ret != NULL) {
         std::string ret_str(ret);
         if (ret_str.size() > 0) {
@@ -712,7 +722,7 @@ int open_iob(void)
       if(iob_synchronized) ROS_INFO("[iob] use synchronized command");
     }
     { // setting substeps
-      char *ret = getenv("HRPSYS_GAZEBO_IOB_SUBSTEPS");
+      char *ret = getenv((IOB_NS+"HRPSYS_GAZEBO_IOB_SUBSTEPS").c_str());
       if (ret != NULL) {
         int num = atoi(ret);
         if (num > 0) {
@@ -1210,3 +1220,6 @@ int read_digital_output(char *doutput)
   return 0;
 }
 
+#if defined IOB_NAMESPACE
+}
+#endif

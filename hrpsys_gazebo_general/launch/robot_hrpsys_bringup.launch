@@ -14,6 +14,7 @@
   <arg name="HRPSYS_PY_ARGS" default="" />
   <arg name="CONF_DIR" default="$(find hrpsys_ros_bridge)/models" />
   <arg name="CONF_FILE" default="$(arg CONF_DIR)/$(arg ROBOT_TYPE).conf" />
+  <arg name="HRPSYS_OPT_RTC_CONFIG_ARGS" default=""/>
   <arg name="KINEMATICS_MODE" default="false"/>
   <arg name="USE_COMMON" default="true" />
   <arg name="USE_ROBOTHARDWARE" default="true" />
@@ -28,6 +29,7 @@
   <arg name="SYNCHRONIZED" default="false" />
   <arg name="IOB_SUBSTEPS" default="5" />
   <arg name="HRPSYS_RATE"  default="500" />
+  <arg name="HRPSYS_ADDITIONAL_LOAD_PATH" default=""/>
 
   <env if="$(arg SYNCHRONIZED)"
        name="HRPSYS_GAZEBO_IOB_SYNCHRONIZED" value="1" />
@@ -50,7 +52,7 @@
 
   <include file="$(find hrpsys_tools)/launch/hrpsys.launch" >
     <arg name="USE_RTCD" value="true" />
-    <arg name="hrpsys_load_path" default="$(find hrpsys_gazebo_general)/lib,$(find hrpsys)/lib"/>
+    <arg name="hrpsys_load_path" default="$(arg HRPSYS_ADDITIONAL_LOAD_PATH),$(find hrpsys_gazebo_general)/lib,$(find hrpsys)/lib"/>
     <arg name="RobotHardware_conf" default='$(arg CONF_DIR)/$(arg ROBOT_TYPE).RobotHardware.conf'/>
     <arg name="PROJECT_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE)_nosim.xml" />
     <arg name="MODEL_FILE" value="$(arg CONF_DIR)/$(arg ROBOT_TYPE).dae" />
@@ -60,6 +62,7 @@
     <arg name="HRPSYS_PY_NAME" default="$(arg HRPSYS_PY_NAME)"/>
     <arg name="HRPSYS_PY_ARGS" default="$(arg HRPSYS_PY_ARGS)" />
     <arg name="hrpsys_periodic_rate" value="$(arg HRPSYS_RATE)" />
+    <arg name="hrpsys_opt_rtc_config_args" value="$(arg HRPSYS_OPT_RTC_CONFIG_ARGS)"/>
     <!--arg name="RTCD_LAUNCH_PREFIX" value="xterm -e gdb ++args" /-->
   </include>
 
