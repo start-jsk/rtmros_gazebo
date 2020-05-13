@@ -1,13 +1,4 @@
-#- git:
-#    uri: https://github.com/tork-a/openhrp3-release
-#    local-name: openhrp3
-- git:
-    uri: https://github.com/tork-a/hrpsys-release
-    local-name: hrpsys
-- git:
-    uri: https://github.com/start-jsk/rtmros_common
-    local-name: rtm-ros-robotics/rtmros_common
-# rtmros_tutorials depends on rtmros_gazebo. So rtmros_tutorials is not included here.
+# rtmros_tutorials depends on rtmros_gazebo and rtmros_gazebo does not depend on rtmros_turorials. So rtmros_tutorials is not included here.
 
 # Use unknown
 #- svn:
