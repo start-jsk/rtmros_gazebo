@@ -28,11 +28,6 @@ env:
     - ROS_DISTRO=indigo USE_DEB=true
     - ROS_DISTRO=kinetic USE_DEB=true
     - ROS_DISTRO=melodic USE_DEB=true
-    - ROS_DISTRO=melodic USE_DEB=false BEFORE_SCRIPT="pwd; sed -i \"35iadd_definitions(-Wno-deprecated)\" hrpsys/CMakeLists.txt; (cd hrpsys; git diff)" #to build hrpsys on melodic
-matrix:
-  allow_failures:
-    # hrpsys_gazebo_general needs hrpsys/src, but hrpsys/src is not installed with released hrpsys on melodic.
-    - env: ROS_DISTRO=melodic USE_DEB=true
 before_script:
   # Install openrtm_aist & add osrf
   - add_scr="sudo apt-get install -qq -y ros-${ROS_DISTRO}-openrtm-aist; sudo -E sh -c \"echo \\\"deb http://packages.osrfoundation.org/gazebo/ubuntu-stable \`lsb_release -cs\` main\\\" > /etc/apt/sources.list.d/gazebo-latest.list\"; wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -; sudo apt-get update -qq"; if [ "${BEFORE_SCRIPT}" == "" ] ; then export BEFORE_SCRIPT=${add_scr}; else export BEFORE_SCRIPT="${BEFORE_SCRIPT}; ${add_scr}"; fi
