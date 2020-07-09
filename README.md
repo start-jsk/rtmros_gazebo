@@ -93,6 +93,38 @@ This is yaml file for configuring gazebo setting.
       imu_sensors_config:
         imu_sensor0: {ros_name: 'ros_imu_sensor', link_name: 'LINK_NAME0', frame_id: 'LINK_NAME0'}
 
+### Custom Plugins
+
+### CranePlugin
+
+This plugin provides fake "Crane" in gazebo environment.
+
+```
+<gazebo>
+  <plugin filename="libCranePlugin.so" name="crane_plugin">
+    <linkname>CHEST_LINK1</linkname>  <!-- The name of the link where the crane is attached -->
+    <liftheight>1.2</liftheight>  <!-- Crane hanging height [m] -->
+    <lowerheight>0.5</lowerheight>  <!-- Crane will be disabled below this height [m] -->
+    <liftvelocity>0.1</liftvelocity>  <!-- [m/s] -->
+    <lowervelocity>0.03</lowervelocity>  <!-- [m/s] -->
+    <pgain>2500</pgain>  <!-- P gain for Z-axis error -->
+    <dgain>500</dgain>  <!-- D gain for Z-axis error -->
+    <damp>10000</damp>  <!-- Damping factor for other axes and rotation -->
+  </plugin>
+</gazebo>
+```
+
+#### Subscribed topics
+
+- `[objname]/CranePlugin/LowerCommand` (`std_msgs::Empty`)
+Lower the crane to the ground.
+
+- `[objname]/CranePlugin/LiftCommand` (`std_msgs::Empty`)
+Lift the crane to the lift height.
+
+- `[objname]/CranePlugin/PoseCommand` (`geometry_msgs::Pose`)
+Place the robot to the pose.
+
 [gazebo]:http://gazebosim.org
 [rtmros_common]:https://github.com/start-jsk/rtmros_common
 [hrpsys_gazebo_general]:https://github.com/start-jsk/rtmros_gazebo/tree/master/hrpsys_gazebo_general
