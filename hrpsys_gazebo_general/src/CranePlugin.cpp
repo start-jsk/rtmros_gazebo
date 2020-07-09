@@ -154,10 +154,18 @@ namespace gazebo
     {
       this->pull_up_flag = true;
       this->pull_down_flag = false;
+#if GAZEBO_MAJOR_VERSION >= 9
+      this->target_height = this->link->WorldPose().Pos().Z();
+#else
       this->target_height = this->link->GetWorldPose().pos.z;
+#endif
       this->lift_fin = false;
       // initialize update time
+#if GAZEBO_MAJOR_VERSION >= 9
+      this->lastUpdateTime = this->world->SimTime();
+#else
       this->lastUpdateTime = this->world->GetSimTime();
+#endif
       this->count = 0;
       gzmsg << "[CranePlugin]subscribed LiftCommand." << std::endl;      
     }
@@ -168,7 +176,11 @@ namespace gazebo
 	this->pull_up_flag = false;
 	this->pull_down_flag = true;
 	// initialize update time
+#if GAZEBO_MAJOR_VERSION >= 9
+	this->lastUpdateTime = this->world->SimTime();
+#else
 	this->lastUpdateTime = this->world->GetSimTime();
+#endif
       }
       gzdbg << "[CranePlugin]subscribed LowerCommand." << std::endl;
     }
@@ -176,39 +188,50 @@ namespace gazebo
 
     void SetPoseCommand(const geometry_msgs::Pose::ConstPtr &_msg)
     {
+#if GAZEBO_MAJOR_VERSION >= 9
+      this->pose.Set(ignition::math::Vector3d(_msg->position.x, _msg->position.y, _msg->position.z),
+                     ignition::math::Quaterniond(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
+#else
       this->pose.Set(math::Vector3(_msg->position.x, _msg->position.y, _msg->position.z),
                      math::Quaternion(_msg->orientation.w, _msg->orientation.x, _msg->orientation.y, _msg->orientation.z));
+#endif
       this->set_pose_flag = true;
       this->pull_up_flag = false;
       this->pull_down_flag = false;
+#if GAZEBO_MAJOR_VERSION >= 9
+      gzdbg << "[CranePlugin]subscribed SetPoseCommand. ( position: " << this->pose.Pos() << "  orientation: " << this->pose.Rot() << " )" << std::endl;
+#else
       gzdbg << "[CranePlugin]subscribed SetPoseCommand. ( position: " << this->pose.pos << "  orientation: " << this->pose.rot << " )" << std::endl;
+#endif
     }
 
     // Called by the world update start event
     void OnUpdate()
     {
+      // get current state
+#if GAZEBO_MAJOR_VERSION >= 9
+      ignition::math::Vector3d lin = this->model->WorldLinearVel();
+      ignition::math::Vector3d ang = this->model->WorldAngularVel();
+      double height = this->link->WorldPose().Pos().Z();
+      common::Time curTime = this->world->SimTime();
+#else
+      math::Vector3 lin = this->model->GetWorldLinearVel();
+      math::Vector3 ang = this->model->GetWorldAngularVel();
+      double height = this->link->GetWorldPose().pos.z;
+      common::Time curTime = this->world->GetSimTime();
+#endif
+      double dt = (curTime - this->lastUpdateTime).Double();
+
       if (this->pull_up_flag||this->pull_down_flag) {
-	common::Time curTime = this->world->GetSimTime();
 	if (this->pull_up_flag){
 	  if(this->target_height<this->lift_height){
-	    this->target_height+=lift_velocity * (curTime - this->lastUpdateTime).Double();
+	    this->target_height+=lift_velocity * dt;
 	  }else{
 	    this->target_height=this->lift_height;
 	    count++;
-	    if(count%100==0){
-	      math::Vector3 lin=this->model->GetWorldLinearVel();
-	      math::Vector3 ang=this->model->GetWorldAngularVel();
-	      lin *= 0.7;
-	      ang *= 0.7;
-	      this->model->SetWorldTwist(lin,ang);
+	    if(count%100==0){	      
+	      this->model->SetWorldTwist(lin*0.7,ang*0.7);
 	    }
-	    // if(!this->lift_fin){
-	    //   this->lift_fin=true;
-	    //   math::Quaternion tmp=this->link->GetWorldPose().rot;
-	    //   math::Vector3 vec=this->link->GetWorldPose().pos;
-	    //   this->model->SetLinkWorldPose(math::Pose(vec,math::Quaternion(0.0,0.0,tmp.GetYaw())),this->link);
-	    //   this->model->SetWorldTwist(math::Vector3(),math::Vector3());
-	    // }
 	  }
 	}
 	if (this->pull_down_flag){
@@ -216,27 +239,39 @@ namespace gazebo
 	    this->pull_down_flag=false;
 	    return;
 	  }
-	  this->target_height-=lower_velocity * (curTime - this->lastUpdateTime).Double();
+	  this->target_height-=lower_velocity * dt;
 	}
-	double error  = this->target_height - this->link->GetWorldPose().pos.z;
+	double error  = this->target_height - height;
 	double derror = 0.0;
-	if (!math::equal((curTime - this->lastUpdateTime).Double(),0.0)){
-	  derror=(error-pre_error)/(curTime - this->lastUpdateTime).Double();
-	}
+#if GAZEBO_MAJOR_VERSION >= 9
+	if (!ignition::math::equal(dt,0.0)) derror=(error-pre_error)/dt;
+#else
+	if (!math::equal(dt,0.0)) derror=(error-pre_error)/dt;
+#endif
 	double F_z = pgain * error + dgain * derror;
 	if (F_z>0.0){
-	  math::Vector3 lin=this->model->GetWorldLinearVel();
-	  math::Vector3 ang=this->model->GetWorldAngularVel();
-	  lin *= -this->damp;
-	  ang *= -this->damp;
-	  lin.z=F_z; 
-	  this->link->AddForce(lin);
-	  this->link->AddTorque(ang);
+#if GAZEBO_MAJOR_VERSION >= 9
+	  ignition::math::Vector3d lin_f = - lin * this->damp;
+	  ignition::math::Vector3d ang_f = - ang * this->damp;
+	  lin_f.Z()=F_z; 
+#else
+	  math::Vector3 lin_f = - lin * this->damp;
+	  math::Vector3 ang_f = - ang * this->damp;
+	  lin_f.z=F_z; 
+#endif
+
+	  this->link->AddForce(lin_f);
+	  this->link->AddTorque(ang_f);
 	}
 	this->lastUpdateTime = curTime;
       }else if (this->set_pose_flag) {
-	this->model->SetLinearVel(math::Vector3(0, 0, 0));
-	this->model->SetAngularVel(math::Vector3(0, 0, 0));
+#if GAZEBO_MAJOR_VERSION >= 9
+	this->model->SetLinearVel(ignition::math::Vector3d(0, 0, 0));
+	this->model->SetAngularVel(ignition::math::Vector3d(0, 0, 0));
+#else
+	this->model->SetLinearVel(ignition::math::Vector3d(0, 0, 0));
+	this->model->SetAngularVel(ignition::math::Vector3d(0, 0, 0));
+#endif
 	this->model->SetWorldPose(this->pose);
 	this->set_pose_flag = false;
       }
@@ -273,7 +308,11 @@ namespace gazebo
     bool damp;
     common::Time lastUpdateTime;
     int count;
+#if GAZEBO_MAJOR_VERSION >= 9
+    ignition::math::Pose3d pose;
+#else
     math::Pose pose;
+#endif
     bool set_pose_flag;
 
     ros::NodeHandle* rosNode;
