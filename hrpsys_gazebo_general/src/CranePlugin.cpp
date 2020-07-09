@@ -32,7 +32,7 @@ namespace gazebo
       this->world = this->model->GetWorld();
 
       // read option args in sdf tags
-      this->obj_name = "";
+      this->obj_name = this->model->GetName();
       if (_sdf->HasElement("objname")) {
         this->obj_name = _sdf->Get<std::string>("objname");
       }
@@ -248,7 +248,7 @@ namespace gazebo
 #else
 	if (!math::equal(dt,0.0)) derror=(error-pre_error)/dt;
 #endif
-	double F_z = pgain * error + dgain * derror;
+	double F_z = this->pgain * error + this->dgain * derror;
 	if (F_z>0.0){
 #if GAZEBO_MAJOR_VERSION >= 9
 	  ignition::math::Vector3d lin_f = - lin * this->damp;
@@ -269,8 +269,8 @@ namespace gazebo
 	this->model->SetLinearVel(ignition::math::Vector3d(0, 0, 0));
 	this->model->SetAngularVel(ignition::math::Vector3d(0, 0, 0));
 #else
-	this->model->SetLinearVel(ignition::math::Vector3d(0, 0, 0));
-	this->model->SetAngularVel(ignition::math::Vector3d(0, 0, 0));
+	this->model->SetLinearVel(math::Vector3(0, 0, 0));
+	this->model->SetAngularVel(math::Vector3(0, 0, 0));
 #endif
 	this->model->SetWorldPose(this->pose);
 	this->set_pose_flag = false;
