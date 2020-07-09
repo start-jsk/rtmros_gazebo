@@ -93,12 +93,13 @@ This is yaml file for configuring gazebo setting.
       imu_sensors_config:
         imu_sensor0: {ros_name: 'ros_imu_sensor', link_name: 'LINK_NAME0', frame_id: 'LINK_NAME0'}
 
-### Custom Plugins
+#### Custom Plugins
 
-### CranePlugin
+#### CranePlugin
 
 This plugin provides fake "Crane" in gazebo environment.
 
+To use this plugin, add the following lines to your URDF.
 ```
 <gazebo>
   <plugin filename="libCranePlugin.so" name="crane_plugin">
@@ -114,15 +115,18 @@ This plugin provides fake "Crane" in gazebo environment.
 </gazebo>
 ```
 
-#### Subscribed topics
+##### Subscribed topics
 
 - `[objname]/CranePlugin/LowerCommand` (`std_msgs::Empty`)
+
 Lower the crane to the ground.
 
 - `[objname]/CranePlugin/LiftCommand` (`std_msgs::Empty`)
+
 Lift the crane to the lift height.
 
 - `[objname]/CranePlugin/PoseCommand` (`geometry_msgs::Pose`)
+
 Place the robot to the pose.
 
 [gazebo]:http://gazebosim.org
