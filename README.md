@@ -11,11 +11,13 @@ Please refer [rtmros_common] for installing these packages.
 Open Terminal and run gazebo
 
 ```
-roslaunch hrpsys_gazebo_general gazebo_samplerobot_no_controllers.launch
+roslaunch hrpsys_gazebo_general gazebo_samplerobot_no_controllers.launch  # kinetic and above
+roslaunch hrpsys_gazebo_general gazebo_samplerobot_no_controllers_indigo.launch  # indigo
 ```
 Launch another terminal and start hrpsys-base
 ```
-rtmlaunch hrpsys_gazebo_general samplerobot_hrpsys_bringup.launch
+rtmlaunch hrpsys_gazebo_general samplerobot_hrpsys_bringup.launch  # kinetic and above
+rtmlaunch hrpsys_gazebo_general samplerobot_hrpsys_bringup_indigo.launch  # indigo
 ```
 Launch another terminal and send command to robot by roseus
 ```
@@ -24,6 +26,8 @@ roseus samplerobot-interface.l
 (samplerobot-init)
 (setq *robot* (instance samplerobot-robot :init))
 (send *ri* :angle-vector (send *robot* :reset-pose) 5000)
+(send *ri* :start-auto-balancer)
+(send *ri* :start-st)
 (send *ri* :go-pos 0 0 0)
 ```
 

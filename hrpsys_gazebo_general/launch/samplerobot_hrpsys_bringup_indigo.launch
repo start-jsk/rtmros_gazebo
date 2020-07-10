@@ -1,0 +1,30 @@
+<launch>
+  <arg name="KINEMATICS_MODE" default="false"/>
+  <arg name="SYNCHRONIZED" default="false" />
+
+  <rosparam command="load"
+            file="$(find hrpsys_ros_bridge)/models/SampleRobot_controller_config.yaml" />
+
+  <!-- TODO: fix colladaWriter see https://code.google.com/p/rtm-ros-robotics/issues/detail?id=182 -->
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_0"
+        args="0 0 0 0 0 0 /LLEG_LINK6 /LLEG_ANKLE_R 100" />
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_1"
+        args="0 0 0 0 0 0 /RLEG_LINK6 /RLEG_ANKLE_R 100" />
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_2"
+        args="0 0 0 0 0 0 /LARM_LINK7 /LARM_WRIST_P 100" />
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_3"
+        args="0 0 0 0 0 0 /RARM_LINK7 /RARM_WRIST_P 100" />
+  <node pkg="tf" type="static_transform_publisher" name="sensor_transform_4"
+        args="0 0 0 0 0 0 /WAIST_LINK0 gyrometer 100" />
+
+  <include file="$(find hrpsys_gazebo_general)/launch/robot_hrpsys_bringup.launch">
+    <arg name="ROBOT_TYPE" value="SampleRobot" />
+    <arg name="USE_INSTANCE_NAME" value="true" />
+    <arg name="SYNCHRONIZED" value="$(arg SYNCHRONIZED)" />
+    <arg name="HRPSYS_PY_ARGS" value="--use-unstable-rtc" />
+    <arg name="CONF_FILE" default="$(find hrpsys_gazebo_general)/config/SampleRobot_indigo.conf" />
+    <arg name="KINEMATICS_MODE" value="$(arg KINEMATICS_MODE)"/>
+    <arg name="BASE_LINK" value="WAIST_LINK0" />
+    <arg name="HRPSYS_RATE"  value="200" />
+  </include>
+</launch>
