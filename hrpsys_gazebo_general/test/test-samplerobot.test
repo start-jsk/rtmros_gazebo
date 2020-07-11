@@ -1,30 +1,14 @@
 <launch>
   <arg name="INDIGO" default="false"/>
 
-  <node name="start_omninames" pkg="rtmbuild" type="start_omninames.sh" args="15005" />
-
   <group if="$(arg INDIGO)">
     <include file="$(find hrpsys_gazebo_general)/launch/gazebo_samplerobot_no_controllers_indigo.launch" />
-
-    <!-- wait for /clock -->
-    <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
-      <arg name="time" value="10" />
-      <arg name="pkg" value="hrpsys_gazebo_general" />
-      <arg name="file" value="samplerobot_hrpsys_bringup_indigo.launch" />
-      <arg name="value" value="" />
-    </include>
+    <node pkg="hrpsys_gazebo_general" type="launch_hrpsys_indigo.sh" name="launch_hrpsys_indigo"/>
   </group>
 
   <group unless="$(arg INDIGO)">
     <include file="$(find hrpsys_gazebo_general)/launch/gazebo_samplerobot_no_controllers.launch" />
-
-    <!-- wait for /clock -->
-    <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
-      <arg name="time" value="10" />
-      <arg name="pkg" value="hrpsys_gazebo_general" />
-      <arg name="file" value="samplerobot_hrpsys_bringup.launch" />
-      <arg name="value" value="" />
-    </include>
+    <node pkg="hrpsys_gazebo_general" type="launch_hrpsys.sh" name="launch_hrpsys"/>
   </group>
 
 

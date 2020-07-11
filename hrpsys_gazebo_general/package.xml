@@ -30,8 +30,6 @@
   <run_depend>turtlebot_description</run_depend>
   <run_depend>xacro</run_depend>
 
-  <test_depend>timed_roslaunch</test_depend>
-
   <export>
     <gazebo_ros gazebo_model_path="${prefix}/robot_models" />
   </export>
