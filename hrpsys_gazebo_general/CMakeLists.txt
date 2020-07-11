@@ -105,7 +105,7 @@ install(PROGRAMS setup.sh DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 ## Test
 if ("hydro" STREQUAL "$ENV{ROS_DISTRO}")
 elseif ("indigo" STREQUAL "$ENV{ROS_DISTRO}")
-  add_rostest(test/test-samplerobot-indigo.test)
+  #add_rostest(test/test-samplerobot-indigo.test)
 else()
   add_rostest(test/test-samplerobot.test)
 endif()
