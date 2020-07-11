@@ -1,0 +1,67 @@
+<launch>
+  <arg name="INDIGO" default="false"/>
+
+  <node name="start_omninames" pkg="rtmbuild" type="start_omninames.sh" args="15005" />
+
+  <group if="$(arg INDIGO)">
+    <include file="$(find hrpsys_gazebo_general)/launch/gazebo_samplerobot_no_controllers_indigo.launch" />
+
+    <!-- wait for /clock -->
+    <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
+      <arg name="time" value="10" />
+      <arg name="pkg" value="hrpsys_gazebo_general" />
+      <arg name="file" value="samplerobot_hrpsys_bringup_indigo.launch" />
+      <arg name="value" value="" />
+    </include>
+  </group>
+
+  <group unless="$(arg INDIGO)">
+    <include file="$(find hrpsys_gazebo_general)/launch/gazebo_samplerobot_no_controllers.launch" />
+
+    <!-- wait for /clock -->
+    <include file="$(find timed_roslaunch)/launch/timed_roslaunch.launch">
+      <arg name="time" value="10" />
+      <arg name="pkg" value="hrpsys_gazebo_general" />
+      <arg name="file" value="samplerobot_hrpsys_bringup.launch" />
+      <arg name="value" value="" />
+    </include>
+  </group>
+
+
+  <node name="hrpsys_seq_state_ros_bridge_tf_relay" pkg="hrpsys_ros_bridge" type="hrpsys_seq_state_ros_bridge_tf_relay_for_test.py"/>
+
+  <!-- check if /SampleRobot/robot_state is published -->
+  <param name="hztest_rs/topic" value="/SampleRobot/robot_state" />
+  <param name="hztest_rs/wait_time" value="100" />
+  <param name="hztest_rs/hz" value="500.0" />
+  <param name="hztest_rs/hzerror" value="200.0" />
+  <param name="hztest_rs/test_duration" value="5.0" />
+  <test test-name="hztest_rs" pkg="rostest" type="hztest" name="hztest_rs" retry="4" />
+
+  <!-- check if /SampleRobot/joint_command is published -->
+  <param name="hztest_jc/topic" value="/SampleRobot/joint_command" />
+  <param name="hztest_jc/wait_time" value="100" />
+  <param name="hztest_jc/hz" value="500.0" />
+  <param name="hztest_jc/hzerror" value="200.0" />
+  <param name="hztest_jc/test_duration" value="5.0" />
+  <test test-name="hztest_jc" pkg="rostest" type="hztest" name="hztest_jc" retry="4" />
+
+  <!-- check if joint_states is published -->
+  <param name="hztest_js/topic" value="/joint_states" />
+  <param name="hztest_js/wait_time" value="100" />
+  <param name="hztest_js/hz" value="500.0" />
+  <param name="hztest_js/hzerror" value="200.0" />
+  <param name="hztest_js/test_duration" value="5.0" />
+  <test test-name="hztest_js" pkg="rostest" type="hztest" name="hztest_js" retry="4" />
+
+  <!-- check if tf is published -->
+  <param name="hztest_tf/topic" value="/hrpsys_ros_bridge/tf" />
+  <param name="hztest_tf/wait_time" value="100" />
+  <param name="hztest_tf/hz" value="50.0" />
+  <param name="hztest_tf/hzerror" value="20.0" />
+  <param name="hztest_tf/test_duration" value="5.0" />
+  <test test-name="hztest_tf" pkg="rostest" type="hztest" name="hztest_tf" retry="4" />
+
+  <test test-name="samplerobot" pkg="hrpsys_gazebo_general" type="test-samplerobot.py" retry="4" time-limit="400"/>
+
+</launch>
