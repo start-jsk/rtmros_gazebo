@@ -1,0 +1,5 @@
+<launch>
+  <include file="$(find hrpsys_gazebo_general)/test/test-samplerobot.test" >
+    <arg name="INDIGO" value="true"/>
+  </include>
+</launch>

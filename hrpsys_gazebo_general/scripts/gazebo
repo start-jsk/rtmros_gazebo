@@ -4,5 +4,6 @@ rospack find drcsim_gazebo 2> /dev/null
 if [ $? -eq 0 ]; then
     rosrun drcsim_gazebo run_gazebo $@
 else
+    pkill gzserver
     rosrun gazebo_ros gazebo $@
 fi
