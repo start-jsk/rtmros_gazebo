@@ -28,7 +28,7 @@
   <!-- hrpsys_gazebo settings -->
   <arg name="SYNCHRONIZED" default="false" />
   <arg name="IOB_SUBSTEPS" default="5" />
-  <arg name="HRPSYS_RATE"  default="500" />
+  <arg name="HRPSYS_RATE"  default="200" />
   <arg name="HRPSYS_ADDITIONAL_LOAD_PATH" default=""/>
 
   <env if="$(arg SYNCHRONIZED)"

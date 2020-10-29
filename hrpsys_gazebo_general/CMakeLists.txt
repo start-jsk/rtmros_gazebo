@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(hrpsys_gazebo_general)
 
-find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge hrpsys_gazebo_msgs)
+find_package(catkin REQUIRED COMPONENTS hrpsys_ros_bridge hrpsys_gazebo_msgs rostest)
 
 find_package(PkgConfig)
 pkg_check_modules(openrtm_aist openrtm-aist REQUIRED)
@@ -81,6 +81,9 @@ install(TARGETS ThermoPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATIO
 add_library(LIPPlugin src/LIPPlugin.cpp)
 add_dependencies(LIPPlugin hrpsys_gazebo_msgs_gencpp)
 install(TARGETS LIPPlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+add_library(CranePlugin src/CranePlugin.cpp)
+add_dependencies(CranePlugin hrpsys_gazebo_msgs_gencpp)
+install(TARGETS CranePlugin LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
 
 ## Convert robot models
 include(${PROJECT_SOURCE_DIR}/cmake/compile_robot_model_for_gazebo.cmake)
@@ -97,3 +100,12 @@ add_custom_target(all_robots_compile ALL DEPENDS ${compile_urdf_robots})
 ## install
 install(DIRECTORY launch scripts worlds config robot_models DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION} USE_SOURCE_PERMISSIONS)
 install(PROGRAMS setup.sh DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+
+
+## Test
+if ("hydro" STREQUAL "$ENV{ROS_DISTRO}")
+elseif ("indigo" STREQUAL "$ENV{ROS_DISTRO}")
+  #add_rostest(test/test-samplerobot-indigo.test)
+else()
+  add_rostest(test/test-samplerobot.test)
+endif()

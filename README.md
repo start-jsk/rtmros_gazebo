@@ -11,11 +11,13 @@ Please refer [rtmros_common] for installing these packages.
 Open Terminal and run gazebo
 
 ```
-roslaunch hrpsys_gazebo_general gazebo_samplerobot_no_controllers.launch
+roslaunch hrpsys_gazebo_general gazebo_samplerobot_no_controllers.launch  # kinetic and above
+roslaunch hrpsys_gazebo_general gazebo_samplerobot_no_controllers_indigo.launch  # indigo
 ```
 Launch another terminal and start hrpsys-base
 ```
-rtmlaunch hrpsys_gazebo_general samplerobot_hrpsys_bringup.launch
+rtmlaunch hrpsys_gazebo_general samplerobot_hrpsys_bringup.launch  # kinetic and above
+rtmlaunch hrpsys_gazebo_general samplerobot_hrpsys_bringup_indigo.launch  # indigo
 ```
 Launch another terminal and send command to robot by roseus
 ```
@@ -24,6 +26,8 @@ roseus samplerobot-interface.l
 (samplerobot-init)
 (setq *robot* (instance samplerobot-robot :init))
 (send *ri* :angle-vector (send *robot* :reset-pose) 5000)
+(send *ri* :start-auto-balancer)
+(send *ri* :start-st)
 (send *ri* :go-pos 0 0 0)
 ```
 
@@ -92,6 +96,42 @@ This is yaml file for configuring gazebo setting.
         - imu_sensor0
       imu_sensors_config:
         imu_sensor0: {ros_name: 'ros_imu_sensor', link_name: 'LINK_NAME0', frame_id: 'LINK_NAME0'}
+
+#### Custom Plugins
+
+#### CranePlugin
+
+This plugin provides fake "Crane" in gazebo environment.
+
+To use this plugin, add the following lines to your URDF.
+```
+<gazebo>
+  <plugin filename="libCranePlugin.so" name="crane_plugin">
+    <linkname>CHEST_LINK1</linkname>  <!-- The name of the link where the crane is attached -->
+    <liftheight>1.2</liftheight>  <!-- Crane hanging height [m] -->
+    <lowerheight>0.5</lowerheight>  <!-- Crane will be disabled below this height [m] -->
+    <liftvelocity>0.1</liftvelocity>  <!-- [m/s] -->
+    <lowervelocity>0.03</lowervelocity>  <!-- [m/s] -->
+    <pgain>2500</pgain>  <!-- P gain for Z-axis error -->
+    <dgain>500</dgain>  <!-- D gain for Z-axis error -->
+    <damp>10000</damp>  <!-- Damping factor for other axes and rotation -->
+  </plugin>
+</gazebo>
+```
+
+##### Subscribed topics
+
+- `[objname]/CranePlugin/LowerCommand` (`std_msgs::Empty`)
+
+Lower the crane to the ground.
+
+- `[objname]/CranePlugin/LiftCommand` (`std_msgs::Empty`)
+
+Lift the crane to the lift height.
+
+- `[objname]/CranePlugin/PoseCommand` (`geometry_msgs::Pose`)
+
+Place the robot to the pose.
 
 [gazebo]:http://gazebosim.org
 [rtmros_common]:https://github.com/start-jsk/rtmros_common
