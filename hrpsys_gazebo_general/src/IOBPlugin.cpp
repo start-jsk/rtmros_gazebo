@@ -1084,6 +1084,7 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
     // update max force
 #if GAZEBO_MAJOR_VERSION >= 7
     this->joints[i]->SetParam("max_force", 0, this->joints[i]->GetEffortLimit(0));
+    //this->joints[i]->SetParam("fmax", 0, this->joints[i]->GetEffortLimit(0));
 #else
     this->joints[i]->SetMaxForce(0, this->joints[i]->GetEffortLimit(0));
 #endif
@@ -1100,7 +1101,12 @@ void IOBPlugin::UpdatePID_Velocity_Control(double _dt) {
              this->robotState.kpv_position[i]);
 #endif
     // apply velocity to joint
+#if __cplusplus >= 201103L
+    this->joints[i]->SetParam("vel", 0, j_velocity);
+#else
     this->joints[i]->SetVelocity(0, j_velocity);
+#endif
+
   }
 }
 
