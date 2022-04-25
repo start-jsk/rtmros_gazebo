@@ -12,7 +12,8 @@ cache:
     - $HOME/.ccache
     - $HOME/.cache/pip
     - $HOME/apt-cacher-ng
-dist: trusty
+sudo: required
+dist: bionic
 services:
   - docker
 env:

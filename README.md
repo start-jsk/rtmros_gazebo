@@ -1,4 +1,4 @@
-rtmros_gazebo  [![Build Status](https://travis-ci.org/start-jsk/rtmros_gazebo.png)](https://travis-ci.org/start-jsk/rtmros_gazebo)
+rtmros_gazebo  [![Build Status](https://app.travis-ci.com/start-jsk/rtmros_gazebo.svg?branch=master)](https://app.travis-ci.com/start-jsk/rtmros_gazebo)
 -------------
 
 [gazebo] simulation for rtmros robots
