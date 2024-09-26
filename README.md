@@ -1,6 +1,8 @@
 rtmros_gazebo  [![Build Status](https://app.travis-ci.com/start-jsk/rtmros_gazebo.svg?branch=master)](https://app.travis-ci.com/start-jsk/rtmros_gazebo)
 -------------
 
+[![Join the chat at https://gitter.im/start-jsk/rtmros_gazebo](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/start-jsk/rtmros_gazebo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 [gazebo] simulation for rtmros robots
 
 ### Install
